@@ -5,6 +5,9 @@
  * Automatically attempts to reconnect. As soon as a connection is made updates are submitted
  * and the localStorage is deleted upon successful update.
  *
+ * NOTE: Hooks for listeners that updates were successful/unsuccessful should be added in
+ * _handleRestablishedInternet()
+ *
  * <b>Dependencies:</b> ArcGIS JavaScript API and Hydrate.js: https://github.com/nanodeath/HydrateJS
  * <b>Limitations:</b> does not currently store infoTemplate and symbol properties
  * <b>More info:</b> http://www.w3.org/TR/webstorage/
@@ -178,7 +181,7 @@ var OfflineStore = function(/* Map */ map) {
                     console.log("deleteResult ObjectId: " + deleteResult[0].objectId + ", Success: " + deleteResult[0].success);
                     if(mCallback != null && count != null) mCallback(count,deleteResult[0].success);
                 },function(error){
-                    console.log("_layer: " + error.stack); mCallback(count)}
+                    console.log("_layer: " + error.stack); mCallback(count,false)}
                 );
                 break;
             case localEnum.ADD:
@@ -186,7 +189,7 @@ var OfflineStore = function(/* Map */ map) {
                     console.log("addResult ObjectId: " + addResult[0].objectId + ", Success: " + addResult[0].success);
                     if(mCallback != null && count != null) mCallback(count,addResult[0].success);
                 },function(error){
-                    console.log("_layer: " + error.stack); mCallback(count)}
+                    console.log("_layer: " + error.stack); mCallback(count,false)}
                 );
                 break;
             case localEnum.UPDATE:
@@ -194,7 +197,7 @@ var OfflineStore = function(/* Map */ map) {
                     console.log("updateResult ObjectId: " + updateResult[0].objectId + ", Success: " + updateResult[0].success);
                     if(mCallback != null && count != null) mCallback(count,updateResult[0].success);
                 },function(error){
-                    console.log("_layer: " + error.stack); mCallback(count)}
+                    console.log("_layer: " + error.stack); mCallback(count,false)}
                 );
                 break;
         }
@@ -321,16 +324,31 @@ console.log(localStore.toString());
         if(graphicsArr != null && this.layers != null){
 
             var check = [];
-
+            var errCnt = 0;
             for(var i in graphicsArr){
                 var obj1 = graphicsArr[i];
                 var layer = this._getGraphicsLayerById(obj1.layer);
-                this._layerEditManager(obj1.graphic,layer,obj1.enumValue,this.enum(),i,function(/* Number */ num){
+                this._layerEditManager(obj1.graphic,layer,obj1.enumValue,this.enum(),i,function(/* Number */ num, /* boolean */ success){
                     check.push(num);
-                    if(check.length == graphicsArr.length){
-                        callback();
+
+                    if(success == true && check.length == graphicsArr.length){
+                        if(errCnt == 0){
+                            callback();
+                        }
+                        else{
+                            console.log("_handleRestablishedInternet: there were errors. LocalStore still available.");
+                            this._stopTimer();
+                        }
                     }
-                });
+                    else if(success == false && check.length == graphicsArr.length){
+                        console.log("_handleRestablishedInternet: error sending edit on " + graphicsArr[i].graphic.attributes);
+                        this._stopTimer();
+                    }
+                    else{
+                        errCnt++;
+                        console.log("_handleRestablishedInternet: error sending edit on " + graphicsArr[i].graphic.attributes);
+                    }
+                }.bind(this));
             }
         }
     }
@@ -518,7 +536,9 @@ console.log(localStore.toString());
 
             if(typeof Poller == "object"){
                 var internet = this._checkInternet();
-                if(this.isTimer != true && internet == false){
+                var arr = this._getLocalStorage();
+
+                if(this.isTimer != true && internet == true && arr != null){
                     this._startTimer(function(err){
                         alert("unable to start background timer. Offline edits won't work. " + err.stack);
                     });
@@ -526,15 +546,15 @@ console.log(localStore.toString());
                 else if(internet === null || typeof internet === "undefined"){
                     console.log("applyEdits: possible error.");
                 }
-                else{
-                    var arr = this._getLocalStorage();
-                    if(arr != null){
-                        this._handleRestablishedInternet(function(){
-                            this._stopTimer();
-                            this.deleteStore();
-                        }.bind(this));
-                    }
-                }
+//                else{
+//                    var arr = this._getLocalStorage();
+//                    if(arr != null){
+//                        this._handleRestablishedInternet(function(){
+//                            this._stopTimer();
+//                            this.deleteStore();
+//                        }.bind(this));
+//                    }
+//                }
             }
 
         }.bind(this));
