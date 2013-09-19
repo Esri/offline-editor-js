@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=7, IE=9, IE=10">
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no">
+    <title>Offline Editing Sample</title>
+
+    <link rel="stylesheet" href="http://js.arcgis.com/3.6/js/dojo/dijit/themes/claro/claro.css">
+    <link rel="stylesheet" href="http://js.arcgis.com/3.6/js/esri/css/esri.css">
+    <style>
+        html, body {
+            height: 100%;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+            overflow:hidden;
+        }
+        #header {
+            border:solid 2px #462d44;
+            background:#fff;
+            color:#444;
+            -moz-border-radius: 4px;
+            border-radius: 4px;
+            font-family: sans-serif;
+            font-size: 1.1em
+            padding-left:20px;
+        }
+        #map {
+            padding:1px;
+            border:solid 2px #444;
+            -moz-border-radius: 4px;
+            border-radius: 4px;
+        }
+        #rightPane {
+            border:none;
+            padding: 0;
+            width:228px;
+        }
+        .templatePicker {
+            border: solid 2px #444;
+        }
+    </style>
+
+    <script src="http://js.arcgis.com/3.6/"></script>
+    <script src="./scripts/OfflineStore.js"></script>
+    <script>
+        var map;
+        var offlineStore;
+        require([
+            "esri/map",
+            "esri/geometry/Point",
+            "esri/geometry/Polygon",
+            "esri/geometry/Polyline",
+            "esri/toolbars/draw",
+            "esri/toolbars/edit",
+            "esri/graphic",
+            "esri/config",
+
+            "esri/layers/FeatureLayer",
+
+            "esri/symbols/SimpleMarkerSymbol",
+            "esri/symbols/SimpleLineSymbol",
+            "esri/symbols/SimpleFillSymbol",
+
+            "esri/dijit/editing/TemplatePicker",
+
+            "dojo/_base/array",
+            "dojo/_base/event",
+            "dojo/_base/lang",
+            "dojo/parser",
+            "dijit/registry",
+
+            "dijit/layout/BorderContainer", "dijit/layout/ContentPane",
+            "dijit/form/Button", "dojo/domReady!"
+        ], function(
+                Map, Point, Polygon, Polyline, Draw, Edit, Graphic, esriConfig,
+                FeatureLayer,
+                SimpleMarkerSymbol, SimpleLineSymbol, SimpleFillSymbol,
+                TemplatePicker,
+                arrayUtils, event, lang, parser, registry
+                ) {
+            parser.parse();
+
+            // refer to "Using the Proxy Page" for more information:  https://developers.arcgis.com/en/javascript/jshelp/ags_proxy.html
+            esriConfig.defaults.io.proxyUrl = "/proxy";
+
+            // This service is for development and testing purposes only. We recommend that you create your own geometry service for use within your applications.
+            esriConfig.defaults.geometryService = new esri.tasks.GeometryService("http://tasks.arcgisonline.com/ArcGIS/rest/services/Geometry/GeometryServer");
+
+            map = new Map("map", {
+                basemap: "streets",
+                center: [-83.244, 42.581],
+                zoom: 15
+            });
+
+            map.on("layers-add-result", initEditing);
+
+            var landusePointLayer = new FeatureLayer("http://sampleserver6.arcgisonline.com/arcgis/rest/services/Military/FeatureServer/6", {
+                mode: FeatureLayer.MODE_SNAPSHOT,
+                outFields: ["*"]
+            });
+            var landuseLineLayer = new FeatureLayer("http://sampleserver6.arcgisonline.com/arcgis/rest/services/Military/FeatureServer/8", {
+                mode: FeatureLayer.MODE_SNAPSHOT,
+                outFields: ["*"]
+            });
+            var landusePolygonLayer = new FeatureLayer("http://sampleserver6.arcgisonline.com/arcgis/rest/services/Military/FeatureServer/9", {
+                mode: FeatureLayer.MODE_SNAPSHOT,
+                outFields: ["*"]
+            });
+
+            map.addLayers([landusePointLayer, landuseLineLayer, landusePolygonLayer]);
+
+
+            function initEditing(evt) {
+
+                console.log("initEditing", evt);
+                // var map = this;
+                var currentLayer = null;
+                var layers = arrayUtils.map(evt.layers, function(result) {
+                    return result.layer;
+                });
+                console.log("layers", layers);
+
+//////////
+                var yeck = map.graphicsLayerIds;
+                var blah = map.getLayer(yeck[1]);
+                offlineStore = new OfflineStore(map);
+                console.log("Storage used :  " + offlineStore.getlocalStorageUsed());
+
+//////////
+
+                var editToolbar = new Edit(map);
+
+                editToolbar.on("deactivate", function(evt) {
+                    offlineStore.applyEdits(evt.graphic,currentLayer,offlineStore.enum().UPDATE);
+                });
+
+                arrayUtils.forEach(layers, function(layer) {
+                    var editingEnabled = false;
+                    layer.on("dbl-click", function(evt) {
+                        event.stop(evt);
+                        if (editingEnabled === false) {
+                            editingEnabled = true;
+                            editToolbar.activate(Edit.EDIT_VERTICES , evt.graphic);
+                        } else {
+                            currentLayer = this;
+                            editToolbar.deactivate();
+                            editingEnabled = false;
+                        }
+                    });
+
+                    layer.on("click", function(evt) {
+                        event.stop(evt);
+                        if (evt.ctrlKey === true || evt.metaKey === true) {  //delete feature if ctrl key is depressed
+                            try{
+                                offlineStore.applyEdits(evt.graphic,layer,offlineStore.enum().DELETE);
+                            }
+                            catch(err){
+                                console.log("error " + err.stack);
+                            }
+
+                            //layer.applyEdits(null,null,[evt.graphic]);
+                            currentLayer = this;
+                            editToolbar.deactivate();
+                            editingEnabled=false;
+                        }
+                    });
+                });
+
+                var templatePicker = new TemplatePicker({
+                    featureLayers: layers,
+                    rows: "auto",
+                    columns: 2,
+                    grouping: true,
+                    style: "height: auto; overflow: auto;"
+                }, "templatePickerDiv");
+
+                templatePicker.startup();
+
+                var drawToolbar = new Draw(map);
+
+                var selectedTemplate;
+                templatePicker.on("selection-change", function() {
+                    if( templatePicker.getSelected() ) {
+                        selectedTemplate = templatePicker.getSelected();
+                    }
+                    switch (selectedTemplate.featureLayer.geometryType) {
+                        case "esriGeometryPoint":
+                            drawToolbar.activate(Draw.POINT);
+                            break;
+                        case "esriGeometryPolyline":
+                            drawToolbar.activate(Draw.POLYLINE);
+                            break;
+                        case "esriGeometryPolygon":
+                            drawToolbar.activate(Draw.POLYGON);
+                            break;
+                    }
+                });
+
+                drawToolbar.on("draw-end", function(evt) {
+                    drawToolbar.deactivate();
+                    editToolbar.deactivate();
+                    var newAttributes = lang.mixin({}, selectedTemplate.template.prototype.attributes);
+                    var newGraphic = new Graphic(evt.geometry, null, newAttributes);
+                    //selectedTemplate.featureLayer.applyEdits([newGraphic], null, null);
+                    offlineStore.applyEdits(newGraphic,selectedTemplate.featureLayer,offlineStore.enum().ADD);
+                });
+            }
+
+        });
+
+        function getLocalStorage(){
+            var localStore = offlineStore._getLocalStorage();
+            localStore == null ? console.log("localStorage = " + null) : console.log("localStorage = " + localStore.toString());
+        }
+
+        function getGraphicsLayers(){
+            var layer1 = offlineStore._getGraphicsLayerById(6);
+            var layer2 = offlineStore._getGraphicsLayerById(8);
+            var layer3 = offlineStore._getGraphicsLayerById(9);
+            console.log("layers retrieved");
+        }
+
+        function handleRestablishedInternet(){
+            offlineStore._handleRestablishedInternet(function(){
+                offlineStore._stopTimer();
+                offlineStore.deleteStore();
+            });
+        }
+    </script>
+</head>
+<body class="claro">
+<div data-dojo-type="dijit/layout/BorderContainer" data-dojo-props="gutters:true, design:'headline'" style="width:100%;height:100%;">
+    <div data-dojo-type="dijit/layout/ContentPane"  id="header" data-dojo-props="region:'top'">Use ctrl or cmd + click on graphic to delete.  Double click on graphic to edit vertices. </div>
+    <div id="map" data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:'center'"></div>
+    <div id="rightPane" data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:'right'">
+        <div id="templatePickerDiv"></div>
+    </div>
+    <div data-dojo-type="dijit/layout/ContentPane"  id="footer" data-dojo-props="region:'bottom'">
+        <button style="background-color: red" onclick="offlineStore.deleteStore()">Delete localStorage</button>
+        <button style="background-color: red" onclick="getLocalStorage()" >Get localStorage</button>
+        <button style="background-color: red" onclick="getGraphicsLayers()" >Get Graphics Layers</button>
+        <button style="background-color: red" onclick="offlineStore._stopTimer()" >Stop Timer</button>
+        <button style="background-color: red" onclick="offlineStore._startTimer()" >Start Timer</button>
+        <button style="background-color: red" onclick="handleRestablishedInternet()" >Test Restablish Internet</button>
+    </div>
+</div>
+</body>
+</html>
