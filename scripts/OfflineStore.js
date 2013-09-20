@@ -88,7 +88,7 @@ var OfflineStore = function(/* Map */ map) {
             return;
         }
 
-        if(internet === true){
+        if(internet === false){
             this._addToLocalStore(graphic,layer,enumValue);
             if(this.isTimer == null){
                 this._startTimer(function(err){
@@ -538,7 +538,7 @@ console.log(localStore.toString());
                 var internet = this._checkInternet();
                 var arr = this._getLocalStorage();
 
-                if(this.isTimer != true && internet == true && arr != null){
+                if(this.isTimer != true && internet == false && arr != null){
                     this._startTimer(function(err){
                         alert("unable to start background timer. Offline edits won't work. " + err.stack);
                     });
