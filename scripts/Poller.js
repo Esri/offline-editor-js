@@ -56,7 +56,7 @@ Poller._handleRequest = function(){
             this.callback( true );
         }
         else{
-            this.callback(undefined);
+            this.callback(false);
         }
     }
 }

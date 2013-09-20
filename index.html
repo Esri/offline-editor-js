@@ -47,6 +47,8 @@
     <script>
         var map;
         var offlineStore;
+        var vertices;
+        var updateFlag = false;
         require([
             "esri/map",
             "esri/geometry/Point",
@@ -123,17 +125,28 @@
                 console.log("layers", layers);
 
 //////////
-                var yeck = map.graphicsLayerIds;
-                var blah = map.getLayer(yeck[1]);
                 offlineStore = new OfflineStore(map);
                 console.log("Storage used :  " + offlineStore.getlocalStorageUsed());
-
 //////////
 
                 var editToolbar = new Edit(map);
 
                 editToolbar.on("deactivate", function(evt) {
-                    offlineStore.applyEdits(evt.graphic,currentLayer,offlineStore.enum().UPDATE);
+                    if(updateFlag == true){
+                        offlineStore.applyEdits(vertices.graphic,vertices.layer,offlineStore.enum().UPDATE);
+                        updateFlag = false;
+                    }
+                    else{
+                        offlineStore.applyEdits(evt.graphic,currentLayer,offlineStore.enum().UPDATE);
+                    }
+                });
+
+                map.on("click", function(evt){
+                    var state = editToolbar.getCurrentState();
+                    if(state.isModified){
+                        updateFlag = true;
+                        editToolbar.deactivate();
+                    }
                 });
 
                 arrayUtils.forEach(layers, function(layer) {
@@ -142,6 +155,7 @@
                         event.stop(evt);
                         if (editingEnabled === false) {
                             editingEnabled = true;
+                            vertices = new offlineStore.verticesObject(evt.graphic,layer);
                             editToolbar.activate(Edit.EDIT_VERTICES , evt.graphic);
                         } else {
                             currentLayer = this;
@@ -225,8 +239,12 @@
         function handleRestablishedInternet(){
             offlineStore._handleRestablishedInternet(function(){
                 offlineStore._stopTimer();
-                offlineStore.deleteStore();
+                offlineStore._deleteStore();
             });
+        }
+
+        function getIndex(){
+            console.log("index: " + offlineStore.getLocalStoreIndex());
         }
     </script>
 </head>
@@ -238,11 +256,13 @@
         <div id="templatePickerDiv"></div>
     </div>
     <div data-dojo-type="dijit/layout/ContentPane"  id="footer" data-dojo-props="region:'bottom'">
-        <button style="background-color: red" onclick="offlineStore.deleteStore()">Delete localStorage</button>
+        <button style="background-color: red" onclick="offlineStore._deleteStore()">Delete localStorage</button>
         <button style="background-color: red" onclick="getLocalStorage()" >Get localStorage</button>
         <button style="background-color: red" onclick="getGraphicsLayers()" >Get Graphics Layers</button>
         <button style="background-color: red" onclick="offlineStore._stopTimer()" >Stop Timer</button>
         <button style="background-color: red" onclick="offlineStore._startTimer()" >Start Timer</button>
+        <button style="background-color: red" onclick="getIndex()" >Get Index</button>
+        <button style="background-color: red" onclick="offlineStore._deleteLocalStoreIndex()" >Delete Index</button>
         <button style="background-color: red" onclick="handleRestablishedInternet()" >Test Restablish Internet</button>
     </div>
 </div>

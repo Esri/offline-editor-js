@@ -22,6 +22,7 @@ var OfflineStore = function(/* Map */ map) {
     this.isTimer = null;
     this.layers = [];  //An array of all feature layers
     this.map = map;
+    this.map.offlineStore = this;
 
     /**
      * Public ENUMs (Constants)
@@ -48,9 +49,10 @@ var OfflineStore = function(/* Map */ map) {
      */
     this._localEnum = (function(){
         var values = {
-            VALIDATION_URL : "http://localhost/test/test.html", /* Change this to a remote server for testing! */
+            VALIDATION_URL : "http://localhost/offline/test.html", /* Change this to a remote server for testing! */
             TIMER_URL : "./scripts/Timer.js",                   /* For use within a child process only */
             STORAGE_KEY : "___EsriOfflineStore___",             /* Unique key for setting/retrieving values from localStorage */
+            INDEX_KEY : "___EsriOfflineIndex___",               /* Index for tracking each action (add, delete, update) in local store */
             VALIDATION_TIMEOUT : 10 * 1000,                     /* HTTP timeout when trying to validate internet on/off */
             LOCAL_STORAGE_MAX_LIMIT : 4.75 /* MB */,            /* Most browsers offer default storage of ~5MB */
             TOKEN : "|||",                                      /* A unique token for tokenizing stringified localStorage values */
@@ -62,6 +64,16 @@ var OfflineStore = function(/* Map */ map) {
 
         return values;
     });
+
+    /**
+     * Model for handle vertices editing
+     * @param graphic
+     * @param layer
+     */
+    this.verticesObject = function(/* Graphic */ graphic, /* FeatureLayer */ layer){
+        this.graphic = graphic;
+        this.layer = layer;
+    }
 
     //////////////////////////
     ///
@@ -92,11 +104,11 @@ var OfflineStore = function(/* Map */ map) {
             this._addToLocalStore(graphic,layer,enumValue);
             if(this.isTimer == null){
                 this._startTimer(function(err){
-                    alert("unable to start background timer. Offline edits won't work. " + err.stack);
+                    throw ("unable to start background timer. Offline edits won't work. " + err.stack);
                 });
             }
         }
-        else if(internet === null || typeof internet === "undefined"){
+        else if(internet == null || typeof internet == "undefined"){
             console.log("applyEdits: possible error.");
         }
         else{
@@ -130,12 +142,13 @@ var OfflineStore = function(/* Map */ map) {
     }
 
     /**
-     * Delete all items stored by this library using it's unique key.
-     * Does NOT delete anything else from localStorage.
+     * Provides a list of all localStorage items that have been either
+     * added, deleted or updated.
+     * @returns {Array}
      */
-    this.deleteStore = function(){
-        console.log("deleting localStore");
-        localStorage.removeItem(this._localEnum().STORAGE_KEY);
+    this.getLocalStoreIndex = function(){
+        var localStore = localStorage.getItem(this._localEnum().INDEX_KEY);
+        return localStore != null ? localStore.split(this._localEnum().TOKEN) : null;
     }
 
     /**
@@ -179,28 +192,57 @@ var OfflineStore = function(/* Map */ map) {
             case localEnum.DELETE:
                 layer.applyEdits(null,null,[graphic],function(addResult,updateResult,deleteResult){
                     console.log("deleteResult ObjectId: " + deleteResult[0].objectId + ", Success: " + deleteResult[0].success);
-                    if(mCallback != null && count != null) mCallback(count,deleteResult[0].success);
-                },function(error){
-                    console.log("_layer: " + error.stack); mCallback(count,false)}
+                    if(mCallback != null && count != null) {
+                        mCallback(count,deleteResult[0].success);
+                    }
+                    else{
+                        this._addItemLocalStoreIndex(deleteResult[0].objectId,value,true);
+                    }
+
+                }.bind(this),
+                    function(error){
+                        console.log("_layer: " + error.stack); mCallback(count,false);
+                        this._addItemLocalStoreIndex(deleteResult[0].objectId,value,false);
+                    }.bind(this)
                 );
                 break;
             case localEnum.ADD:
                 layer.applyEdits([graphic],null,null,function(addResult,updateResult,deleteResult){
                     console.log("addResult ObjectId: " + addResult[0].objectId + ", Success: " + addResult[0].success);
-                    if(mCallback != null && count != null) mCallback(count,addResult[0].success);
-                },function(error){
-                    console.log("_layer: " + error.stack); mCallback(count,false)}
+                    if(mCallback != null && count != null) {
+                        mCallback(count,deleteResult[0].success);
+                    }
+                    else{
+                        this._addItemLocalStoreIndex(addResult[0].objectId,value,true);
+                    }
+                }.bind(this),
+                    function(error){
+                        console.log("_layer: " + error.stack); mCallback(count,false);
+                        this._addItemLocalStoreIndex(addResult[0].objectId,value,false);
+                    }.bind(this)
                 );
                 break;
             case localEnum.UPDATE:
                 layer.applyEdits(null,[graphic],null,function(addResult,updateResult,deleteResult){
                     console.log("updateResult ObjectId: " + updateResult[0].objectId + ", Success: " + updateResult[0].success);
-                    if(mCallback != null && count != null) mCallback(count,updateResult[0].success);
-                },function(error){
-                    console.log("_layer: " + error.stack); mCallback(count,false)}
+                    if(mCallback != null && count != null) {
+                        mCallback(count,deleteResult[0].success);
+                    }
+                    else{
+                        this._addItemLocalStoreIndex(updateResult[0].objectId,value,true);
+                    }
+                }.bind(this),
+                    function(error){
+                        console.log("_layer: " + error.stack); mCallback(count,false)
+                        this._addItemLocalStoreIndex(updateResult[0].objectId,value,false);
+                    }.bind(this)
                 );
                 break;
         }
+    }
+
+    this._layerCallbackHandler = function(callback,count,objectid){
+
     }
 
     /**
@@ -209,10 +251,6 @@ var OfflineStore = function(/* Map */ map) {
      * @private
      */
     this._updateExistingLocalStore = function(/* Geometry */ geom){
-
-//        if(geom.hasOwnProperty("geometry")){
-//            geom = geom.geometry;
-//        }
 
         var localStore = this._getLocalStorage();
         var split = localStore.split(this._localEnum().TOKEN);
@@ -288,7 +326,7 @@ console.log(localStore.toString());
                             if(arr != null){
                                 this._handleRestablishedInternet(function(){
                                     this._stopTimer();
-                                    this.deleteStore();
+                                    this._deleteStore();
                                 }.bind(this));
                             }
                         }
@@ -331,8 +369,11 @@ console.log(localStore.toString());
                 this._layerEditManager(obj1.graphic,layer,obj1.enumValue,this.enum(),i,function(/* Number */ num, /* boolean */ success){
                     check.push(num);
 
+                    var id = obj1.graphic.attributes.objectid;
+
                     if(success == true && check.length == graphicsArr.length){
                         if(errCnt == 0){
+                            this._addItemLocalStoreIndex(id,obj1.enumValue,true);
                             callback();
                         }
                         else{
@@ -340,13 +381,18 @@ console.log(localStore.toString());
                             this._stopTimer();
                         }
                     }
+                    else if(success == true && check.length < graphicsArr.length){
+                        this._addItemLocalStoreIndex(id,obj1.enumValue,true);
+                    }
                     else if(success == false && check.length == graphicsArr.length){
-                        console.log("_handleRestablishedInternet: error sending edit on " + graphicsArr[i].graphic.attributes);
+                        this._addItemLocalStoreIndex(id,obj1.enumValue,false);
+                        console.log("_handleRestablishedInternet: error sending edit on " + id);
                         this._stopTimer();
                     }
-                    else{
+                    else if(success == false && check.length < graphicsArr.length){
+                        this._addItemLocalStoreIndex(id,obj1.enumValue,false);
                         errCnt++;
-                        console.log("_handleRestablishedInternet: error sending edit on " + graphicsArr[i].graphic.attributes);
+                        console.log("_handleRestablishedInternet: error sending edit on " + id);
                     }
                 }.bind(this));
             }
@@ -363,6 +409,20 @@ console.log(localStore.toString());
         }
     }
 
+    /**
+     * Delete all items stored by this library using its unique key.
+     * Does NOT delete anything else from localStorage.
+     */
+    this._deleteStore = function(){
+        console.log("deleting localStore");
+        localStorage.removeItem(this._localEnum().STORAGE_KEY);
+    }
+
+    /**
+     * Returns the raw local storage object.
+     * @returns {*}
+     * @private
+     */
     this._getLocalStorage = function(){
         return localStorage.getItem(this._localEnum().STORAGE_KEY);
     }
@@ -382,6 +442,65 @@ console.log(localStore.toString());
         }
         catch(err){
             console.log("_setItemInLocalStore(): " + err.stack);
+            success = false;
+        }
+
+        return success;
+
+    }
+
+    this._deleteLocalStoreIndex = function(){
+        console.log("deleting localStoreIndex");
+        localStorage.removeItem(this._localEnum().INDEX_KEY);
+    }
+
+    /**
+     * Validates if an item has been deleted.
+     * @param objectId
+     * @returns {boolean}
+     * @private
+     */
+    this._getItemLocalStoreIndex = function(/* String */ objectId){
+        var localStore = this._getLocalStorageIndex();
+        var split = localStore.split(this._localEnum().TOKEN);
+        for(var property in split){
+            var item = JSON.parse(split[property]);
+            if(typeof item !== "undefined" || item.length > 0 || item != null){
+                if(item.hasOwnProperty("id") && item.id == objectId){
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Add item to index *if* if was successfully deleted.
+     * @param objectId
+     * @param type enum
+     * @param success
+     * @returns {boolean}
+     * @private
+     */
+    this._addItemLocalStoreIndex = function(/* String */ objectId, /* String */ type, /* boolean */ success){
+        var index = new this._indexObject(objectId,type,success) ;
+        var mIndex = JSON.stringify(index);
+
+        var localStore = this.getLocalStoreIndex();
+
+        try{
+            if(localStore == null || typeof localStore == "undefined"){
+                localStorage.setItem(this._localEnum().INDEX_KEY,mIndex + this._localEnum().TOKEN);
+            }
+            else{
+                localStorage.setItem(this._localEnum().INDEX_KEY,localStore + mIndex + this._localEnum().TOKEN);
+            }
+
+            success = true;
+        }
+        catch(err){
+            console.log("_addItemLocalStoreIndex(): " + err.stack);
             success = false;
         }
 
@@ -458,6 +577,12 @@ console.log(localStore.toString());
         return JSON.stringify(json) + this._localEnum().TOKEN;
     }
 
+    //////////////////////////
+    ///
+    /// INTERNAL Models
+    ///
+    //////////////////////////
+
     /**
      * Model for storing serialized graphics
      * @private
@@ -468,6 +593,22 @@ console.log(localStore.toString());
         this.geometry = null;
         this.attributes = null;
     }
+
+    /**
+     * Model for storing serialized index info.
+     * @private
+     */
+    this._indexObject = function(/* String */ id, /* String */ type, /* boolean */ success){
+        this.id = id;
+        this.type = type;
+        this.success = success;
+    }
+
+    //////////////////////////
+    ///
+    /// INITIALISE
+    ///
+    //////////////////////////
 
     /**
      * Load scripts
@@ -512,7 +653,12 @@ console.log(localStore.toString());
                 var layer = map.getLayer(layerIds[i]);
 
                 if(layer.hasOwnProperty("type") && layer.type.toLowerCase() == "feature layer"){
-                    this.layers.push(layer);
+                    if(layer.isEditable() == true){
+                        this.layers.push(layer);
+                    }
+                }
+                else{
+                    throw ("Layer not editable: " + layer.url );
                 }
             }
         }
@@ -540,10 +686,10 @@ console.log(localStore.toString());
 
                 if(this.isTimer != true && internet == false && arr != null){
                     this._startTimer(function(err){
-                        alert("unable to start background timer. Offline edits won't work. " + err.stack);
+                        throw ("unable to start background timer. Offline edits won't work. " + err.stack);
                     });
                 }
-                else if(internet === null || typeof internet === "undefined"){
+                else if(internet == null || typeof internet == "undefined"){
                     console.log("applyEdits: possible error.");
                 }
 //                else{
@@ -551,7 +697,7 @@ console.log(localStore.toString());
 //                    if(arr != null){
 //                        this._handleRestablishedInternet(function(){
 //                            this._stopTimer();
-//                            this.deleteStore();
+//                            this._deleteStore();
 //                        }.bind(this));
 //                    }
 //                }
@@ -560,4 +706,17 @@ console.log(localStore.toString());
         }.bind(this));
     }.bind(this)()
 
+    /**
+     * Attempt to stop timer and reduce chances of corrupting or duplicating data.
+     * TO-DO some errors like those in callbacks may not be trapped by this!
+     * @param msg
+     * @param url
+     * @param line
+     * @returns {boolean}
+     */
+    window.onerror = function (msg,url,line){
+        console.log(msg + ", " + url + ":" + line);
+        this.map.offlineStore._stopTimer();
+        return true;
+    }
 };
