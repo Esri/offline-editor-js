@@ -20,10 +20,10 @@ The library provides a constructor that can simply be used in place of the tradi
 
 ##API
 
-####OfflineStore(*/\* Map \*/* map)
+####OfflineStore(/\* Map \*/ map)
 * Constructor. Requires a reference to an ArcGIS API for JavaScript Map.
 
-####applyEdits(/*\* Graphic \*/ graphic,/\* FeatureLayer \*/ layer, /\* String \*/ enumValue*)
+####applyEdits(/\* Graphic \*/ graphic,/\* FeatureLayer \*/ layer, /\* String \*/ enumValue)
 * Method.
 
 ####getStore()
@@ -37,14 +37,14 @@ The library provides a constructor that can simply be used in place of the tradi
 ####getLocalStorageUsed()
 * Returns the total storage used for the applications domain in MBs.
 
-####enum
+####enum()
 * Constant. Provides an immutable reference value for "add","update" and "delete". Example usage:
 
 		offlineStore.enum().UPDATE
 
 
 
-####verticesObject(*/\* Graphic \*/ graphic, /\* FeatureLayer \*/ layer*)
+####verticesObject(/\* Graphic \*/ graphic, /\* FeatureLayer \*/ layer)
 * Helper method for use with vertices editing. Example usage:
 
 		editToolbar.on("deactivate", function(evt) {
