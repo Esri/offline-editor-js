@@ -22,7 +22,13 @@ var OfflineStore = function(/* Map */ map) {
     this.isTimer = null;
     this.layers = [];  //An array of all feature layers
     this.map = map;
-    this.map.offlineStore = this;
+    if(map != null) {
+        this.map.offlineStore = this
+    }
+    else{
+        console.log("map is null")
+        throw("map is null");
+    }
 
     /**
      * Public ENUMs (Constants)
@@ -50,15 +56,15 @@ var OfflineStore = function(/* Map */ map) {
     this._localEnum = (function(){
         var values = {
             VALIDATION_URL : "http://localhost/offline/test.html", /* Change this to a remote server for testing! */
-            TIMER_URL : "./scripts/Timer.js",                   /* For use within a child process only */
+            TIMER_URL : "./src/Timer.js",                   /* For use within a child process only */
             STORAGE_KEY : "___EsriOfflineStore___",             /* Unique key for setting/retrieving values from localStorage */
             INDEX_KEY : "___EsriOfflineIndex___",               /* Index for tracking each action (add, delete, update) in local store */
             VALIDATION_TIMEOUT : 10 * 1000,                     /* HTTP timeout when trying to validate internet on/off */
             LOCAL_STORAGE_MAX_LIMIT : 4.75 /* MB */,            /* Most browsers offer default storage of ~5MB */
             TOKEN : "|||",                                      /* A unique token for tokenizing stringified localStorage values */
             REQUIRED_LIBS : [
-                "./scripts/Hydrate.js",
-                "./scripts/Poller.js"
+                "./src/Hydrate.js",
+                "./src/Poller.js"
             ]
         }
 
@@ -415,7 +421,14 @@ console.log(localStore.toString());
      */
     this._deleteStore = function(){
         console.log("deleting localStore");
-        localStorage.removeItem(this._localEnum().STORAGE_KEY);
+        try{
+            localStorage.removeItem(this._localEnum().STORAGE_KEY);
+        }
+        catch(err){
+            return err.stack;
+        }
+
+        return true;
     }
 
     /**
@@ -451,7 +464,14 @@ console.log(localStore.toString());
 
     this._deleteLocalStoreIndex = function(){
         console.log("deleting localStoreIndex");
-        localStorage.removeItem(this._localEnum().INDEX_KEY);
+        try{
+            localStorage.removeItem(this._localEnum().INDEX_KEY);
+        }
+        catch(err){
+            return err.stack;
+        }
+
+        return true;
     }
 
     /**
@@ -611,7 +631,7 @@ console.log(localStore.toString());
     //////////////////////////
 
     /**
-     * Load scripts
+     * Load src
      * TO-DO: Needs to be made AMD compliant!
      * @param urlArray
      * @param callback
@@ -668,7 +688,7 @@ console.log(localStore.toString());
     }
 
     /**
-     * Initializes the OfflineStore library. Loads required scripts. Kicks off timer if
+     * Initializes the OfflineStore library. Loads required src. Kicks off timer if
      * localStore is not empty.
      * @see Required script sare set in _localEnum.
      * @type {*}
