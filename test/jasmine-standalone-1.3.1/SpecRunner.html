@@ -24,9 +24,20 @@
         var map;
         var offlineStore;
         var vertices;
+        var landusePointLayer;
+        var point, line, polygon;
+        var simplePtGraphic, simplePolygonGraphic, simpleLineGraphic;
+        var complexPtGraphic, complexPolygonGraphic, complexLineGraphic;
         var updateFlag = false;
 
-        require(["esri/map","esri/layers/FeatureLayer", "dojo/domReady!"], function(Map,FeatureLayer) {
+        require([
+            "esri/map",
+            "esri/geometry/Point",
+            "esri/geometry/Polygon",
+            "esri/geometry/Polyline",
+            "esri/layers/FeatureLayer",
+            "dojo/domReady!"],
+                function(Map,Point,Polygon,Polyline,FeatureLayer) {
 
             map = new Map("map", {
                 basemap: "topo",
@@ -37,19 +48,74 @@
 
             map.on("layer-add-result", test);
 
-
-            var landusePointLayer = new FeatureLayer("http://sampleserver6.arcgisonline.com/arcgis/rest/services/Military/FeatureServer/6", {
+            landusePointLayer = new FeatureLayer("http://sampleserver6.arcgisonline.com/arcgis/rest/services/Military/FeatureServer/6", {
                 mode: FeatureLayer.MODE_SNAPSHOT,
                 outFields: ["*"]
             });
 
-            map.addLayer(landusePointLayer);
+            landusePointLayer.on("error",function(evt){
+                throw("Error loading layer: " + evt.toString());
+            })
 
+            map.addLayer(landusePointLayer);
 
         });
 
+        function initGraphics(){
+
+            try{
+                var wkid = map.spatialReference;
+
+                var simplePtGeom = new esri.geometry.Point(11111,-111111,map.spatialReference);
+                simplePtGraphic = new esri.Graphic(simplePtGeom);
+
+                var simpleLineGeom = {geometry:{"paths":[[[-91.40625,6.328125],[6.328125,19.3359375]]],
+                    "spatialReference":{"wkid":wkid}}};
+
+                simpleLineGraphic = new esri.Graphic(simpleLineGeom);
+
+                var simplePolygonGeom = {"geometry":{"rings":[[[-115.3125,37.96875],[-111.4453125,37.96875],
+                    [-99.84375,36.2109375],[-99.84375,23.90625],[-116.015625,24.609375],
+                    [-115.3125,37.96875]]],"spatialReference":{"wkid":wkid}}};
+
+                simplePolygonGraphic = new esri.Graphic(simplePolygonGeom);
+
+                var complexLineGeom ={geometry:{"paths":[[[-91.40625,6.328125],[6.328125,19.3359375]]],
+                    "spatialReference":{"wkid":wkid}},
+                    "symbol":{"color":[0,0,0,255],"width":1,"type":"esriSLS","style":"esriSLSSolid"}};
+                complexLineGraphic = new esri.Graphic(complexLineGeom);
+
+                var complexPolygonGeom = {"geometry":{"rings":[[[-115.312,37.96875],[-111.4453125,37.96875],
+                    [-99.84375,36.2109375],[-99.84375,23.90625],[-116.015625,24.609375],
+                    [-115.3125,37.96875]]],"spatialReference":{"wkid":wkid}},
+                    "symbol":{"color":[0,0,0,64],"outline":{"color":[0,0,0,255],
+                        "width":1,"type":"esriSLS","style":"esriSLSSolid"},
+                        "type":"esriSFS","style":"esriSFSSolid"}};
+
+                complexPolygonGraphic = new esri.Graphic(complexPolygonGeom);
+
+
+                var complexPtGeom = {"geometry":{"x":-104.4140625,"y":69.2578125,
+                    "spatialReference":{"wkid":wkid}},"attributes":{"XCoord":-104.4140625,
+                    "YCoord":69.2578125,"Plant":"Mesa Mint"},"symbol":{"color":[255,0,0,128],
+                    "size":12,"angle":0,"xoffset":0,"yoffset":0,"type":"esriSMS",
+                    "style":"esriSMSSquare","outline":{"color":[0,0,0,255],"width":1,
+                        "type":"esriSLS","style":"esriSLSSolid"}},
+                    "infoTemplate":{"title":"Vernal Pool Locations","content":"Latitude: ${YCoord} <br/>Longitude: ${XCoord} <br/> Plant Name:${Plant}"}
+                };
+
+                complexPtGraphic = new esri.Graphic(complexPtGeom);
+            }
+            catch(err){
+                throw("Unable to initialize graphics: " + err.stack);
+            }
+        }
+
         function test(evt){
+
             if(evt.layer.hasOwnProperty("type") && evt.layer.type == "Feature Layer"){
+
+                initGraphics();
 
                 offlineStore = new OfflineStore(map);
 
@@ -83,6 +149,6 @@
 </head>
 
 <body>
-<div id="map" style=" position: absolute; bottom: 0; left: 0; height:30px; width: 800px;"></div>
+<div id="map" style=" position: absolute; bottom: 0; right: 0; height:1px; width: 100px;"></div>
 </body>
 </html>

@@ -202,13 +202,13 @@ var OfflineStore = function(/* Map */ map) {
                         mCallback(count,deleteResult[0].success);
                     }
                     else{
-                        this._addItemLocalStoreIndex(deleteResult[0].objectId,value,true);
+                        this._setItemLocalStoreIndex(deleteResult[0].objectId,value,true);
                     }
 
                 }.bind(this),
                     function(error){
                         console.log("_layer: " + error.stack); mCallback(count,false);
-                        this._addItemLocalStoreIndex(deleteResult[0].objectId,value,false);
+                        this._setItemLocalStoreIndex(deleteResult[0].objectId,value,false);
                     }.bind(this)
                 );
                 break;
@@ -219,12 +219,12 @@ var OfflineStore = function(/* Map */ map) {
                         mCallback(count,deleteResult[0].success);
                     }
                     else{
-                        this._addItemLocalStoreIndex(addResult[0].objectId,value,true);
+                        this._setItemLocalStoreIndex(addResult[0].objectId,value,true);
                     }
                 }.bind(this),
                     function(error){
                         console.log("_layer: " + error.stack); mCallback(count,false);
-                        this._addItemLocalStoreIndex(addResult[0].objectId,value,false);
+                        this._setItemLocalStoreIndex(addResult[0].objectId,value,false);
                     }.bind(this)
                 );
                 break;
@@ -235,12 +235,12 @@ var OfflineStore = function(/* Map */ map) {
                         mCallback(count,deleteResult[0].success);
                     }
                     else{
-                        this._addItemLocalStoreIndex(updateResult[0].objectId,value,true);
+                        this._setItemLocalStoreIndex(updateResult[0].objectId,value,true);
                     }
                 }.bind(this),
                     function(error){
                         console.log("_layer: " + error.stack); mCallback(count,false)
-                        this._addItemLocalStoreIndex(updateResult[0].objectId,value,false);
+                        this._setItemLocalStoreIndex(updateResult[0].objectId,value,false);
                     }.bind(this)
                 );
                 break;
@@ -379,7 +379,7 @@ console.log(localStore.toString());
 
                     if(success == true && check.length == graphicsArr.length){
                         if(errCnt == 0){
-                            this._addItemLocalStoreIndex(id,obj1.enumValue,true);
+                            this._setItemLocalStoreIndex(id,obj1.enumValue,true);
                             callback();
                         }
                         else{
@@ -388,15 +388,15 @@ console.log(localStore.toString());
                         }
                     }
                     else if(success == true && check.length < graphicsArr.length){
-                        this._addItemLocalStoreIndex(id,obj1.enumValue,true);
+                        this._setItemLocalStoreIndex(id,obj1.enumValue,true);
                     }
                     else if(success == false && check.length == graphicsArr.length){
-                        this._addItemLocalStoreIndex(id,obj1.enumValue,false);
+                        this._setItemLocalStoreIndex(id,obj1.enumValue,false);
                         console.log("_handleRestablishedInternet: error sending edit on " + id);
                         this._stopTimer();
                     }
                     else if(success == false && check.length < graphicsArr.length){
-                        this._addItemLocalStoreIndex(id,obj1.enumValue,false);
+                        this._setItemLocalStoreIndex(id,obj1.enumValue,false);
                         errCnt++;
                         console.log("_handleRestablishedInternet: error sending edit on " + id);
                     }
@@ -503,7 +503,7 @@ console.log(localStore.toString());
      * @returns {boolean}
      * @private
      */
-    this._addItemLocalStoreIndex = function(/* String */ objectId, /* String */ type, /* boolean */ success){
+    this._setItemLocalStoreIndex = function(/* String */ objectId, /* String */ type, /* boolean */ success){
         var index = new this._indexObject(objectId,type,success) ;
         var mIndex = JSON.stringify(index);
 
@@ -520,7 +520,7 @@ console.log(localStore.toString());
             success = true;
         }
         catch(err){
-            console.log("_addItemLocalStoreIndex(): " + err.stack);
+            console.log("_setItemLocalStoreIndex(): " + err.stack);
             success = false;
         }
 
