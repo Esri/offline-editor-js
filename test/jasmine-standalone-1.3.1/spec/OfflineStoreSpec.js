@@ -426,7 +426,7 @@ describe("Validate local storage functionality - complex Polygon Graphic",functi
 describe("Validate local storage index functionality",function(){
 
     it("set item in local storage index", function(){
-        var item = offlineStore._setItemLocalStoreIndex("testIdString","testTypeString",true);
+        var item = offlineStore._setItemLocalStoreIndex("6","testIdString","testTypeString",true);
         expect(item).toEqual(true);
     })
 
@@ -448,6 +448,30 @@ describe("Validate local storage index functionality",function(){
     it("get item from local storage index (internal) is false", function(){
         var item = offlineStore._getItemLocalStoreIndex("testIdString");
         expect(item).toEqual(false);
+    })
+})
+
+describe("Reestablish internet", function(){
+    it("reestablish internet handler with empty store", function(){
+        var validate = null;
+        offlineStore._handleRestablishedInternet(function(evt){
+            validate = evt;
+        });
+        expect(validate).toEqual(false);
+    })
+})
+
+/**
+ * PROBLEM: This should throw an error. Maybe be a bug in the JS API. Needs further investigation.
+ */
+describe("Apply edits", function(){
+    it("improper input - null values - delete", function(){
+        var validate = null;
+        offlineStore._layerEditManager(null,null,offlineStore.enum().DELETE,offlineStore._localEnum(),function(evt){
+            validate = evt;
+        });
+        expect(validate).toBeNull();
+
     })
 })
 

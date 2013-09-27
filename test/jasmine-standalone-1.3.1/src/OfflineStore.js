@@ -31,7 +31,7 @@ var OfflineStore = function(/* Map */ map) {
     }
 
     /**
-     * Public ENUMs (Constants)
+     * Public ENUMs. Immutable reference values.
      * @type {Object}
      * @returns {String}
      * @private
@@ -56,12 +56,13 @@ var OfflineStore = function(/* Map */ map) {
     this._localEnum = (function(){
         var values = {
             VALIDATION_URL : "http://localhost/offline/test.html", /* Change this to a remote server for testing! */
-            TIMER_URL : "./src/Timer.js",                   /* For use within a child process only */
+            TIMER_URL : "./src/Timer.js",                       /* For use within a child process only */
             STORAGE_KEY : "___EsriOfflineStore___",             /* Unique key for setting/retrieving values from localStorage */
             INDEX_KEY : "___EsriOfflineIndex___",               /* Index for tracking each action (add, delete, update) in local store */
             VALIDATION_TIMEOUT : 10 * 1000,                     /* HTTP timeout when trying to validate internet on/off */
             LOCAL_STORAGE_MAX_LIMIT : 4.75 /* MB */,            /* Most browsers offer default storage of ~5MB */
             TOKEN : "|||",                                      /* A unique token for tokenizing stringified localStorage values */
+            TIMER_TICK_INTERVAL : 10 * 1000 /* ms */,
             REQUIRED_LIBS : [
                 "./src/Hydrate.js",
                 "./src/Poller.js"
@@ -81,6 +82,15 @@ var OfflineStore = function(/* Map */ map) {
         this.layer = layer;
     }
 
+    /**
+     * Boolean hit test as to whether or not an internet connection exists.
+     * Can also be used with unit tests as an override.
+     * For unit testing set to true.
+     * @type {boolean}
+     * @private
+     */
+    this.___internet = true;
+
     //////////////////////////
     ///
     /// PUBLIC methods
@@ -94,32 +104,8 @@ var OfflineStore = function(/* Map */ map) {
      * @param enumValue Required
      */
     this.applyEdits = function(/* Graphic */ graphic,/* FeatureLayer */ layer, /* String */ enumValue){
-
         var internet = this._checkInternet();
-
-        //TODO Need to add code to determine size of incoming graphic
-        var mb = this.getlocalStorageUsed();
-        console.log("getlocalStorageUsed = " + mb + " MBs");
-
-        if(mb > this._localEnum().LOCAL_STORAGE_MAX_LIMIT /* MB */){
-            alert("You are almost over the local storage limit. No more data can be added.")
-            return;
-        }
-
-        if(internet === false){
-            this._addToLocalStore(graphic,layer,enumValue);
-            if(this.isTimer == null){
-                this._startTimer(function(err){
-                    throw ("unable to start background timer. Offline edits won't work. " + err.stack);
-                });
-            }
-        }
-        else if(internet == null || typeof internet == "undefined"){
-            console.log("applyEdits: possible error.");
-        }
-        else{
-            this._layerEditManager(graphic,layer,enumValue,this.enum(),null,true,null);
-        }
+        this._applyEdits(internet,graphic,layer,enumValue);
     }
 
     /**
@@ -186,6 +172,32 @@ var OfflineStore = function(/* Map */ map) {
     ///
     //////////////////////////
 
+    this._applyEdits = function(/* Boolean */ internet, /* Graphic */ graphic,/* FeatureLayer */ layer, /* String */ enumValue){
+        //TODO Need to add code to determine size of incoming graphic
+        var mb = this.getlocalStorageUsed();
+        console.log("getlocalStorageUsed = " + mb + " MBs");
+
+        if(mb > this._localEnum().LOCAL_STORAGE_MAX_LIMIT /* MB */){
+            alert("You are almost over the local storage limit. No more data can be added.")
+            return;
+        }
+
+        if(internet === false){
+            this._addToLocalStore(graphic,layer,enumValue);
+            if(this.isTimer == null){
+                this._startTimer(function(err){
+                    throw ("unable to start background timer. Offline edits won't work. " + err.stack);
+                });
+            }
+        }
+        else if(internet == null || typeof internet == "undefined"){
+            console.log("applyEdits: possible error.");
+        }
+        else{
+            this._layerEditManager(graphic,layer,enumValue,this.enum(),null,true,null);
+        }
+    }
+
     this._layerEditManager = function(
         /* Graphic */ graphic,
         /* FeatureLayer */ layer,
@@ -202,13 +214,13 @@ var OfflineStore = function(/* Map */ map) {
                         mCallback(count,deleteResult[0].success);
                     }
                     else{
-                        this._setItemLocalStoreIndex(deleteResult[0].objectId,value,true);
+                        this._setItemLocalStoreIndex(layer.layerId, deleteResult[0].objectId,value,true);
                     }
 
                 }.bind(this),
                     function(error){
                         console.log("_layer: " + error.stack); mCallback(count,false);
-                        this._setItemLocalStoreIndex(deleteResult[0].objectId,value,false);
+                        this._setItemLocalStoreIndex(layer.layerId, deleteResult[0].objectId,value,false);
                     }.bind(this)
                 );
                 break;
@@ -216,15 +228,15 @@ var OfflineStore = function(/* Map */ map) {
                 layer.applyEdits([graphic],null,null,function(addResult,updateResult,deleteResult){
                     console.log("addResult ObjectId: " + addResult[0].objectId + ", Success: " + addResult[0].success);
                     if(mCallback != null && count != null) {
-                        mCallback(count,deleteResult[0].success);
+                        mCallback(count,addResult[0].success);
                     }
                     else{
-                        this._setItemLocalStoreIndex(addResult[0].objectId,value,true);
+                        this._setItemLocalStoreIndex(layer.layerId, addResult[0].objectId,value,true);
                     }
                 }.bind(this),
                     function(error){
                         console.log("_layer: " + error.stack); mCallback(count,false);
-                        this._setItemLocalStoreIndex(addResult[0].objectId,value,false);
+                        this._setItemLocalStoreIndex(layer.layerId, addResult[0].objectId,value,false);
                     }.bind(this)
                 );
                 break;
@@ -235,12 +247,12 @@ var OfflineStore = function(/* Map */ map) {
                         mCallback(count,deleteResult[0].success);
                     }
                     else{
-                        this._setItemLocalStoreIndex(updateResult[0].objectId,value,true);
+                        this._setItemLocalStoreIndex(layer.layerId, updateResult[0].objectId,value,true);
                     }
                 }.bind(this),
                     function(error){
                         console.log("_layer: " + error.stack); mCallback(count,false)
-                        this._setItemLocalStoreIndex(updateResult[0].objectId,value,false);
+                        this._setItemLocalStoreIndex(layer.layerId, updateResult[0].objectId,value,false);
                     }.bind(this)
                 );
                 break;
@@ -273,7 +285,8 @@ console.log(localStore.toString());
         }
 
         if(dupeFlag == false) {
-            return this._setItemInLocalStore(localStore + geom);
+            this._setItemInLocalStore(localStore + geom);
+            return true;
         }
         else{
             return false;
@@ -326,21 +339,28 @@ console.log(localStore.toString());
                             if(onlineFLAG != false)onlineFLAG = false;
                         }
                         else if(msg.data.net == true){
-                            var arr = this._getLocalStorage();
-                            if(onlineFLAG == false){
-                                onlineFLAG = true;
+                            if(this.___internet == true){
+                                var internet = this._checkInternet();
                             }
-                            if(arr != null){
-                                this._handleRestablishedInternet(function(){
-                                    this._stopTimer();
-                                    this._deleteStore();
+                            var arr = this._getLocalStorage();
+                            if(arr != null && internet == true){
+
+                                if(onlineFLAG == false){
+                                    onlineFLAG = true;
+                                }
+
+                                this._handleRestablishedInternet(function(evt){
+                                    if(evt == true){
+                                        this._stopTimer();
+                                        this._deleteStore();
+                                    }
                                 }.bind(this));
                             }
                         }
                     }
 
                 }.bind(this), false);
-                this.backgroundTimerWorker.postMessage({start:true,interval:10000});
+                this.backgroundTimerWorker.postMessage({start:true,interval:this._localEnum().TIMER_TICK_INTERVAL});
             }
             catch(err){
                 callback(err);
@@ -351,7 +371,7 @@ console.log(localStore.toString());
 
     this._stopTimer = function(){
 
-        if(this.backgroundTimerWorker != null){
+        if(this.backgroundTimerWorker != null && this.isTimer != null){
             this.backgroundTimerWorker.terminate();
             this.backgroundTimerWorker.postMessage({kill:true});
             this.backgroundTimerWorker = null;
@@ -381,7 +401,7 @@ console.log(localStore.toString());
                     if(success == true && check.length == graphicsArr.length){
                         if(errCnt == 0){
                             this._setItemLocalStoreIndex(id,obj1.enumValue,true);
-                            callback();
+                            callback(true);
                         }
                         else{
                             console.log("_handleRestablishedInternet: there were errors. LocalStore still available.");
@@ -403,6 +423,9 @@ console.log(localStore.toString());
                     }
                 }.bind(this));
             }
+        }
+        else{
+            callback(false);
         }
     }
 
@@ -482,13 +505,15 @@ console.log(localStore.toString());
      * @private
      */
     this._getItemLocalStoreIndex = function(/* String */ objectId){
-        var localStore = this.getLocalStoreIndex();
-
-        for(var property in localStore){
-            var item = JSON.parse(localStore[property]);
-            if(typeof item !== "undefined" || item.length > 0 || item != null){
-                if(item.hasOwnProperty("id") && item.id == objectId){
-                    return true;
+        var localStore = localStorage.getItem(this._localEnum().INDEX_KEY);
+        if(localStore != null){
+            var split = localStore.split(this._localEnum().TOKEN);
+            for(var property in split){
+                var item = JSON.parse(split[property]);
+                if(typeof item !== "undefined" || item.length > 0 || item != null){
+                    if(item.hasOwnProperty("id") && item.id == objectId){
+                        return true;
+                    }
                 }
             }
         }
@@ -504,8 +529,8 @@ console.log(localStore.toString());
      * @returns {boolean}
      * @private
      */
-    this._setItemLocalStoreIndex = function(/* String */ objectId, /* String */ type, /* boolean */ success){
-        var index = new this._indexObject(objectId,type,success) ;
+    this._setItemLocalStoreIndex = function(/* String */ layerId, /* String */ objectId, /* String */ type, /* boolean */ success){
+        var index = new this._indexObject(layerId,objectId,type,success) ;
         var mIndex = JSON.stringify(index);
 
         var localStore = this.getLocalStoreIndex();
@@ -619,8 +644,9 @@ console.log(localStore.toString());
      * Model for storing serialized index info.
      * @private
      */
-    this._indexObject = function(/* String */ id, /* String */ type, /* boolean */ success){
+    this._indexObject = function(/* String */ layerId, /* String */ id, /* String */ type, /* boolean */ success){
         this.id = id;
+        this.layerId = layerId;
         this.type = type;
         this.success = success;
     }
@@ -713,15 +739,17 @@ console.log(localStore.toString());
                 else if(internet == null || typeof internet == "undefined"){
                     console.log("applyEdits: possible error.");
                 }
-//                else{
-//                    var arr = this._getLocalStorage();
-//                    if(arr != null){
-//                        this._handleRestablishedInternet(function(){
-//                            this._stopTimer();
-//                            this._deleteStore();
-//                        }.bind(this));
-//                    }
-//                }
+                else{
+                    var arr = this._getLocalStorage();
+                    if(arr != null){
+                        this._handleRestablishedInternet(function(evt){
+                            if(evt == true){
+                                this._stopTimer();
+                                this._deleteStore();
+                            }
+                        }.bind(this));
+                    }
+                }
             }
 
         }.bind(this));

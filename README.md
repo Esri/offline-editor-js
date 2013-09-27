@@ -8,9 +8,7 @@ JavaScript library that auto-detects an offline condition and stores the results
 The library provides a constructor that can simply be used in place of the traditional applyEdit() method. It does all the rest of the work for you:
 
 	var offlineStore = new OfflineStore(map);
-	offlineStore.applyEdits(graphic,layer,"delete");
-	
- 
+	offlineStore.applyEdits(graphic,layer,"delete");	
 ##Features
 
 * Automatic offline/online detection. Once an offline condition exists the library starts storing the edits. And, as soon as it reconnects it will submit the updates.
@@ -64,6 +62,10 @@ The library provides a constructor that can simply be used in place of the tradi
 
 ##Testing
 Run Jasmine's SpecRunner.html in a browser. You can find it in the /test directory.
+
+You can also emulate off-line conditions by using Firefox's build-in, offline functionality:
+
+![] (firefox_offline_mode.png)
 
 
 ##Dependencies
