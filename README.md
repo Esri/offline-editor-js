@@ -1,20 +1,30 @@
 offline-editor-js
 =================
 
-JavaScript library that auto-detects an offline condition and stores the results until a connection is reestablished.
+Experimental JavaScript library that auto-detects an offline condition and stores FeatureLayer edit activities until a connection is reestablished. No longer will offline edit be the sole domain of native SDKs!
 
 ##How to use?
 
-The library provides a constructor that can simply be used in place of the traditional applyEdit() method. It does all the rest of the work for you:
+**Step 1.** The library provides a constructor that can simply be used in place of the traditional applyEdit() method. It does all the rest of the work for you:
 
 	var offlineStore = new OfflineStore(map);
-	offlineStore.applyEdits(graphic,layer,"delete");	
+	offlineStore.applyEdits(graphic,layer,"delete");
+	
+**Step 2.** Run your mapping app while online to download all the maps and feature layers to the browser.
+
+**Step 3.** To operate the app offline, try using Firefox's built-in, offline functionality since it seems to work very well. Set offline mode as shown in this screenshot:
+
+![] (firefox_offline_mode.png)
+	
+While the library works in Chrome, Firefox and Safari with the internet turned off, at this time it has only been extensively tested truly offline with Firefox. With those other browsers it meets the use case of handling edits during intermittent internet scenarios. There are other third party applications for Chrome, for example, that supposedly allow full offline browsing but I haven't been tested them yet. 	
+		
 ##Features
 
 * Automatic offline/online detection. Once an offline condition exists the library starts storing the edits. And, as soon as it reconnects it will submit the updates.
 * Can store dozens or hundreds of edits.
+* Currently works with Points, Polylines and Polygons.
 * Indexes edits for successful/unsuccessful update validation as well as for more advanced workflows.
-* Monitors available storage and is configured by default to stop edits at a maximum threshold.
+* Monitors available storage and is configured by default to stop edits at a maximum threshold and alert that the threshold has been reached. This is intended to help prevent data loss.
 
 ##API
 
@@ -63,11 +73,6 @@ The library provides a constructor that can simply be used in place of the tradi
 ##Testing
 Run Jasmine's SpecRunner.html in a browser. You can find it in the /test directory.
 
-You can also emulate off-line conditions by using Firefox's build-in, offline functionality:
-
-![] (firefox_offline_mode.png)
-
-
 ##Dependencies
 * ArcGIS API for JavaScript
 
@@ -83,7 +88,7 @@ Find a bug or want to request a new feature?  Please let us know by submitting a
 
 ## Contributing
 
-Esri welcomes contributions from anyone and everyone. Please see our [guidelines for contributing](https://github.com/esri/contributing).
+Esri welcomes contributions from anyone and everyone. Your feedback can make the difference between an okay project and an amazingly awesome project. Please see our [guidelines for contributing](https://github.com/esri/contributing).
 
 
 ## Licensing
