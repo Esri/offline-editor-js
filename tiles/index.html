@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+    <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=7, IE=9, IE=10">
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no">
+    <title>Store images in localStorage</title>
+
+    <link rel="stylesheet" href="http://js.arcgis.com/3.7/js/dojo/dijit/themes/claro/claro.css">
+    <link rel="stylesheet" href="http://js.arcgis.com/3.7/js/esri/css/esri.css">
+    <style>
+        html, body { height: 100%; width: 100%; margin: 0; padding: 0; }
+        #map{
+            padding:0;
+        }
+    </style>
+
+    <script src="./src/OfflineTileStore.js"></script>
+    <!--<script src="./src/dbStore.js"></script>-->
+    <script src="./src/dbStore2.js"></script>
+    <script>var dojoConfig = {parseOnLoad: true};</script>
+    <script src="http://js.arcgis.com/3.7/"></script>
+    <script>
+        dojo.require("esri.map");
+        dojo.require("dojox.encoding.digests._base");
+        dojo.require("dijit.layout.BorderContainer");
+        dojo.require("dijit.layout.ContentPane");
+
+        var map;
+        var database;
+        var dbSupport = false;
+        var offlineTileStore = null;
+
+        require([
+          "esri/map"
+        ],function(Map){
+
+            database = new dbStore();
+            dbSupport = database.isSupported();
+            if(dbSupport == true){
+                database.init(function(evt,err){
+                    console.log("dbstore init: " + evt);
+                }.bind(this));
+            }
+
+            map = new esri.Map("map", {
+                basemap: "streets",
+                center: [2.352, 48.87],
+                zoom: 12
+            });
+
+            map.on("layer-add-result", function(evt){
+                try{
+                    offlineTileStore = new OfflineTileStore(map)
+                    console.log("Local storage used:  " + offlineTileStore.getlocalStorageUsed())
+                }
+                catch(err){
+                    console.log("err " + err.stack)
+                };
+            }.bind(this));
+
+        })
+
+        function deleteStorage(){
+            localStorage.clear();
+        }
+
+        function getSize(){
+            //database.testGet();
+            database.size(function(evt,err){
+                console.log("GET " + evt + " MBs, err: " + err);
+            })
+        }
+
+        function testRefresh(){
+            offlineTileStore.storeLayer();
+        }
+
+    </script>
+  </head>
+  <body class="claro">
+    <button onclick="deleteStorage()">Delete localStore</button>
+    <button onclick="getSize()">Get db size</button>
+    <button onclick="testRefresh()">Refresh</button>
+
+     <div id="map" data-dojo-type="dijit.layout.ContentPane" data-dojo-props="region:'center'" style="overflow:hidden;">
+    </div>
+  </body>
+</html>

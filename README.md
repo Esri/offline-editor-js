@@ -1,9 +1,17 @@
 offline-editor-js
 =================
 
-Experimental JavaScript library that auto-detects an offline condition and stores FeatureLayer edit activities until a connection is reestablished. No longer will offline edit be the sole domain of native SDKs!
+Experimental JavaScript library that auto-detects an offline condition and stores FeatureLayer edit activities until a connection is reestablished. Works with adds, updates and deletes.
+
+Includes several libraries:
+
+- OfflineStore - overrides applyEdits() method
+- OfflineTileStore - stores tiles for offline pan and zoom.
+- OfflineFeatureStore - **TBD** (manages features for offline usage)
 
 ##How to use?
+
+The easiest approach is to simply use the library to override applyEdits():
 
 **Step 1.** The library provides a constructor that can simply be used in place of the traditional applyEdit() method. It does all the rest of the work for you:
 
@@ -20,25 +28,27 @@ While the library works in Chrome, Firefox and Safari with the internet turned o
 		
 ##Features
 
+* Override the applyEdits() method.
+* Can store base map tiles for offline pan and zoom.
 * Automatic offline/online detection. Once an offline condition exists the library starts storing the edits. And, as soon as it reconnects it will submit the updates.
 * Can store dozens or hundreds of edits.
 * Currently works with Points, Polylines and Polygons.
 * Indexes edits for successful/unsuccessful update validation as well as for more advanced workflows.
 * Monitors available storage and is configured by default to stop edits at a maximum threshold and alert that the threshold has been reached. This is intended to help prevent data loss.
 
-##API
+##OfflineStore Library
 
 ####OfflineStore(/\* Map \*/ map)
 * Constructor. Requires a reference to an ArcGIS API for JavaScript Map.
 
 ####applyEdits(/\* Graphic \*/ graphic,/\* FeatureLayer \*/ layer, /\* String \*/ enumValue)
-* Method.
+* Method. Overrides FeatureLayer.applyEdits().
 
 ####getStore()
-* Returns an array of Graphics.
+* Returns an array of Graphics from localStorage.
 
 ####getLocalStoreIndex()
-* Returns the index as an array of JSON objects. The objects are constructor like this:
+* Returns the index as an array of JSON objects. An internal index is used to keep track of adds, deletes and updates. The objects are constructed like this:
 	
 		{"id": object610,"type":"add","success":"true"}
 
@@ -68,7 +78,21 @@ While the library works in Chrome, Firefox and Safari with the internet turned o
         }
 
 
+##OfflineTileStore Library
 
+####OfflineTileStore()
+* Constructor. Stores tiles for offline panning and zoom. 
+
+
+####storeLayer()
+* Stores tiled in either localStorage or IndexedDB if it is available. Storage process is initiated by forcing a refresh on the basemap layer.
+
+####useIndexedDB
+* Property. Manually sets whether library used localStorage or IndexedDB. Default is false. 
+
+
+####getLocalStorageUsed()
+* Returns amount of storage used by the calling domain. Typical browser limit is 5MBs.
 
 ##Testing
 Run Jasmine's SpecRunner.html in a browser. You can find it in the /test directory.
