@@ -99,6 +99,7 @@ Run Jasmine's SpecRunner.html in a browser. You can find it in the /test directo
 
 ##Dependencies
 * ArcGIS API for JavaScript
+* [offline.js](https://github.com/hubspot/offline) - It is included as a git submodule. Once you clone the repo, you need to do "git submodule init" and "git submodule update" to get the exact same version that this project was tested against.
 
 ## Resources
 
