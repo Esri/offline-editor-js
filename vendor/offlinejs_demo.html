@@ -46,7 +46,7 @@
 			Offline.check();
 			updateState();
 
-			Offline.on('up down', function() { updateState(); });
+			Offline.on('up down', updateState });
 		})
 
 	</script>
