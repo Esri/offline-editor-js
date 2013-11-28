@@ -114,7 +114,6 @@ require(["esri/map",
 			on(dojo.byId('minLevel'),'change', updateTileSizeEstimation);
 			on(dojo.byId('maxLevel'),'change', updateTileSizeEstimation);
 
-
 			var basemapLayer = map.getLayer( map.layerIds[0] );
 			dojo.byId('minLevel').value = basemapLayer.tileInfo.lods[0].level;
 			dojo.byId('maxLevel').value = basemapLayer.tileInfo.lods[basemapLayer.tileInfo.lods.length-1].level;
