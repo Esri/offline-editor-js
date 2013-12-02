@@ -81,8 +81,10 @@ var DbStore = function(){
     this.get = function(/* String */ url,callback){
         if(this._db != null){
 
-            var index = this._db.transaction(["tilepath"]).objectStore("tilepath").index("url");
-            index.get(url).onsuccess = function(event){
+            var objectStore = this._db.transaction(["tilepath"]).objectStore("tilepath");
+            var request = objectStore.get(url);
+            request.onsuccess = function(event)
+            {
                 var result = event.target.result;
                 if(result == null){
                     callback(false,"not found");
@@ -90,6 +92,9 @@ var DbStore = function(){
                 else{
                     callback(true,result);
                 }
+            }
+            request.onerror = function(err){
+                callback(false,err);
             }
         }
     }
@@ -100,12 +105,13 @@ var DbStore = function(){
      */
     this.deleteAll = function(callback){
         if(this._db != null){
-            var transaction = this._db.transaction(["tilepath"],"readwrite").objectStore("tilepath");
-            transaction.clear();
-            transaction.onsuccess = function(event){
+            var request = this._db.transaction(["tilepath"],"readwrite")
+                .objectStore("tilepath")
+                .clear();
+            request.onsuccess = function(event){
                 callback(true);
             }
-            transaction.onerror = function(err){
+            request.onerror = function(err){
                 callback(false,err);
             }
         }
@@ -121,13 +127,13 @@ var DbStore = function(){
      */
     this.delete = function(/* String */ url,callback){
         if(this._db != null){
-            var transaction = this._db.transaction(["tilepath"],"readwrite")
+            var request = this._db.transaction(["tilepath"],"readwrite")
                 .objectStore("tilepath")
                 .delete(url);
-            transaction.onsuccess = function(event){
+            request.onsuccess = function(event){
                 callback(true);
             }
-            transaction.onerror = function(err){
+            request.onerror = function(err){
                 callback(false,err);
             }
         }
