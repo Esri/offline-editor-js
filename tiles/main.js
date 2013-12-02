@@ -347,6 +347,7 @@ require(["esri/map",
 
 		function finishedDownloading(cancelled)
 		{
+			
 			setTimeout(function()
 			{				
 				esri.show(dojo.byId('ready-to-download-ui'));
