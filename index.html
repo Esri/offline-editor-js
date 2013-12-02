@@ -16,14 +16,14 @@
             padding: 0;
             overflow:hidden;
         }
-        #header {
+        #header, #info {
             border:solid 2px #462d44;
             background:#fff;
             color:#444;
             -moz-border-radius: 4px;
             border-radius: 4px;
             font-family: sans-serif;
-            font-size: 1.1em
+            font-size: 1.1em;
             padding-left:20px;
         }
         #map {
@@ -98,6 +98,8 @@
 
             map.on("layers-add-result", initEditing);
 
+            var headerDiv = document.getElementById("info");
+
             var landusePointLayer = new FeatureLayer("http://sampleserver6.arcgisonline.com/arcgis/rest/services/Military/FeatureServer/6", {
                 mode: FeatureLayer.MODE_SNAPSHOT,
                 outFields: ["*"]
@@ -127,17 +129,39 @@
 //////////
                 offlineStore = new OfflineStore(map);
                 console.log("Storage used :  " + offlineStore.getlocalStorageUsed());
+                headerDiv.innerHTML = "Storage Used: " +  offlineStore.getlocalStorageUsed() + " MBs";
+                try{
+                    document.addEventListener("editEvent",function(evt){
+                        if(evt.type == "editEvent" && evt.detail.message == true){
+                            console.log("editEvent: All edits successfully pushed");
+                        }
+                        else if(evt.type == "editEvent" && evt.detail.message == false){
+                            alert("Not all edits were successfully pushed to the server");
+                        }
+
+                        headerDiv.innerHTML = "Storage Used: " +  offlineStore.getlocalStorageUsed() + " MBs";
+                    },
+                    false);
+                }
+                catch(err){
+                    console.log("test that event object is valid:  " + err);
+                }
+
 //////////
 
                 var editToolbar = new Edit(map);
 
                 editToolbar.on("deactivate", function(evt) {
                     if(updateFlag == true){
-                        offlineStore.applyEdits(vertices.graphic,vertices.layer,offlineStore.enum().UPDATE);
+                        offlineStore.applyEdits(vertices.graphic,vertices.layer,offlineStore.enum().UPDATE,function(count,success,id){
+                            headerDiv.innerHTML = "Storage Used: " +  offlineStore.getlocalStorageUsed() + " MBs";
+                        });
                         updateFlag = false;
                     }
                     else{
-                        offlineStore.applyEdits(evt.graphic,currentLayer,offlineStore.enum().UPDATE);
+                        offlineStore.applyEdits(evt.graphic,currentLayer,offlineStore.enum().UPDATE,function(count,success,id){
+                            headerDiv.innerHTML = "Storage Used: " +  offlineStore.getlocalStorageUsed() + " MBs";
+                        });
                     }
                 });
 
@@ -168,7 +192,9 @@
                         event.stop(evt);
                         if (evt.ctrlKey === true || evt.metaKey === true) {  //delete feature if ctrl key is depressed
                             try{
-                                offlineStore.applyEdits(evt.graphic,layer,offlineStore.enum().DELETE);
+                                offlineStore.applyEdits(evt.graphic,layer,offlineStore.enum().DELETE,function(count,success,id){
+                                    headerDiv.innerHTML = "Storage Used: " +  offlineStore.getlocalStorageUsed() + " MBs";
+                                });
                             }
                             catch(err){
                                 console.log("error " + err.stack);
@@ -218,7 +244,9 @@
                     var newAttributes = lang.mixin({}, selectedTemplate.template.prototype.attributes);
                     var newGraphic = new Graphic(evt.geometry, null, newAttributes);
                     //selectedTemplate.featureLayer.applyEdits([newGraphic], null, null);
-                    offlineStore.applyEdits(newGraphic,selectedTemplate.featureLayer,offlineStore.enum().ADD);
+                    offlineStore.applyEdits(newGraphic,selectedTemplate.featureLayer,offlineStore.enum().ADD,function(count,success,id){
+                        headerDiv.innerHTML = "Storage Used: " +  offlineStore.getlocalStorageUsed() + " MBs";
+                    });
                 });
             }
 
@@ -253,6 +281,7 @@
 <body class="claro">
 <div data-dojo-type="dijit/layout/BorderContainer" data-dojo-props="gutters:true, design:'headline'" style="width:100%;height:100%;">
     <div data-dojo-type="dijit/layout/ContentPane"  id="header" data-dojo-props="region:'top'">Use ctrl or cmd + click on graphic to delete.  Double click on graphic to edit vertices. </div>
+    <div id="info" data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:'top'">Storage used: 0 MBs</div>
     <div id="map" data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:'center'"></div>
     <div id="rightPane" data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:'right'">
         <div id="templatePickerDiv"></div>

@@ -55,14 +55,24 @@ var OfflineStore = function(/* Map */ map) {
      */
     this._localEnum = (function(){
         var values = {
-            VALIDATION_URL : "http://localhost/offline/test.html", /* Change this to a remote server for testing! */
-            TIMER_URL : "./src/Timer.js",                       /* For use within a child process only */
-            STORAGE_KEY : "___EsriOfflineStore___",             /* Unique key for setting/retrieving values from localStorage */
-            INDEX_KEY : "___EsriOfflineIndex___",               /* Index for tracking each action (add, delete, update) in local store */
-            VALIDATION_TIMEOUT : 10 * 1000,                     /* HTTP timeout when trying to validate internet on/off */
-            LOCAL_STORAGE_MAX_LIMIT : 4.75 /* MB */,            /* Most browsers offer default storage of ~5MB */
-            TOKEN : "|||",                                      /* A unique token for tokenizing stringified localStorage values */
+            /* Change this to a remote server for testing! */
+            VALIDATION_URL : "http://localhost/offline/test.html",
+            /* For use within a child process only */
+            TIMER_URL : "./src/Timer.js",
+            /* Unique key for setting/retrieving values from localStorage */
+            STORAGE_KEY : "___EsriOfflineStore___",
+            /* Index for tracking each action (add, delete, update) in local store */
+            INDEX_KEY : "___EsriOfflineIndex___",
+            /* HTTP timeout when trying to validate internet on/off */
+            VALIDATION_TIMEOUT : 10 * 1000,
+            /* Most browsers offer default storage of ~5MB */
+            LOCAL_STORAGE_MAX_LIMIT : 4.75 /* MB */,
+            /* A unique token for tokenizing stringified localStorage values */
+            TOKEN : "|||",
             TIMER_TICK_INTERVAL : 10 * 1000 /* ms */,
+            EDIT_EVENT: "editEvent",
+            EDIT_EVENT_SUCCESS: true,
+            EDIT_EVENT_FAILED: false,
             REQUIRED_LIBS : [
                 "./src/Hydrate.js",
                 "./src/Poller.js"
@@ -102,10 +112,12 @@ var OfflineStore = function(/* Map */ map) {
      * @param graphic Required
      * @param layer Required
      * @param enumValue Required
+     * @param callback Recommended. Returns true if offline condition detected otherwise returns false.
      */
-    this.applyEdits = function(/* Graphic */ graphic,/* FeatureLayer */ layer, /* String */ enumValue){
+    this.applyEdits = function(/* Graphic */ graphic,/* FeatureLayer */ layer, /* String */ enumValue, callback){
         var internet = this._checkInternet();
-        this._applyEdits(internet,graphic,layer,enumValue);
+        this._applyEdits(internet,graphic,layer,enumValue, callback);
+        //this._sendEvent("Halllooo","test");
     }
 
     /**
@@ -145,6 +157,8 @@ var OfflineStore = function(/* Map */ map) {
 
     /**
      * Determines total storage used for this domain.
+     * NOTE: The index does take up storage space. Even if the offlineStore
+     * is deleted, you will still see some space taken up by the index.
      * @returns Number MB's
      */
     this.getlocalStorageUsed = function(){
@@ -152,18 +166,30 @@ var OfflineStore = function(/* Map */ map) {
         //IE hack
         if(window.localStorage.hasOwnProperty("remainingspace")){
             //http://msdn.microsoft.com/en-us/library/ie/cc197016(v=vs.85).aspx
-            return window.localStorage.remainingSpace/1024/1024;
+            return (window.localStorage.remainingSpace/1024/1024).round(4);
         }
         else{
             var mb = 0;
             for(var x in localStorage){
                 //Uncomment out console.log to see *all* items in local storage
-                console.log(x+"="+((localStorage[x].length * 2)/1024/1024)+" MB");
+                //console.log(x+"="+((localStorage[x].length * 2)/1024/1024).toFixed(4)+" MB");
                 mb += localStorage[x].length
             }
 
-            return Math.round(((mb * 2)/1024/1024) * 100)/100;
+            //return Math.round(((mb * 2)/1024/1024) * 100)/100;
+            return ((mb *2)/1024/1024).round(4);
         }
+    }
+
+    /**
+     * A Global prototype that provides rounding capabilities.
+     * TODO reevaluate if this should be local in scope or global.
+     * @param places
+     * @returns {number}
+     */
+    Number.prototype.round = function(places){
+        places = Math.pow(10, places);
+        return Math.round(this * places)/places;
     }
 
     //////////////////////////
@@ -180,20 +206,23 @@ var OfflineStore = function(/* Map */ map) {
      * @param graphic
      * @param layer
      * @param enumValue
+     * @param callback  Returns true if offline condition detected otherwise returns false.
+     * Format: {count, success,  id}
      * @private
      */
-    this._applyEdits = function(/* Boolean */ internet, /* Graphic */ graphic,/* FeatureLayer */ layer, /* String */ enumValue){
+    this._applyEdits = function(/* Boolean */ internet, /* Graphic */ graphic,/* FeatureLayer */ layer, /* String */ enumValue, callback){
         //TODO Need to add code to determine size of incoming graphic
         var mb = this.getlocalStorageUsed();
         console.log("getlocalStorageUsed = " + mb + " MBs");
 
         if(mb > this._localEnum().LOCAL_STORAGE_MAX_LIMIT /* MB */){
             alert("You are almost over the local storage limit. No more data can be added.")
+            callback(0,false,0);
             return;
         }
 
         if(internet === false){
-            this._addToLocalStore(graphic,layer,enumValue);
+            this._addToLocalStore(graphic,layer,enumValue,callback);
             if(this.isTimer == null){
                 this._startTimer(function(err){
                     throw ("unable to start background timer. Offline edits won't work. " + err.stack);
@@ -202,11 +231,12 @@ var OfflineStore = function(/* Map */ map) {
         }
         else if(internet == null || typeof internet == "undefined"){
             console.log("applyEdits: possible error.");
+            callback(0,false,0);
         }
         else{
             //No need for a callback because this is an online request and it's immediately
             //pushed to Feature Service. The only thing updated in the library is the Index.
-            this._layerEditManager(graphic,layer,enumValue,this.enum(),null,null);
+            this._layerEditManager(graphic,layer,enumValue,this.enum(),0,callback);
         }
     }
 
@@ -305,17 +335,20 @@ console.log(localStore.toString());
         }
     }
 
-    this._addToLocalStore = function(/* Graphic */ graphic, /* FeatureLayer */ layer, /* String */ enumValue){
+    this._addToLocalStore = function(/* Graphic */ graphic, /* FeatureLayer */ layer, /* String */ enumValue,callback){
         var arr = this._getLocalStorage();
         var geom = this._serializeGraphic(graphic,layer,enumValue);
 
+        var setItem = null;
+
         //If localStorage does NOT exist
         if(arr === null){
-
-            this._setItemInLocalStore(geom);
+            setItem = this._setItemInLocalStore(geom);
+            callback(0,setItem,0);
         }
         else{
-            this._updateExistingLocalStore(geom);
+            setItem = this._updateExistingLocalStore(geom);
+            callback(0,setItem,0);
         }
 
         layer.add(graphic);
@@ -365,6 +398,10 @@ console.log(localStore.toString());
                                     if(evt == true){
                                         this._stopTimer();
                                         this._deleteStore();
+                                        this._sendEvent(true,this._localEnum().EDIT_EVENT);
+                                    }
+                                    else{
+                                        this._sendEvent(false,this._localEnum().EDIT_EVENT);
                                     }
                                 }.bind(this));
                             }
@@ -395,6 +432,23 @@ console.log(localStore.toString());
         }
     }
 
+    this._sendEvent = function(msg,event){
+        //this.preventDefault();
+
+        if (msg && window.CustomEvent) {
+            var event = new CustomEvent(event, {
+                detail: {
+                    message: msg,
+                    time: new Date()
+                },
+                bubbles: true,
+                cancelable: true
+            });
+
+            document.dispatchEvent(event);
+        }
+    }
+
     this._handleRestablishedInternet = function(callback){
         var graphicsArr = this.getStore();
 
@@ -418,6 +472,7 @@ console.log(localStore.toString());
                         else{
                             console.log("_handleRestablishedInternet: there were errors. LocalStore still available.");
                             this._stopTimer();
+                            callback(false);
                         }
                     }
                     else if(success == true && check.length < graphicsArr.length){
@@ -427,6 +482,7 @@ console.log(localStore.toString());
                         this._setItemLocalStoreIndex(obj1.layer,objectId,obj1.enumValue,false);
                         console.log("_handleRestablishedInternet: error sending edit on " + objectId);
                         this._stopTimer();
+                        callback(false);
                     }
                     else if(success == false && check.length < graphicsArr.length){
                         this._setItemLocalStoreIndex(obj1.layer,objectId,obj1.enumValue,false);
@@ -761,6 +817,10 @@ console.log(localStore.toString());
                             if(evt == true){
                                 this._stopTimer();
                                 this._deleteStore();
+                                this._sendEvent(true,this._localEnum().EDIT_EVENT);
+                            }
+                            else{
+                                this._sendEvent(false,this._localEnum().EDIT_EVENT);
                             }
                         }.bind(this));
                     }
