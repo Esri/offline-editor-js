@@ -63,7 +63,6 @@ var DbStore = function(){
             var objectStore = transaction.objectStore("tilepath");
             var request = objectStore.put(urlDataPair);
             request.onsuccess = function(event) {
-                // event.target.result == customerData[i].ssn;
                 console.log("item added to db " + event.target.result);
             };
         }
