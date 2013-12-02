@@ -21,7 +21,7 @@ var dbStore = function(){
      */
     this._localEnum = (function(){
         var values = {
-            DB_NAME : "offline_tile_store"        /* Seconds to wait for all tile requests to complete */
+            DB_NAME : "offline_tile_store"
         }
 
         return values;

@@ -18,7 +18,7 @@ var  ___backgroundTimer = null;
  */
 this._localEnum = (function(){
     var values = {
-        VALIDATION_URL : "http://localhost/test/test.html",
+        VALIDATION_URL : "http://localhost/offline/test.html",
         VALIDATION_TIMEOUT : 10 * 1000
     }
 

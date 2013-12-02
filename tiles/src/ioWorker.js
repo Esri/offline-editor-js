@@ -1,6 +1,8 @@
 // Base64 conversion functions
 importScripts("_base.js");
 
+var PROXY_URL = "../proxy.php?";
+
 // Parent to worker
 onmessage = function(evt) {
   getImages(evt.data);
@@ -17,7 +19,7 @@ function getImages(urls) {
 }
 
 function getImage(url) {
-  url = "../proxy.php?" + url;
+  url = PROXY_URL + url;
 
   var req = new XMLHttpRequest();
   req.open("GET", url, false);

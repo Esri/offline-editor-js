@@ -13,7 +13,7 @@
  * <b>More info:</b> http://www.w3.org/TR/webstorage/
  * @version 0.1
  * @author Andy Gup (@agup)
- * @param layersAddResult the layers-add-result. Example: map.on("layers-add-result", someFunction);
+ * @param map
  * @type {*|{}}
  */
 var OfflineStore = function(/* Map */ map) {
@@ -148,22 +148,22 @@ var OfflineStore = function(/* Map */ map) {
      * @returns Number MB's
      */
     this.getlocalStorageUsed = function(){
-        var mb = 0;
 
         //IE hack
         if(window.localStorage.hasOwnProperty("remainingspace")){
             //http://msdn.microsoft.com/en-us/library/ie/cc197016(v=vs.85).aspx
-            mb = window.localStorage.remainingSpace/1024/1024;
+            return window.localStorage.remainingSpace/1024/1024;
         }
         else{
+            var mb = 0;
             for(var x in localStorage){
                 //Uncomment out console.log to see *all* items in local storage
-                //console.log(x+"="+((localStorage[x].length * 2)/1024/1024).toFixed(2)+" MB");
+                console.log(x+"="+((localStorage[x].length * 2)/1024/1024)+" MB");
                 mb += localStorage[x].length
             }
-        }
 
-        return Math.round(((mb * 2)/1024/1024) * 100)/100;
+            return Math.round(((mb * 2)/1024/1024) * 100)/100;
+        }
     }
 
     //////////////////////////
@@ -172,6 +172,16 @@ var OfflineStore = function(/* Map */ map) {
     ///
     //////////////////////////
 
+    /**
+     * Internal method for routing an edit requests.
+     * IMPORTANT: Graphic must have an ObjectId. Using the edittoolbar will automatically create
+     * a Graphic with that property. Just be aware if you are manually creating graphics.
+     * @param internet
+     * @param graphic
+     * @param layer
+     * @param enumValue
+     * @private
+     */
     this._applyEdits = function(/* Boolean */ internet, /* Graphic */ graphic,/* FeatureLayer */ layer, /* String */ enumValue){
         //TODO Need to add code to determine size of incoming graphic
         var mb = this.getlocalStorageUsed();
@@ -194,7 +204,9 @@ var OfflineStore = function(/* Map */ map) {
             console.log("applyEdits: possible error.");
         }
         else{
-            this._layerEditManager(graphic,layer,enumValue,this.enum(),null,true,null);
+            //No need for a callback because this is an online request and it's immediately
+            //pushed to Feature Service. The only thing updated in the library is the Index.
+            this._layerEditManager(graphic,layer,enumValue,this.enum(),null,null);
         }
     }
 
@@ -211,7 +223,7 @@ var OfflineStore = function(/* Map */ map) {
                 layer.applyEdits(null,null,[graphic],function(addResult,updateResult,deleteResult){
                     console.log("deleteResult ObjectId: " + deleteResult[0].objectId + ", Success: " + deleteResult[0].success);
                     if(mCallback != null && count != null) {
-                        mCallback(count,deleteResult[0].success);
+                        mCallback(count,deleteResult[0].success,deleteResult[0].objectId);
                     }
                     else{
                         this._setItemLocalStoreIndex(layer.layerId, deleteResult[0].objectId,value,true);
@@ -228,7 +240,7 @@ var OfflineStore = function(/* Map */ map) {
                 layer.applyEdits([graphic],null,null,function(addResult,updateResult,deleteResult){
                     console.log("addResult ObjectId: " + addResult[0].objectId + ", Success: " + addResult[0].success);
                     if(mCallback != null && count != null) {
-                        mCallback(count,addResult[0].success);
+                        mCallback(count,addResult[0].success,addResult[0].objectId);
                     }
                     else{
                         this._setItemLocalStoreIndex(layer.layerId, addResult[0].objectId,value,true);
@@ -244,7 +256,7 @@ var OfflineStore = function(/* Map */ map) {
                 layer.applyEdits(null,[graphic],null,function(addResult,updateResult,deleteResult){
                     console.log("updateResult ObjectId: " + updateResult[0].objectId + ", Success: " + updateResult[0].success);
                     if(mCallback != null && count != null) {
-                        mCallback(count,deleteResult[0].success);
+                        mCallback(count,deleteResult[0].success,updateResult[0].objectId);
                     }
                     else{
                         this._setItemLocalStoreIndex(layer.layerId, updateResult[0].objectId,value,true);
@@ -257,10 +269,6 @@ var OfflineStore = function(/* Map */ map) {
                 );
                 break;
         }
-    }
-
-    this._layerCallbackHandler = function(callback,count,objectid){
-
     }
 
     /**
@@ -353,9 +361,11 @@ console.log(localStore.toString());
                                     onlineFLAG = true;
                                 }
 
-                                this._handleRestablishedInternet(function(){
-                                    this._stopTimer();
-                                    this._deleteStore();
+                                this._handleRestablishedInternet(function(evt){
+                                    if(evt == true){
+                                        this._stopTimer();
+                                        this._deleteStore();
+                                    }
                                 }.bind(this));
                             }
                         }
@@ -395,15 +405,15 @@ console.log(localStore.toString());
             for(var i in graphicsArr){
                 var obj1 = graphicsArr[i];
                 var layer = this._getGraphicsLayerById(obj1.layer);
-                this._layerEditManager(obj1.graphic,layer,obj1.enumValue,this.enum(),i,function(/* Number */ num, /* boolean */ success){
+                this._layerEditManager(obj1.graphic,layer,obj1.enumValue,this.enum(),i,function(/* Number */ num, /* boolean */ success, /* String */ id){
                     check.push(num);
 
-                    var id = obj1.graphic.attributes.objectid;
+                    var objectId = obj1.graphic.attributes.objectid;
 
                     if(success == true && check.length == graphicsArr.length){
                         if(errCnt == 0){
-                            this._setItemLocalStoreIndex(id,obj1.enumValue,true);
-                            callback();
+                            this._setItemLocalStoreIndex(obj1.layer,objectId,obj1.enumValue,true);
+                            callback(true);
                         }
                         else{
                             console.log("_handleRestablishedInternet: there were errors. LocalStore still available.");
@@ -411,20 +421,23 @@ console.log(localStore.toString());
                         }
                     }
                     else if(success == true && check.length < graphicsArr.length){
-                        this._setItemLocalStoreIndex(id,obj1.enumValue,true);
+                        this._setItemLocalStoreIndex(obj1.layer,objectId,obj1.enumValue,true);
                     }
                     else if(success == false && check.length == graphicsArr.length){
-                        this._setItemLocalStoreIndex(id,obj1.enumValue,false);
-                        console.log("_handleRestablishedInternet: error sending edit on " + id);
+                        this._setItemLocalStoreIndex(obj1.layer,objectId,obj1.enumValue,false);
+                        console.log("_handleRestablishedInternet: error sending edit on " + objectId);
                         this._stopTimer();
                     }
                     else if(success == false && check.length < graphicsArr.length){
-                        this._setItemLocalStoreIndex(id,obj1.enumValue,false);
+                        this._setItemLocalStoreIndex(obj1.layer,objectId,obj1.enumValue,false);
                         errCnt++;
-                        console.log("_handleRestablishedInternet: error sending edit on " + id);
+                        console.log("_handleRestablishedInternet: error sending edit on " + objectId);
                     }
                 }.bind(this));
             }
+        }
+        else{
+            callback(false);
         }
     }
 
@@ -465,15 +478,15 @@ console.log(localStore.toString());
 
     /**
      * Sets the localStorage
-     * @param item
+     * @param geometry
      * @returns {boolean} returns true if success, else false. Writes
      * error stack to console.
      */
-    this._setItemInLocalStore = function(item){
+    this._setItemInLocalStore = function(/* Geometry */ geometry){
         var success = false;
 
         try{
-            localStorage.setItem(this._localEnum().STORAGE_KEY,item);
+            localStorage.setItem(this._localEnum().STORAGE_KEY,geometry);
             success = true;
         }
         catch(err){
@@ -521,7 +534,8 @@ console.log(localStore.toString());
     }
 
     /**
-     * Add item to index *if* if was successfully deleted.
+     * Add item to index to track online transactions that were
+     * either successful or unsuccessful.
      * @param objectId
      * @param type enum
      * @param success
@@ -601,20 +615,22 @@ console.log(localStore.toString());
 
     /**
      * Rebuilds Geometry in a way that can be serialized/deserialized
-     * @param Graphic
+     * @param graphic
+     * @param layer
+     * @param enumValue
      * @returns {string}
      * @private
      */
-    this._serializeGraphic = function(/* Graphic */ object, layer, enumValue){
+    this._serializeGraphic = function(/* Graphic */ graphic, layer, enumValue){
         var json  = new this._jsonObject();
         json.layer = layer.layerId;
         json.enumValue = enumValue;
-        json.geometry = JSON.stringify(object.geometry)
+        json.geometry = JSON.stringify(graphic.geometry)
 
-        if(object.hasOwnProperty("attributes")){
-            if(object.attributes != null){
+        if(graphic.hasOwnProperty("attributes")){
+            if(graphic.attributes != null){
                 var hydrate = new Hydrate();
-                var q = hydrate.stringify(object.attributes);
+                var q = hydrate.stringify(graphic.attributes);
                 json.attributes = q;
             }
         }
@@ -741,9 +757,11 @@ console.log(localStore.toString());
                 else{
                     var arr = this._getLocalStorage();
                     if(arr != null){
-                        this._handleRestablishedInternet(function(){
-                            this._stopTimer();
-                            this._deleteStore();
+                        this._handleRestablishedInternet(function(evt){
+                            if(evt == true){
+                                this._stopTimer();
+                                this._deleteStore();
+                            }
                         }.bind(this));
                     }
                 }

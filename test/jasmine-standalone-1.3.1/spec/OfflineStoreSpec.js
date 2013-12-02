@@ -462,17 +462,47 @@ describe("Reestablish internet", function(){
 })
 
 /**
- * PROBLEM: This should throw an error. Maybe be a bug in the JS API. Needs further investigation.
+ * PROBLEM: This should throw an error BUT it fails silently. Maybe be a bug in the JS API. Needs further investigation.
  */
 describe("Apply edits", function(){
+
+    var graphicId = null;
+
     it("improper input - null values - delete", function(){
         var validate = null;
         offlineStore._layerEditManager(null,null,offlineStore.enum().DELETE,offlineStore._localEnum(),function(evt){
             validate = evt;
         });
         expect(validate).toBeNull();
-
     })
+
+//    it("Add Point Graphic to local FeatureLayer",function(){
+//        landusePointLayer.add(simplePtGraphic);
+//        landusePointLayer.remove(simplePtGraphic);
+//    })
+
+//    it("Add then Delete a Point Graphic to FeatureService", function(){
+//        var validate = null;
+//
+//        offlineStore._layerEditManager(simplePtGraphic,landusePointLayer,offlineStore.enum().ADD,offlineStore._localEnum(),function(num,success,id){
+//            graphicId = id;
+//            if(success == true){
+//                offlineStore._layerEditManager(simplePtGraphic,landusePointLayer,offlineStore.enum().DELETE,offlineStore._localEnum(),function(num,success,id){
+//                    validate = success;
+//                }.bind(this));
+//            }
+//        });
+//        expect(validate).toEqual(true);;
+//    })
+//
+//    it("Delete a Point Graphic to FeatureService", function(){
+//        var validate = null;
+//        if(deleteGraphic == true)
+//        offlineStore._layerEditManager(simplePtGraphic,landusePointLayer,offlineStore.enum().DELETE,offlineStore._localEnum(),function(num,success,id){
+//            validate = success;
+//        });
+//        expect(validate).toEqual(true);;
+//    })
 })
 
 //describe("Add a point", function(){

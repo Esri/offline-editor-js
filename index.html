@@ -6,8 +6,8 @@
     <meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no">
     <title>Offline Editing Sample</title>
 
-    <link rel="stylesheet" href="http://js.arcgis.com/3.6/js/dojo/dijit/themes/claro/claro.css">
-    <link rel="stylesheet" href="http://js.arcgis.com/3.6/js/esri/css/esri.css">
+    <link rel="stylesheet" href="http://js.arcgis.com/3.7/js/dojo/dijit/themes/claro/claro.css">
+    <link rel="stylesheet" href="http://js.arcgis.com/3.7/js/esri/css/esri.css">
     <style>
         html, body {
             height: 100%;
@@ -42,7 +42,7 @@
         }
     </style>
 
-    <script src="http://js.arcgis.com/3.6/"></script>
+    <script src="http://js.arcgis.com/3.7/"></script>
     <script src="src/OfflineStore.js"></script>
     <script>
         var map;
@@ -225,7 +225,7 @@
         });
 
         function getLocalStorage(){
-            var localStore = offlineStore._getLocalStorage();
+            var localStore = offlineStore.getlocalStorageUsed();
             localStore == null ? console.log("localStorage = " + null) : console.log("localStorage = " + localStore.toString());
         }
 
@@ -237,9 +237,11 @@
         }
 
         function handleRestablishedInternet(){
-            offlineStore._handleRestablishedInternet(function(){
-                offlineStore._stopTimer();
-                offlineStore._deleteStore();
+            offlineStore._handleRestablishedInternet(function(evt){
+                if(evt == true){
+                    offlineStore._stopTimer();
+                    offlineStore._deleteStore();
+                }
             });
         }
 
@@ -256,8 +258,8 @@
         <div id="templatePickerDiv"></div>
     </div>
     <div data-dojo-type="dijit/layout/ContentPane"  id="footer" data-dojo-props="region:'bottom'">
-        <button style="background-color: red" onclick="offlineStore._deleteStore()">Delete localStorage</button>
         <button style="background-color: red" onclick="getLocalStorage()" >Get localStorage</button>
+        <button style="background-color: red" onclick="offlineStore._deleteStore()">Delete localStorage</button>
         <button style="background-color: red" onclick="getGraphicsLayers()" >Get Graphics Layers</button>
         <button style="background-color: red" onclick="offlineStore._stopTimer()" >Stop Timer</button>
         <button style="background-color: red" onclick="offlineStore._startTimer()" >Start Timer</button>
