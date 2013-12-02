@@ -106,6 +106,12 @@ define([
 					req.send(null);
 				};
 
+				layer.deleteAllTiles = function(callback)
+				{
+					var store = this.offline.store;
+					store.deleteAll(callback);			
+				}
+
 				layer.getOfflineUsage = function()
 				{
 					return {

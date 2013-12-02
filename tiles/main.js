@@ -129,6 +129,7 @@ require(["esri/map",
 				{
 					on(dojo.byId('prepare-for-offline-btn'),'click', prepareForOffline);
 					on(dojo.byId('cancel-btn'),'click', cancel);
+					on(dojo.byId('delete-all-tiles-btn'),'click', deleteAllTiles);
 					esri.show(dojo.byId('ready-to-download-ui'));
 					esri.hide(dojo.byId('downloading-ui'));
 				}
@@ -221,6 +222,16 @@ require(["esri/map",
 			rowContent = "<td><b>" + rowContent.join("</b></td><td><b>") + "</b></td>";
 			tr = domConstruct.place("<tr>", dojo.byId('tile-count-table-body'),'last')
 			domConstruct.place(rowContent, tr,'last');			 
+		}
+
+		function deleteAllTiles() 
+		{
+			var basemapLayer = map.getLayer( map.layerIds[0] );
+
+			basemapLayer.deleteAllTiles(function(success, err)
+			{
+				console.log("deleteAllTiles():", success,err);
+			});
 		}
 
 		function prepareForOffline()
