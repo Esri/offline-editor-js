@@ -2,8 +2,9 @@
  * Library for handling the storing of map tiles in IndexedDB.
  *
  * Author: Andy Gup (@agup)
+ * Contributor: Javier Abadia (@javierabadia)
  */
-var dbStore = function(){
+var DbStore = function(){
 
     /**
      * Internal reference to the local database
@@ -43,11 +44,12 @@ var dbStore = function(){
 
     /**
      * Adds an object to the database
-     * @param urlData
+     * @param urlDataPair
      * @param callback callback(boolean, err)
      */
-    this.add = function(/* Array */ urlData,callback){
+    this.add = function(urlDataPair,callback){
         try{
+            console.log("add()",urlDataPair);
             var transaction = this._db.transaction(["tilepath"],"readwrite");
 
             transaction.oncomplete = function(event) {
@@ -59,14 +61,11 @@ var dbStore = function(){
             };
 
             var objectStore = transaction.objectStore("tilepath");
-            for (var i in urlData) {
-                var request = objectStore.add(urlData[i]);
-                request.onsuccess = function(event) {
-                    // event.target.result == customerData[i].ssn;
-                    console.log("item added to db " + event.target.result);
-                };
-            }
-
+            var request = objectStore.put(urlDataPair);
+            request.onsuccess = function(event) {
+                // event.target.result == customerData[i].ssn;
+                console.log("item added to db " + event.target.result);
+            };
         }
         catch(err){
             console.log("dbstore: " + err.stack);
@@ -148,16 +147,17 @@ var dbStore = function(){
             var transaction = this._db.transaction(["tilepath"])
                 .objectStore("tilepath")
                 .openCursor();
+
             transaction.onsuccess = function(event){
                 var cursor = event.target.result;
                 if(cursor){
-                    var url = cursor.value;
+                    var url = cursor.value;         /* JAMI: url? */
                     var json = JSON.stringify(url);
                     size += this.stringBytes(json);
                     cursor.continue();
                 }
                 else{
-                    size = Math.round(((size * 2)/1024/1024) * 100)/100;
+                    size = Math.round(((size * 2)/1024/1024) * 100)/100; /* JAMI: *2 */
                     callback(size,null);
                 }
             }.bind(this);
@@ -178,6 +178,7 @@ var dbStore = function(){
     this.init = function(callback){
 
         var request = indexedDB.open(this._localEnum().DB_NAME, 2);
+        callback = callback? callback : function(success) { console.log("DbStore::init() success:", success)}.bind(this);
 
         request.onerror = function(event) {
             console.log("indexedDB error: " + event.target.errorCode);
@@ -188,12 +189,16 @@ var dbStore = function(){
 
             // Create an objectStore to hold information about our map tiles.
             var objectStore = db.createObjectStore("tilepath", {
+                keyPath: "url",
                 autoIncrement: true
             });
 
             // Create an index to search urls. We may have duplicates
             // so we can't use a unique index.
+            /* JAMI: duplicates? why? one url -> one image */
+            /*
             objectStore.createIndex("url", "url", { unique: false });
+            */
         }.bind(this))
 
         request.onsuccess = (function(event){

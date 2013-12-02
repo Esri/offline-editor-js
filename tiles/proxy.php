@@ -36,6 +36,10 @@
    *              empty
    */
   $serverUrls = array(
+    array( 'url' => 'http://tiles1.arcgis.com/tiles/', 'matchAll' => true, 'token' => '' ),
+    array( 'url' => 'http://tiles2.arcgis.com/tiles/', 'matchAll' => true, 'token' => '' ),
+    array( 'url' => 'http://tiles3.arcgis.com/tiles/', 'matchAll' => true, 'token' => '' ),
+    array( 'url' => 'http://tiles4.arcgis.com/tiles/', 'matchAll' => true, 'token' => '' ),
     array( 'url' => 'http://sampleserver1.arcgisonline.com/ArcGIS/rest/services/', 'matchAll' => true, 'token' => '' ),
     array( 'url' => 'http://services.arcgisonline.com/ArcGIS/rest/services/', 'matchAll' => true, 'token' => '' ),
     array( 'url' => 'http://sampleserver2.arcgisonline.com/ArcGIS/rest/services/', 'matchAll' => true, 'token' => '' ),

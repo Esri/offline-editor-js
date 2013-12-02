@@ -15,12 +15,21 @@ require(["esri/map",
 	"../vendor/bootstrap-map-js/src/js/bootstrapmap.js",
 	"esri/urlUtils",
 	"esri/geometry/webMercatorUtils",
+	"src/offlineEnabler.js",
 	"dojo/dom-construct",
 	"dojo/domReady!"], 
-	function(Map, GraphicsLayer, Graphic, SimpleFillSymbol, Scalebar, esriUtils, geometry, dom, on, query, BootstrapMap, urlUtils, webMercatorUtils, domConstruct) 
+	function(Map, GraphicsLayer, Graphic, SimpleFillSymbol, Scalebar, esriUtils, geometry, dom, on, query, BootstrapMap, urlUtils, webMercatorUtils, 
+		offlineEnabler,
+		domConstruct) 
 	{  
 		var scalebar;
 		var symbol;
+
+/*
+		var store;
+		store = new DbStore();
+		store.init();
+*/		
 
 		// Load web map when page loads
 		var urlObject = urlUtils.urlToObject(window.location.href);
@@ -57,6 +66,7 @@ require(["esri/map",
 					initMapParts();
 					initEvents();
 					updateTileSizeEstimation();
+					initOffline();
 				}
 				else
 				{
@@ -65,6 +75,7 @@ require(["esri/map",
 						initMapParts();
 						initEvents();
 						updateTileSizeEstimation();
+						initOffline();
 					});
 				}
 
@@ -103,14 +114,31 @@ require(["esri/map",
 			on(dojo.byId('minLevel'),'change', updateTileSizeEstimation);
 			on(dojo.byId('maxLevel'),'change', updateTileSizeEstimation);
 
-			on(dojo.byId('prepare-for-offline-btn'),'click', prepareForOffline);
-			on(dojo.byId('cancel-btn'),'click', cancel);
-			esri.show(dojo.byId('ready-to-download-ui'));
-			esri.hide(dojo.byId('downloading-ui'));
 
 			var basemapLayer = map.getLayer( map.layerIds[0] );
 			dojo.byId('minLevel').value = basemapLayer.tileInfo.lods[0].level;
 			dojo.byId('maxLevel').value = basemapLayer.tileInfo.lods[basemapLayer.tileInfo.lods.length-1].level;
+		}
+
+		function initOffline()
+		{
+			var basemapLayer = offlineEnabler.getBasemapLayer(map);
+			offlineEnabler.extend(basemapLayer,function(success)
+			{
+				if(success)
+				{
+					on(dojo.byId('prepare-for-offline-btn'),'click', prepareForOffline);
+					on(dojo.byId('cancel-btn'),'click', cancel);
+					esri.show(dojo.byId('ready-to-download-ui'));
+					esri.hide(dojo.byId('downloading-ui'));
+				}
+				else
+				{	
+					dojo.byId('prepare-for-offline-btn').disabled = true;					
+					esri.hide(dojo.byId('downloading-ui'));
+					/* JAMI: TODO add message telling that something failed while initing the indexedDB */	
+				}
+			});			
 		}
 
 		function estimateTileSize(tiledLayer)
@@ -118,11 +146,6 @@ require(["esri/map",
 			var tileInfo = tiledLayer.tileInfo;
 
 			return 5000; // TODO - come up with a more precise estimation method
-		}
-
-		function checkIfTileIsStored(layer,level,row,col)
-		{
-			/* TODO */
 		}
 
 		function updateTileSizeEstimation()
@@ -215,8 +238,9 @@ require(["esri/map",
 
 				level_cell_ids.forEach(function(cell_id)
 				{
-					var url = basemapLayer.getTileUrl(level,cell_id[1],cell_id[0]);
-					cells.push(url);
+					//var url = basemapLayer.getTileUrl(level,cell_id[1],cell_id[0]);
+					//cells.push(url);
+					cells.push({ level: level, row: cell_id[1], col: cell_id[0]});
 				});
 
 				if( cells.length > 5000 && level != maxLevel)
@@ -233,17 +257,36 @@ require(["esri/map",
 			esri.show(dojo.byId('downloading-ui'));
 
 			/* launch tile download */
-			downloadTile(0, cells);
+			downloadTile(basemapLayer, 0, cells);
 
 			/* register events to report to user */
 
 		}
 
-		function downloadTile(i,cells)
+		function downloadTile(layer,i,cells)
 		{
 			var cell = cells[i];
 			reportProgress(i, cells.length);
 
+			layer.storeTile(cell.level,cell.row,cell.col, function(success, msg)
+			{
+				/* JAMI: TODO, continue looking for other tiles even if one fails */
+				if(success)
+				{
+					if( cancelRequested )
+						finishedDownloading(true);
+					else if( i== cells.length-1 )
+						finishedDownloading(false);
+					else
+						downloadTile(layer,i+1, cells);
+				}
+				else
+				{				
+					console.log("error storing tile", cell, msg);
+					finishedDownloading(true);
+				}
+			})
+			/*
 			setTimeout( function() 
 			{
 				console.log("downloading", cells[i]);
@@ -254,6 +297,8 @@ require(["esri/map",
 				else
 					downloadTile(i+1, cells); 
 			}, 1);
+			//*/
+
 		}
 
 		function reportProgress(countNow,countMax)
