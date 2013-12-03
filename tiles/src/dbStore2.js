@@ -80,8 +80,8 @@ var DbStore = function(){
     this.get = function(/* String */ url,callback){
         if(this._db != null){
 
-            var objectStore = this._db.transaction(["tilepath"]).objectStore("tilepath");
-            var request = objectStore.get(url);
+            var index = this._db.transaction(["tilepath"]).objectStore("tilepath").index("url");
+            var request = index.get(url);
             request.onsuccess = function(event)
             {
                 var result = event.target.result;
