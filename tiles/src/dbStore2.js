@@ -2,8 +2,9 @@
  * Library for handling the storing of map tiles in IndexedDB.
  *
  * Author: Andy Gup (@agup)
+ * Contributor: Javier Abadia (@javierabadia)
  */
-var dbStore = function(){
+var DbStore = function(){
 
     /**
      * Internal reference to the local database
@@ -43,11 +44,12 @@ var dbStore = function(){
 
     /**
      * Adds an object to the database
-     * @param urlData
+     * @param urlDataPair
      * @param callback callback(boolean, err)
      */
-    this.add = function(/* Array */ urlData,callback){
+    this.add = function(urlDataPair,callback){
         try{
+            console.log("add()",urlDataPair);
             var transaction = this._db.transaction(["tilepath"],"readwrite");
 
             transaction.oncomplete = function(event) {
@@ -59,14 +61,10 @@ var dbStore = function(){
             };
 
             var objectStore = transaction.objectStore("tilepath");
-            for (var i in urlData) {
-                var request = objectStore.add(urlData[i]);
-                request.onsuccess = function(event) {
-                    // event.target.result == customerData[i].ssn;
-                    console.log("item added to db " + event.target.result);
-                };
-            }
-
+            var request = objectStore.put(urlDataPair);
+            request.onsuccess = function(event) {
+                console.log("item added to db " + event.target.result);
+            };
         }
         catch(err){
             console.log("dbstore: " + err.stack);
@@ -82,8 +80,10 @@ var dbStore = function(){
     this.get = function(/* String */ url,callback){
         if(this._db != null){
 
-            var index = this._db.transaction(["tilepath"]).objectStore("tilepath").index("url");
-            index.get(url).onsuccess = function(event){
+            var objectStore = this._db.transaction(["tilepath"]).objectStore("tilepath");
+            var request = objectStore.get(url);
+            request.onsuccess = function(event)
+            {
                 var result = event.target.result;
                 if(result == null){
                     callback(false,"not found");
@@ -91,6 +91,9 @@ var dbStore = function(){
                 else{
                     callback(true,result);
                 }
+            }
+            request.onerror = function(err){
+                callback(false,err);
             }
         }
     }
@@ -101,12 +104,13 @@ var dbStore = function(){
      */
     this.deleteAll = function(callback){
         if(this._db != null){
-            var transaction = this._db.transaction(["tilepath"],"readwrite").objectStore("tilepath");
-            transaction.clear();
-            transaction.onsuccess = function(event){
+            var request = this._db.transaction(["tilepath"],"readwrite")
+                .objectStore("tilepath")
+                .clear();
+            request.onsuccess = function(event){
                 callback(true);
             }
-            transaction.onerror = function(err){
+            request.onerror = function(err){
                 callback(false,err);
             }
         }
@@ -122,13 +126,13 @@ var dbStore = function(){
      */
     this.delete = function(/* String */ url,callback){
         if(this._db != null){
-            var transaction = this._db.transaction(["tilepath"],"readwrite")
+            var request = this._db.transaction(["tilepath"],"readwrite")
                 .objectStore("tilepath")
                 .delete(url);
-            transaction.onsuccess = function(event){
+            request.onsuccess = function(event){
                 callback(true);
             }
-            transaction.onerror = function(err){
+            request.onerror = function(err){
                 callback(false,err);
             }
         }
@@ -148,16 +152,17 @@ var dbStore = function(){
             var transaction = this._db.transaction(["tilepath"])
                 .objectStore("tilepath")
                 .openCursor();
+
             transaction.onsuccess = function(event){
                 var cursor = event.target.result;
                 if(cursor){
-                    var url = cursor.value;
+                    var url = cursor.value;         /* JAMI: url? */
                     var json = JSON.stringify(url);
                     size += this.stringBytes(json);
                     cursor.continue();
                 }
                 else{
-                    size = Math.round(((size * 2)/1024/1024) * 100)/100;
+                    size = Math.round(((size * 2)/1024/1024) * 100)/100; /* JAMI: *2 */
                     callback(size,null);
                 }
             }.bind(this);
@@ -177,7 +182,8 @@ var dbStore = function(){
 
     this.init = function(callback){
 
-        var request = indexedDB.open(this._localEnum().DB_NAME, 2);
+        var request = indexedDB.open(this._localEnum().DB_NAME, 3);
+        callback = callback? callback : function(success) { console.log("DbStore::init() success:", success)}.bind(this);
 
         request.onerror = function(event) {
             console.log("indexedDB error: " + event.target.errorCode);
@@ -186,14 +192,23 @@ var dbStore = function(){
         request.onupgradeneeded = (function(event) {
             var db = event.target.result;
 
+            if( db.objectStoreNames.contains("tilepath"))
+            {
+                db.deleteObjectStore("tilepath");
+            }            
+
             // Create an objectStore to hold information about our map tiles.
             var objectStore = db.createObjectStore("tilepath", {
+                keyPath: "url",
                 autoIncrement: true
             });
 
             // Create an index to search urls. We may have duplicates
             // so we can't use a unique index.
+            /* JAMI: duplicates? why? one url -> one image */
+            /*
             objectStore.createIndex("url", "url", { unique: false });
+            */
         }.bind(this))
 
         request.onsuccess = (function(event){

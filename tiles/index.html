@@ -1,89 +1,157 @@
-<!DOCTYPE html>
-<html>
-    <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=7, IE=9, IE=10">
-    <meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no">
-    <title>Store images in localStorage</title>
+<!doctype html>
+<html lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta name="description" content="">
+	<meta name="author" content="">
 
-    <link rel="stylesheet" href="http://js.arcgis.com/3.7/js/dojo/dijit/themes/claro/claro.css">
-    <link rel="stylesheet" href="http://js.arcgis.com/3.7/js/esri/css/esri.css">
-    <style>
-        html, body { height: 100%; width: 100%; margin: 0; padding: 0; }
-        #map{
-            padding:0;
-        }
-    </style>
+	<link rel="shortcut icon" href="../vendor/bootstrap-map-js/bootstrap_v3/docs-assets/ico/favicon.png">
 
-    <script src="./src/OfflineTileStore.js"></script>
-    <!--<script src="./src/dbStore.js"></script>-->
-    <script src="./src/dbStore2.js"></script>
-    <script>var dojoConfig = {parseOnLoad: true};</script>
-    <script src="http://js.arcgis.com/3.7/"></script>
-    <script>
-        dojo.require("esri.map");
-        dojo.require("dojox.encoding.digests._base");
-        dojo.require("dijit.layout.BorderContainer");
-        dojo.require("dijit.layout.ContentPane");
+	<link rel="stylesheet" href="//js.arcgis.com/3.7/js/esri/css/esri.css">
 
-        var map;
-        var database;
-        var dbSupport = false;
-        var offlineTileStore = null;
+	<link rel="stylesheet" href="../vendor/bootstrap-map-js/bootstrap_v3/dist/css/bootstrap.css" >
+	<link rel="stylesheet" href="../vendor/bootstrap-map-js/src/css/bootstrapmap.css">   
+	<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" >
+	<link rel="stylesheet" href="offlineProbe.css" >
+	<link rel="stylesheet" href="style.css" >
 
-        require([
-          "esri/map"
-        ],function(Map){
+	<!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+	<!--[if lt IE 9]>
+	  <script src="../vendor/bootstrap-map-js/bootstrap_v3/docs-assets/js/html5shiv.js"></script>
+	  <script src="../vendor/bootstrap-map-js/bootstrap_v3/docs-assets/js/respond.min.js"></script>
+	  <![endif]-->
 
-            database = new dbStore();
-            dbSupport = database.isSupported();
-            if(dbSupport == true){
-                database.init(function(evt,err){
-                    console.log("dbstore init: " + evt);
-                }.bind(this));
-            }
+	  <title>Offline</title>
 
-            map = new esri.Map("map", {
-                basemap: "streets",
-                center: [2.352, 48.87],
-                zoom: 12
-            });
-
-            map.on("layer-add-result", function(evt){
-                try{
-                    offlineTileStore = new OfflineTileStore(map)
-                    console.log("Local storage used:  " + offlineTileStore.getlocalStorageUsed())
-                }
-                catch(err){
-                    console.log("err " + err.stack)
-                };
-            }.bind(this));
-
-        })
-
-        function deleteStorage(){
-            localStorage.clear();
-        }
-
-        function getSize(){
-            //database.testGet();
-            database.size(function(evt,err){
-                console.log("GET " + evt + " MBs, err: " + err);
-            })
-        }
-
-        function testRefresh(){
-            offlineTileStore.storeLayer();
-        }
-
-    </script>
   </head>
-  <body class="claro">
-    <button onclick="deleteStorage()">Delete localStore</button>
-    <button onclick="getSize()">Get db size</button>
-    <button onclick="testRefresh()">Refresh</button>
+  <body>
+	<div class="navbar navbar-inverse navbar-fixed-top">
+		<div class="container">
+			<div class="navbar-header">
+				<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+				</button>
+				<a class="navbar-brand" href=""><i class="fa fa-globe"></i> esri</a>
+			</div>
+		<!--
+		<div class="collapse navbar-collapse">
+		  <ul class="nav navbar-nav">
+			<li class="active"><a href="#">Home</a></li>
+			<li><a href="#about">About</a></li>
+			<li><a href="#contact">Contact</a></li>
+		  </ul>
+		</div>
+	--><!--/.nav-collapse -->
+</div>
+</div>
 
-     <div id="map" data-dojo-type="dijit.layout.ContentPane" data-dojo-props="region:'center'" style="overflow:hidden;">
-    </div>
-  </body>
+<div class="container">
+	<div class="row">
+		<div class="col-xs-12">
+			<div class="page-header">
+				<h2><i class="fa fa-html5"></i> JS Offline Mapping</h2>
+			</div>
+		</div>
+	</div>
+
+	<div class="row">
+		<div class="col-sm-4">
+		</div>
+		<div class="col-sm-8">
+			<h3 id="mapTitle"></h3>			
+		</div>
+	</div>
+
+	<div class="row">
+		<div class="col-sm-4">
+			<form role="form">
+				<div class="form-group">
+					<label class="control-label" for="minLevel">Min Zoom Level</label>
+					<input type="number" id="minLevel" name"minLevel" class="form-control" value=1 min=0 max=19>
+				</div>
+				<div class="form-group">
+					<label class="control-label" for="currentLevel">Current Zoom Level</label>
+					<input type="number" id="currentLevel" name"currentLevel" class="form-control" value=19 min=0 max=19>
+				</div>
+				<div class="form-group">
+					<label class="control-label" for="maxLevel">Max Zoom Level</label>
+					<input type="number" id="maxLevel" name"maxLevel" class="form-control" value=19 min=0 max=19>
+				</div>
+			</form>
+			<table id="tile-count-table" class="table table-striped table-condensed table-hover">
+				<thead>
+					<tr>
+						<th>Level</th>
+						<th>Scale</th>
+						<th>Tile Count</th>
+						<th>Size Mb (aprox.)</th>
+					</tr>
+				</thead>
+				<tbody id="tile-count-table-body">
+				</tbody>
+			</table>
+		</div>
+		<div class="col-sm-8">
+			<!-- Bootstrap-map-js -->
+			<div id="mapDiv"></div>
+		</div>
+	</div>
+
+	<div class="row">
+		<div id="ready-to-download-ui">
+			<div class="col-xs-12">
+				<button id="prepare-for-offline-btn" type="button" class="btn btn-primary"><i class="glyphicon glyphicon-cloud-download"></i> Prepare for Offline</button>
+				<button id="delete-all-tiles-btn" type="button" class="btn btn-danger"><i class="glyphicon glyphicon-floppy-remove"></i> Delete All Tiles</button>
+				<button id="go-offline-btn" type="button" class="btn btn-default"><i class="fa fa-chain-broken"></i> Go Offline</button>
+				<button id="go-online-btn" type="button" class="btn btn-default" disabled="disabled"><i class="fa fa-link"></i> Go Online</button>
+			</div>
+		</div>
+		<div id="downloading-ui">
+			<div class="col-xs-1">
+				<button id="cancel-btn" type="button" class="btn btn-warning"><i class="glyphicon glyphicon-remove"></i> Cancel</button>
+			</div>
+			<div id="download-progress" class="col-xs-11">
+				<div class="progress progress-striped active">
+					<div class="progress-bar progress-bar-success" role="progressbar" style="width:0%;"></div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<hr>
+
+	<div class="row">
+		<div class="col-xs-12 col-sm-4">
+			<div class="well lead step-1"><i class="fa fa-arrows"></i> 1. Navigate to your area of interest</div>
+		</div>
+		<div class="col-xs-12 col-sm-4">
+			<div class="well lead step-2"><i class="glyphicon glyphicon-cloud-download"></i> 2. Click 'Prepare for Offline' button</div>
+		</div>
+		<div class="col-xs-12 col-sm-4">
+			<div class="well lead step-3"><i class="fa fa-chain-broken"></i> 3. Go Offline and enjoy!</div>
+		</div>
+	</div>
+
+
+</div><!-- /.container -->
+
+<script src="//js.arcgis.com/3.7compact"></script>
+<script src="../vendor/offline/offline.min.js"></script>
+<script src="offlineProbe.js"></script>
+<script src="tilingScheme.js"></script>
+<script src="src/dbStore2.js"></script>
+<script src="main.js"></script>
+
+	<!-- Bootstrap core JavaScript
+	================================================== -->
+	<!-- Placed at the end of the document so the pages load faster -->
+	<!--
+	<script src="../vendor/bootstrap-map-js/bootstrap_v3/docs-assets/js/jquery.js"></script>
+	<script src="../vendor/bootstrap-map-js/bootstrap_v3/dist/js/bootstrap.min.js"></script>
+-->
+</body>
 </html>

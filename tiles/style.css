@@ -1,0 +1,43 @@
+body {
+  padding-top: 50px;
+}
+
+body > .container {
+  padding-bottom: 20px;
+}
+
+table {
+  border-collapse: ;
+  border-spacing: ;
+}
+
+#mapDiv {
+  min-height: 450px; 
+  max-height: 450px; 
+  margin-bottom: 20px;
+}
+
+#mapTitle {
+  margin-left: 15px;
+}
+
+#mapDiv_layers>:first-child .layerTile {
+  /*border: 1px solid red !important;*/
+  border-width: 1px !important;
+  border-style: solid !important; /* solid red !important;*/
+}
+
+
+#tile-count-table-body tr td
+{
+	text-align: center;
+}
+
+#downloading-ui
+{
+	display: none;
+}
+
+#download-progress
+{
+}

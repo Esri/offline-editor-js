@@ -1,3 +1,6 @@
 [submodule "vendor/offline"]
 	path = vendor/offline
 	url = https://github.com/HubSpot/offline.git
+[submodule "vendor/bootstrap-map-js"]
+	path = vendor/bootstrap-map-js
+	url = git@github.com:Esri/bootstrap-map-js.git
