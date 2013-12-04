@@ -80,8 +80,8 @@ var DbStore = function(){
     this.get = function(/* String */ url,callback){
         if(this._db != null){
 
-            var index = this._db.transaction(["tilepath"]).objectStore("tilepath").index("url");
-            var request = index.get(url);
+            var objectStore = this._db.transaction(["tilepath"]).objectStore("tilepath");
+            var request = objectStore.get(url);
             request.onsuccess = function(event)
             {
                 var result = event.target.result;
@@ -182,7 +182,7 @@ var DbStore = function(){
 
     this.init = function(callback){
 
-        var request = indexedDB.open(this._localEnum().DB_NAME, 2);
+        var request = indexedDB.open(this._localEnum().DB_NAME, 3);
         callback = callback? callback : function(success) { console.log("DbStore::init() success:", success)}.bind(this);
 
         request.onerror = function(event) {
@@ -191,6 +191,11 @@ var DbStore = function(){
         };
         request.onupgradeneeded = (function(event) {
             var db = event.target.result;
+
+            if( db.objectStoreNames.contains("tilepath"))
+            {
+                db.deleteObjectStore("tilepath");
+            }            
 
             // Create an objectStore to hold information about our map tiles.
             var objectStore = db.createObjectStore("tilepath", {

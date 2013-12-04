@@ -21,8 +21,10 @@ table {
   margin-left: 15px;
 }
 
-.layerTile {
-  border: 1px solid red !important;
+#mapDiv_layers>:first-child .layerTile {
+  /*border: 1px solid red !important;*/
+  border-width: 1px !important;
+  border-style: solid !important; /* solid red !important;*/
 }
 
 

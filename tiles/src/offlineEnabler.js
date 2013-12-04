@@ -41,10 +41,11 @@ define([
 						return url;
 					}
 
-					var tileid = "|"+level+"|"+row+"|"+col+"|";
+					var tileid = "loading.php?"+level+"-"+row+"-"+col;
 
 					this.offline.store.get(url, function(success, offlineTile)
 					{
+						var img = query("img[src="+tileid+"]")[0];
 						if( success )
 						{
 							console.log("found tile offline", url);
@@ -53,15 +54,16 @@ define([
 							//var imgURL = URL.createObjectURL(offlineTile.img);
 
 							// search for the img with src="|"+level+"|"+row+"|"+col+"|" and replace with actual url
-							var img = query("img[src="+tileid+"]")[0];
+							img.style.borderColor = "blue";
 							img.src = imgURL;
 
-							return imgURL;
+							return "";	/* this result goes nowhere, seriously */
 						}
 						else
 						{
+							img.style.borderColor = "green";
 							console.log("tile is not in the offline store", url);
-							return "";
+							return "";	/* this result goes nowhere, seriously */
 						}						
 					});
 
