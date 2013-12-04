@@ -21,6 +21,7 @@ var OfflineStore = function(/* Map */ map) {
     this.backgroundTimerWorker = null;
     this.isTimer = null;
     this.layers = [];  //An array of all feature layers
+    this.utils = null;
     this.map = map;
     if(map != null) {
         this.map.offlineStore = this
@@ -70,12 +71,14 @@ var OfflineStore = function(/* Map */ map) {
             /* A unique token for tokenizing stringified localStorage values */
             TOKEN : "|||",
             TIMER_TICK_INTERVAL : 10 * 1000 /* ms */,
+            WINDOW_ERROR_EVENT: "windowErrorEvent",
             EDIT_EVENT: "editEvent",
             EDIT_EVENT_SUCCESS: true,
             EDIT_EVENT_FAILED: false,
             REQUIRED_LIBS : [
                 "./src/Hydrate.js",
-                "./src/Poller.js"
+                "./src/Poller.js",
+                "./src/OfflineUtils.js"
             ]
         }
 
@@ -100,6 +103,7 @@ var OfflineStore = function(/* Map */ map) {
      * @private
      */
     this.___internet = true;
+    this._hydrate = null;
 
     //////////////////////////
     ///
@@ -211,11 +215,17 @@ var OfflineStore = function(/* Map */ map) {
      * @private
      */
     this._applyEdits = function(/* Boolean */ internet, /* Graphic */ graphic,/* FeatureLayer */ layer, /* String */ enumValue, callback){
-        //TODO Need to add code to determine size of incoming graphic
+
+        var grSize = this.utils.apprxGraphicSize(graphic);
         var mb = this.getlocalStorageUsed();
         console.log("getlocalStorageUsed = " + mb + " MBs");
 
-        if(mb > this._localEnum().LOCAL_STORAGE_MAX_LIMIT /* MB */){
+        if(grSize + mb > this._localEnum().LOCAL_STORAGE_MAX_LIMIT /* MB */){
+            alert("The graphic you are editing is too big (" + grSize.toFixed(4) +  " MBs) for the remaining storage. Please try again.")
+            callback(0,false,0);
+            return;
+        }
+        else if(mb > this._localEnum().LOCAL_STORAGE_MAX_LIMIT /* MB */){
             alert("You are almost over the local storage limit. No more data can be added.")
             callback(0,false,0);
             return;
@@ -685,8 +695,7 @@ console.log(localStore.toString());
 
         if(graphic.hasOwnProperty("attributes")){
             if(graphic.attributes != null){
-                var hydrate = new Hydrate();
-                var q = hydrate.stringify(graphic.attributes);
+                var q = this._hydrate.stringify(graphic.attributes);
                 json.attributes = q;
             }
         }
@@ -796,7 +805,9 @@ console.log(localStore.toString());
         this._loadScripts(this._localEnum().REQUIRED_LIBS,function(){
             console.log("OfflineStore is ready.")
 
+            this.utils = new OfflineUtils();
             this._parseFeatureLayers(this.map);
+            this._hydrate = new Hydrate();
 
             if(typeof Poller == "object"){
                 var internet = this._checkInternet();
@@ -841,6 +852,7 @@ console.log(localStore.toString());
     window.onerror = function (msg,url,line){
         console.log(msg + ", " + url + ":" + line);
         this.map.offlineStore._stopTimer();
+        this._sendEvent(msg,this._localEnum().WINDOW_ERROR_EVENT);
         return true;
     }
 };
