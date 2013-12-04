@@ -41,20 +41,23 @@ define([
 						return url;
 					}
 
-					var tileid = "loading.php?"+level+"-"+row+"-"+col;
+					/* temporary URL returned immediately, as we haven't retrieved the image from the indexeddb yet */
+					var tileid = "void:"+level+"-"+row+"-"+col; 
 
 					this.offline.store.get(url, function(success, offlineTile)
 					{
+						/* when the .get() callback is called we replace the temporary URL originally returned by the data:image url */
 						var img = query("img[src="+tileid+"]")[0];
 						if( success )
 						{
 							console.log("found tile offline", url);
-							var imgURL =  "data:image;base64," + offlineTile.img;
-							//console.log(imgURL);
-							//var imgURL = URL.createObjectURL(offlineTile.img);
+							var imgURL = "data:image;base64," + offlineTile.img;
 
-							// search for the img with src="|"+level+"|"+row+"|"+col+"|" and replace with actual url
+							// search for the img with src="void:"+level+"-"+row+"-"+col and replace with actual url
 							img.style.borderColor = "blue";
+							// when we return a nonexistent url to the image, the TiledMapServiceLayer::_tileErrorHandler() method 
+							// sets img visibility to 'hidden', so we need to show the image back once we have put the data:image
+							img.style.visibility = "visible"; 
 							img.src = imgURL;
 
 							return "";	/* this result goes nowhere, seriously */
