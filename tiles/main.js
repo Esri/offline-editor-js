@@ -140,7 +140,10 @@ require(["esri/map",
 					esri.hide(dojo.byId('downloading-ui'));
 					/* JAMI: TODO add message telling that something failed while initing the indexedDB */	
 				}
-			});			
+			});
+
+			Offline.on('up', goOnline );
+			Offline.on('down', goOffline );
 		}
 
 		function estimateTileSize(tiledLayer)
@@ -252,6 +255,11 @@ require(["esri/map",
 			basemapLayer.deleteAllTiles(function(success, err)
 			{
 				console.log("deleteAllTiles():", success,err);
+				// JAMI: TODO more detail in the feedback given to user
+				if( success )
+					alert("All tiles deleted");
+				else
+					alert("Can't delete tiles");
 			});
 		}
 
