@@ -9,5 +9,6 @@
 - [ ] reorganize code
 - [ ] remove unused files (ioWorker, OfflineTileStore)
 - [ ] test iPad/iPhone
+- [ ] more general proxy.php
 
 - [ ] non-rectangular area
