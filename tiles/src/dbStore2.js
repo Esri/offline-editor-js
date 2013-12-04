@@ -180,41 +180,34 @@ var DbStore = function(){
         return (str.length + (!b ? 0: b.length));
     }
 
-    this.init = function(callback){
-
-        var request = indexedDB.open(this._localEnum().DB_NAME, 3);
+    this.init = function(callback)
+    {
+        var request = indexedDB.open(this._localEnum().DB_NAME, 4);
         callback = callback? callback : function(success) { console.log("DbStore::init() success:", success)}.bind(this);
 
-        request.onerror = function(event) {
+        request.onerror = function(event) 
+        {
             console.log("indexedDB error: " + event.target.errorCode);
             callback(false,event.target.errorCode);
-        };
-        request.onupgradeneeded = (function(event) {
+        }.bind(this);
+
+        request.onupgradeneeded = function(event) 
+        {
             var db = event.target.result;
 
-            if( db.objectStoreNames.contains("tilepath"))
+            if( db.objectStoreNames.contains("tilepath")) 
             {
                 db.deleteObjectStore("tilepath");
             }            
 
-            // Create an objectStore to hold information about our map tiles.
-            var objectStore = db.createObjectStore("tilepath", {
-                keyPath: "url",
-                autoIncrement: true
-            });
+            var objectStore = db.createObjectStore("tilepath", { keyPath: "url" });
+        }.bind(this);
 
-            // Create an index to search urls. We may have duplicates
-            // so we can't use a unique index.
-            /* JAMI: duplicates? why? one url -> one image */
-            /*
-            objectStore.createIndex("url", "url", { unique: false });
-            */
-        }.bind(this))
-
-        request.onsuccess = (function(event){
+        request.onsuccess = function(event)
+        {
             this._db = event.target.result;
             console.log("database opened successfully");
             callback(true);
-        }.bind(this))
+        }.bind(this);
     }
 }
