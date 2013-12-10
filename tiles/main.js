@@ -2,7 +2,7 @@
 
 var map;
 var graphics;
-var cancelRequested;
+var cancelRequested, startTime;
 
 require(["esri/map", 
 	"esri/layers/GraphicsLayer", "esri/graphic", "esri/symbols/SimpleFillSymbol",
@@ -150,6 +150,7 @@ require(["esri/map",
 
 		function updateOfflineUsage()
 		{
+			dojo.byId('offline-usage').innerHTML = "updating...";
 			var basemapLayer = offlineEnabler.getBasemapLayer(map);
 			basemapLayer.getOfflineUsage(function(usage)
 			{
@@ -179,7 +180,7 @@ require(["esri/map",
 			var basemapLayer = map.getLayer( map.layerIds[0] );
 			var tileSize = estimateTileSize(basemapLayer);
 
-			var tiling_scheme = new TilingScheme(basemapLayer,geometry);
+			var tilingScheme = new TilingScheme(basemapLayer,geometry);
 
 			domConstruct.empty('tile-count-table-body');
 
@@ -187,34 +188,24 @@ require(["esri/map",
 			
 			for(var level=minLevel; level<=maxLevel; level++)
 			{
-				/*
-				if( level > 10 )
-				{
-					console.log("algo raro...");
-					break;
-				}
-				*/
-					
-				//console.log("estimating tiles for level", level);
-				var cell_ids = tiling_scheme.getAllCellIdsInExtent(map.extent,level);
+				var cellIds = tilingScheme.getAllCellIdsInExtent(map.extent,level);
 
 				if( level == zoomLevel)
 				{
 					graphics.clear();
-					cell_ids.forEach(function(cell_id)
+					cellIds.forEach(function(cell_id)
 					{
-						var polygon = tiling_scheme.getCellPolygonFromCellId(cell_id, level);
+						var polygon = tilingScheme.getCellPolygonFromCellId(cell_id, level);
 						var graphic = new Graphic(polygon, symbol);
 						graphics.add(graphic);
 					});
 				}
 
-
 				var levelEstimation = { 
 					level: level,
 					scale: '-',
-					tileCount: cell_ids.length,
-					sizeBytes: cell_ids.length * tileSize
+					tileCount: cellIds.length,
+					sizeBytes: cellIds.length * tileSize
 				}
 
 				totalEstimation.tileCount += levelEstimation.tileCount;
@@ -283,6 +274,7 @@ require(["esri/map",
 			reportProgress(0,1);
 			esri.hide(dojo.byId('ready-to-download-ui'));
 			esri.show(dojo.byId('downloading-ui'));
+			startTime = new Date();
 
 			/* launch offline preparation process */
 			var minLevel = parseInt(dojo.byId('minLevel').value);
@@ -301,6 +293,17 @@ require(["esri/map",
 			var pbar = query('#download-progress [role=progressbar]')[0];
 			var percent = countMax? (countNow / countMax * 100) : 0;
 			pbar.style.width = percent+"%";
+
+			if( countNow > 5 )
+			{
+				var currentTime = new Date();
+				var elapsedTime = currentTime - startTime;
+				var remainingTime = (elapsedTime / countNow) * (countMax - countNow);
+				var sec = 1 + Math.floor(remainingTime / 1000);
+				var min = Math.floor(sec / 60);
+				sec -= (min * 60);
+				dojo.byId('remaining-time').innerHTML = ((min<10)? "0" + min : min) + ":" + ((sec<10)? "0" + sec : sec);
+			}
 			return cancelRequested;
 		}
 
