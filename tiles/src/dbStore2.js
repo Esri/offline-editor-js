@@ -147,7 +147,7 @@ var DbStore = function(){
      */
     this.size = function(callback){
         if(this._db != null){
-            var size = 0;
+            var usage = { size: 0, tileCount: 0 };
 
             var transaction = this._db.transaction(["tilepath"])
                 .objectStore("tilepath")
@@ -158,12 +158,13 @@ var DbStore = function(){
                 if(cursor){
                     var url = cursor.value;         /* JAMI: url? */
                     var json = JSON.stringify(url);
-                    size += this.stringBytes(json);
+                    usage.size += this.stringBytes(json);
+                    usage.tileCount += 1;
                     cursor.continue();
                 }
                 else{
-                    size = Math.round(((size * 2)/1024/1024) * 100)/100; /* JAMI: *2 */
-                    callback(size,null);
+                    usage.size = Math.round((usage.size/1024/1024) * 100)/100; /* JAMI: *2 */
+                    callback(usage,null);
                 }
             }.bind(this);
             transaction.onerror = function(err){

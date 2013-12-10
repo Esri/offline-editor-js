@@ -131,12 +131,14 @@ require(["esri/map",
 					on(dojo.byId('delete-all-tiles-btn'),'click', deleteAllTiles);
 					on(dojo.byId('go-offline-btn'),'click', goOffline);
 					on(dojo.byId('go-online-btn'),'click', goOnline);
+					on(dojo.byId('update-offline-usage'),'click', updateOfflineUsage);
 					esri.show(dojo.byId('ready-to-download-ui'));
 					esri.hide(dojo.byId('downloading-ui'));
+					updateOfflineUsage();
 				}
 				else
 				{	
-					dojo.byId('prepare-for-offline-btn').disabled = true;					
+					dojo.byId('prepare-for-offline-btn').disabled = true;
 					esri.hide(dojo.byId('downloading-ui'));
 					/* JAMI: TODO add message telling that something failed while initing the indexedDB */	
 				}
@@ -146,11 +148,23 @@ require(["esri/map",
 			Offline.on('down', goOffline );
 		}
 
+		function updateOfflineUsage()
+		{
+			var basemapLayer = offlineEnabler.getBasemapLayer(map);
+			basemapLayer.getOfflineUsage(function(usage)
+			{
+				console.log(usage);
+				console.log("Avg tile size:", usage.size * 1024 * 1024/ usage.tileCount, "Kb");
+				var usageStr = usage.size + " Mb (" + usage.tileCount + " tiles)";
+				dojo.byId('offline-usage').innerHTML = usageStr;
+			});		
+		}
+
 		function estimateTileSize(tiledLayer)
 		{
 			var tileInfo = tiledLayer.tileInfo;
 
-			return 5000; // TODO - come up with a more precise estimation method
+			return 14000; // TODO - come up with a more precise estimation method
 		}
 
 		function updateTileSizeEstimation()
@@ -169,7 +183,7 @@ require(["esri/map",
 
 			domConstruct.empty('tile-count-table-body');
 
-			var totalEstimation = { tileCount:0, sizeBytes:0}
+			var totalEstimation = { tileCount:0, sizeBytes:0 }
 			
 			for(var level=minLevel; level<=maxLevel; level++)
 			{
@@ -208,7 +222,7 @@ require(["esri/map",
 
 				if( levelEstimation.tileCount > 1)
 				{
-					var rowContent = [levelEstimation.level, levelEstimation.scale, levelEstimation.tileCount, Math.floor(levelEstimation.sizeBytes / 1024 / 1024 * 100) / 100 + " Mb"]
+					var rowContent = [levelEstimation.level, levelEstimation.scale, levelEstimation.tileCount, Math.round(levelEstimation.sizeBytes / 1024 / 1024 * 100) / 100 + " Mb"]
 					rowContent = "<td>" + rowContent.join("</td><td>") + "</td>";
 					var tr = domConstruct.place("<tr>", dojo.byId('tile-count-table-body'),'last')
 					domConstruct.place(rowContent, tr,'last');
@@ -252,11 +266,13 @@ require(["esri/map",
 			basemapLayer.deleteAllTiles(function(success, err)
 			{
 				console.log("deleteAllTiles():", success,err);
-				// JAMI: TODO more detail in the feedback given to user
+
 				if( success )
 					alert("All tiles deleted");
 				else
 					alert("Can't delete tiles");
+
+				setTimeout(updateOfflineUsage,0); // request execution in the next turn of the event loop
 			});
 		}
 
@@ -294,6 +310,7 @@ require(["esri/map",
 			{				
 				esri.show(dojo.byId('ready-to-download-ui'));
 				esri.hide(dojo.byId('downloading-ui'));
+				updateOfflineUsage();
 			}, 1000);
 		}
 	});

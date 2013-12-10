@@ -190,12 +190,10 @@ define([
 					store.deleteAll(callback);			
 				}
 
-				layer.getOfflineUsage = function()
+				layer.getOfflineUsage = function(callback)
 				{
-					return {
-						tileCount: 0,
-						size: 0
-					}
+					var store = this.offline.store;
+					store.size(callback);
 				};
 
 			}
