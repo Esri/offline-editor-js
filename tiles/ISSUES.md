@@ -6,6 +6,8 @@
 - [ ] IndexedDB not supported in iOS Safari (see https://developer.mozilla.org/en-US/docs/IndexedDB#Browser_compatibility and https://github.com/axemclion/IndexedDBShim)
 - [ ] better tile estimation and limits
 - [ ] reorganize code
+	+ partially done
+	+ better dependency management
 - [ ] remove blue border
 - [ ] allow naming caches?
 - [ ] remove unused files (ioWorker, OfflineTileStore)
