@@ -234,7 +234,6 @@ require(["esri/map",
 			dojo.byId('go-online-btn').disabled = undefined;
 
 			var basemapLayer = map.getLayer( map.layerIds[0] );
-
 			basemapLayer.goOffline();
 		}
 
@@ -244,14 +243,12 @@ require(["esri/map",
 			dojo.byId('go-online-btn').disabled = true;
 
 			var basemapLayer = map.getLayer( map.layerIds[0] );
-
 			basemapLayer.goOnline();
 		}
 
 		function deleteAllTiles() 
 		{
 			var basemapLayer = map.getLayer( map.layerIds[0] );
-
 			basemapLayer.deleteAllTiles(function(success, err)
 			{
 				console.log("deleteAllTiles():", success,err);
@@ -265,87 +262,17 @@ require(["esri/map",
 
 		function prepareForOffline()
 		{
-			/* create list of tiles to store */
-			var minLevel = parseInt(dojo.byId('minLevel').value);
-			var maxLevel = parseInt(dojo.byId('maxLevel').value);
-			var basemapLayer = map.getLayer( map.layerIds[0] );
-			var tiling_scheme = new TilingScheme(basemapLayer,geometry);
-			var cells = [];
-
-			for(var level=minLevel; level<=maxLevel; level++)
-			{
-				var level_cell_ids = tiling_scheme.getAllCellIdsInExtent(map.extent,level);
-
-				level_cell_ids.forEach(function(cell_id)
-				{
-					//var url = basemapLayer.getTileUrl(level,cell_id[1],cell_id[0]);
-					//cells.push(url);
-					cells.push({ level: level, row: cell_id[1], col: cell_id[0]});
-				});
-
-				if( cells.length > 5000 && level != maxLevel)
-				{
-					console.log("me planto!");
-					break;
-				}
-			}
-
 			/* put UI in downloading mode */
 			cancelRequested = false;
-			reportProgress(0,cells.length);
+			reportProgress(0,1);
 			esri.hide(dojo.byId('ready-to-download-ui'));
 			esri.show(dojo.byId('downloading-ui'));
 
-			/* launch tile download */
-			downloadTile(basemapLayer, 0, cells);
-
-			/* register events to report to user */
-
-		}
-
-		function downloadTile(layer,i,cells)
-		{
-			var cell = cells[i];
-			reportProgress(i, cells.length);
-
-			layer.storeTile(cell.level,cell.row,cell.col, function(success, msg)
-			{
-				/* JAMI: TODO, continue looking for other tiles even if one fails */
-				if(success)
-				{
-					if( cancelRequested )
-						finishedDownloading(true);
-					else if( i== cells.length-1 )
-						finishedDownloading(false);
-					else
-						downloadTile(layer,i+1, cells);
-				}
-				else
-				{				
-					console.log("error storing tile", cell, msg);
-					finishedDownloading(true);
-				}
-			})
-			/*
-			setTimeout( function() 
-			{
-				console.log("downloading", cells[i]);
-				if( cancelRequested )
-					finishedDownloading(true);
-				else if ( i == cells.length-1)
-					finishedDownloading(false);
-				else
-					downloadTile(i+1, cells); 
-			}, 1);
-			//*/
-
-		}
-
-		function reportProgress(countNow,countMax)
-		{
-			var pbar = query('#download-progress [role=progressbar]')[0];
-			var percent = countMax? (countNow / countMax * 100) : 0;
-			pbar.style.width = percent+"%";
+			/* launch offline preparation process */
+			var minLevel = parseInt(dojo.byId('minLevel').value);
+			var maxLevel = parseInt(dojo.byId('maxLevel').value);
+			var basemapLayer = map.getLayer( map.layerIds[0] );
+			basemapLayer.prepareForOffline(minLevel, maxLevel, map.extent, reportProgress, finishedDownloading);
 		}
 
 		function cancel()
@@ -353,9 +280,16 @@ require(["esri/map",
 			cancelRequested = true;
 		}
 
-		function finishedDownloading(cancelled)
+		function reportProgress(countNow,countMax)
 		{
-			
+			var pbar = query('#download-progress [role=progressbar]')[0];
+			var percent = countMax? (countNow / countMax * 100) : 0;
+			pbar.style.width = percent+"%";
+			return cancelRequested;
+		}
+
+		function finishedDownloading(cancelled)
+		{			
 			setTimeout(function()
 			{				
 				esri.show(dojo.byId('ready-to-download-ui'));

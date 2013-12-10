@@ -2,8 +2,9 @@
  * depends upon "_base.js"
  */
 define([
-	"dojo/query"
-	], function(query)
+	"dojo/query",
+	"esri/geometry"
+	], function(query, geometry)
 	{
 		return {
 			/*
@@ -82,6 +83,58 @@ define([
 					return tileid;
 				};
 
+				layer.prepareForOffline = function(minLevel, maxLevel, extent, reportProgress, finishedDownloading)
+				{
+					/* create list of tiles to store */
+					var basemapLayer = map.getLayer( map.layerIds[0] );
+					var tiling_scheme = new TilingScheme(this,geometry);
+					var cells = [];
+
+					for(var level=minLevel; level<=maxLevel; level++)
+					{
+						var level_cell_ids = tiling_scheme.getAllCellIdsInExtent(extent,level);
+
+						level_cell_ids.forEach(function(cell_id)
+						{
+							cells.push({ level: level, row: cell_id[1], col: cell_id[0]});
+						});
+
+						if( cells.length > 5000 && level != maxLevel)
+						{
+							console.log("me planto!");
+							break;
+						}
+					}
+
+					/* launch tile download */
+					this.downloadTile(0, cells, reportProgress, finishedDownloading);
+				};
+
+				layer.downloadTile = function(i,cells, reportProgress, finishedDownloading)
+				{
+					var cell = cells[i];
+					var cancelRequested = reportProgress(i, cells.length);
+
+					this.storeTile(cell.level,cell.row,cell.col, function(success, msg)
+					{
+						/* JAMI: TODO, continue looking for other tiles even if one fails */
+						if(success)
+						{
+							if( cancelRequested )
+								finishedDownloading(true);
+							else if( i== cells.length-1 )
+								finishedDownloading(false);
+							else
+								this.downloadTile(i+1, cells, reportProgress, finishedDownloading);
+						}
+						else
+						{				
+							console.log("error storing tile", cell, msg);
+							finishedDownloading(true);
+						}
+					}.bind(this))
+				}
+
 				layer.goOffline = function()
 				{
 					this.offline.online = false;
@@ -90,6 +143,7 @@ define([
 				layer.goOnline = function()
 				{
 					this.offline.online = true;
+					this.refresh();
 				};				
 
 				layer.storeTile = function(level,row,col,callback)
