@@ -25,12 +25,6 @@ require(["esri/map",
 		var scalebar;
 		var symbol;
 
-/*
-		var store;
-		store = new DbStore();
-		store.init();
-*/		
-
 		// Load web map when page loads
 		var urlObject = urlUtils.urlToObject(window.location.href);
 		var webmapid;
