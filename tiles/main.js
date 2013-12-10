@@ -203,7 +203,6 @@ require(["esri/map",
 
 				var levelEstimation = { 
 					level: level,
-					scale: '-',
 					tileCount: cellIds.length,
 					sizeBytes: cellIds.length * tileSize
 				}
@@ -213,7 +212,7 @@ require(["esri/map",
 
 				if( levelEstimation.tileCount > 1)
 				{
-					var rowContent = [levelEstimation.level, levelEstimation.scale, levelEstimation.tileCount, Math.round(levelEstimation.sizeBytes / 1024 / 1024 * 100) / 100 + " Mb"]
+					var rowContent = [levelEstimation.level, levelEstimation.tileCount, Math.round(levelEstimation.sizeBytes / 1024 / 1024 * 100) / 100 + " Mb"]
 					rowContent = "<td>" + rowContent.join("</td><td>") + "</td>";
 					var tr = domConstruct.place("<tr>", dojo.byId('tile-count-table-body'),'last')
 					domConstruct.place(rowContent, tr,'last');
@@ -227,7 +226,7 @@ require(["esri/map",
 				}
 			}
 
-			rowContent = ["Total", "-", totalEstimation.tileCount, Math.floor(totalEstimation.sizeBytes / 1024 / 1024 * 100)/100 + " Mb"];
+			rowContent = ["Total", totalEstimation.tileCount, Math.floor(totalEstimation.sizeBytes / 1024 / 1024 * 100)/100 + " Mb"];
 			rowContent = "<td><b>" + rowContent.join("</b></td><td><b>") + "</b></td>";
 			tr = domConstruct.place("<tr>", dojo.byId('tile-count-table-body'),'last')
 			domConstruct.place(rowContent, tr,'last');			 
