@@ -3,10 +3,11 @@
 - [x] review base64	encoding								**FIXED**
 - [x] test code in https://hacks.mozilla.org/2012/02/storing-images-and-files-in-indexeddb/		**DONE**, doesn't work in Chrome
 
-- [ ] remove blue border
+- [ ] IndexedDB not supported in iOS Safari (see https://developer.mozilla.org/en-US/docs/IndexedDB#Browser_compatibility and https://github.com/axemclion/IndexedDBShim)
 - [ ] better tile estimation and limits
-- [ ] allow naming caches?
 - [ ] reorganize code
+- [ ] remove blue border
+- [ ] allow naming caches?
 - [ ] remove unused files (ioWorker, OfflineTileStore)
 - [ ] test iPad/iPhone
 - [ ] more general proxy.php
