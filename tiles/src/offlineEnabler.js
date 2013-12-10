@@ -1,16 +1,25 @@
+/*
+ * depends upon "_base.js"
+ */
 define([
 	"dojo/query"
 	], function(query)
 	{
-		console.log("offlineEnabler.js");
-
 		return {
+			/*
+			 * utility method to get the basemap layer reference
+			 */
 			getBasemapLayer: function(map)
 			{
 				var layerId = map.layerIds[0];
 				return map.getLayer(layerId);
 			},
 
+			/*
+			 * method that extends a layer object with the offline capability
+			 * 
+			 * after extending one layer, you can call layer.goOffline() or layer.goOnline()
+			 */
 			extend: function(layer,callback)
 			{
 				console.log("extending layer", layer.url);
