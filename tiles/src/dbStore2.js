@@ -49,7 +49,7 @@ var DbStore = function(){
      */
     this.add = function(urlDataPair,callback){
         try{
-            console.log("add()",urlDataPair);
+            //console.log("add()",urlDataPair);
             var transaction = this._db.transaction(["tilepath"],"readwrite");
 
             transaction.oncomplete = function(event) {
@@ -63,7 +63,7 @@ var DbStore = function(){
             var objectStore = transaction.objectStore("tilepath");
             var request = objectStore.put(urlDataPair);
             request.onsuccess = function(event) {
-                console.log("item added to db " + event.target.result);
+                //console.log("item added to db " + event.target.result);
             };
         }
         catch(err){
