@@ -298,6 +298,7 @@ require(["esri/map",
 				esri.show(dojo.byId('ready-to-download-ui'));
 				esri.hide(dojo.byId('downloading-ui'));
 				updateOfflineUsage();
+				showStoredTiles(showTiles);
 			}, 1000);
 		}
 
