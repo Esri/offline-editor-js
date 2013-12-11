@@ -3,6 +3,7 @@
 var map;
 var graphics;
 var cancelRequested, startTime;
+var showTiles = false;
 
 require(["esri/map", 
 	"esri/layers/GraphicsLayer", "esri/graphic", "esri/symbols/SimpleFillSymbol",
@@ -92,12 +93,12 @@ require(["esri/map",
 			symbol = new SimpleFillSymbol({
 							"type": "esriSFS",
 							"style": "esriSFSSolid",
-							"color": [255,0,0,20],
+							"color": [255,0,0,5],
 							"outline": {
 								"type": "esriSLS",
 								"style": "esriSLSSolid",
-								"color": [0,0,0,25],
-								"width": 1
+								"color": [0,0,0,100],
+								"width": 0.5
 							}
 						});
 		}
@@ -126,6 +127,7 @@ require(["esri/map",
 					on(dojo.byId('go-offline-btn'),'click', goOffline);
 					on(dojo.byId('go-online-btn'),'click', goOnline);
 					on(dojo.byId('update-offline-usage'),'click', updateOfflineUsage);
+					on(dojo.byId('show-stored-tiles'),'click', toggleShowStoredTiles);
 					esri.show(dojo.byId('ready-to-download-ui'));
 					esri.hide(dojo.byId('downloading-ui'));
 					updateOfflineUsage();
@@ -179,21 +181,10 @@ require(["esri/map",
 			domConstruct.empty('tile-count-table-body');
 
 			var totalEstimation = { tileCount:0, sizeBytes:0 }
-			
+
 			for(var level=minLevel; level<=maxLevel; level++)
 			{
 				var cellIds = tilingScheme.getAllCellIdsInExtent(map.extent,level);
-
-				if( level == zoomLevel)
-				{
-					graphics.clear();
-					cellIds.forEach(function(cell_id)
-					{
-						var polygon = tilingScheme.getCellPolygonFromCellId(cell_id, level);
-						var graphic = new Graphic(polygon, symbol);
-						graphics.add(graphic);
-					});
-				}
 
 				var levelEstimation = { 
 					level: level,
@@ -308,5 +299,34 @@ require(["esri/map",
 				esri.hide(dojo.byId('downloading-ui'));
 				updateOfflineUsage();
 			}, 1000);
+		}
+
+		function toggleShowStoredTiles()
+		{
+			showTiles = !showTiles;
+			dojo.byId('show-stored-tiles-caption').innerHTML = showTiles? "Hide Stored Tiles" : "Show Stored Tiles";			
+			showStoredTiles(showTiles);	
+		}
+
+		function showStoredTiles(showTiles)
+		{
+			graphics.clear();
+
+			if( showTiles )
+			{
+				var basemapLayer = map.getLayer( map.layerIds[0] );
+				basemapLayer.getTilePolygons(function(polygon,err)
+				{
+					if(polygon)
+					{
+						var graphic = new Graphic(polygon, symbol);
+						graphics.add(graphic);
+					}
+					else
+					{
+						console.log("showStoredTiles: ", err);
+					}
+				}.bind(this));
+			}
 		}
 	});

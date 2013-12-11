@@ -141,6 +141,36 @@ var DbStore = function(){
         }
     }
 
+    this.getAllTiles = function(callback)
+    {
+        if(this._db != null)
+        {
+            var transaction = this._db.transaction(["tilepath"])
+                .objectStore("tilepath")
+                .openCursor();
+
+            transaction.onsuccess = function(event)
+            {
+                var cursor = event.target.result;
+                if(cursor){
+                    var url = cursor.value.url;
+                    callback(url);
+                    cursor.continue();
+                }
+                else{
+                    callback(null, "end");
+                }
+            }.bind(this);
+            transaction.onerror = function(err){
+                callback(null, err);
+            }
+        }
+        else
+        {
+            callback(null, "no db");
+        }     
+    }
+
     /**
      * Provides a rough, approximate size of database in MBs.
      * @param callback callback(size, null) or callback(null, error)
@@ -156,8 +186,8 @@ var DbStore = function(){
             transaction.onsuccess = function(event){
                 var cursor = event.target.result;
                 if(cursor){
-                    var url = cursor.value;         /* JAMI: url? */
-                    var json = JSON.stringify(url);
+                    var storedObject = cursor.value;
+                    var json = JSON.stringify(storedObject);
                     usage.size += this.stringBytes(json);
                     usage.tileCount += 1;
                     cursor.continue();

@@ -87,12 +87,12 @@ define([
 				{
 					/* create list of tiles to store */
 					var basemapLayer = map.getLayer( map.layerIds[0] );
-					var tiling_scheme = new TilingScheme(this,geometry);
+					var tilingScheme = new TilingScheme(this,geometry);
 					var cells = [];
 
 					for(var level=minLevel; level<=maxLevel; level++)
 					{
-						var level_cell_ids = tiling_scheme.getAllCellIdsInExtent(extent,level);
+						var level_cell_ids = tilingScheme.getAllCellIdsInExtent(extent,level);
 
 						level_cell_ids.forEach(function(cell_id)
 						{
@@ -196,6 +196,29 @@ define([
 					store.size(callback);
 				};
 
+				layer.getTilePolygons = function(callback)
+				{
+					var store = this.offline.store;
+					var tilingScheme = new TilingScheme(this,geometry);
+					store.getAllTiles(function(url,err)
+					{
+						if(url)
+						{
+							var components = url.split("/");
+							var level = parseInt(components[ components.length - 3]);
+							var col = parseInt(components[ components.length - 2]);
+							var row = parseInt(components[ components.length - 1]);
+							var cellId = [row,col];						
+							var polygon = tilingScheme.getCellPolygonFromCellId(cellId, level);
+							//if( level == 15)
+								callback(polygon);
+						}
+						else
+						{
+							callback(null,err);
+						}
+					});
+				}
 			}
 		}
 	});
