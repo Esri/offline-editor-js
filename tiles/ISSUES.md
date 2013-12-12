@@ -5,9 +5,11 @@
 - [x] show remaining time when downloading
 - [x] remove blue border
 - [x] show stored tiles
+- [x] succesfully tested in Android Chrome v31
 
+- [ ] test with www.mapabase.es services... tilingScheme is confused with tile levels
 - [ ] unit testing
-- [ ] IndexedDB not supported in iOS Safari (see https://developer.mozilla.org/en-US/docs/IndexedDB#Browser_compatibility and https://github.com/axemclion/IndexedDBShim)
+- [ ] IndexedDB not supported in iOS Safari (see https://developer.mozilla.org/en-US/docs/IndexedDB#Browser_compatibility and https://github.com/axemclion/IndexedDBShim, or http://nparashuram.com/IndexedDBShim/)
 - [ ] reorganize code
 	+ partially done
 	+ better dependency management
