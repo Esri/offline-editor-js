@@ -8,6 +8,8 @@
 - [x] succesfully tested in Android Chrome v31
 - [x] remove ts from URL http://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/16/24410/32606?_ts=1386853358867
 
+- [ ] better tile estimation and limits
+- [ ] Andy: We may want to look at limiting the tiles to two or three levels to help manage size/performance issues.
 - [ ] test with www.mapabase.es services... tilingScheme is confused with tile levels
 - [ ] unit testing
 - [ ] IndexedDB not supported in iOS Safari (see https://developer.mozilla.org/en-US/docs/IndexedDB#Browser_compatibility and https://github.com/axemclion/IndexedDBShim, or http://nparashuram.com/IndexedDBShim/)
@@ -15,7 +17,6 @@
 	+ partially done
 	+ better dependency management
 - [ ] remove unused files (ioWorker, OfflineTileStore)
-- [ ] better tile estimation and limits
 
 - [ ] allow naming caches?
 - [ ] test iPad/iPhone
