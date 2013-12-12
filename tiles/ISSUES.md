@@ -9,9 +9,10 @@
 - [x] remove ts from URL http://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/16/24410/32606?_ts=1386853358867
 - [x] test with www.mapabase.es services... tilingScheme is confused with tile levels => no it didn't... I think the problem was the ?_ts thing
 - [x] IndexedDB not supported in iOS Safari (see https://developer.mozilla.org/en-US/docs/IndexedDB#Browser_compatibility and https://github.com/axemclion/IndexedDBShim, or http://nparashuram.com/IndexedDBShim/)
+- [x] Andy: We may want to look at limiting the tiles to two or three levels to help manage size/performance issues.
+	+ limit maxLevel to current zoomLevel + 3 (no problem to include all levels up to level 0, it will be only 1 or 2 tiles per level)
 
 - [ ] better tile estimation and limits
-- [ ] Andy: We may want to look at limiting the tiles to two or three levels to help manage size/performance issues.
 - [ ] unit testing
 - [ ] reorganize code
 	+ partially done

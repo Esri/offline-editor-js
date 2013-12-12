@@ -172,6 +172,12 @@ require(["esri/map",
 
 			var minLevel = parseInt(dojo.byId('minLevel').value);
 			var maxLevel = parseInt(dojo.byId('maxLevel').value);
+			
+			if( maxLevel > zoomLevel + 3)
+			{
+				maxLevel = zoomLevel + 3;
+				dojo.byId('maxLevel').value = maxLevel;
+			}
 
 			var basemapLayer = map.getLayer( map.layerIds[0] );
 			var tileSize = estimateTileSize(basemapLayer);
