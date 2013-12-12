@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Local File System Example</title>
+
+    <script type="text/javascript" charset="utf-8" src="scripts/PhoneGapConnector.js"></script>
+    <script type="text/javascript" charset="utf-8" src="cordova.js"></script>
+    <script type="text/javascript" charset="utf-8">
+
+        var phonegap = null
+
+        // Wait for device API libraries to load
+        //
+        document.addEventListener("deviceready", onDeviceReady, false);
+
+        // device APIs are available
+        //
+
+        function onDeviceReady(){
+
+            phonegap = new PhoneGapConnector();
+
+            document.addEventListener(phonegap.enum().SQL_ERROR_EVENT,function(evt){
+
+                alert("SQL Error: " + evt.detail.message);
+//                        switch(evt.detail.message){
+//                            case "database error":
+//                                alert("A database error occurred.");
+//                                break;
+//                            case "Path exists error":
+//                                fileExists = true;
+//                                break;
+//                            case "file open success":
+//                                //File ready for read/write
+//                                break;
+//                        }
+                },
+                false);
+
+            document.addEventListener(phonegap.enum().SQL_DELETE_EVENT,function(evt){
+                        alert("SQL Database Deleted: " + evt.detail.message);
+                    },
+                    false);
+
+            phonegap.init(200000);
+        }
+
+        function test(){
+            phonegap.setItem('8a','test')
+        }
+
+        function deleteDB(){
+            phonegap.deleteDB();
+        }
+
+    </script>
+</head>
+<body>
+<h1>Example</h1>
+<p>Local File System</p>
+<button onclick="test()">add item</button><br>
+<button onclick="deleteDB()">delete DB</button>
+</body>
+</html>
