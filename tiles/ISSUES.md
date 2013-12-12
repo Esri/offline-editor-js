@@ -8,6 +8,7 @@
 - [x] succesfully tested in Android Chrome v31
 
 - [ ] test with www.mapabase.es services... tilingScheme is confused with tile levels
+- [ ] remove ts from URL http://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/16/24410/32606?_ts=1386853358867
 - [ ] unit testing
 - [ ] IndexedDB not supported in iOS Safari (see https://developer.mozilla.org/en-US/docs/IndexedDB#Browser_compatibility and https://github.com/axemclion/IndexedDBShim, or http://nparashuram.com/IndexedDBShim/)
 - [ ] reorganize code
