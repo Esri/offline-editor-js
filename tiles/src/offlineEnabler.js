@@ -1,16 +1,26 @@
+/*
+ * depends upon "_base.js"
+ */
 define([
-	"dojo/query"
-	], function(query)
+	"dojo/query",
+	"esri/geometry"
+	], function(query, geometry)
 	{
-		console.log("offlineEnabler.js");
-
 		return {
+			/*
+			 * utility method to get the basemap layer reference
+			 */
 			getBasemapLayer: function(map)
 			{
 				var layerId = map.layerIds[0];
 				return map.getLayer(layerId);
 			},
 
+			/*
+			 * method that extends a layer object with the offline capability
+			 * 
+			 * after extending one layer, you can call layer.goOffline() or layer.goOnline()
+			 */
 			extend: function(layer,callback)
 			{
 				console.log("extending layer", layer.url);
@@ -41,20 +51,25 @@ define([
 						return url;
 					}
 
-					var tileid = "loading.php?"+level+"-"+row+"-"+col;
+					url = url.split('?')[0];
+
+					/* temporary URL returned immediately, as we haven't retrieved the image from the indexeddb yet */
+					var tileid = "void:"+level+"-"+row+"-"+col; 
 
 					this.offline.store.get(url, function(success, offlineTile)
 					{
+						/* when the .get() callback is called we replace the temporary URL originally returned by the data:image url */
 						var img = query("img[src="+tileid+"]")[0];
 						if( success )
 						{
 							console.log("found tile offline", url);
-							var imgURL =  "data:image;base64," + offlineTile.img;
-							//console.log(imgURL);
-							//var imgURL = URL.createObjectURL(offlineTile.img);
+							var imgURL = "data:image;base64," + offlineTile.img;
 
-							// search for the img with src="|"+level+"|"+row+"|"+col+"|" and replace with actual url
+							// search for the img with src="void:"+level+"-"+row+"-"+col and replace with actual url
 							img.style.borderColor = "blue";
+							// when we return a nonexistent url to the image, the TiledMapServiceLayer::_tileErrorHandler() method 
+							// sets img visibility to 'hidden', so we need to show the image back once we have put the data:image
+							img.style.visibility = "visible"; 
 							img.src = imgURL;
 
 							return "";	/* this result goes nowhere, seriously */
@@ -70,6 +85,58 @@ define([
 					return tileid;
 				};
 
+				layer.prepareForOffline = function(minLevel, maxLevel, extent, reportProgress, finishedDownloading)
+				{
+					/* create list of tiles to store */
+					var basemapLayer = map.getLayer( map.layerIds[0] );
+					var tilingScheme = new TilingScheme(this,geometry);
+					var cells = [];
+
+					for(var level=minLevel; level<=maxLevel; level++)
+					{
+						var level_cell_ids = tilingScheme.getAllCellIdsInExtent(extent,level);
+
+						level_cell_ids.forEach(function(cell_id)
+						{
+							cells.push({ level: level, row: cell_id[1], col: cell_id[0]});
+						});
+
+						if( cells.length > 5000 && level != maxLevel)
+						{
+							console.log("me planto!");
+							break;
+						}
+					}
+
+					/* launch tile download */
+					this.downloadTile(0, cells, reportProgress, finishedDownloading);
+				};
+
+				layer.downloadTile = function(i,cells, reportProgress, finishedDownloading)
+				{
+					var cell = cells[i];
+					var cancelRequested = reportProgress(i, cells.length);
+
+					this.storeTile(cell.level,cell.row,cell.col, function(success, msg)
+					{
+						/* JAMI: TODO, continue looking for other tiles even if one fails */
+						if(success)
+						{
+							if( cancelRequested )
+								finishedDownloading(true);
+							else if( i== cells.length-1 )
+								finishedDownloading(false);
+							else
+								this.downloadTile(i+1, cells, reportProgress, finishedDownloading);
+						}
+						else
+						{				
+							console.log("error storing tile", cell, msg);
+							finishedDownloading(true);
+						}
+					}.bind(this))
+				}
+
 				layer.goOffline = function()
 				{
 					this.offline.online = false;
@@ -78,95 +145,26 @@ define([
 				layer.goOnline = function()
 				{
 					this.offline.online = true;
+					this.refresh();
 				};				
 
 				layer.storeTile = function(level,row,col,callback)
 				{
-					function customBase64Encode (inputStr) 
-					{
-					    var
-					        bbLen               = 3,
-					        enCharLen           = 4,
-					        inpLen              = inputStr.length,
-					        inx                 = 0,
-					        jnx,
-					        keyStr              = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
-					                            + "0123456789+/=",
-					        output              = "",
-					        paddingBytes        = 0;
-					    var
-					        bytebuffer          = new Array (bbLen),
-					        encodedCharIndexes  = new Array (enCharLen);
-
-					    while (inx < inpLen) {
-					        for (jnx = 0;  jnx < bbLen;  ++jnx) {
-					            /*--- Throw away high-order byte, as documented at:
-					              https://developer.mozilla.org/En/Using_XMLHttpRequest#Handling_binary_data
-					            */
-					            if (inx < inpLen)
-					                bytebuffer[jnx] = inputStr.charCodeAt (inx++) & 0xff;
-					            else
-					                bytebuffer[jnx] = 0;
-					        }
-
-					        /*--- Get each encoded character, 6 bits at a time.
-					            index 0: first  6 bits
-					            index 1: second 6 bits
-					                        (2 least significant bits from inputStr byte 1
-					                         + 4 most significant bits from byte 2)
-					            index 2: third  6 bits
-					                        (4 least significant bits from inputStr byte 2
-					                         + 2 most significant bits from byte 3)
-					            index 3: forth  6 bits (6 least significant bits from inputStr byte 3)
-					        */
-					        encodedCharIndexes[0] = bytebuffer[0] >> 2;
-					        encodedCharIndexes[1] = ( (bytebuffer[0] & 0x3) << 4)   |  (bytebuffer[1] >> 4);
-					        encodedCharIndexes[2] = ( (bytebuffer[1] & 0x0f) << 2)  |  (bytebuffer[2] >> 6);
-					        encodedCharIndexes[3] = bytebuffer[2] & 0x3f;
-
-					        //--- Determine whether padding happened, and adjust accordingly.
-					        paddingBytes          = inx - (inpLen - 1);
-					        switch (paddingBytes) {
-					            case 1:
-					                // Set last character to padding char
-					                encodedCharIndexes[3] = 64;
-					                break;
-					            case 2:
-					                // Set last 2 characters to padding char
-					                encodedCharIndexes[3] = 64;
-					                encodedCharIndexes[2] = 64;
-					                break;
-					            default:
-					                break; // No padding - proceed
-					        }
-
-					        /*--- Now grab each appropriate character out of our keystring,
-					            based on our index array and append it to the output string.
-					        */
-					        for (jnx = 0;  jnx < enCharLen;  ++jnx)
-					            output += keyStr.charAt ( encodedCharIndexes[jnx] );
-					    }
-					    return output;
-					}
-
+					var store = this.offline.store;					
 					var url = this._getTileUrl(level,row,col);
-					var store = this.offline.store;
+					url = url.split('?')[0];
 
 					/* download the tile */
 					var imgurl = "proxy.php?" + url;
 					var req = new XMLHttpRequest();
 					req.open("GET", imgurl, true);
-					/* https://hacks.mozilla.org/2012/02/storing-images-and-files-in-indexeddb/ */
-					//req.responseType == "blob";
-					/**/
 					req.overrideMimeType("text/plain; charset=x-user-defined"); // https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/Using_XMLHttpRequest?redirectlocale=en-US&redirectslug=DOM%2FXMLHttpRequest%2FUsing_XMLHttpRequest#Handling_binary_data 
-					//*/
+
 					req.onload = function()
 					{
 						if( req.status == 200 )
 						{							
-							//var img = this.response;
-							var img = customBase64Encode(this.responseText);
+							var img = Base64Utils.wordToBase64(Base64Utils.stringToWord(this.responseText));
 
 							var tile = {
 								url: url,
@@ -195,14 +193,35 @@ define([
 					store.deleteAll(callback);			
 				}
 
-				layer.getOfflineUsage = function()
+				layer.getOfflineUsage = function(callback)
 				{
-					return {
-						tileCount: 0,
-						size: 0
-					}
+					var store = this.offline.store;
+					store.size(callback);
 				};
 
+				layer.getTilePolygons = function(callback)
+				{
+					var store = this.offline.store;
+					var tilingScheme = new TilingScheme(this,geometry);
+					store.getAllTiles(function(url,err)
+					{
+						if(url)
+						{
+							var components = url.split("/");
+							var level = parseInt(components[ components.length - 3]);
+							var col = parseInt(components[ components.length - 2]);
+							var row = parseInt(components[ components.length - 1]);
+							var cellId = [row,col];						
+							var polygon = tilingScheme.getCellPolygonFromCellId(cellId, level);
+							//if( level == 15)
+								callback(polygon);
+						}
+						else
+						{
+							callback(null,err);
+						}
+					});
+				}
 			}
 		}
 	});

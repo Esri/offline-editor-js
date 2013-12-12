@@ -23,8 +23,9 @@ table {
 
 #mapDiv_layers>:first-child .layerTile {
   /*border: 1px solid red !important;*/
+  /*
   border-width: 1px !important;
-  border-style: solid !important; /* solid red !important;*/
+  border-style: solid !important; */
 }
 
 

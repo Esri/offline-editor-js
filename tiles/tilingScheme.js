@@ -10,15 +10,15 @@ TilingScheme.prototype =
 {
   getCellIdFromXy: function(x,y,level)
   {
-    var row = Math.floor((this.tileInfo.origin.y-y) / (this.tileInfo.rows*this.tileInfo.lods[level].resolution));
     var col = Math.floor((x-this.tileInfo.origin.x) / (this.tileInfo.cols*this.tileInfo.lods[level].resolution));
+    var row = Math.floor((this.tileInfo.origin.y-y) / (this.tileInfo.rows*this.tileInfo.lods[level].resolution));
     return [col,row];
   },
 
-  getCellPolygonFromCellId: function(cellid,level)
+  getCellPolygonFromCellId: function(cellId,level)
   {
-      var col1 = cellid[0];
-      var row1 = cellid[1];
+      var col1 = cellId[0];
+      var row1 = cellId[1];
       var col2 = col1+1;
       var row2 = row1+1;
 

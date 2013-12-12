@@ -86,7 +86,6 @@
 				<thead>
 					<tr>
 						<th>Level</th>
-						<th>Scale</th>
 						<th>Tile Count</th>
 						<th>Size Mb (aprox.)</th>
 					</tr>
@@ -108,17 +107,20 @@
 				<button id="delete-all-tiles-btn" type="button" class="btn btn-danger"><i class="glyphicon glyphicon-floppy-remove"></i> Delete All Tiles</button>
 				<button id="go-offline-btn" type="button" class="btn btn-default"><i class="fa fa-chain-broken"></i> Go Offline</button>
 				<button id="go-online-btn" type="button" class="btn btn-default" disabled="disabled"><i class="fa fa-link"></i> Go Online</button>
+				<button id="update-offline-usage" type="button" class="btn btn-default"><i class="fa fa-refresh"></i> Usage: <span id="offline-usage">[click to update]</span></button>
+				<button id="show-stored-tiles" type="button" class="btn btn-default"><i class="fa fa-th"></i> <span id="show-stored-tiles-caption">Show Stored Tiles</span></button>
 			</div>
 		</div>
 		<div id="downloading-ui">
 			<div class="col-xs-1">
 				<button id="cancel-btn" type="button" class="btn btn-warning"><i class="glyphicon glyphicon-remove"></i> Cancel</button>
 			</div>
-			<div id="download-progress" class="col-xs-11">
+			<div id="download-progress" class="col-xs-10">
 				<div class="progress progress-striped active">
 					<div class="progress-bar progress-bar-success" role="progressbar" style="width:0%;"></div>
 				</div>
 			</div>
+			<div id="remaining-time" class="col-xs-1">__:__</div>
 		</div>
 	</div>
 
@@ -141,8 +143,10 @@
 
 <script src="//js.arcgis.com/3.7compact"></script>
 <script src="../vendor/offline/offline.min.js"></script>
+<script src="../vendor/IndexedDBShim/dist/IndexedDBShim.min.js"></script>
 <script src="offlineProbe.js"></script>
 <script src="tilingScheme.js"></script>
+<script src="src/_base.js"></script>
 <script src="src/dbStore2.js"></script>
 <script src="main.js"></script>
 
