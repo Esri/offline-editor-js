@@ -141,8 +141,11 @@ var DbStore = function(){
         }
     }
 
-    this.getAllTiles = function(callback)
-    {
+    /**
+     * Retrieve all tiles from indexeddb
+     * @param callback callbakck(url, err)
+     */
+    this.getAllTiles = function(callback){
         if(this._db != null)
         {
             var transaction = this._db.transaction(["tilepath"])
