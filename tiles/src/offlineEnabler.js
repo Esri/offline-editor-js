@@ -51,6 +51,8 @@ define([
 						return url;
 					}
 
+					url = url.split('?')[0];
+
 					/* temporary URL returned immediately, as we haven't retrieved the image from the indexeddb yet */
 					var tileid = "void:"+level+"-"+row+"-"+col; 
 
@@ -148,8 +150,9 @@ define([
 
 				layer.storeTile = function(level,row,col,callback)
 				{
+					var store = this.offline.store;					
 					var url = this._getTileUrl(level,row,col);
-					var store = this.offline.store;
+					url = url.split('?')[0];
 
 					/* download the tile */
 					var imgurl = "proxy.php?" + url;
