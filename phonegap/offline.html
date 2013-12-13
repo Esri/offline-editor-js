@@ -37,20 +37,44 @@
                 },
                 false);
 
-            document.addEventListener(phonegap.enum().SQL_DELETE_EVENT,function(evt){
-                        alert("SQL Database Deleted: " + evt.detail.message);
-                    },
-                    false);
-
-            phonegap.init(200000);
+            phonegap.init(200000,function(success,event){
+                console.log("Tiles database is ready: " + success);
+            });
         }
 
-        function test(){
-            phonegap.setItem('8a','test')
+        function setUrl(){
+            phonegap.setUrl('8b','test',function(success,value,url){
+                if(success == false){
+                    console.log("Tile did not get added to database:  " + value.code +
+                            ", " + value.message  +
+                            ", " + url);
+                }
+            })
+        }
+
+        function getTile(url){
+            phonegap.getTile(url,function(test,val){
+                if(test == null && val != null){
+                    alert("Success: " + test + ", " + val);
+                }
+                else if(test == null && val == null){
+                    alert("Nothing found");
+                }
+                else{
+                    alert("SQL Error: " + val.code + ", " + val.message);
+                }
+            })
         }
 
         function deleteDB(){
-            phonegap.deleteDB();
+            phonegap.deleteDB(function(val,result){
+                if(val == true){
+                    alert("DB successfully deleted");
+                }
+                else{
+                    alert("DB deletion error: " + result.code + ", " + result.message);
+                }
+            });
         }
 
     </script>
@@ -58,7 +82,8 @@
 <body>
 <h1>Example</h1>
 <p>Local File System</p>
-<button onclick="test()">add item</button><br>
+<button onclick="setUrl()">add item</button><br>
+<button onclick="getTile('8b')">get item</button><br>
 <button onclick="deleteDB()">delete DB</button>
 </body>
 </html>

@@ -1,6 +1,7 @@
 var PhoneGapConnector = function(){
 
     this.__db = null; //local reference to database
+    this._dbSize = 0;
 
     /**
      * Public ENUMs. Immutable reference values.
@@ -11,85 +12,81 @@ var PhoneGapConnector = function(){
     this.enum = (function(){
         var values = {
             DATABASE_NAME : "TileDB",
-            SQL_DELETE_EVENT: "Database deleted",
-            SQL_CREATED_EVENT: "Database created",
             SQL_ERROR_EVENT: "SQL error. See actual message for details"
         }
 
         return values;
     });
 
-    this.deleteDB = function(){
+    /**
+     * Deletes the database table
+     * @param callback (true, event) or (false, SQLError)
+     */
+    this.deleteDB = function(callback){
         this.__db.transaction(function(tx){
                 tx.executeSql('DROP TABLE IF EXISTS TILES');
             },
-            this._fail,
+            function(err){
+                callback(false,err);
+            },
             function(evt){
-                this._sendEvent(true,this.enum().SQL_DELETE_EVENT);
+                callback(true,evt);
             }.bind(this))
     }
 
-    this.setItem = function(/* String */ url, /* String */ tile){
+    /**
+     * Sets a url and it's associated base64 tile in the database
+     * @param url
+     * @param tile
+     * @param callback (false, SQLError, url) or (true,null,null)
+     */
+    this.setUrl = function(/* String */ url, /* String */ tile,callback){
         this.__db.transaction(function(tx){
                 tx.executeSql("INSERT INTO TILES (url,tile) VALUES ('" + url + "','" + tile + "')");
             },
-            this._fail,
-            console.log("url added: " + url))
+            function(err){
+                callback(false,err,url);
+            },
+            callback(true,null,null))
+    }
+
+    /**
+     * Get a tile via a url.
+     * @param url
+     * @param callback (null, tile) or (err, null)
+     */
+    this.getTile = function(url,callback){
+        this.__db.transaction(function(tx){
+                tx.executeSql("SELECT tile FROM TILES WHERE url ='"+ url + "'",[],
+                function(tx,results){
+                    var length = results.rows.length;
+                    if(length != 0){
+                        var tile = results.rows.item(0).tile;
+                        callback(null,tile);
+                    }
+                    else if(length == 0){
+                        callback(null,null);
+                    }
+                },
+                function(err){
+                    callback(err,null);
+                })
+            },
+
+            function(err){
+                callback(err,null);
+            });
     }
 
     this.getDBInfo = function(){
 
     }
 
-
     //////////////////////////
     ///
     /// PRIVATE METHODS
     ///
     //////////////////////////
-
-    /**
-     * SQL Errors. Some of these are not very helpful.
-     * @type {*}
-     * @private
-     */
-    this._fail = function(err) {
-        console.log("SQL error code: " + err.code + ": " + err.message);
-        switch(err.code){
-            case 1:
-                console.log("Phonegap SQL: unknown error.");
-                this._sendEvent("unknown error",this.enum().SQL_ERROR_EVENT);
-                break;
-            case 2:
-                console.log("Phonegap SQL: database error");
-                this._sendEvent("database error",this.enum().SQL_ERROR_EVENT);
-                break;
-            case 3:
-                console.log("Phonegap SQL: version error");
-                this._sendEvent("version error",this.enum().SQL_ERROR_EVENT);
-                break;
-            case 4:
-                console.log("Phonegap SQL: too large error");
-                this._sendEvent("too large error",this.enum().SQL_ERROR_EVENT);
-                break;
-            case 5:
-                console.log("Phonegap SQL: quota error");
-                this._sendEvent("quota error",this.enum().SQL_ERROR_EVENT);
-                break;
-            case 6:
-                console.log("Phonegap SQL: syntax error");
-                this._sendEvent("syntax error",this.enum().SQL_ERROR_EVENT);
-                break;
-            case 7:
-                console.log("Phonegap SQL: constraint error");
-                this._sendEvent("contraint error",this.enum().SQL_ERROR_EVENT);
-                break;
-            case 8:
-                console.log("Phonegap SQL: timeout error");
-                this._sendEvent("timeout error",this.enum().SQL_ERROR_EVENT);
-                break;
-        }
-    }.bind(this)
 
     this._createDB = function(tx){
         tx.executeSql('CREATE TABLE IF NOT EXISTS TILES (url TEXT UNIQUE, tile TEXT)');
@@ -118,21 +115,31 @@ var PhoneGapConnector = function(){
         }
     }
 
-    this.init = function(/* int */ dbSize) {
+    /**
+     * Initialize the database for use
+     * @param dbSize
+     * @param callback (true, event) or (false, SQLError)
+     */
+    this.init = function(/* int */ dbSize,callback) {
+        this._dbSize = dbSize;
         document.addEventListener("load",
             function(evt){console.log("loaded: ")},
             false)
         this.__db = window.openDatabase(this.enum().DATABASE_NAME, "1.0", "Tile Database", dbSize);
         if(this.__db != null){
-            this.__db.transaction(this._createDB, this._fail,function(evt){
-                this._sendEvent(true,this.enum().SQL_CREATED_EVENT);
-            }.bind(this))
+            this.__db.transaction(this._createDB,
+                function(err){
+                    callback(false,err);
+                },
+                function(evt){
+                callback(true,evt);
+            })
         }
         else{
-            this._fail(1);
+            console.log("Init: unknown problem");
         }
 
-    }.bind(this);
+    };
 
     /**
      * NOTES:
