@@ -76,9 +76,9 @@ var OfflineStore = function(/* Map */ map) {
             EDIT_EVENT_SUCCESS: true,
             EDIT_EVENT_FAILED: false,
             REQUIRED_LIBS : [
-                "./src/Hydrate.js",
-                "./src/Poller.js",
-                "./src/OfflineUtils.js"
+                "./edit/Hydrate.js",
+                "./edit/Poller.js",
+                "./edit/OfflineUtils.js"
             ]
         }
 
@@ -552,7 +552,7 @@ console.log(localStore.toString());
         var success = false;
 
         try{
-            localStorage.setItem(this._localEnum().STORAGE_KEY,geometry);
+            localStorage.setItemUrl(this._localEnum().STORAGE_KEY,geometry);
             success = true;
         }
         catch(err){
@@ -616,10 +616,10 @@ console.log(localStore.toString());
 
         try{
             if(localStore == null || typeof localStore == "undefined"){
-                localStorage.setItem(this._localEnum().INDEX_KEY,mIndex + this._localEnum().TOKEN);
+                localStorage.setItemUrl(this._localEnum().INDEX_KEY,mIndex + this._localEnum().TOKEN);
             }
             else{
-                localStorage.setItem(this._localEnum().INDEX_KEY,localStore + mIndex + this._localEnum().TOKEN);
+                localStorage.setItemUrl(this._localEnum().INDEX_KEY,localStore + mIndex + this._localEnum().TOKEN);
             }
 
             success = true;
