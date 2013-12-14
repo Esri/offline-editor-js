@@ -276,6 +276,9 @@
                     offlineStore._stopTimer();
                     offlineStore._deleteStore();
                 }
+                else{
+                    console.log("nothing to do.");
+                }
             });
         }
 
@@ -297,7 +300,7 @@
         <button style="background-color: red" onclick="offlineStore._deleteStore()">Delete localStorage</button>
         <button style="background-color: red" onclick="getGraphicsLayers()" >Get Graphics Layers</button>
         <button style="background-color: red" onclick="offlineStore._stopTimer()" >Stop Timer</button>
-        <button style="background-color: red" onclick="offlineStore._startTimer()" >Start Timer</button>
+        <button style="background-color: red" onclick="offlineStore._startOfflineListener()" >Start Timer</button>
         <button style="background-color: red" onclick="getIndex()" >Get Index</button>
         <button style="background-color: red" onclick="offlineStore._deleteLocalStoreIndex()" >Delete Index</button>
         <button style="background-color: red" onclick="handleRestablishedInternet()" >Test Restablish Internet</button>

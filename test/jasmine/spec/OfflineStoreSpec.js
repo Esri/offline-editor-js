@@ -53,18 +53,13 @@ describe("Initialize Offline Library", function() {
     })
 
     it("check internet", function() {
-        var net = offlineStore._checkInternet();
+        var net = offlineStore.getInternet();
         expect(net).toEqual(true);
     })
 
     it("validate feature layer available", function() {
         var layer = offlineStore.layers[0];
         expect(layer.type).toEqual("Feature Layer");
-    })
-
-    it("stop timer", function(){
-        offlineStore._stopTimer();
-        expect(offlineStore.isTimer).toBeNull();
     })
 
 });
@@ -458,6 +453,19 @@ describe("Reestablish internet", function(){
             validate = evt;
         });
         expect(validate).toEqual(false);
+    })
+})
+
+describe("Test custom event handling", function(){
+    it("send and receive event", function(){
+        var validate = null;
+        document.addEventListener(offlineStore._localEnum().ONLINE_STATUS_EVENT,function(evt){
+            validate = evt.detail.message;
+            expect(validate).toEqual(true);
+        }.bind(this),
+            false);
+
+        offlineStore._sendEvent(true,offlineStore._localEnum().ONLINE_STATUS_EVENT);
     })
 })
 

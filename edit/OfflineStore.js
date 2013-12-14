@@ -56,16 +56,10 @@ var OfflineStore = function(/* Map */ map) {
      */
     this._localEnum = (function(){
         var values = {
-            /* Change this to a remote server for testing! */
-            VALIDATION_URL : "http://localhost/offline/test.html",
-            /* For use within a child process only */
-            TIMER_URL : "./src/Timer.js",
             /* Unique key for setting/retrieving values from localStorage */
             STORAGE_KEY : "___EsriOfflineStore___",
             /* Index for tracking each action (add, delete, update) in local store */
             INDEX_KEY : "___EsriOfflineIndex___",
-            /* HTTP timeout when trying to validate internet on/off */
-            VALIDATION_TIMEOUT : 10 * 1000,
             /* Most browsers offer default storage of ~5MB */
             LOCAL_STORAGE_MAX_LIMIT : 4.75 /* MB */,
             /* A unique token for tokenizing stringified localStorage values */
@@ -75,10 +69,12 @@ var OfflineStore = function(/* Map */ map) {
             EDIT_EVENT: "editEvent",
             EDIT_EVENT_SUCCESS: true,
             EDIT_EVENT_FAILED: false,
+            ONLINE_STATUS_EVENT: "OnlineStatusEvent",
             REQUIRED_LIBS : [
-                "./edit/Hydrate.js",
-                "./edit/Poller.js",
-                "./edit/OfflineUtils.js"
+                "/offline/edit/Hydrate.js",
+                "/offline/edit/Poller.js",
+                "/offline/edit/OfflineUtils.js",
+                "/offline/vendor/offline/offline.min.js"
             ]
         }
 
@@ -119,7 +115,7 @@ var OfflineStore = function(/* Map */ map) {
      * @param callback Recommended. Returns true if offline condition detected otherwise returns false.
      */
     this.applyEdits = function(/* Graphic */ graphic,/* FeatureLayer */ layer, /* String */ enumValue, callback){
-        var internet = this._checkInternet();
+        var internet = this.getInternet();
         this._applyEdits(internet,graphic,layer,enumValue, callback);
         //this._sendEvent("Halllooo","test");
     }
@@ -196,6 +192,19 @@ var OfflineStore = function(/* Map */ map) {
         return Math.round(this * places)/places;
     }
 
+    /**
+     * Call this to find out if app is online or offline
+     * @returns {boolean}
+     */
+    this.getInternet = function(){
+        if(Offline.state === 'up') {
+            return true
+        }
+        else{
+            return false;
+        }
+    }
+
     //////////////////////////
     ///
     /// PRIVATE methods
@@ -233,15 +242,7 @@ var OfflineStore = function(/* Map */ map) {
 
         if(internet === false){
             this._addToLocalStore(graphic,layer,enumValue,callback);
-            if(this.isTimer == null){
-                this._startTimer(function(err){
-                    throw ("unable to start background timer. Offline edits won't work. " + err.stack);
-                });
-            }
-        }
-        else if(internet == null || typeof internet == "undefined"){
-            console.log("applyEdits: possible error.");
-            callback(0,false,0);
+            this._startOfflineListener();
         }
         else{
             //No need for a callback because this is an online request and it's immediately
@@ -364,82 +365,31 @@ console.log(localStore.toString());
         layer.add(graphic);
     }
 
-    this._startTimer = function(callback){
+    this._startOfflineListener = function(){
 
-        var onlineFLAG = false;
-
-        if(this.backgroundTimerWorker == null && this.isTimer == null){
-
-            console.log("Starting timer...");
-
-            try{
-                this.backgroundTimerWorker = new Worker(this._localEnum().TIMER_URL);
-                this.backgroundTimerWorker.addEventListener('message', function(msg) {
-
-                    if(msg.data.hasOwnProperty("msg")){
-                        console.log("_startTimer: " + msg.data.msg)
-                    }
-                    if(msg.data.hasOwnProperty("alive")){
-                        console.log("Timer heartbeat.");
-                        this.isTimer = msg.data.alive;
-                    }
-                    if(msg.data.hasOwnProperty("err")){
-                        console.log("_startTimer error: " + msg.data.err);
-                    }
-
-                    //Handle reestablishing an internet connection
-                    if(msg.data.hasOwnProperty("net")){
-                        if(msg.data.net == false){
-                            console.log("Internet status: " + msg.data.net);
-                            if(onlineFLAG != false)onlineFLAG = false;
+        function onlineStatusHandler(evt){
+            if(evt.detail.message == true){
+                console.log("internet reestablished");
+                try{var arr = this._getLocalStorage()}catch(err){console.log("err " + err.toString())};
+                if(arr != null){
+                    document.removeEventListener("OnlineStatusEvent",onlineStatusHandler,false);
+                    this._handleRestablishedInternet(function(evt){
+                        if(evt == true){
+                            this._deleteStore();
+                            this._sendEvent(true,this._localEnum().EDIT_EVENT);
                         }
-                        else if(msg.data.net == true){
-                            if(this.___internet == true){
-                                var internet = this._checkInternet();
-                            }
-                            var arr = this._getLocalStorage();
-                            if(arr != null && internet == true){
-
-                                if(onlineFLAG == false){
-                                    onlineFLAG = true;
-                                }
-
-                                this._handleRestablishedInternet(function(evt){
-                                    if(evt == true){
-                                        this._stopTimer();
-                                        this._deleteStore();
-                                        this._sendEvent(true,this._localEnum().EDIT_EVENT);
-                                    }
-                                    else{
-                                        this._sendEvent(false,this._localEnum().EDIT_EVENT);
-                                    }
-                                }.bind(this));
-                            }
+                        else{
+                            this._sendEvent(false,this._localEnum().EDIT_EVENT);
                         }
-                    }
-
-                }.bind(this), false);
-                this.backgroundTimerWorker.postMessage({start:true,interval:this._localEnum().TIMER_TICK_INTERVAL});
-            }
-            catch(err){
-                callback(err);
+                    }.bind(this));
+                }
             }
         }
-    }
 
-
-    this._stopTimer = function(){
-
-        if(this.backgroundTimerWorker != null && this.isTimer != null){
-            this.backgroundTimerWorker.terminate();
-            this.backgroundTimerWorker.postMessage({kill:true});
-            this.backgroundTimerWorker = null;
-            this.isTimer = null;
-            console.log("Timer stopped...")
-        }
-        else{
-            console.log("Timer may already be stopped...");
-        }
+        console.log("starting offline listener.");
+        document.addEventListener("OnlineStatusEvent",
+            onlineStatusHandler.bind(this),
+            false);
     }
 
     this._sendEvent = function(msg,event){
@@ -481,7 +431,7 @@ console.log(localStore.toString());
                         }
                         else{
                             console.log("_handleRestablishedInternet: there were errors. LocalStore still available.");
-                            this._stopTimer();
+//                            this._stopTimer();
                             callback(false);
                         }
                     }
@@ -491,7 +441,7 @@ console.log(localStore.toString());
                     else if(success == false && check.length == graphicsArr.length){
                         this._setItemLocalStoreIndex(obj1.layer,objectId,obj1.enumValue,false);
                         console.log("_handleRestablishedInternet: error sending edit on " + objectId);
-                        this._stopTimer();
+//                        this._stopTimer();
                         callback(false);
                     }
                     else if(success == false && check.length < graphicsArr.length){
@@ -552,7 +502,7 @@ console.log(localStore.toString());
         var success = false;
 
         try{
-            localStorage.setItemUrl(this._localEnum().STORAGE_KEY,geometry);
+            localStorage.setItem(this._localEnum().STORAGE_KEY,geometry);
             success = true;
         }
         catch(err){
@@ -616,10 +566,10 @@ console.log(localStore.toString());
 
         try{
             if(localStore == null || typeof localStore == "undefined"){
-                localStorage.setItemUrl(this._localEnum().INDEX_KEY,mIndex + this._localEnum().TOKEN);
+                localStorage.setItem(this._localEnum().INDEX_KEY,mIndex + this._localEnum().TOKEN);
             }
             else{
-                localStorage.setItemUrl(this._localEnum().INDEX_KEY,localStore + mIndex + this._localEnum().TOKEN);
+                localStorage.setItem(this._localEnum().INDEX_KEY,localStore + mIndex + this._localEnum().TOKEN);
             }
 
             success = true;
@@ -631,20 +581,6 @@ console.log(localStore.toString());
 
         return success;
 
-    }
-
-    this._checkInternet = function(){
-        var result = null;
-
-        var poller = Poller.httpGet(
-            this._localEnum().VALIDATION_URL,
-            this._localEnum().VALIDATION_TIMEOUT,
-            function(msg){
-                result = msg;
-            }
-        );
-
-        return result;
     }
 
     this._deserializeGraphic = function(/* Graphic */ item){
@@ -738,6 +674,25 @@ console.log(localStore.toString());
     //////////////////////////
 
     /**
+     * Auto-detects online/offline conditions.
+     * Listen for ONLINE_STATUS_EVENT.
+     * Dependant on Offline.js
+     * @private
+     */
+    this._offlineMonitor = function(){
+        Offline.options = { checkOnLoad: true, reconnect: true, requests: false };
+        Offline.check();
+        Offline.on('up down', function(){
+            if(Offline.state === 'up'){
+                this._sendEvent(true,this._localEnum().ONLINE_STATUS_EVENT);
+            }
+            else{
+                this._sendEvent(false,this._localEnum().ONLINE_STATUS_EVENT);
+            }
+        }.bind(this));
+    }
+
+    /**
      * Load src
      * TO-DO: Needs to be made AMD compliant!
      * @param urlArray
@@ -803,38 +758,29 @@ console.log(localStore.toString());
      */
     this._init = function(){
         this._loadScripts(this._localEnum().REQUIRED_LIBS,function(){
-            console.log("OfflineStore is ready.")
 
             this.utils = new OfflineUtils();
             this._parseFeatureLayers(this.map);
             this._hydrate = new Hydrate();
 
-            if(typeof Poller == "object"){
-                var internet = this._checkInternet();
-                var arr = this._getLocalStorage();
+            if(typeof Offline == "object"){
+                this._offlineMonitor();
+                console.log("OfflineStore is ready.")
 
-                if(this.isTimer != true && internet == false && arr != null){
-                    this._startTimer(function(err){
-                        throw ("unable to start background timer. Offline edits won't work. " + err.stack);
-                    });
+                var arr = this._getLocalStorage();
+                if(arr != null && Offline.state === 'up'){
+                    this._handleRestablishedInternet(function(evt){
+                        if(evt == true){
+                            this._deleteStore();
+                            this._sendEvent(true,this._localEnum().EDIT_EVENT);
+                        }
+                        else{
+                            this._sendEvent(false,this._localEnum().EDIT_EVENT);
+                        }
+                    }.bind(this));
                 }
-                else if(internet == null || typeof internet == "undefined"){
-                    console.log("applyEdits: possible error.");
-                }
-                else{
-                    var arr = this._getLocalStorage();
-                    if(arr != null){
-                        this._handleRestablishedInternet(function(evt){
-                            if(evt == true){
-                                this._stopTimer();
-                                this._deleteStore();
-                                this._sendEvent(true,this._localEnum().EDIT_EVENT);
-                            }
-                            else{
-                                this._sendEvent(false,this._localEnum().EDIT_EVENT);
-                            }
-                        }.bind(this));
-                    }
+                else if(arr != null && Offline.state !== 'up'){
+                    this._startOfflineListener();
                 }
             }
 
