@@ -11,16 +11,16 @@
 - [x] IndexedDB not supported in iOS Safari (see https://developer.mozilla.org/en-US/docs/IndexedDB#Browser_compatibility and https://github.com/axemclion/IndexedDBShim, or http://nparashuram.com/IndexedDBShim/)
 - [x] Andy: We may want to look at limiting the tiles to two or three levels to help manage size/performance issues.
 	+ limit maxLevel to current zoomLevel + 3 (no problem to include all levels up to level 0, it will be only 1 or 2 tiles per level)
-
-- [ ] better tile estimation and limits
-- [ ] unit testing
-- [ ] reorganize code
+- [x] reorganize code
 	+ partially done
 	+ better dependency management
-- [ ] remove unused files (ioWorker, OfflineTileStore)
+- [x] remove unused files (ioWorker, OfflineTileStore)
+- [x] test iPad/iPhone **DONE**, it works!
+
+- [ ] unit testing
+- [ ] better tile estimation and limits
 
 - [ ] allow naming caches?
-- [ ] test iPad/iPhone
 - [ ] more general proxy.php
 
 - [ ] non-rectangular area
