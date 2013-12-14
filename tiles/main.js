@@ -230,7 +230,7 @@ require(["esri/map",
 				if( success )
 					alert("All tiles deleted");
 				else
-					alert("Can't delete tiles");
+					alert("Can't delete tiles: " + err);
 
 				setTimeout(updateOfflineUsage,0); // request execution in the next turn of the event loop
 			});
