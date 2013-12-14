@@ -18,8 +18,6 @@
  */
 var OfflineStore = function(/* Map */ map) {
 
-    this.backgroundTimerWorker = null;
-    this.isTimer = null;
     this.layers = [];  //An array of all feature layers
     this.utils = null;
     this.map = map;
@@ -64,7 +62,6 @@ var OfflineStore = function(/* Map */ map) {
             LOCAL_STORAGE_MAX_LIMIT : 4.75 /* MB */,
             /* A unique token for tokenizing stringified localStorage values */
             TOKEN : "|||",
-            TIMER_TICK_INTERVAL : 10 * 1000 /* ms */,
             WINDOW_ERROR_EVENT: "windowErrorEvent",
             EDIT_EVENT: "editEvent",
             EDIT_EVENT_SUCCESS: true,
@@ -431,7 +428,6 @@ console.log(localStore.toString());
                         }
                         else{
                             console.log("_handleRestablishedInternet: there were errors. LocalStore still available.");
-//                            this._stopTimer();
                             callback(false);
                         }
                     }
@@ -441,7 +437,6 @@ console.log(localStore.toString());
                     else if(success == false && check.length == graphicsArr.length){
                         this._setItemLocalStoreIndex(obj1.layer,objectId,obj1.enumValue,false);
                         console.log("_handleRestablishedInternet: error sending edit on " + objectId);
-//                        this._stopTimer();
                         callback(false);
                     }
                     else if(success == false && check.length < graphicsArr.length){
@@ -750,8 +745,7 @@ console.log(localStore.toString());
     }
 
     /**
-     * Initializes the OfflineStore library. Loads required src. Kicks off timer if
-     * localStore is not empty.
+     * Initializes the OfflineStore library. Loads required src.
      * @see Required script sare set in _localEnum.
      * @type {*}
      * @private
@@ -788,7 +782,8 @@ console.log(localStore.toString());
     }.bind(this)()
 
     /**
-     * Attempt to stop timer and reduce chances of corrupting or duplicating data.
+     * Allow application builders to detect potential fatal events that
+     * could affect data integrity.
      * TO-DO some errors like those in callbacks may not be trapped by this!
      * @param msg
      * @param url
