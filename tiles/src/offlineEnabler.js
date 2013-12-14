@@ -1,5 +1,5 @@
 /*
- * depends upon base64utils.js and dbStore.js
+ * depends upon base64utils.js, dbStore.js and tilingScheme.js
  */
 define([
 	"dojo/query",
