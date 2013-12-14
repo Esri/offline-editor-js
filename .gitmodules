@@ -3,7 +3,7 @@
 	url = https://github.com/HubSpot/offline.git
 [submodule "vendor/bootstrap-map-js"]
 	path = vendor/bootstrap-map-js
-	url = https://github.com:Esri/bootstrap-map-js.git
+	url = https://github.com/Esri/bootstrap-map-js.git
 [submodule "vendor/IndexedDBShim"]
 	path = vendor/IndexedDBShim
 	url = https://github.com/axemclion/IndexedDBShim
