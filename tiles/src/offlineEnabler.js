@@ -85,10 +85,31 @@ define([
 					return tileid;
 				};
 
+				layer.estimateTileSize = function()
+				{
+					var tileInfo = this.tileInfo;
+
+					return 14000; // TODO - come up with a more precise estimation method
+				};
+
+				layer.getLevelEstimation = function(extent, level)
+				{
+					var tilingScheme = new TilingScheme(this,geometry);
+				 	var cellIds = tilingScheme.getAllCellIdsInExtent(extent,level);
+					var tileSize = this.estimateTileSize();
+
+					var levelEstimation = { 
+						level: level,
+						tileCount: cellIds.length,
+						sizeBytes: cellIds.length * tileSize
+					}
+
+					return levelEstimation;
+				};
+
 				layer.prepareForOffline = function(minLevel, maxLevel, extent, reportProgress, finishedDownloading)
 				{
 					/* create list of tiles to store */
-					var basemapLayer = map.getLayer( map.layerIds[0] );
 					var tilingScheme = new TilingScheme(this,geometry);
 					var cells = [];
 

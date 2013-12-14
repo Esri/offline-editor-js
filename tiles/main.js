@@ -60,7 +60,6 @@ require(["esri/map",
 				{
 					initMapParts();
 					initEvents();
-					updateTileSizeEstimation();
 					initOffline();
 				}
 				else
@@ -69,7 +68,6 @@ require(["esri/map",
 					{
 						initMapParts();
 						initEvents();
-						updateTileSizeEstimation();
 						initOffline();
 					});
 				}
@@ -105,9 +103,9 @@ require(["esri/map",
 
 		function initEvents()
 		{
-			map.on('extent-change', updateTileSizeEstimation );
-			on(dojo.byId('minLevel'),'change', updateTileSizeEstimation);
-			on(dojo.byId('maxLevel'),'change', updateTileSizeEstimation);
+			map.on('extent-change', updateTileCountEstimation );
+			on(dojo.byId('minLevel'),'change', updateTileCountEstimation);
+			on(dojo.byId('maxLevel'),'change', updateTileCountEstimation);
 
 			var basemapLayer = map.getLayer( map.layerIds[0] );
 			dojo.byId('minLevel').value = basemapLayer.tileInfo.lods[0].level;
@@ -117,6 +115,7 @@ require(["esri/map",
 		function initOffline()
 		{
 			var basemapLayer = offlineEnabler.getBasemapLayer(map);
+			console.log("extending");
 			offlineEnabler.extend(basemapLayer,function(success)
 			{
 				if(success)
@@ -131,6 +130,7 @@ require(["esri/map",
 					esri.show(dojo.byId('ready-to-download-ui'));
 					esri.hide(dojo.byId('downloading-ui'));
 					updateOfflineUsage();
+					updateTileCountEstimation();
 				}
 				else
 				{	
@@ -157,14 +157,7 @@ require(["esri/map",
 			});		
 		}
 
-		function estimateTileSize(tiledLayer)
-		{
-			var tileInfo = tiledLayer.tileInfo;
-
-			return 14000; // TODO - come up with a more precise estimation method
-		}
-
-		function updateTileSizeEstimation()
+		function updateTileCountEstimation()
 		{
 			console.log('updating');
 			var zoomLevel = map.getLevel();
@@ -180,23 +173,13 @@ require(["esri/map",
 			}
 
 			var basemapLayer = map.getLayer( map.layerIds[0] );
-			var tileSize = estimateTileSize(basemapLayer);
-
-			var tilingScheme = new TilingScheme(basemapLayer,geometry);
+			var totalEstimation = { tileCount:0, sizeBytes:0 }
 
 			domConstruct.empty('tile-count-table-body');
 
-			var totalEstimation = { tileCount:0, sizeBytes:0 }
-
 			for(var level=minLevel; level<=maxLevel; level++)
 			{
-				var cellIds = tilingScheme.getAllCellIdsInExtent(map.extent,level);
-
-				var levelEstimation = { 
-					level: level,
-					tileCount: cellIds.length,
-					sizeBytes: cellIds.length * tileSize
-				}
+				var levelEstimation = basemapLayer.getLevelEstimation(map.extent,level);
 
 				totalEstimation.tileCount += levelEstimation.tileCount;
 				totalEstimation.sizeBytes += levelEstimation.sizeBytes;
