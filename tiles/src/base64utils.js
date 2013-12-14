@@ -1,14 +1,16 @@
-var Base64Utils = (function(){
+"use strict"
 
-	var d={};
-	d.outputTypes={ 
+define([],function()
+{
+	var Base64Utils={};
+	Base64Utils.outputTypes={ 
 		//	summary:
 		//		Enumeration for input and output encodings.
 		Base64:0, Hex:1, String:2, Raw:3 
 	};
 
 	//	word-based addition
-	d.addWords=function(/* word */a, /* word */b){
+	Base64Utils.addWords=function(/* word */a, /* word */b){
 		//	summary:
 		//		add a pair of words together with rollover
 		var l=(a&0xFFFF)+(b&0xFFFF);
@@ -22,7 +24,7 @@ var Base64Utils = (function(){
 	var chrsz=8;	//	16 for Unicode
 	var mask=(1<<chrsz)-1;
 
-	d.stringToWord=function(/* string */s){
+	Base64Utils.stringToWord=function(/* string */s){
 		//	summary:
 		//		convert a string to a word array
 
@@ -33,7 +35,7 @@ var Base64Utils = (function(){
 		return wa;	//	word[]
 	};
 
-	d.wordToString=function(/* word[] */wa){
+	Base64Utils.wordToString=function(/* word[] */wa){
 		//	summary:
 		//		convert an array of words to a string
 		var s=[];
@@ -42,7 +44,7 @@ var Base64Utils = (function(){
 		}
 		return s.join("");	//	string
 	}
-	d.wordToHex=function(/* word[] */wa){
+	Base64Utils.wordToHex=function(/* word[] */wa){
 		//	summary:
 		//		convert an array of words to a hex tab
 		var h="0123456789abcdef", s=[];
@@ -51,7 +53,7 @@ var Base64Utils = (function(){
 		}
 		return s.join("");	//	string
 	}
-	d.wordToBase64=function(/* word[] */wa){
+	Base64Utils.wordToBase64=function(/* word[] */wa){
 		//	summary:
 		//		convert an array of words to base64 encoding, should be more efficient
 		//		than using dojox.encoding.base64
@@ -69,5 +71,5 @@ var Base64Utils = (function(){
 		return s.join("");	//	string
 	};
 
-  return d;
-})();
+	return Base64Utils;
+});

@@ -1,10 +1,12 @@
-/*
- * depends upon base64utils.js, dbStore.js and tilingScheme.js
- */
+"use strict"
+
 define([
 	"dojo/query",
-	"esri/geometry"
-	], function(query, geometry)
+	"esri/geometry",
+	"src/base64utils.js",
+	"src/dbStore.js",
+	"src/tilingScheme.js"
+	], function(query, geometry,Base64Utils,DbStore,TilingScheme)
 	{
 		return {
 			/*
