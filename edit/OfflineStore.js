@@ -797,7 +797,6 @@ console.log(localStore.toString());
      */
     window.onerror = function (msg,url,line){
         console.log(msg + ", " + url + ":" + line);
-        this.map.offlineStore._stopTimer();
         this._sendEvent(msg,this._localEnum().WINDOW_ERROR_EVENT);
         return true;
     }
