@@ -1,5 +1,5 @@
 /*
- * depends upon "_base.js"
+ * depends upon base64utils.js and dbStore.js
  */
 define([
 	"dojo/query",
