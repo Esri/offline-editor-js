@@ -151,7 +151,7 @@ require(["esri/map",
 			basemapLayer.getOfflineUsage(function(usage)
 			{
 				console.log(usage);
-				console.log("Avg tile size:", usage.size * 1024 * 1024/ usage.tileCount, "Kb");
+				console.log("Avg tile size:", Math.round(usage.size * 1024 / usage.tileCount * 100) / 100, "Kb");
 				var usageStr = usage.size + " Mb (" + usage.tileCount + " tiles)";
 				dojo.byId('offline-usage').innerHTML = usageStr;
 			});		
@@ -172,6 +172,12 @@ require(["esri/map",
 
 			var minLevel = parseInt(dojo.byId('minLevel').value);
 			var maxLevel = parseInt(dojo.byId('maxLevel').value);
+			
+			if( maxLevel > zoomLevel + 3)
+			{
+				maxLevel = zoomLevel + 3;
+				dojo.byId('maxLevel').value = maxLevel;
+			}
 
 			var basemapLayer = map.getLayer( map.layerIds[0] );
 			var tileSize = estimateTileSize(basemapLayer);
