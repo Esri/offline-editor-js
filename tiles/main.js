@@ -151,7 +151,7 @@ require(["esri/map",
 			basemapLayer.getOfflineUsage(function(usage)
 			{
 				console.log(usage);
-				console.log("Avg tile size:", usage.size * 1024 * 1024/ usage.tileCount, "Kb");
+				console.log("Avg tile size:", Math.round(usage.size * 1024 / usage.tileCount * 100) / 100, "Kb");
 				var usageStr = usage.size + " Mb (" + usage.tileCount + " tiles)";
 				dojo.byId('offline-usage').innerHTML = usageStr;
 			});		
