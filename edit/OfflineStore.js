@@ -16,6 +16,14 @@
  * @param map
  * @type {*|{}}
  */
+
+var getScriptURL = (function() {
+    var scripts = document.getElementsByTagName('script');
+    var index = scripts.length - 1;
+    var myScript = scripts[index];
+    return function() { return myScript.src; };
+})();
+
 var OfflineStore = function(/* Map */ map) {
 
     this.layers = [];  //An array of all feature layers
@@ -68,10 +76,9 @@ var OfflineStore = function(/* Map */ map) {
             EDIT_EVENT_FAILED: false,
             ONLINE_STATUS_EVENT: "OnlineStatusEvent",
             REQUIRED_LIBS : [
-                "/offline/edit/Hydrate.js",
-                "/offline/edit/Poller.js",
-                "/offline/edit/OfflineUtils.js",
-                "/offline/vendor/offline/offline.min.js"
+                "Hydrate.js",
+                "OfflineUtils.js",
+                "../vendor/offline/offline.min.js"
             ]
         }
 
@@ -696,13 +703,18 @@ console.log(localStore.toString());
      */
     this._loadScripts = function(/* Array */ urlArray, callback)
     {
+        var thisScriptUrl = getScriptURL();
+        var parse_url = /^(?:([A-Za-z]+):)?(\/{0,3})([0-9.\-A-Za-z]+)(?::(\d+))?(?:\/([^?#]*))?(?:\?([^#]*))?(?:#(.*))?$/;
+        var parts = parse_url.exec( thisScriptUrl );
+        var baseUrl = '/' + parts[5].substring(0,parts[5].lastIndexOf("/"));
+
         count = 0;
         for(var i in urlArray){
             try{
                 var head = document.getElementsByTagName('head')[0];
                 var script = document.createElement('script');
                 script.type = 'text/javascript';
-                script.src = urlArray[i];
+                script.src = baseUrl + '/' + urlArray[i];
                 script.onreadystatechange = function(){
                     count++;
                     console.log("Script loaded. " + this.src);
