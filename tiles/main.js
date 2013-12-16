@@ -1,28 +1,28 @@
 "use strict"
 
 var map;
+var basemapLayer;
 var graphics;
 var cancelRequested, startTime;
 var showTiles = false;
 
 require(["esri/map", 
 	"esri/layers/GraphicsLayer", "esri/graphic", "esri/symbols/SimpleFillSymbol",
-	"esri/dijit/Scalebar", 
-	"esri/arcgis/utils", 
-	"esri/geometry",
-	"dojo/dom", 
-	"dojo/on", 
-	"dojo/query", 
+	"esri/dijit/Scalebar", "esri/arcgis/utils", "esri/geometry",
+	"dojo/dom", "dojo/on", "dojo/query", 
 	"../vendor/bootstrap-map-js/src/js/bootstrapmap.js",
-	"esri/urlUtils",
-	"esri/geometry/webMercatorUtils",
+	"esri/urlUtils", "esri/geometry/webMercatorUtils",
 	"src/offlineEnabler.js",
-	"dojo/dom-construct",
-	"dojo/domReady!"], 
-	function(Map, GraphicsLayer, Graphic, SimpleFillSymbol, Scalebar, esriUtils, geometry, dom, on, query, BootstrapMap, urlUtils, webMercatorUtils, 
+	"dojo/dom-construct", "dojo/domReady!"], 
+	function(Map, 
+		GraphicsLayer, Graphic, SimpleFillSymbol, 
+		Scalebar, esriUtils, geometry, 
+		dom, on, query, 
+		BootstrapMap, 
+		urlUtils, webMercatorUtils, 
 		offlineEnabler,
 		domConstruct) 
-	{  
+	{
 		var scalebar;
 		var symbol;
 
@@ -58,18 +58,18 @@ require(["esri/map",
 
 				if(map.loaded)
 				{
+					basemapLayer = map.getLayer( map.layerIds[0] );
 					initMapParts();
 					initEvents();
-					updateTileSizeEstimation();
 					initOffline();
 				}
 				else
 				{
 					on(map,"load",function()
 					{
+						basemapLayer = map.getLayer( map.layerIds[0] );
 						initMapParts();
 						initEvents();
-						updateTileSizeEstimation();
 						initOffline();
 					});
 				}
@@ -105,18 +105,17 @@ require(["esri/map",
 
 		function initEvents()
 		{
-			map.on('extent-change', updateTileSizeEstimation );
-			on(dojo.byId('minLevel'),'change', updateTileSizeEstimation);
-			on(dojo.byId('maxLevel'),'change', updateTileSizeEstimation);
+			map.on('extent-change', updateTileCountEstimation );
+			on(dojo.byId('minLevel'),'change', updateTileCountEstimation);
+			on(dojo.byId('maxLevel'),'change', updateTileCountEstimation);
 
-			var basemapLayer = map.getLayer( map.layerIds[0] );
-			dojo.byId('minLevel').value = basemapLayer.tileInfo.lods[0].level;
-			dojo.byId('maxLevel').value = basemapLayer.tileInfo.lods[basemapLayer.tileInfo.lods.length-1].level;
+			dojo.byId('minLevel').value = basemapLayer.minLevel = basemapLayer.tileInfo.lods[0].level;
+			dojo.byId('maxLevel').value = basemapLayer.maxLevel = basemapLayer.tileInfo.lods[basemapLayer.tileInfo.lods.length-1].level;
 		}
 
 		function initOffline()
 		{
-			var basemapLayer = offlineEnabler.getBasemapLayer(map);
+			console.log("extending");
 			offlineEnabler.extend(basemapLayer,function(success)
 			{
 				if(success)
@@ -131,6 +130,7 @@ require(["esri/map",
 					esri.show(dojo.byId('ready-to-download-ui'));
 					esri.hide(dojo.byId('downloading-ui'));
 					updateOfflineUsage();
+					updateTileCountEstimation();
 				}
 				else
 				{	
@@ -147,7 +147,6 @@ require(["esri/map",
 		function updateOfflineUsage()
 		{
 			dojo.byId('offline-usage').innerHTML = "updating...";
-			var basemapLayer = offlineEnabler.getBasemapLayer(map);
 			basemapLayer.getOfflineUsage(function(usage)
 			{
 				console.log(usage);
@@ -157,14 +156,7 @@ require(["esri/map",
 			});		
 		}
 
-		function estimateTileSize(tiledLayer)
-		{
-			var tileInfo = tiledLayer.tileInfo;
-
-			return 14000; // TODO - come up with a more precise estimation method
-		}
-
-		function updateTileSizeEstimation()
+		function updateTileCountEstimation()
 		{
 			console.log('updating');
 			var zoomLevel = map.getLevel();
@@ -173,30 +165,19 @@ require(["esri/map",
 			var minLevel = parseInt(dojo.byId('minLevel').value);
 			var maxLevel = parseInt(dojo.byId('maxLevel').value);
 			
-			if( maxLevel > zoomLevel + 3)
+			if( maxLevel > zoomLevel + 3 || maxLevel > basemapLayer.maxLevel)
 			{
-				maxLevel = zoomLevel + 3;
+				maxLevel = Math.min(basemapLayer.maxLevel, zoomLevel + 3);
 				dojo.byId('maxLevel').value = maxLevel;
 			}
 
-			var basemapLayer = map.getLayer( map.layerIds[0] );
-			var tileSize = estimateTileSize(basemapLayer);
-
-			var tilingScheme = new TilingScheme(basemapLayer,geometry);
+			var totalEstimation = { tileCount:0, sizeBytes:0 }
 
 			domConstruct.empty('tile-count-table-body');
 
-			var totalEstimation = { tileCount:0, sizeBytes:0 }
-
 			for(var level=minLevel; level<=maxLevel; level++)
 			{
-				var cellIds = tilingScheme.getAllCellIdsInExtent(map.extent,level);
-
-				var levelEstimation = { 
-					level: level,
-					tileCount: cellIds.length,
-					sizeBytes: cellIds.length * tileSize
-				}
+				var levelEstimation = basemapLayer.getLevelEstimation(map.extent,level);
 
 				totalEstimation.tileCount += levelEstimation.tileCount;
 				totalEstimation.sizeBytes += levelEstimation.sizeBytes;
@@ -228,7 +209,6 @@ require(["esri/map",
 			dojo.byId('go-offline-btn').disabled = true;
 			dojo.byId('go-online-btn').disabled = undefined;
 
-			var basemapLayer = map.getLayer( map.layerIds[0] );
 			basemapLayer.goOffline();
 		}
 
@@ -237,13 +217,11 @@ require(["esri/map",
 			dojo.byId('go-offline-btn').disabled = undefined;
 			dojo.byId('go-online-btn').disabled = true;
 
-			var basemapLayer = map.getLayer( map.layerIds[0] );
 			basemapLayer.goOnline();
 		}
 
 		function deleteAllTiles() 
 		{
-			var basemapLayer = map.getLayer( map.layerIds[0] );
 			basemapLayer.deleteAllTiles(function(success, err)
 			{
 				console.log("deleteAllTiles():", success,err);
@@ -251,7 +229,7 @@ require(["esri/map",
 				if( success )
 					alert("All tiles deleted");
 				else
-					alert("Can't delete tiles");
+					alert("Can't delete tiles: " + err);
 
 				setTimeout(updateOfflineUsage,0); // request execution in the next turn of the event loop
 			});
@@ -269,7 +247,6 @@ require(["esri/map",
 			/* launch offline preparation process */
 			var minLevel = parseInt(dojo.byId('minLevel').value);
 			var maxLevel = parseInt(dojo.byId('maxLevel').value);
-			var basemapLayer = map.getLayer( map.layerIds[0] );
 			basemapLayer.prepareForOffline(minLevel, maxLevel, map.extent, reportProgress, finishedDownloading);
 		}
 
@@ -321,7 +298,6 @@ require(["esri/map",
 
 			if( showTiles )
 			{
-				var basemapLayer = map.getLayer( map.layerIds[0] );
 				basemapLayer.getTilePolygons(function(polygon,err)
 				{
 					if(polygon)
