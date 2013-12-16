@@ -18,7 +18,9 @@
 - [x] test iPad/iPhone **DONE**, it works!
 
 - [ ] unit testing
+- [ ] update README.md
 - [ ] better tile estimation and limits
+- [ ] keep on downloading tiles even if one of them fails
 
 - [ ] allow naming caches?
 - [ ] more general proxy.php
