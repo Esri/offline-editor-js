@@ -19,42 +19,75 @@
     <link rel="stylesheet" href="http://js.arcgis.com/3.6/js/esri/css/esri.css">
     <script src="http://js.arcgis.com/3.6/"></script>
 
-  <!-- include source files here... -->
-  <script type="text/javascript" src="../../tiles/tiles/offlineEnabler.js"></script>
-
   <!-- include spec files here... -->
   <script type="text/javascript" src="spec/offlineEnablerSpec.js"></script>
 
   <script type="text/javascript">
-    (function() {
-      var jasmineEnv = jasmine.getEnv();
-      jasmineEnv.updateInterval = 1000;
 
-      var htmlReporter = new jasmine.HtmlReporter();
+  var g_map;
+  var g_basemapLayer;
+  var g_offlineEnabler;
 
-      jasmineEnv.addReporter(htmlReporter);
+  require(["esri/map", 
+  	"esri/layers/GraphicsLayer", "esri/graphic", "esri/symbols/SimpleFillSymbol",
+  	"esri/dijit/Scalebar", "esri/arcgis/utils", "esri/geometry",
+  	"dojo/dom", "dojo/on", "dojo/query", 
+  	"esri/urlUtils", "esri/geometry/webMercatorUtils",
+  	"tiles/offlineEnabler",
+  	"dojo/dom-construct", "dojo/domReady!"], 
+  	function(Map, 
+  		GraphicsLayer, Graphic, SimpleFillSymbol, 
+  		Scalebar, esriUtils, geometry, 
+  		dom, on, query, 
+  		urlUtils, webMercatorUtils, 
+  		offlineEnabler,
+  		domConstruct) 
+  	{
+        g_map = new Map("map", {
+            basemap: "gray",
+            center: [-3.695, 40.412],	 // Madrid center
+            zoom: 14,
+            sliderStyle: "small"
+        });
 
-      jasmineEnv.specFilter = function(spec) {
-        return htmlReporter.specFilter(spec);
-      };
+        g_map.on('load', test);
 
-      var currentWindowOnload = window.onload;
+  		function test() 
+  		{
+			g_basemapLayer = g_map.getLayer( g_map.layerIds[0] );
+			g_offlineEnabler = offlineEnabler;
 
-      window.onload = function() {
-        if (currentWindowOnload) {
-          currentWindowOnload();
-        }
-        execJasmine();
-      };
+  			var jasmineEnv = jasmine.getEnv();
+  			jasmineEnv.updateInterval = 1000;
 
-      function execJasmine() {
-        jasmineEnv.execute();
-      }
+  			var htmlReporter = new jasmine.HtmlReporter();
 
-    })();
+  			jasmineEnv.addReporter(htmlReporter);
+
+  			jasmineEnv.specFilter = function(spec) {
+  				return htmlReporter.specFilter(spec);
+  			};
+
+  			var currentWindowOnload = window.onload;
+
+  			window.onload = function() {
+  				if (currentWindowOnload) {
+  					currentWindowOnload();
+  				}
+  				execJasmine();
+  			};
+
+  			function execJasmine() {
+  				jasmineEnv.execute();
+  			}
+
+    	}; // test()
+
+  	}); // require()
   </script>
 </head>
 
 <body>
+	<div id="map" style="position: absolute; bottom: 0; right: 0; height:200px; width: 200px;"></div>
 </body>
 </html>
