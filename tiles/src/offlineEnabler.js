@@ -37,7 +37,7 @@ define([
 					store: new DbStore()
 				};
 
-				if( layer.offline.store.isSupported() )
+				if( /*false &&*/ layer.offline.store.isSupported() )
 					layer.offline.store.init(callback);
 				else					
 					return callback(false, "indexedDB not supported");

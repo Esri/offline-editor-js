@@ -136,6 +136,11 @@ require(["esri/map",
 				else
 				{	
 					dojo.byId('prepare-for-offline-btn').disabled = true;
+					dojo.byId('delete-all-tiles-btn').disabled = true;
+					dojo.byId('go-offline-btn').disabled = true;
+					dojo.byId('go-online-btn').disabled = true;
+					dojo.byId('update-offline-usage').disabled = true;
+					dojo.byId('show-stored-tiles').disabled = true;
 					esri.hide(dojo.byId('downloading-ui'));
 					/* JAMI: TODO add message telling that something failed while initing the indexedDB */	
 				}

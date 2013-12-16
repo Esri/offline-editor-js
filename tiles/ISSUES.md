@@ -21,6 +21,7 @@
 - [ ] update README.md
 - [ ] better tile estimation and limits
 - [ ] keep on downloading tiles even if one of them fails
+- [ ] add message telling that something failed while initing the indexedDB
 
 - [ ] allow naming caches?
 - [ ] more general proxy.php
