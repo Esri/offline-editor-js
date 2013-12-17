@@ -6,7 +6,7 @@
  * Author: Andy Gup (@agup)
  * Contributor: Javier Abadia (@javierabadia)
  */
-define([],function()
+define(["src/phoneGapConnector.js"],function(phonegap)
 {
     var DbStore = function()
     {
@@ -44,6 +44,18 @@ define([],function()
             }
 
             return true;
+        }
+
+        /**
+         * Verifies if phonegap and SQlite support is available
+         * @returns {boolean}
+         */
+        this.isDeviceStorageSupported = function(){
+            if(phonegap.getDBVersion() != null){
+                return true;
+            }
+
+            return false;
         }
 
         /**

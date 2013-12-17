@@ -13,14 +13,16 @@
     <script src="http://js.arcgis.com/3.6/"></script>
 
   <!-- include source files here... -->
-  <script type="text/javascript" src="../../edit/OfflineStore.js"></script>
+    <script type="text/javascript" src="../../edit/OfflineStore.js"></script>
+    <script type="text/javascript" src="../../tiles/src/phoneGapConnector.js"></script>
 
     <!-- include spec files here... -->
-  <script type="text/javascript" src="spec/OfflineStoreSpec.js"></script>
+    <script type="text/javascript" src="spec/OfflineStoreSpec.js"></script>
 
   <script type="text/javascript">
         var map;
         var offlineStore;
+        var phonegap;
         var vertices;
         var landusePointLayer;
         var point, line, polygon;
@@ -113,9 +115,15 @@
 
             if(evt.layer.hasOwnProperty("type") && evt.layer.type == "Feature Layer"){
 
-                initGraphics();
+                try{
+                    initGraphics();
+                    offlineStore = new OfflineStore(map);
+                    phonegap = new PhoneGapConnector();
+                }
+                catch(err){
+                    console.log("ERROR initializing a library: " + err.toString())
+                }
 
-                offlineStore = new OfflineStore(map);
 
                 var jasmineEnv = this.jasmine.getEnv();
                 jasmineEnv.updateInterval = 1000;

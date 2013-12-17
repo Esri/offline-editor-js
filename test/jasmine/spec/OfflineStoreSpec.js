@@ -469,6 +469,15 @@ describe("Test custom event handling", function(){
     })
 })
 
+describe("Test using phonegap device storage", function(){
+    it("verify if phonegap installed and database available", function(){
+        var validate = null;
+        validate = phonegap.getDBVersion();
+
+        expect(validate).toBeNull();
+    })
+})
+
 /**
  * PROBLEM: This should throw an error BUT it fails silently. Maybe be a bug in the JS API. Needs further investigation.
  */

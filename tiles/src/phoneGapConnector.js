@@ -1,7 +1,13 @@
 var PhoneGapConnector = function(){
 
     this.__db = null; //local reference to database
+
+    /**
+     * Size of the database in bytes
+     * @type {number}
+     */
     this._dbSize = 0;
+    this._dbVersion = null;
 
     /**
      * Public ENUMs. Immutable reference values.
@@ -78,8 +84,73 @@ var PhoneGapConnector = function(){
             });
     }
 
-    this.getDBInfo = function(){
+    /**
+     * Returns the database size in bytes that was during init()
+     * @param size
+     * @returns {number}
+     */
+    this.getDBSize = function(/* int */ size){
+        return this._dbSize;
+    }
 
+    /**
+     * Returns the database version or returns null.
+     * If this returns null then the database may have not been created yet.
+     * @returns {*}
+     */
+    this.getDBVersion = function(){      console.log("HAHAHA " + typeof this.__db)
+        if(this.__db != null){
+            if(this.__db.hasOwnProperty("version") == true ){
+                return this.__db.version;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Returns a row count
+     * @param callback (count, null) or (null,err)
+     */
+    this.getDBCount = function(callback){
+        this.__db.transaction(function(tx){
+                console.log("starting...")
+                tx.executeSql("SELECT count(*) from TILES",[],
+                    function(tx,results){
+                        var length = results.rows.length;
+                        if(length != 0){
+                            var data = results.rows.item(0);
+                            var key = Object.keys(data)[0];
+                            callback(data[key],null);
+                        }
+                        else if(length == 0){
+                            callback(0,null);
+                        }
+                    },
+                    function(err){
+                        callback(null,"Check that the query is properly formed");
+                    })
+            },
+
+            function(err){
+                callback(null,this._SQLEvtToTxt(err));
+            });
+    }
+
+    /**
+     * Parses a SQLError Event message and returns a code safe string.
+     * If no message is detected the function will return null
+     * @param evt
+     * @returns {string}
+     * @constructor
+     */
+    this.SQLEvtToTxt = function(evt){
+        if(typeof evt == "undefined"){
+            return "null";
+        }
+        else{
+            return evt.code + ", " + evt.message;
+        }
     }
 
     //////////////////////////
@@ -122,9 +193,7 @@ var PhoneGapConnector = function(){
      */
     this.init = function(/* int */ dbSize,callback) {
         this._dbSize = dbSize;
-        document.addEventListener("load",
-            function(evt){console.log("loaded: ")},
-            false)
+
         this.__db = window.openDatabase(this.enum().DATABASE_NAME, "1.0", "Tile Database", dbSize);
         if(this.__db != null){
             this.__db.transaction(this._createDB,
@@ -133,10 +202,11 @@ var PhoneGapConnector = function(){
                 },
                 function(evt){
                 callback(true,evt);
-            })
+                }.bind(this))
         }
         else{
             console.log("Init: unknown problem");
+            callback(false,null)
         }
 
     };
