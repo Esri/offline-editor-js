@@ -16,7 +16,6 @@ describe("offline enabler library", function()
         expect(g_basemapLayer.tileInfo).toEqual(jasmine.any(Object));
     });
 
-
 	it("extends the tiled layer object", function()
 	{
 		expect(g_basemapLayer.goOffline).toBeUndefined();
@@ -33,12 +32,15 @@ describe("offline enabler library", function()
 			expect(g_basemapLayer.offline).toEqual(jasmine.any(Object));
 			expect(g_basemapLayer.offline.store).toEqual(jasmine.any(Object));
 
+			g_basemapLayer.offline.proxyPath = "../../tiles/proxy.php";
 			initCompleted = true;
 		});
 	});
 
 	it("can go offline", function()
 	{
+		waitsFor(function(){ return initCompleted; });
+
 		expect(g_basemapLayer.goOffline).toEqual(jasmine.any(Function));
 		expect(g_basemapLayer.offline.online).toEqual(true);
 		g_basemapLayer.goOffline();
@@ -47,6 +49,8 @@ describe("offline enabler library", function()
 
 	it("can go online", function()
 	{
+		waitsFor(function(){ return initCompleted; });
+
 		expect(g_basemapLayer.goOffline).toEqual(jasmine.any(Function));
 		expect(g_basemapLayer.offline.online).toEqual(false);
 		g_basemapLayer.goOnline();
@@ -70,9 +74,10 @@ describe("offline enabler library", function()
 		});
 	});
 
-	/*
 	it("stores one tile", function()
 	{
+		waitsFor(function(){ return initCompleted; });
+
 		g_basemapLayer.getOfflineUsage(function(usage)
 		{
 			expect(usage.tileCount).toEqual(0);
@@ -86,5 +91,6 @@ describe("offline enabler library", function()
 			});
 		});
 	});
-	*/
+
+	
 });
