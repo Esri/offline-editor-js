@@ -34,7 +34,8 @@ define([
 				layer._getTileUrl = layer.getTileUrl;				
 				layer.offline = {
 					online: true,
-					store: new DbStore()
+					store: new DbStore(),
+					proxyPath: "proxy.php"					
 				};
 
 				if( /*false &&*/ layer.offline.store.isSupported() )
@@ -178,7 +179,7 @@ define([
 					url = url.split('?')[0];
 
 					/* download the tile */
-					var imgurl = "proxy.php?" + url;
+					var imgurl = this.offline.proxyPath + "?" + url;
 					var req = new XMLHttpRequest();
 					req.open("GET", imgurl, true);
 					req.overrideMimeType("text/plain; charset=x-user-defined"); // https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/Using_XMLHttpRequest?redirectlocale=en-US&redirectslug=DOM%2FXMLHttpRequest%2FUsing_XMLHttpRequest#Handling_binary_data 
