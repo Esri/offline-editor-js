@@ -3,9 +3,9 @@
 define([
 	"dojo/query",
 	"esri/geometry",
-	"src/base64utils.js",
-	"src/dbStore.js",
-	"src/tilingScheme.js"
+	"/offline//tiles/src/base64utils.js",
+	"/offline/tiles/src/dbStore.js",
+	"/offline/tiles/src/tilingScheme.js"
 	], function(query, geometry,Base64Utils,DbStore,TilingScheme)
 	{
 		return {
@@ -178,7 +178,7 @@ define([
 					url = url.split('?')[0];
 
 					/* download the tile */
-					var imgurl = "proxy.php?" + url;
+					var imgurl = "../tiles/proxy.php?" + url;
 					var req = new XMLHttpRequest();
 					req.open("GET", imgurl, true);
 					req.overrideMimeType("text/plain; charset=x-user-defined"); // https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/Using_XMLHttpRequest?redirectlocale=en-US&redirectslug=DOM%2FXMLHttpRequest%2FUsing_XMLHttpRequest#Handling_binary_data 
@@ -226,7 +226,7 @@ define([
 				{
 					var store = this.offline.store;
 					var tilingScheme = new TilingScheme(this,geometry);
-					store.getAllTiles(function(url,err)
+					store.getAllTiles(function(url,img,err)
 					{
 						if(url)
 						{

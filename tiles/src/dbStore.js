@@ -6,7 +6,7 @@
  * Author: Andy Gup (@agup)
  * Contributor: Javier Abadia (@javierabadia)
  */
-define(["src/phoneGapConnector.js"],function(phonegap)
+define(["/offline/tiles/src/phoneGapConnector.js"],function(phonegap)
 {
     var DbStore = function()
     {
@@ -159,10 +159,10 @@ define(["src/phoneGapConnector.js"],function(phonegap)
 
         /**
          * Retrieve all tiles from indexeddb
-         * @param callback callbakck(url, err)
+         * @param callback callbakck(url, img, err)
          */
         this.getAllTiles = function(callback){
-            if(this._db != null)
+            if(this._db.hasOwnProperty("name"))
             {
                 var transaction = this._db.transaction(["tilepath"])
                     .objectStore("tilepath")
@@ -173,20 +173,21 @@ define(["src/phoneGapConnector.js"],function(phonegap)
                     var cursor = event.target.result;
                     if(cursor){
                         var url = cursor.value.url;
-                        callback(url);
+                        var img = cursor.value.img;
+                        callback(url,img,null);
                         cursor.continue();
                     }
                     else{
-                        callback(null, "end");
+                        callback(null, null, "end");
                     }
                 }.bind(this);
                 transaction.onerror = function(err){
-                    callback(null, err);
+                    callback(null, null, err);
                 }
             }
             else
             {
-                callback(null, "no db");
+                callback(null, null, "no db");
             }     
         }
 
