@@ -6,7 +6,7 @@
  * Author: Andy Gup (@agup)
  * Contributor: Javier Abadia (@javierabadia)
  */
-define(["/offline/tiles/src/phoneGapConnector.js"],function(phonegap)
+define(["tiles/phoneGapConnector"],function(phonegap)
 {
     var DbStore = function()
     {
