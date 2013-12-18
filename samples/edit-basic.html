@@ -1,0 +1,363 @@
+<!--
+
+Sample demonstrates basic offline editing functionality for points, lines and polygons.
+
+-->
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=7, IE=9, IE=10">
+<meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no">
+<title>Offline Editing Sample - Basic points, lines, polygons</title>
+
+<link rel="stylesheet" href="http://js.arcgis.com/3.7/js/dojo/dijit/themes/claro/claro.css">
+<link rel="stylesheet" href="http://js.arcgis.com/3.7/js/esri/css/esri.css">
+
+<style>
+    html, body {
+        height: 100%;
+        width: 100%;
+        margin: 0;
+        padding: 0;
+        overflow:hidden;
+    }
+    .btn1{
+        width: 100%;
+        padding: 4px;
+        font-size: medium;
+        -moz-border-radius: 4px;
+        -webkit-border-radius: 4px;
+    }
+    #header, #info {
+        border:solid 2px #462d44;
+        background-color: #000000 !important;
+        background:#fff;
+        color:#ffffff;
+        -moz-border-radius: 4px;
+        border-radius: 4px;
+        font-family: sans-serif;
+        font-size: 1.1em;
+        padding-left:20px;
+    }
+    #buttons, #offlineInfo {
+        border:solid 2px #462d44;
+        background-color: #000000 !important;
+        background:#fff;
+        color:#ffffff;
+        -moz-border-radius: 4px;
+        border-radius: 4px;
+        font-family: sans-serif;
+        font-size: 1.1em;
+    }
+    #offlineIndicator{
+        font-size: medium;
+        text-align: center;
+        background-color: green;
+        -moz-border-radius: 4px;
+        border-radius: 4px;
+        padding: 4px;
+    }
+    #map {
+        padding:1px;
+        border:solid 2px #444;
+        -moz-border-radius: 4px;
+        border-radius: 4px;
+    }
+    #rightPane {
+        border:none;
+        padding: 0;
+        width:228px;
+    }
+    #leftPane {
+        padding:1px;
+        border:solid 2px #444;
+        background-color: #000000;
+        -moz-border-radius: 4px;
+        border-radius: 4px;
+        width:200px;
+    }
+    .templatePicker {
+        border: solid 2px #444;
+    }
+</style>
+
+
+</head>
+<body class="claro">
+<div data-dojo-type="dijit/layout/BorderContainer" data-dojo-props="gutters:true, design:'headline'" style="width:100%;height:100%;">
+    <div data-dojo-type="dijit/layout/ContentPane"  id="header" data-dojo-props="region:'top'">Offline Editing Demo: Use ctrl or cmd + click on graphic to delete.  Double click on graphic to edit vertices. </div>
+    <!--<div id="info" data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:'top'">Storage used: 0 MBs</div>-->
+    <div id="map" data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:'center'"></div>
+    <div id="rightPane" data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:'right'">
+        <div id="templatePickerDiv"></div>
+    </div>
+    <div id="leftPane" data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:'left'">
+        <div id="offlineInfo" data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:'top'">
+            <div id="offlineIndicator"><img id="offlineImg" src="../samples/img/32-Link.png" alt="Internet Connectivity" /></div>
+        </div>
+        <div id="info" data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:'top'">Storage used: 0 MBs</div>
+        <div id="buttons" data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:'bottom'">
+            <button class="btn1" style="background-color: red" onclick="offlineStore._deleteStore()">Delete localStorage</button>
+            <button class="btn1" style="background-color: red" onclick="getGraphicsLayers()" >Get Graphics Layers</button>
+            <button class="btn1" style="background-color: red" onclick="getIndex()" >Get Index</button>
+            <button class="btn1" style="background-color: red" onclick="offlineStore._deleteLocalStoreIndex()" >Delete Index</button>
+            <button class="btn1" style="background-color: red" onclick="handleRestablishedInternet()" >Test Restablish Internet</button>
+        </div>
+    </div>
+</div>
+
+<script src="http://js.arcgis.com/3.7/"></script>
+<script src="../edit/OfflineStore.js"></script>
+
+<script>
+var map;
+var offlineStore;
+var vertices;
+var updateFlag = false;
+require([
+    "esri/map",
+    "esri/geometry/Point",
+    "esri/geometry/Polygon",
+    "esri/geometry/Polyline",
+    "esri/toolbars/draw",
+    "esri/toolbars/edit",
+    "esri/graphic",
+    "esri/config",
+
+    "esri/layers/FeatureLayer",
+
+    "esri/symbols/SimpleMarkerSymbol",
+    "esri/symbols/SimpleLineSymbol",
+    "esri/symbols/SimpleFillSymbol",
+
+    "esri/dijit/editing/TemplatePicker",
+
+    "dojo/_base/array",
+    "dojo/_base/event",
+    "dojo/_base/lang",
+    "dojo/parser",
+    "dijit/registry",
+
+    "dijit/layout/BorderContainer", "dijit/layout/ContentPane",
+    "dijit/form/Button", "dojo/domReady!"
+], function(
+        Map, Point, Polygon, Polyline, Draw, Edit, Graphic, esriConfig,
+        FeatureLayer,
+        SimpleMarkerSymbol, SimpleLineSymbol, SimpleFillSymbol,
+        TemplatePicker,
+        arrayUtils, event, lang, parser, registry
+        ) {
+    parser.parse();
+
+    // refer to "Using the Proxy Page" for more information:  https://developers.arcgis.com/en/javascript/jshelp/ags_proxy.html
+    esriConfig.defaults.io.proxyUrl = "/proxy";
+
+    // This service is for development and testing purposes only. We recommend that you create your own geometry service for use within your applications.
+    esriConfig.defaults.geometryService = new esri.tasks.GeometryService("http://tasks.arcgisonline.com/ArcGIS/rest/services/Geometry/GeometryServer");
+
+    map = new Map("map", {
+        basemap: "streets",
+        center: [-83.244, 42.581],
+        zoom: 15
+    });
+
+    map.on("layers-add-result", initEditing);
+
+    var headerDiv = document.getElementById("info");
+
+    var landusePointLayer = new FeatureLayer("http://sampleserver6.arcgisonline.com/arcgis/rest/services/Military/FeatureServer/6", {
+        mode: FeatureLayer.MODE_SNAPSHOT,
+        outFields: ["*"]
+    });
+    var landuseLineLayer = new FeatureLayer("http://sampleserver6.arcgisonline.com/arcgis/rest/services/Military/FeatureServer/8", {
+        mode: FeatureLayer.MODE_SNAPSHOT,
+        outFields: ["*"]
+    });
+    var landusePolygonLayer = new FeatureLayer("http://sampleserver6.arcgisonline.com/arcgis/rest/services/Military/FeatureServer/9", {
+        mode: FeatureLayer.MODE_SNAPSHOT,
+        outFields: ["*"]
+    });
+
+    map.addLayers([landusePointLayer, landuseLineLayer, landusePolygonLayer]);
+
+    document.addEventListener("OnlineStatusEvent",function(evt){
+        if(evt.detail.message == "true"){
+            document.getElementById("offlineImg").src = "../samples/img/32-Link.png";
+            document.getElementById("offlineIndicator").style.backgroundColor = "green";
+        }
+        else{
+            document.getElementById("offlineImg").src = "../samples/img/32-Alert.png";
+            document.getElementById("offlineIndicator").style.backgroundColor = "yellow";
+        }
+    },false);
+
+
+    function initEditing(evt) {
+
+        console.log("initEditing", evt);
+        // var map = this;
+        var currentLayer = null;
+        var layers = arrayUtils.map(evt.layers, function(result) {
+            return result.layer;
+        });
+        console.log("layers", layers);
+
+//////////
+        offlineStore = new OfflineStore(map);
+        console.log("Storage used :  " + offlineStore.getlocalStorageUsed());
+        headerDiv.innerHTML = "Storage Used: " +  offlineStore.getlocalStorageUsed() + " MBs";
+        try{
+            document.addEventListener("editEvent",function(evt){
+                        if(evt.type == "editEvent" && evt.detail.message == true){
+                            console.log("editEvent: All edits successfully pushed");
+                        }
+                        else if(evt.type == "editEvent" && evt.detail.message == false){
+                            alert("Not all edits were successfully pushed to the server");
+                        }
+
+                        headerDiv.innerHTML = "Storage Used: " +  offlineStore.getlocalStorageUsed() + " MBs";
+                    },
+                    false);
+
+            document.addEventListener("windowErrorEvent",function(evt){
+                        alert("Error: " + evt.detail.message);
+                    },
+                    false);
+
+        }
+        catch(err){
+            console.log("test that event object is valid:  " + err);
+        }
+
+//////////
+
+        var editToolbar = new Edit(map);
+
+        editToolbar.on("deactivate", function(evt) {
+            if(updateFlag == true){
+                offlineStore.applyEdits(vertices.graphic,vertices.layer,offlineStore.enum().UPDATE,function(count,success,id){
+                    headerDiv.innerHTML = "Storage Used: " +  offlineStore.getlocalStorageUsed() + " MBs";
+                });
+                updateFlag = false;
+            }
+            else{
+                offlineStore.applyEdits(evt.graphic,currentLayer,offlineStore.enum().UPDATE,function(count,success,id){
+                    headerDiv.innerHTML = "Storage Used: " +  offlineStore.getlocalStorageUsed() + " MBs";
+                });
+            }
+        });
+
+        map.on("click", function(evt){
+            var state = editToolbar.getCurrentState();
+            if(state.isModified){
+                updateFlag = true;
+                editToolbar.deactivate();
+            }
+        });
+
+        arrayUtils.forEach(layers, function(layer) {
+            var editingEnabled = false;
+            layer.on("dbl-click", function(evt) {
+                event.stop(evt);
+                if (editingEnabled === false) {
+                    editingEnabled = true;
+                    vertices = new offlineStore.verticesObject(evt.graphic,layer);
+                    editToolbar.activate(Edit.EDIT_VERTICES , evt.graphic);
+                } else {
+                    currentLayer = this;
+                    editToolbar.deactivate();
+                    editingEnabled = false;
+                }
+            });
+
+            layer.on("click", function(evt) {
+                event.stop(evt);
+                if (evt.ctrlKey === true || evt.metaKey === true) {  //delete feature if ctrl key is depressed
+                    try{
+                        offlineStore.applyEdits(evt.graphic,layer,offlineStore.enum().DELETE,function(count,success,id){
+                            headerDiv.innerHTML = "Storage Used: " +  offlineStore.getlocalStorageUsed() + " MBs";
+                        });
+                    }
+                    catch(err){
+                        console.log("error " + err.toString());
+                    }
+
+                    //layer.applyEdits(null,null,[evt.graphic]);
+                    currentLayer = this;
+                    editToolbar.deactivate();
+                    editingEnabled=false;
+                }
+            });
+        });
+
+        var templatePicker = new TemplatePicker({
+            featureLayers: layers,
+            rows: "auto",
+            columns: 2,
+            grouping: true,
+            style: "height: auto; overflow: auto;"
+        }, "templatePickerDiv");
+
+        templatePicker.startup();
+
+        var drawToolbar = new Draw(map);
+
+        var selectedTemplate;
+        templatePicker.on("selection-change", function() {
+            if( templatePicker.getSelected() ) {
+                selectedTemplate = templatePicker.getSelected();
+            }
+            switch (selectedTemplate.featureLayer.geometryType) {
+                case "esriGeometryPoint":
+                    drawToolbar.activate(Draw.POINT);
+                    break;
+                case "esriGeometryPolyline":
+                    drawToolbar.activate(Draw.POLYLINE);
+                    break;
+                case "esriGeometryPolygon":
+                    drawToolbar.activate(Draw.POLYGON);
+                    break;
+            }
+        });
+
+        drawToolbar.on("draw-end", function(evt) {
+            drawToolbar.deactivate();
+            editToolbar.deactivate();
+            var newAttributes = lang.mixin({}, selectedTemplate.template.prototype.attributes);
+            var newGraphic = new Graphic(evt.geometry, null, newAttributes);
+            //selectedTemplate.featureLayer.applyEdits([newGraphic], null, null);
+            offlineStore.applyEdits(newGraphic,selectedTemplate.featureLayer,offlineStore.enum().ADD,function(count,success,id){
+                headerDiv.innerHTML = "Storage Used: " +  offlineStore.getlocalStorageUsed() + " MBs";
+            });
+        });
+    }
+
+});
+
+
+function getGraphicsLayers(){
+    var layer1 = offlineStore._getGraphicsLayerById(6);
+    var layer2 = offlineStore._getGraphicsLayerById(8);
+    var layer3 = offlineStore._getGraphicsLayerById(9);
+    console.log("layers retrieved");
+}
+
+function handleRestablishedInternet(){
+    offlineStore._handleRestablishedInternet(function(evt){
+        if(evt == true){
+            offlineStore._stopTimer();
+            offlineStore._deleteStore();
+        }
+        else{
+            console.log("nothing to do.");
+        }
+    });
+}
+
+function getIndex(){
+    console.log("index: " + offlineStore.getLocalStoreIndex());
+}
+</script>
+</body>
+</html>

@@ -686,10 +686,12 @@ console.log(localStore.toString());
         Offline.check();
         Offline.on('up down', function(){
             if(Offline.state === 'up'){
-                this._sendEvent(true,this._localEnum().ONLINE_STATUS_EVENT);
+                this._sendEvent("true",this._localEnum().ONLINE_STATUS_EVENT);
             }
             else{
-                this._sendEvent(false,this._localEnum().ONLINE_STATUS_EVENT);
+                //There is a bug in firefox that prevents boolean false from propagating
+                //that is why true and false are strings
+                this._sendEvent("false",this._localEnum().ONLINE_STATUS_EVENT);
             }
         }.bind(this));
     }
