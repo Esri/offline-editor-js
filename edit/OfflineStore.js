@@ -74,6 +74,7 @@ var OfflineStore = function(/* Map */ map) {
             EDIT_EVENT: "editEvent",
             EDIT_EVENT_SUCCESS: true,
             EDIT_EVENT_FAILED: false,
+            OFFLINE_EDIT_ATTEMPT: "OfflineEditAttempt", //exactly what is says!
             ONLINE_STATUS_EVENT: "OnlineStatusEvent",
             REQUIRED_LIBS : [
                 "Hydrate.js",
@@ -245,6 +246,7 @@ var OfflineStore = function(/* Map */ map) {
         }
 
         if(internet === false){
+            this._sendEvent(true,this._localEnum().OFFLINE_EDIT_ATTEMPT);
             this._addToLocalStore(graphic,layer,enumValue,callback);
             this._startOfflineListener();
         }
@@ -372,7 +374,7 @@ console.log(localStore.toString());
     this._startOfflineListener = function(){
 
         function onlineStatusHandler(evt){
-            if(evt.detail.message == true){
+            if(evt.detail.message == "true"){
                 console.log("internet reestablished");
                 try{var arr = this._getLocalStorage()}catch(err){console.log("err " + err.toString())};
                 if(arr != null){
@@ -391,6 +393,9 @@ console.log(localStore.toString());
         }
 
         console.log("starting offline listener.");
+
+        document.removeEventListener("OnlineStatusEvent",onlineStatusHandler,false);
+
         document.addEventListener("OnlineStatusEvent",
             onlineStatusHandler.bind(this),
             false);
@@ -686,11 +691,13 @@ console.log(localStore.toString());
         Offline.check();
         Offline.on('up down', function(){
             if(Offline.state === 'up'){
+                console.log("internet is up.");
                 this._sendEvent("true",this._localEnum().ONLINE_STATUS_EVENT);
             }
             else{
                 //There is a bug in firefox that prevents boolean false from propagating
                 //that is why true and false are strings
+                console.log("internet is down.");
                 this._sendEvent("false",this._localEnum().ONLINE_STATUS_EVENT);
             }
         }.bind(this));

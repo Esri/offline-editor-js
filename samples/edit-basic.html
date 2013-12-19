@@ -97,12 +97,16 @@ Sample demonstrates basic offline editing functionality for points, lines and po
             <div id="offlineIndicator"><img id="offlineImg" src="../samples/img/32-Link.png" alt="Internet Connectivity" /></div>
         </div>
         <div id="info" data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:'top'">Storage used: 0 MBs</div>
-        <div id="buttons" data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:'bottom'">
+        <div id="buttons" data-dojo-type="dijit/layout/ContentPane" >
+            <button class="btn1" style="background-color: red" onclick="getLocalStorage()">Get localStorage</button>
             <button class="btn1" style="background-color: red" onclick="offlineStore._deleteStore()">Delete localStorage</button>
             <button class="btn1" style="background-color: red" onclick="getGraphicsLayers()" >Get Graphics Layers</button>
             <button class="btn1" style="background-color: red" onclick="getIndex()" >Get Index</button>
             <button class="btn1" style="background-color: red" onclick="offlineStore._deleteLocalStoreIndex()" >Delete Index</button>
             <button class="btn1" style="background-color: red" onclick="handleRestablishedInternet()" >Test Restablish Internet</button>
+        </div>
+        <div id="editInfo" data-dojo-type="dijit/layout/ContentPane" >
+            <textarea id="editInfoTextArea" readonly wrap="hard"></textarea>
         </div>
     </div>
 </div>
@@ -205,8 +209,8 @@ require([
 
 //////////
         offlineStore = new OfflineStore(map);
-        console.log("Storage used :  " + offlineStore.getlocalStorageUsed());
-        headerDiv.innerHTML = "Storage Used: " +  offlineStore.getlocalStorageUsed() + " MBs";
+        console.log(getStorageInfo());
+        headerDiv.innerHTML = getStorageInfo();
         try{
             document.addEventListener("editEvent",function(evt){
                         if(evt.type == "editEvent" && evt.detail.message == true){
@@ -216,14 +220,18 @@ require([
                             alert("Not all edits were successfully pushed to the server");
                         }
 
-                        headerDiv.innerHTML = "Storage Used: " +  offlineStore.getlocalStorageUsed() + " MBs";
-                    },
-                    false);
+                        headerDiv.innerHTML = getStorageInfo();
+            },
+            false);
 
             document.addEventListener("windowErrorEvent",function(evt){
                         alert("Error: " + evt.detail.message);
-                    },
-                    false);
+            },
+            false);
+
+            document.addEventListener("OfflineEditAttempt",function(evt){
+                headerDiv.innerHTML = getStorageInfo();
+            },false)
 
         }
         catch(err){
@@ -237,13 +245,13 @@ require([
         editToolbar.on("deactivate", function(evt) {
             if(updateFlag == true){
                 offlineStore.applyEdits(vertices.graphic,vertices.layer,offlineStore.enum().UPDATE,function(count,success,id){
-                    headerDiv.innerHTML = "Storage Used: " +  offlineStore.getlocalStorageUsed() + " MBs";
+                    headerDiv.innerHTML = getStorageInfo();
                 });
                 updateFlag = false;
             }
             else{
                 offlineStore.applyEdits(evt.graphic,currentLayer,offlineStore.enum().UPDATE,function(count,success,id){
-                    headerDiv.innerHTML = "Storage Used: " +  offlineStore.getlocalStorageUsed() + " MBs";
+                    headerDiv.innerHTML = getStorageInfo();
                 });
             }
         });
@@ -276,7 +284,7 @@ require([
                 if (evt.ctrlKey === true || evt.metaKey === true) {  //delete feature if ctrl key is depressed
                     try{
                         offlineStore.applyEdits(evt.graphic,layer,offlineStore.enum().DELETE,function(count,success,id){
-                            headerDiv.innerHTML = "Storage Used: " +  offlineStore.getlocalStorageUsed() + " MBs";
+                            headerDiv.innerHTML = getStorageInfo();
                         });
                     }
                     catch(err){
@@ -331,10 +339,17 @@ require([
                 headerDiv.innerHTML = "Storage Used: " +  offlineStore.getlocalStorageUsed() + " MBs";
             });
         });
+
+        function getStorageInfo(){
+            return "Storage Used: " +  offlineStore.getlocalStorageUsed() + " MBs";
+        }
     }
 
 });
 
+function getLocalStorage(){
+    console.log("LocalStorage: " + offlineStore._getLocalStorage());
+}
 
 function getGraphicsLayers(){
     var layer1 = offlineStore._getGraphicsLayerById(6);
