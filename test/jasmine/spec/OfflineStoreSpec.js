@@ -449,7 +449,7 @@ describe("Validate local storage index functionality",function(){
 describe("Reestablish internet", function(){
     it("reestablish internet handler with empty store", function(){
         var validate = null;
-        offlineStore._handleRestablishedInternet(function(evt){
+        offlineStore._reestablishedInternet(function(evt){
             validate = evt;
         });
         expect(validate).toEqual(false);
@@ -457,15 +457,31 @@ describe("Reestablish internet", function(){
 })
 
 describe("Test custom event handling", function(){
-    it("send and receive event", function(){
+
+    function testTrue(evt){
+        validate = evt.detail.message;
+        expect(validate).toEqual(true);
+    }
+
+    function testFalse(evt){
+        validate = evt.detail.message;
+        expect(validate).toEqual(false);
+        document.removeEventListener(offlineStore._localEnum().ONLINE_STATUS_EVENT,testFalse,false);
+    }
+
+    it("send and receive true event", function(){
         var validate = null;
-        document.addEventListener(offlineStore._localEnum().ONLINE_STATUS_EVENT,function(evt){
-            validate = evt.detail.message;
-            expect(validate).toEqual(true);
-        }.bind(this),
-            false);
+
+        document.addEventListener(offlineStore._localEnum().ONLINE_STATUS_EVENT,testTrue,false);
 
         offlineStore._sendEvent(true,offlineStore._localEnum().ONLINE_STATUS_EVENT);
+    })
+    it("send and receive false event", function(){
+        var validate = null;
+        document.removeEventListener(offlineStore._localEnum().ONLINE_STATUS_EVENT,testTrue,false);
+        document.addEventListener(offlineStore._localEnum().ONLINE_STATUS_EVENT,testFalse,false);
+
+        offlineStore._sendEvent(false,offlineStore._localEnum().ONLINE_STATUS_EVENT);
     })
 })
 

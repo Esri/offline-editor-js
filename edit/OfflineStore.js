@@ -270,7 +270,7 @@ var OfflineStore = function(/* Map */ map) {
                 layer.applyEdits(null,null,[graphic],function(addResult,updateResult,deleteResult){
                     console.log("deleteResult ObjectId: " + deleteResult[0].objectId + ", Success: " + deleteResult[0].success);
                     if(mCallback != null && count != null) {
-                        mCallback(count,deleteResult[0].success,deleteResult[0].objectId);
+                        mCallback(count,deleteResult[0].success,deleteResult[0].objectId,null);
                     }
                     else{
                         this._setItemLocalStoreIndex(layer.layerId, deleteResult[0].objectId,value,true);
@@ -278,7 +278,7 @@ var OfflineStore = function(/* Map */ map) {
 
                 }.bind(this),
                     function(error){
-                        console.log("_layer: " + error.stack); mCallback(count,false);
+                        console.log("_layer: " + error.stack); mCallback(count,false,null,error);
                         this._setItemLocalStoreIndex(layer.layerId, deleteResult[0].objectId,value,false);
                     }.bind(this)
                 );
@@ -287,14 +287,14 @@ var OfflineStore = function(/* Map */ map) {
                 layer.applyEdits([graphic],null,null,function(addResult,updateResult,deleteResult){
                     console.log("addResult ObjectId: " + addResult[0].objectId + ", Success: " + addResult[0].success);
                     if(mCallback != null && count != null) {
-                        mCallback(count,addResult[0].success,addResult[0].objectId);
+                        mCallback(count,addResult[0].success,addResult[0].objectId,null);
                     }
                     else{
                         this._setItemLocalStoreIndex(layer.layerId, addResult[0].objectId,value,true);
                     }
                 }.bind(this),
                     function(error){
-                        console.log("_layer: " + error.stack); mCallback(count,false);
+                        console.log("_layer: " + error.stack); mCallback(count,false,null,error);
                         this._setItemLocalStoreIndex(layer.layerId, addResult[0].objectId,value,false);
                     }.bind(this)
                 );
@@ -303,14 +303,14 @@ var OfflineStore = function(/* Map */ map) {
                 layer.applyEdits(null,[graphic],null,function(addResult,updateResult,deleteResult){
                     console.log("updateResult ObjectId: " + updateResult[0].objectId + ", Success: " + updateResult[0].success);
                     if(mCallback != null && count != null) {
-                        mCallback(count,deleteResult[0].success,updateResult[0].objectId);
+                        mCallback(count,deleteResult[0].success,updateResult[0].objectId,null);
                     }
                     else{
                         this._setItemLocalStoreIndex(layer.layerId, updateResult[0].objectId,value,true);
                     }
                 }.bind(this),
                     function(error){
-                        console.log("_layer: " + error.stack); mCallback(count,false)
+                        console.log("_layer: " + error.stack); mCallback(count,false,null,error)
                         this._setItemLocalStoreIndex(layer.layerId, updateResult[0].objectId,value,false);
                     }.bind(this)
                 );
@@ -374,20 +374,12 @@ console.log(localStore.toString());
     this._startOfflineListener = function(){
 
         function onlineStatusHandler(evt){
-            if(evt.detail.message == "true"){
+            if(evt.detail.message == true){
                 console.log("internet reestablished");
                 try{var arr = this._getLocalStorage()}catch(err){console.log("err " + err.toString())};
                 if(arr != null){
                     document.removeEventListener("OnlineStatusEvent",onlineStatusHandler,false);
-                    this._handleRestablishedInternet(function(evt){
-                        if(evt == true){
-                            this._deleteStore();
-                            this._sendEvent(true,this._localEnum().EDIT_EVENT);
-                        }
-                        else{
-                            this._sendEvent(false,this._localEnum().EDIT_EVENT);
-                        }
-                    }.bind(this));
+                    this._reestablishedInternetCallbackHandler();
                 }
             }
         }
@@ -401,10 +393,16 @@ console.log(localStore.toString());
             false);
     }
 
+    /**
+     * Custom Event
+     * @param msg
+     * @param event
+     * @private
+     */
     this._sendEvent = function(msg,event){
         //this.preventDefault();
 
-        if (msg && window.CustomEvent) {
+        if (typeof msg != "defined" && window.CustomEvent) {
             var event = new CustomEvent(event, {
                 detail: {
                     message: msg,
@@ -418,17 +416,45 @@ console.log(localStore.toString());
         }
     }
 
-    this._handleRestablishedInternet = function(callback){
+    /**
+     * Makes calls to _reestablishedInternet() and handles the callback properties
+     * @private
+     */
+    this._reestablishedInternetCallbackHandler = function(){
+        //callback (boolean,boolean,enum,graphicsLayerId,objectId)
+        this._reestablishedInternet(function(/* boolean */ success, /* boolean */ done,enumString,graphicsLayerId,objectId,error){
+            var obj = null;
+            if(success == true){
+
+                obj = new this._editResultObject(success,enumString,graphicsLayerId,objectId,error);
+
+                this._deleteStore();
+                this._sendEvent(obj,this._localEnum().EDIT_EVENT);
+            }
+            else{
+                this._sendEvent(obj,this._localEnum().EDIT_EVENT);
+            }
+        }.bind(this));
+    }
+
+    /**
+     * Creates a graphics array from localstorage and pushes all applicable edits
+     * @param callback (boolean,enum,graphicsLayerId,objectId) or (false,null,null,null)
+     * if this.getStore() returns null
+     * @private
+     */
+    this._reestablishedInternet = function(callback){
         var graphicsArr = this.getStore();
 
         if(graphicsArr != null && this.layers != null){
 
             var check = [];
             var errCnt = 0;
+
             for(var i in graphicsArr){
                 var obj1 = graphicsArr[i];
                 var layer = this._getGraphicsLayerById(obj1.layer);
-                this._layerEditManager(obj1.graphic,layer,obj1.enumValue,this.enum(),i,function(/* Number */ num, /* boolean */ success, /* String */ id){
+                this._layerEditManager(obj1.graphic,layer,obj1.enumValue,this.enum(),i,function(/* Number */ num, /* boolean */ success, /* String */ id,error){
                     check.push(num);
 
                     var objectId = obj1.graphic.attributes.objectid;
@@ -436,31 +462,33 @@ console.log(localStore.toString());
                     if(success == true && check.length == graphicsArr.length){
                         if(errCnt == 0){
                             this._setItemLocalStoreIndex(obj1.layer,objectId,obj1.enumValue,true);
-                            callback(true);
+                            callback(true,true,obj1.enumValue,obj1.layer,objectId);
                         }
                         else{
-                            console.log("_handleRestablishedInternet: there were errors. LocalStore still available.");
-                            callback(false);
+                            console.log("_reestablishedInternet: there were errors. LocalStore still available.");
+                            callback(false,true,obj1.enumValue,obj1.layer,objectId);
                         }
                     }
+                    //Don't return anything yet
                     else if(success == true && check.length < graphicsArr.length){
                         this._setItemLocalStoreIndex(obj1.layer,objectId,obj1.enumValue,true);
                     }
                     else if(success == false && check.length == graphicsArr.length){
                         this._setItemLocalStoreIndex(obj1.layer,objectId,obj1.enumValue,false);
-                        console.log("_handleRestablishedInternet: error sending edit on " + objectId);
-                        callback(false);
+                        console.log("_reestablishedInternet: error sending edit on " + objectId);
+                        callback(false,true,obj1.enumValue,obj1.layer,objectId,error);
                     }
+                    //Don't return anything yet
                     else if(success == false && check.length < graphicsArr.length){
-                        this._setItemLocalStoreIndex(obj1.layer,objectId,obj1.enumValue,false);
+                        this._setItemLocalStoreIndex(obj1.layer,objectId,obj1.enumValue,false,error);
                         errCnt++;
-                        console.log("_handleRestablishedInternet: error sending edit on " + objectId);
+                        console.log("_reestablishedInternet: error sending edit on " + objectId);
                     }
                 }.bind(this));
             }
         }
         else{
-            callback(false);
+            callback(false,true,null,null,null);
         }
     }
 
@@ -638,7 +666,12 @@ console.log(localStore.toString());
 
         if(graphic.hasOwnProperty("attributes")){
             if(graphic.attributes != null){
-                var q = this._hydrate.stringify(graphic.attributes);
+                try{
+                    var q = this._hydrate.stringify(graphic.attributes);
+                }
+                catch(err){
+                    console.log("_serializeGraphic: " + err.toString());
+                }
                 json.attributes = q;
             }
         }
@@ -674,6 +707,20 @@ console.log(localStore.toString());
         this.success = success;
     }
 
+    /**
+     * Model for storing results when attempting to apply edits
+     * after internet has been reestablished
+     * @private
+     */
+    this._editResultObject = function(/* boolean */ success, /* String */ enumString,
+        /* int */ graphicsLayerId, /* int */ objectId,error){
+        this.success = success;
+        this.enumString = enumString;
+        this.graphicsLayerId = graphicsLayerId;
+        this.objectId = objectId;
+        this.error = error;
+    }
+
     //////////////////////////
     ///
     /// INITIALISE
@@ -682,7 +729,7 @@ console.log(localStore.toString());
 
     /**
      * Auto-detects online/offline conditions.
-     * Listen for ONLINE_STATUS_EVENT.
+     * Listen for ONLINE_STATUS_EVENT = true/false.
      * Dependant on Offline.js
      * @private
      */
@@ -692,13 +739,11 @@ console.log(localStore.toString());
         Offline.on('up down', function(){
             if(Offline.state === 'up'){
                 console.log("internet is up.");
-                this._sendEvent("true",this._localEnum().ONLINE_STATUS_EVENT);
+                this._sendEvent(true,this._localEnum().ONLINE_STATUS_EVENT);
             }
             else{
-                //There is a bug in firefox that prevents boolean false from propagating
-                //that is why true and false are strings
                 console.log("internet is down.");
-                this._sendEvent("false",this._localEnum().ONLINE_STATUS_EVENT);
+                this._sendEvent(false,this._localEnum().ONLINE_STATUS_EVENT);
             }
         }.bind(this));
     }
@@ -784,15 +829,7 @@ console.log(localStore.toString());
 
                 var arr = this._getLocalStorage();
                 if(arr != null && Offline.state === 'up'){
-                    this._handleRestablishedInternet(function(evt){
-                        if(evt == true){
-                            this._deleteStore();
-                            this._sendEvent(true,this._localEnum().EDIT_EVENT);
-                        }
-                        else{
-                            this._sendEvent(false,this._localEnum().EDIT_EVENT);
-                        }
-                    }.bind(this));
+                    this._reestablishedInternetCallbackHandler();
                 }
                 else if(arr != null && Offline.state !== 'up'){
                     this._startOfflineListener();

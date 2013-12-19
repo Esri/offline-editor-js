@@ -186,7 +186,7 @@ require([
     map.addLayers([landusePointLayer, landuseLineLayer, landusePolygonLayer]);
 
     document.addEventListener("OnlineStatusEvent",function(evt){
-        if(evt.detail.message == "true"){
+        if(evt.detail.message == true){
             document.getElementById("offlineImg").src = "../samples/img/32-Link.png";
             document.getElementById("offlineIndicator").style.backgroundColor = "green";
         }
@@ -213,14 +213,21 @@ require([
         headerDiv.innerHTML = getStorageInfo();
         try{
             document.addEventListener("editEvent",function(evt){
-                        if(evt.type == "editEvent" && evt.detail.message == true){
-                            console.log("editEvent: All edits successfully pushed");
-                        }
-                        else if(evt.type == "editEvent" && evt.detail.message == false){
-                            alert("Not all edits were successfully pushed to the server");
-                        }
 
-                        headerDiv.innerHTML = getStorageInfo();
+                  if(evt.type == "editEvent"){
+                      if(evt.detail.message == null){
+                          alert("There was a problem submitted the edit(s). See console for details.")
+                      }
+                      if(evt.detail.message.hasOwnProperty("success") && evt.detail.message.success == true){
+                          console.log("editEvent: All edits successfully pushed");
+                      }
+                      else if(evt.detail.message.hasOwnProperty("success") && evt.detail.message.success == false){
+                          alert("Not all edits were successfully pushed to the server");
+                      }
+
+                      headerDiv.innerHTML = getStorageInfo();
+
+                  }
             },
             false);
 
@@ -359,7 +366,7 @@ function getGraphicsLayers(){
 }
 
 function handleRestablishedInternet(){
-    offlineStore._handleRestablishedInternet(function(evt){
+    offlineStore._reestablishedInternet(function(evt){
         if(evt == true){
             offlineStore._stopTimer();
             offlineStore._deleteStore();
