@@ -132,4 +132,21 @@ describe("offline enabler library", function()
 		});
 	});
 
+	async.it("returns placeholder urls when offline", function(done)
+	{
+		require(["dojo/dom"], function(dom)
+		{
+			var fakeTile = dom.byId('fakeTile');
+
+			g_basemapLayer.goOnline();
+			var onlineUrl = g_basemapLayer.getTileUrl(14,6178,8023);
+			expect(onlineUrl).toEqual('http://services.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/14/6178/8023');
+			
+			g_basemapLayer.goOffline();
+			var offlineUrl = fakeTile.src = g_basemapLayer.getTileUrl(14,6178,8023);
+			expect(offlineUrl).toEqual('void:14-6178-8023');
+			done();
+		})
+	});
+
 });
