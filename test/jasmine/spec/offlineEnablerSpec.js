@@ -62,11 +62,14 @@ describe("offline enabler library", function()
 		g_basemapLayer.deleteAllTiles(function(success)
 		{
 			expect(success).toEqual(true);
-			g_basemapLayer.getOfflineUsage(function(usage)
+			setTimeout(function()
 			{
-				expect(usage.tileCount).toEqual(0);
-		        done();
-			});
+				g_basemapLayer.getOfflineUsage(function(usage)
+				{
+					expect(usage.tileCount).toEqual(0);
+			        done();
+				});				
+			},1);
 		});
 	});
 
