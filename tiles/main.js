@@ -36,7 +36,8 @@ require(["esri/map",
 		
 		function loadWebmap(webmapid) 
 		{
-			webmapid = webmapid || "1d2a47c27ffc433fa4a278841544f427";
+			//webmapid = webmapid || "1d2a47c27ffc433fa4a278841544f427"; //for testing only
+            webmapid = webmapid || "f58996878ac24702afef792e52a07e55";
 			// Get new webmap and extract map and map parts
 			var mapDeferred = esriUtils.createMap(webmapid, "mapDiv", {
 				mapOptions: {

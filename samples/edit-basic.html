@@ -240,6 +240,10 @@ require([
                 headerDiv.innerHTML = getStorageInfo();
             },false)
 
+            document.addEventListener("duplicateEditEvent",function(evt){
+                console.log("duplicate event attempt");
+            },false)
+
         }
         catch(err){
             console.log("test that event object is valid:  " + err);

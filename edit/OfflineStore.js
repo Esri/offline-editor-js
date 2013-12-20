@@ -74,6 +74,7 @@ var OfflineStore = function(/* Map */ map) {
             EDIT_EVENT: "editEvent",
             EDIT_EVENT_SUCCESS: true,
             EDIT_EVENT_FAILED: false,
+            EDIT_EVENT_DUPLICATE: "duplicateEditEvent",
             OFFLINE_EDIT_ATTEMPT: "OfflineEditAttempt", //exactly what is says!
             ONLINE_STATUS_EVENT: "OnlineStatusEvent",
             REQUIRED_LIBS : [
@@ -96,14 +97,6 @@ var OfflineStore = function(/* Map */ map) {
         this.layer = layer;
     }
 
-    /**
-     * Boolean hit test as to whether or not an internet connection exists.
-     * Can also be used with unit tests as an override.
-     * For unit testing set to true.
-     * @type {boolean}
-     * @private
-     */
-    this.___internet = true;
     this._hydrate = null;
 
     //////////////////////////
@@ -320,10 +313,10 @@ var OfflineStore = function(/* Map */ map) {
 
     /**
      * Takes a serialized geometry and adds it to localStorage
-     * @param geom
+     * @param serializedGraphic
      * @private
      */
-    this._updateExistingLocalStore = function(/* Geometry */ geom){
+    this._updateExistingLocalStore = function(/* String */ serializedGraphic){
 
         var localStore = this._getLocalStorage();
         var split = localStore.split(this._localEnum().TOKEN);
@@ -332,11 +325,12 @@ console.log(localStore.toString());
         for(var property in split){
             var item = split[property];
             if(typeof item !== "undefined" && item.length > 0 && item !== null){
-                var sub = geom.substring(0,geom.length - 3);
+                var sub = serializedGraphic.substring(0,serializedGraphic.length - 3);
 
                 //This is not the sturdiest way to verify if two geometries are equal
                 if(sub === item){
                     console.log("updateExistingLocalStore: duplicate item skipped.");
+                    this._sendEvent(true,"duplicateEditEvent");
                     dupeFlag = true;
                     break;
                 }
@@ -344,7 +338,7 @@ console.log(localStore.toString());
         }
 
         if(dupeFlag == false) {
-            this._setItemInLocalStore(localStore + geom);
+            this._setItemInLocalStore(localStore + serializedGraphic);
             return true;
         }
         else{
@@ -354,17 +348,17 @@ console.log(localStore.toString());
 
     this._addToLocalStore = function(/* Graphic */ graphic, /* FeatureLayer */ layer, /* String */ enumValue,callback){
         var arr = this._getLocalStorage();
-        var geom = this._serializeGraphic(graphic,layer,enumValue);
+        var serializedGraphic = this._serializeGraphic(graphic,layer,enumValue);
 
         var setItem = null;
 
         //If localStorage does NOT exist
         if(arr === null){
-            setItem = this._setItemInLocalStore(geom);
+            setItem = this._setItemInLocalStore(serializedGraphic);
             callback(0,setItem,0);
         }
         else{
-            setItem = this._updateExistingLocalStore(geom);
+            setItem = this._updateExistingLocalStore(serializedGraphic);
             callback(0,setItem,0);
         }
 
