@@ -53,8 +53,9 @@ require(["esri/map",
 				// Bind to map 
 				BootstrapMap.bindTo(map);
 
-				// Add title
+				// Add title and description
 				dom.byId("mapTitle").innerHTML = response.itemInfo.item.title;
+				dom.byId("mapDescription").innerHTML = response.itemInfo.item.snippet;
 
 				if(map.loaded)
 				{
