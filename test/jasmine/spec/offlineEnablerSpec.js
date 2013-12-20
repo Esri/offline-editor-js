@@ -2,21 +2,23 @@
 
 describe("offline enabler library", function()
 {
-	var initCompleted = false;
+	var async = new AsyncSpec(this);
 
-    it("validate map", function()
+    async.it("validate map", function(done)
     {
         expect(g_map).toEqual(jasmine.any(Object));
         expect(g_map.id).toEqual("map");
+        done();
     });
 
-    it("validate tiled layer", function()
+    async.it("validate tiled layer", function(done)
     {
         expect(g_basemapLayer).toEqual(jasmine.any(Object));
         expect(g_basemapLayer.tileInfo).toEqual(jasmine.any(Object));
+        done();
     });
 
-	it("extends the tiled layer object", function()
+	async.it("extends the tiled layer object", function(done)
 	{
 		expect(g_basemapLayer.goOffline).toBeUndefined();
 		g_offlineEnabler.extend(g_basemapLayer,function(success)
@@ -33,132 +35,101 @@ describe("offline enabler library", function()
 			expect(g_basemapLayer.offline.store).toEqual(jasmine.any(Object));
 
 			g_basemapLayer.offline.proxyPath = "../../tiles/proxy.php";
-			initCompleted = true;
+	        done();
 		});
 	});
 
-	it("can go offline", function()
+	async.it("can go offline", function(done)
 	{
-		waitsFor(function(){ return initCompleted; });
-
-		runs(function()
-		{
-			expect(g_basemapLayer.goOffline).toEqual(jasmine.any(Function));
-			expect(g_basemapLayer.offline.online).toEqual(true);
-			g_basemapLayer.goOffline();
-			expect(g_basemapLayer.offline.online).toEqual(false);
-		});
+		expect(g_basemapLayer.goOffline).toEqual(jasmine.any(Function));
+		expect(g_basemapLayer.offline.online).toEqual(true);
+		g_basemapLayer.goOffline();
+		expect(g_basemapLayer.offline.online).toEqual(false);
+        done();
 	});
 
-	it("can go online", function()
+	async.it("can go online", function(done)
 	{
-		waitsFor(function(){ return initCompleted; });
-
-		runs(function()
-		{
-			expect(g_basemapLayer.goOffline).toEqual(jasmine.any(Function));
-			expect(g_basemapLayer.offline.online).toEqual(false);
-			g_basemapLayer.goOnline();
-			expect(g_basemapLayer.offline.online).toEqual(true);
-		});
+		expect(g_basemapLayer.goOffline).toEqual(jasmine.any(Function));
+		expect(g_basemapLayer.offline.online).toEqual(false);
+		g_basemapLayer.goOnline();
+		expect(g_basemapLayer.offline.online).toEqual(true);
+        done();
 	})
 
-	it("delete all tiles", function()
+	async.it("delete all tiles", function(done)
 	{
-		waitsFor(function(){ return initCompleted; });
-
-		runs(function()
+		g_basemapLayer.deleteAllTiles(function(success)
 		{
-			g_basemapLayer.deleteAllTiles(function(success)
+			expect(success).toEqual(true);
+			g_basemapLayer.getOfflineUsage(function(usage)
+			{
+				expect(usage.tileCount).toEqual(0);
+		        done();
+			});
+		});
+	});
+
+	async.it("stores one tile", function(done)
+	{
+		g_basemapLayer.getOfflineUsage(function(usage)
+		{
+			expect(usage.tileCount).toEqual(0);
+			g_basemapLayer.storeTile(14,6177,8023, function(success)
 			{
 				expect(success).toEqual(true);
 				g_basemapLayer.getOfflineUsage(function(usage)
 				{
-					expect(usage.tileCount).toEqual(0);
+					expect(usage.tileCount).toEqual(1);
+			        done();
 				});
 			});
 		});
 	});
 
-	it("stores one tile", function()
+	async.it("gets level estimation", function(done)
 	{
-		waitsFor(function(){ return initCompleted; });
+		require(["esri/geometry/Extent"],function(Extent)
+		{			
+			var extent = new Extent({"xmin":-822542.2830377579,"ymin":4580841.761960262,"xmax":94702.05638410954,"ymax":5131188.365613382,"spatialReference":{"wkid":102100}});
+			var tileSize = g_basemapLayer.estimateTileSize();
+			var estimation = g_basemapLayer.getLevelEstimation(extent,10);
+			expect(estimation.tileCount).toEqual(375);
+			expect(estimation.sizeBytes).toEqual(estimation.tileCount * tileSize);
+			var estimation = g_basemapLayer.getLevelEstimation(extent,8);
+			expect(estimation.tileCount).toEqual(28);
+			expect(estimation.sizeBytes).toEqual(estimation.tileCount * tileSize);
+			var estimation = g_basemapLayer.getLevelEstimation(extent,2);
+			expect(estimation.tileCount).toEqual(2);
+			expect(estimation.sizeBytes).toEqual(estimation.tileCount * tileSize);				
+	        done();
+		});
+	});
 
-		runs(function()
-		{		
-			g_basemapLayer.getOfflineUsage(function(usage)
+	async.it("prepares the layer for offline usage", function(done)
+	{
+		require(["esri/geometry/Extent"], function(Extent)
+		{			
+			g_basemapLayer.deleteAllTiles(function(success)
 			{
-				expect(usage.tileCount).toEqual(0);
-				g_basemapLayer.storeTile(14,6177,8023, function(success)
+				var extent = new Extent({"xmin":-822542.2830377579,"ymin":4580841.761960262,"xmax":94702.05638410954,"ymax":5131188.365613382,"spatialReference":{"wkid":102100}});
+				var reportProgress = jasmine.createSpy();
+				var finishedDownloading = function(err)
 				{
-					expect(success).toEqual(true);
+					expect(err).not.toBeTruthy();
+					expect(reportProgress).toHaveBeenCalled();
+					expect(reportProgress.callCount).toEqual(28);
+
 					g_basemapLayer.getOfflineUsage(function(usage)
 					{
-						expect(usage.tileCount).toEqual(1);
+						expect(usage.tileCount).toEqual(28);
+				        done();
 					});
-				});
-			});
-		})
-	});
+				}
 
-	it("gets level estimation", function()
-	{
-		waitsFor(function(){ return initCompleted; });
-
-		runs(function()
-		{
-			require(["esri/geometry/Extent"],function(Extent)
-			{			
-				var extent = new Extent({"xmin":-822542.2830377579,"ymin":4580841.761960262,"xmax":94702.05638410954,"ymax":5131188.365613382,"spatialReference":{"wkid":102100}});
-				var tileSize = g_basemapLayer.estimateTileSize();
-				var estimation = g_basemapLayer.getLevelEstimation(extent,10);
-				expect(estimation.tileCount).toEqual(375);
-				expect(estimation.sizeBytes).toEqual(estimation.tileCount * tileSize);
-				var estimation = g_basemapLayer.getLevelEstimation(extent,8);
-				expect(estimation.tileCount).toEqual(28);
-				expect(estimation.sizeBytes).toEqual(estimation.tileCount * tileSize);
-				var estimation = g_basemapLayer.getLevelEstimation(extent,2);
-				expect(estimation.tileCount).toEqual(2);
-				expect(estimation.sizeBytes).toEqual(estimation.tileCount * tileSize);				
+				g_basemapLayer.prepareForOffline(8,8,extent,reportProgress, finishedDownloading);
 			});
 		});
 	});
 
-	/*
-	it("prepares the layer for offline usage", function()
-	{
-		var finished = false;
-
-		runs(function()
-		{
-			require(["esri/geometry/Extent"], function(Extent)
-			{			
-				g_basemapLayer.deleteAllTiles(function(success)
-				{
-					var extent = new Extent({"xmin":-822542.2830377579,"ymin":4580841.761960262,"xmax":94702.05638410954,"ymax":5131188.365613382,"spatialReference":{"wkid":102100}});
-					var reportProgress = jasmine.createSpy();
-					var finishedDownloading = function(err)
-					{
-						console.log("finishedDownloading");
-						expect(err).not.toBeTruthy();
-						expect(reportProgress).toHaveBeenCalled();
-						expect(reportProgress.callCount).toEqual(21); // 28
-
-						g_basemapLayer.getOfflineUsage(function(usage)
-						{
-							expect(usage.tileCount).toEqual(28);
-							finished = true;
-						});
-					}
-
-					console.log("preparing");
-					g_basemapLayer.prepareForOffline(8,8,extent,reportProgress, finishedDownloading);
-					console.log("prepared");
-				});
-			});
-		});
-
-		waitsFor(function(){ return finished; });
-	});
-	*/
 });
