@@ -37,7 +37,6 @@ define(["tiles/phoneGapConnector"],function(phonegap)
          * @returns {boolean}
          */
         this.isSupported = function(){
-            window.indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB;
 
             if(!window.indexedDB){
                 return false;
