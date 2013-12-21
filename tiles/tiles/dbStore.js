@@ -6,7 +6,7 @@
  * Author: Andy Gup (@agup)
  * Contributor: Javier Abadia (@javierabadia)
  */
-define(["/offline/tiles/src/phoneGapConnector.js"],function(phonegap)
+define(["tiles/phoneGapConnector"],function(phonegap)
 {
     var DbStore = function()
     {
@@ -37,7 +37,6 @@ define(["/offline/tiles/src/phoneGapConnector.js"],function(phonegap)
          * @returns {boolean}
          */
         this.isSupported = function(){
-            window.indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB;
 
             if(!window.indexedDB){
                 return false;

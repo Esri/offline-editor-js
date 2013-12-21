@@ -12,7 +12,7 @@ require(["esri/map",
 	"dojo/dom", "dojo/on", "dojo/query", 
 	"../vendor/bootstrap-map-js/src/js/bootstrapmap.js",
 	"esri/urlUtils", "esri/geometry/webMercatorUtils",
-	"/offline/tiles/src/offlineEnabler.js",
+	"tiles/offlineEnabler",
 	"dojo/dom-construct", "dojo/domReady!"], 
 	function(Map, 
 		GraphicsLayer, Graphic, SimpleFillSymbol, 
@@ -36,8 +36,7 @@ require(["esri/map",
 		
 		function loadWebmap(webmapid) 
 		{
-			//webmapid = webmapid || "1d2a47c27ffc433fa4a278841544f427"; //for testing only
-            webmapid = webmapid || "f58996878ac24702afef792e52a07e55";
+			webmapid = webmapid || "bbc1a04a3eca4430be144d7a08b43a17";
 			// Get new webmap and extract map and map parts
 			var mapDeferred = esriUtils.createMap(webmapid, "mapDiv", {
 				mapOptions: {
@@ -54,8 +53,9 @@ require(["esri/map",
 				// Bind to map 
 				BootstrapMap.bindTo(map);
 
-				// Add title
+				// Add title and description
 				dom.byId("mapTitle").innerHTML = response.itemInfo.item.title;
+				dom.byId("mapDescription").innerHTML = response.itemInfo.item.snippet;
 
 				if(map.loaded)
 				{
@@ -136,6 +136,11 @@ require(["esri/map",
 				else
 				{	
 					dojo.byId('prepare-for-offline-btn').disabled = true;
+					dojo.byId('delete-all-tiles-btn').disabled = true;
+					dojo.byId('go-offline-btn').disabled = true;
+					dojo.byId('go-online-btn').disabled = true;
+					dojo.byId('update-offline-usage').disabled = true;
+					dojo.byId('show-stored-tiles').disabled = true;
 					esri.hide(dojo.byId('downloading-ui'));
 					/* JAMI: TODO add message telling that something failed while initing the indexedDB */	
 				}

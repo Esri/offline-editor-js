@@ -56,6 +56,7 @@
 		</div>
 		<div class="col-sm-8">
 			<h3>Map:<span id="mapTitle">[none]</span></h3>
+			<p id="mapDescription">[none]</p>
 		</div>
 	</div>
 
@@ -133,6 +134,13 @@
 
 
 </div><!-- /.container -->
+
+<script>
+	var dojoConfig = {
+		paths: { tiles: location.pathname.replace(/\/[^/]+$/, "") + "/tiles" }
+	}
+</script>
+
 
 <script src="//js.arcgis.com/3.7compact"></script>
 <script src="../vendor/offline/offline.min.js"></script>

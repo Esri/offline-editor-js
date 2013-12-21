@@ -3,9 +3,9 @@
 define([
 	"dojo/query",
 	"esri/geometry",
-	"/offline//tiles/src/base64utils.js",
-	"/offline/tiles/src/dbStore.js",
-	"/offline/tiles/src/tilingScheme.js"
+	"tiles/base64utils",
+	"tiles/dbStore",
+	"tiles/tilingScheme"
 	], function(query, geometry,Base64Utils,DbStore,TilingScheme)
 	{
 		return {
@@ -34,10 +34,11 @@ define([
 				layer._getTileUrl = layer.getTileUrl;				
 				layer.offline = {
 					online: true,
-					store: new DbStore()
+					store: new DbStore(),
+					proxyPath: "proxy.php"					
 				};
 
-				if( layer.offline.store.isSupported() )
+				if( /*false &&*/ layer.offline.store.isSupported() )
 					layer.offline.store.init(callback);
 				else					
 					return callback(false, "indexedDB not supported");
@@ -178,7 +179,7 @@ define([
 					url = url.split('?')[0];
 
 					/* download the tile */
-					var imgurl = "../tiles/proxy.php?" + url;
+					var imgurl = this.offline.proxyPath + "?" + url;
 					var req = new XMLHttpRequest();
 					req.open("GET", imgurl, true);
 					req.overrideMimeType("text/plain; charset=x-user-defined"); // https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/Using_XMLHttpRequest?redirectlocale=en-US&redirectslug=DOM%2FXMLHttpRequest%2FUsing_XMLHttpRequest#Handling_binary_data 
