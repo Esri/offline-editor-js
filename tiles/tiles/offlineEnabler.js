@@ -184,7 +184,7 @@ define([
 
 					req.onload = function()
 					{
-						if( req.status == 200 )
+						if( req.status == 200 && req.responseText != "")
 						{							
 							var img = Base64Utils.wordToBase64(Base64Utils.stringToWord(this.responseText));
 

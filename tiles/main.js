@@ -247,6 +247,10 @@ require(["esri/map",
 			/* put UI in downloading mode */
 			cancelRequested = false;
 			errorList = [];
+			query('#download-progress [role=progressbar]')
+				.removeClass('progress-bar-warning')
+				.addClass('progress-bar-success');
+			hideAlert();
 			reportProgress({countNow:0,countMax:1});
 			esri.hide(dojo.byId('ready-to-download-ui'));
 			esri.show(dojo.byId('downloading-ui'));
