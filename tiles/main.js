@@ -3,7 +3,7 @@
 var map;
 var basemapLayer;
 var graphics;
-var cancelRequested, startTime;
+var cancelRequested, startTime, errorList;
 var showTiles = false;
 
 require(["esri/map", 
@@ -234,9 +234,9 @@ require(["esri/map",
 				console.log("deleteAllTiles():", success,err);
 
 				if( success )
-					showAlert("alert-info", "All tiles deleted");
+					showAlert("alert-success", "All tiles deleted");
 				else
-					showAlert("alert-danger","Can't delete tiles: " + err);
+					showAlert("alert-danger", "Can't delete tiles: " + err);
 
 				setTimeout(updateOfflineUsage,0); // request execution in the next turn of the event loop
 			});
@@ -246,7 +246,8 @@ require(["esri/map",
 		{
 			/* put UI in downloading mode */
 			cancelRequested = false;
-			reportProgress(0,1);
+			errorList = [];
+			reportProgress({countNow:0,countMax:1});
 			esri.hide(dojo.byId('ready-to-download-ui'));
 			esri.show(dojo.byId('downloading-ui'));
 			startTime = new Date();
@@ -262,17 +263,28 @@ require(["esri/map",
 			cancelRequested = true;
 		}
 
-		function reportProgress(countNow,countMax)
-		{
+		function reportProgress(progress)
+		{			
 			var pbar = query('#download-progress [role=progressbar]')[0];
-			var percent = countMax? (countNow / countMax * 100) : 0;
+			var percent = progress.countMax? (progress.countNow / progress.countMax * 100) : 0;
 			pbar.style.width = percent+"%";
 
-			if( countNow > 5 )
+			if( progress.error )
+			{
+				query('#download-progress [role=progressbar]')
+					.removeClass('progress-bar-success')
+					.addClass('progress-bar-warning');
+
+				errorList.push(progress.error.msg);
+
+				showAlert('alert-warning', progress.error.msg);
+			}
+
+			if( progress.countNow > 5 )
 			{
 				var currentTime = new Date();
 				var elapsedTime = currentTime - startTime;
-				var remainingTime = (elapsedTime / countNow) * (countMax - countNow);
+				var remainingTime = (elapsedTime / progress.countNow) * (progress.countMax - progress.countNow);
 				var sec = 1 + Math.floor(remainingTime / 1000);
 				var min = Math.floor(sec / 60);
 				sec -= (min * 60);
@@ -285,6 +297,10 @@ require(["esri/map",
 		{		
 			if( cancelled )
 				showAlert('alert-warning', 'Cancelled');
+			else if (errorList.length == 0)
+				showAlert('alert-success', 'All tiles downloaded and stored');
+			else
+				showAlert('alert-warning', "Finished downloading tiles, " + errorList.length + " tiles couldn't be downloaded");
 
 			setTimeout(function()
 			{				
@@ -328,15 +344,17 @@ require(["esri/map",
 			dojo.byId('error-msg').innerHTML = msg;
 			dojo.query('#error-div .close').onclick(hideAlert);
 			dojo.query('#error-div .alert')
-				.removeClass('alert-danger')
+				.removeClass('alert-success')
 				.removeClass('alert-info')
 				.removeClass('alert-warning')
+				.removeClass('alert-danger')
 				.addClass(type);
 			switch(type)
 			{
-				case 'alert-danger':  dojo.byId('error-type').innerHTML = "ERROR"; break;
+				case 'alert-success': dojo.byId('error-type').innerHTML = "SUCCESS"; break;
 				case 'alert-info':    dojo.byId('error-type').innerHTML = "INFO"; break;
 				case 'alert-warning': dojo.byId('error-type').innerHTML = "WARNING"; break;
+				case 'alert-danger':  dojo.byId('error-type').innerHTML = "ERROR"; break;
 			}
 			esri.show(dojo.byId('error-div'));
 			window.scrollTo(0,0);

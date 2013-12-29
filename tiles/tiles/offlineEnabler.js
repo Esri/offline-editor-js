@@ -139,25 +139,23 @@ define([
 				layer.downloadTile = function(i,cells, reportProgress, finishedDownloading)
 				{
 					var cell = cells[i];
-					var cancelRequested = reportProgress(i, cells.length);
+					var cancelRequested = reportProgress({countNow:i, countMax:cells.length});
 
-					this.storeTile(cell.level,cell.row,cell.col, function(success, msg)
+					this.storeTile(cell.level,cell.row,cell.col, function(success, error)
 					{
-						/* JAMI: TODO, continue looking for other tiles even if one fails */
-						if(success)
+						if(!success)
 						{
-							if( cancelRequested )
-								finishedDownloading(true);
-							else if( i== cells.length-1 )
-								finishedDownloading(false);
-							else
-								this.downloadTile(i+1, cells, reportProgress, finishedDownloading);
+							console.log("error storing tile", cell, error);
+							reportProgress({countNow:i, countMax:cells.length, error: { cell:cell, msg:error}});
 						}
-						else
-						{				
-							console.log("error storing tile", cell, msg);
+
+						if( cancelRequested )
 							finishedDownloading(true);
-						}
+						else if( i==cells.length-1 )
+							finishedDownloading(false);
+						else
+							this.downloadTile(i+1, cells, reportProgress, finishedDownloading);
+						
 					}.bind(this))
 				}
 
@@ -199,13 +197,13 @@ define([
 						}
 						else
 						{
-							console.log("xhr failed for ", imgurl);
-							callback(false,req.status);
+							console.log("xhr failed for", imgurl);
+							callback(false, req.status + " " + req.statusText + ": " + req.response + " when downloading " + imgurl);
 						}
 					}
 					req.onerror = function(e)
 					{
-						console.log("xhr failed for ", imgurl);
+						console.log("xhr failed for", imgurl);
 						callback(false, e);
 					}
 					req.send(null);
