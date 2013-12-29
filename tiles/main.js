@@ -341,6 +341,14 @@ require(["esri/map",
 
 		function showAlert(type, msg)
 		{
+			var icon = "";
+			switch(type)
+			{
+				case 'alert-success': icon = "fa-check"; break;
+				case 'alert-info':    icon = "fa-info-circle"; break;
+				case 'alert-warning': icon = "fa-warning"; break;
+				case 'alert-danger':  icon = "fa-ban"; break;
+			}
 			dojo.byId('error-msg').innerHTML = msg;
 			dojo.query('#error-div .close').onclick(hideAlert);
 			dojo.query('#error-div .alert')
@@ -349,13 +357,9 @@ require(["esri/map",
 				.removeClass('alert-warning')
 				.removeClass('alert-danger')
 				.addClass(type);
-			switch(type)
-			{
-				case 'alert-success': dojo.byId('error-type').innerHTML = "SUCCESS"; break;
-				case 'alert-info':    dojo.byId('error-type').innerHTML = "INFO"; break;
-				case 'alert-warning': dojo.byId('error-type').innerHTML = "WARNING"; break;
-				case 'alert-danger':  dojo.byId('error-type').innerHTML = "ERROR"; break;
-			}
+			dojo.query('#error-div .fa')
+				.removeClass('fa-info-circle')
+				.addClass(icon);
 			esri.show(dojo.byId('error-div'));
 			window.scrollTo(0,0);
 		}
