@@ -42,3 +42,9 @@ table {
 #download-progress
 {
 }
+
+#error-div
+{
+  margin-top: 10px;
+  display: none;
+}

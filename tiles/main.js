@@ -142,7 +142,8 @@ require(["esri/map",
 					dojo.byId('update-offline-usage').disabled = true;
 					dojo.byId('show-stored-tiles').disabled = true;
 					esri.hide(dojo.byId('downloading-ui'));
-					/* JAMI: TODO add message telling that something failed while initing the indexedDB */	
+
+					showError("Failed initializing storage, probably your browser doesn't support IndexedDB nor WebSQL");
 				}
 			});
 
@@ -317,5 +318,17 @@ require(["esri/map",
 					}
 				}.bind(this));
 			}
+		}
+
+		function showError(error)
+		{
+			dojo.byId('error-msg').innerHTML = error;
+			dojo.query('#error-div .close').onclick(hideError);
+			esri.show(dojo.byId('error-div'));
+		}
+
+		function hideError()
+		{
+			esri.hide(dojo.byId('error-div'));
 		}
 	});
