@@ -76,8 +76,8 @@ require(["esri/map",
 				}
 
 			},function(error){
-				alert("Sorry, couldn't load webmap! " + dojo.toJson(error));
-				console.log("Error loading webmap: ", dojo.toJson(error));           
+				showAlert('alert-danger',"Sorry, couldn't load webmap: " + error.message);
+				console.log("Error loading webmap:",error);
 			});
 		}
 	  
@@ -143,7 +143,7 @@ require(["esri/map",
 					dojo.byId('show-stored-tiles').disabled = true;
 					esri.hide(dojo.byId('downloading-ui'));
 
-					showError("Failed initializing storage, probably your browser doesn't support IndexedDB nor WebSQL");
+					showAlert("alert-danger","Failed initializing storage, probably your browser doesn't support <a href='http://caniuse.com/#feat=indexeddb'>IndexedDB</a> nor <a href='http://caniuse.com/#feat=sql-storage'>WebSQL</a>");
 				}
 			});
 
@@ -234,9 +234,9 @@ require(["esri/map",
 				console.log("deleteAllTiles():", success,err);
 
 				if( success )
-					alert("All tiles deleted");
+					showAlert("alert-info", "All tiles deleted");
 				else
-					alert("Can't delete tiles: " + err);
+					showAlert("alert-danger","Can't delete tiles: " + err);
 
 				setTimeout(updateOfflineUsage,0); // request execution in the next turn of the event loop
 			});
@@ -282,7 +282,10 @@ require(["esri/map",
 		}
 
 		function finishedDownloading(cancelled)
-		{			
+		{		
+			if( cancelled )
+				showAlert('alert-warning', 'Cancelled');
+
 			setTimeout(function()
 			{				
 				esri.show(dojo.byId('ready-to-download-ui'));
@@ -320,14 +323,26 @@ require(["esri/map",
 			}
 		}
 
-		function showError(error)
+		function showAlert(type, msg)
 		{
-			dojo.byId('error-msg').innerHTML = error;
-			dojo.query('#error-div .close').onclick(hideError);
+			dojo.byId('error-msg').innerHTML = msg;
+			dojo.query('#error-div .close').onclick(hideAlert);
+			dojo.query('#error-div .alert')
+				.removeClass('alert-danger')
+				.removeClass('alert-info')
+				.removeClass('alert-warning')
+				.addClass(type);
+			switch(type)
+			{
+				case 'alert-danger':  dojo.byId('error-type').innerHTML = "ERROR"; break;
+				case 'alert-info':    dojo.byId('error-type').innerHTML = "INFO"; break;
+				case 'alert-warning': dojo.byId('error-type').innerHTML = "WARNING"; break;
+			}
 			esri.show(dojo.byId('error-div'));
+			window.scrollTo(0,0);
 		}
 
-		function hideError()
+		function hideAlert()
 		{
 			esri.hide(dojo.byId('error-div'));
 		}
