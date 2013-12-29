@@ -17,10 +17,6 @@ table {
   margin-bottom: 20px;
 }
 
-#mapTitle {
-  margin-left: 15px;
-}
-
 #mapDiv_layers>:first-child .layerTile {
   /*border: 1px solid red !important;*/
   /*
