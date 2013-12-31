@@ -17,10 +17,6 @@ table {
   margin-bottom: 20px;
 }
 
-#mapTitle {
-  margin-left: 15px;
-}
-
 #mapDiv_layers>:first-child .layerTile {
   /*border: 1px solid red !important;*/
   /*
@@ -41,4 +37,10 @@ table {
 
 #download-progress
 {
+}
+
+#error-div
+{
+  margin-top: 10px;
+  display: none;
 }
