@@ -10,7 +10,7 @@ require(["esri/map",
 	"esri/layers/GraphicsLayer", "esri/graphic", "esri/symbols/SimpleFillSymbol",
 	"esri/dijit/Scalebar", "esri/arcgis/utils", "esri/geometry",
 	"dojo/dom", "dojo/on", "dojo/query", 
-	"../vendor/bootstrap-map-js/src/js/bootstrapmap.js",
+	"../../vendor/bootstrap-map-js/src/js/bootstrapmap.js",
 	"esri/urlUtils", "esri/geometry/webMercatorUtils",
 	"tiles/offlineEnabler",
 	"dojo/dom-construct", "dojo/domReady!"], 
@@ -121,6 +121,7 @@ require(["esri/map",
 			{
 				if(success)
 				{
+					basemapLayer.offline.proxyPath = "../../lib/proxy.php";					
 					on(dojo.byId('prepare-for-offline-btn'),'click', prepareForOffline);
 					on(dojo.byId('cancel-btn'),'click', cancel);
 					on(dojo.byId('delete-all-tiles-btn'),'click', deleteAllTiles);
