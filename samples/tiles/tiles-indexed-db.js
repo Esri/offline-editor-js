@@ -121,7 +121,7 @@ require(["esri/map",
 			{
 				if(success)
 				{
-					basemapLayer.offline.proxyPath = "../../lib/proxy.php";					
+					basemapLayer.offline.proxyPath = window.proxyPath || "../../lib/proxy.php";
 					on(dojo.byId('prepare-for-offline-btn'),'click', prepareForOffline);
 					on(dojo.byId('cancel-btn'),'click', cancel);
 					on(dojo.byId('delete-all-tiles-btn'),'click', deleteAllTiles);

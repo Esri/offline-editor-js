@@ -152,6 +152,7 @@
 			vendor: locationPath + "/../vendor"
 		}
 	}
+	window.proxyPath = "../lib/proxy.php";
 </script>
 
 <script src="//js.arcgis.com/3.7compact"></script>
@@ -159,13 +160,11 @@
 <script src="../vendor/IndexedDBShim/dist/IndexedDBShim.min.js"></script>
 <script src="./tiles/offlineProbe.js"></script>
 <script src="./tiles/tiles-indexed-db.js"></script>
-<!-- -->
+<!-- really should use AMD loading -->
 <script src="../lib/tiles/FileSaver.js"></script>
 <script src="../lib/tiles/Blob.js"></script>
  <!-- -->
 <script>
-	// TOFIX: function saveAs()
-	// TOFIX: proxy path
     function saveFile(){
         require(["tiles/dbStore"],function(DBStore)
         {    
