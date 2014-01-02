@@ -14,8 +14,8 @@
 	<link rel="stylesheet" href="../vendor/bootstrap-map-js/bootstrap_v3/dist/css/bootstrap.css" >
 	<link rel="stylesheet" href="../vendor/bootstrap-map-js/src/css/bootstrapmap.css">   
 	<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" >
-	<link rel="stylesheet" href="../tiles/offlineProbe.css" >
-	<link rel="stylesheet" href="../tiles/style.css" >
+	<link rel="stylesheet" href="./tiles/offlineProbe.css" >
+	<link rel="stylesheet" href="./tiles/tiles-indexed-db.css" >
 
 	<!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
 	<!--[if lt IE 9]>
@@ -52,10 +52,19 @@
 
 <div class="container">
 	<div class="row">
+		<div class="col-xs-12" id="error-div">
+			<div class="alert alert-danger">
+				<a class="close" data-dismiss="alert">&times;</a>
+				<i class="fa fa-info-circle"></i><strong></strong> <span id="error-msg">Change a few things up and try submitting again..</span>
+			</div>
+		</div>
+	</div>
+	<div class="row">
 		<div class="col-sm-4">
 		</div>
 		<div class="col-sm-8">
-			<h3>Map:<span id="mapTitle">[none]</span></h3>
+			<h3>Map: <span id="mapTitle">[none]</span></h3>
+			<p id="mapDescription">[none]</p>
 		</div>
 	</div>
 
@@ -135,17 +144,32 @@
 
 </div><!-- /.container -->
 
+<script>
+	var locationPath = location.pathname.replace(/\/[^/]+$/, "");
+	var dojoConfig = {
+		paths: { 
+			tiles: locationPath  + "/../lib/tiles",
+			vendor: locationPath + "/../vendor"
+		}
+	}
+</script>
+
 <script src="//js.arcgis.com/3.7compact"></script>
 <script src="../vendor/offline/offline.min.js"></script>
 <script src="../vendor/IndexedDBShim/dist/IndexedDBShim.min.js"></script>
-<script src="../tiles/offlineProbe.js"></script>
-<script src="../tiles/main.js"></script>
-<script src="../tiles/src/FileSaver.js"></script>
-<script src="../tiles/src/Blob.js"></script>
+<script src="./tiles/offlineProbe.js"></script>
+<script src="./tiles/tiles-indexed-db.js"></script>
+<!-- -->
+<script src="../lib/tiles/FileSaver.js"></script>
+<script src="../lib/tiles/Blob.js"></script>
+ <!-- -->
 <script>
+	// TOFIX: function saveAs()
+	// TOFIX: proxy path
     function saveFile(){
-        require(["/offline/tiles/src/dbStore.js"],function(DBStore)
-        {    console.log('test')
+        require(["tiles/dbStore"],function(DBStore)
+        {    
+        	console.log('test')
             var db = new DBStore();
             db.init(function(result,val){
                 console.log(result + ", " + val)
