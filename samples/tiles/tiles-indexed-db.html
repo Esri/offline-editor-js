@@ -144,8 +144,12 @@
 </div><!-- /.container -->
 
 <script>
+	var locationPath = location.pathname.replace(/\/[^/]+$/, "");
 	var dojoConfig = {
-		paths: { tiles: location.pathname.replace(/\/[^/]+$/, "") + "/../../lib/tiles" }
+		paths: { 
+			tiles: locationPath  + "/../../lib/tiles",
+			vendor: locationPath + "/../../vendor"
+		}
 	}
 </script>
 
