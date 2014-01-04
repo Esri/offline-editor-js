@@ -19,8 +19,8 @@
 - [x] unit testing
 - [x] keep on downloading tiles even if one of them fails
 - [x] add message telling that something failed while initing the indexedDB
+- [x] update README.md
 
-- [ ] update README.md
 - [ ] better tile estimation and limits
 
 - [ ] allow naming caches?
