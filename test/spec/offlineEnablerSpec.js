@@ -34,7 +34,7 @@ describe("offline enabler library", function()
 			expect(g_basemapLayer.offline).toEqual(jasmine.any(Object));
 			expect(g_basemapLayer.offline.store).toEqual(jasmine.any(Object));
 
-			g_basemapLayer.offline.proxyPath = "../../tiles/proxy.php";
+			g_basemapLayer.offline.proxyPath = "../lib/proxy.php";
 	        done();
 		});
 	});

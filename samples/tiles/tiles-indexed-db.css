@@ -6,11 +6,6 @@ body > .container {
   padding-bottom: 20px;
 }
 
-table {
-  border-collapse: ;
-  border-spacing: ;
-}
-
 #mapDiv {
   min-height: 450px; 
   max-height: 450px; 
@@ -24,23 +19,15 @@ table {
   border-style: solid !important; */
 }
 
-
-#tile-count-table-body tr td
-{
+#tile-count-table-body tr td {
 	text-align: center;
 }
 
-#downloading-ui
-{
+#downloading-ui {
 	display: none;
 }
 
-#download-progress
-{
-}
-
-#error-div
-{
+#error-div {
   margin-top: 10px;
   display: none;
 }

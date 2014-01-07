@@ -7,15 +7,15 @@
 	<meta name="description" content="">
 	<meta name="author" content="">
 
-	<link rel="shortcut icon" href="../vendor/bootstrap-map-js/bootstrap_v3/docs-assets/ico/favicon.png">
+	<link rel="shortcut icon" href="../../vendor/bootstrap-map-js/bootstrap_v3/docs-assets/ico/favicon.png">
 
 	<link rel="stylesheet" href="//js.arcgis.com/3.7/js/esri/css/esri.css">
 
-	<link rel="stylesheet" href="../vendor/bootstrap-map-js/bootstrap_v3/dist/css/bootstrap.css" >
-	<link rel="stylesheet" href="../vendor/bootstrap-map-js/src/css/bootstrapmap.css">   
+	<link rel="stylesheet" href="../../vendor/bootstrap-map-js/bootstrap_v3/dist/css/bootstrap.css" >
+	<link rel="stylesheet" href="../../vendor/bootstrap-map-js/src/css/bootstrapmap.css">   
 	<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" >
 	<link rel="stylesheet" href="offlineProbe.css" >
-	<link rel="stylesheet" href="style.css" >
+	<link rel="stylesheet" href="tiles-indexed-db.css" >
 
 	<!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
 	<!--[if lt IE 9]>
@@ -144,17 +144,22 @@
 </div><!-- /.container -->
 
 <script>
+	var locationPath = location.pathname.replace(/\/[^/]+$/, "");
 	var dojoConfig = {
-		paths: { tiles: location.pathname.replace(/\/[^/]+$/, "") + "/tiles" }
+		paths: { 
+			tiles: locationPath  + "/../../lib/tiles",
+			vendor: locationPath + "/../../vendor"
+		}
 	}
+	window.proxyPath = "../../lib/proxy.php";
 </script>
 
 
 <script src="//js.arcgis.com/3.7compact"></script>
-<script src="../vendor/offline/offline.min.js"></script>
-<script src="../vendor/IndexedDBShim/dist/IndexedDBShim.min.js"></script>
+<script src="../../vendor/offline/offline.min.js"></script>
+<script src="../../vendor/IndexedDBShim/dist/IndexedDBShim.min.js"></script>
 <script src="offlineProbe.js"></script>
-<script src="main.js"></script>
+<script src="tiles-indexed-db.js"></script>
 
 	<!-- Bootstrap core JavaScript
 	================================================== -->

@@ -17,11 +17,11 @@
 - [x] remove unused files (ioWorker, OfflineTileStore)
 - [x] test iPad/iPhone **DONE**, it works!
 - [x] unit testing
+- [x] keep on downloading tiles even if one of them fails
+- [x] add message telling that something failed while initing the indexedDB
+- [x] update README.md
 
-- [ ] update README.md
 - [ ] better tile estimation and limits
-- [ ] keep on downloading tiles even if one of them fails
-- [ ] add message telling that something failed while initing the indexedDB
 
 - [ ] allow naming caches?
 - [ ] more general proxy.php

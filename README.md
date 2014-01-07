@@ -3,11 +3,10 @@ offline-editor-js
 
 Experimental JavaScript library that auto-detects an offline condition and stores FeatureLayer edit activities until a connection is reestablished. Works with adds, updates and deletes.
 
-Includes several libraries:
+Includes several libraries (in the `lib` directory):
 
-- OfflineStore - overrides applyEdits() method
-- OfflineTileStore - stores tiles for offline pan and zoom.
-- OfflineFeatureStore - **TBD** (manages features for offline usage)
+- `edit`: handles vector features, allows editing while offline and sending edits to server once connection is restablished
+- `tiles`: allows to store portions of tiled maps client-side and use the cached tiles when device is offline
 
 ##How to use?
 
@@ -29,12 +28,12 @@ While the library works in Chrome, Firefox and Safari with the internet turned o
 ##Features
 
 * Override the applyEdits() method.
-* Can store base map tiles for offline pan and zoom.
 * Automatic offline/online detection. Once an offline condition exists the library starts storing the edits. And, as soon as it reconnects it will submit the updates.
 * Can store dozens or hundreds of edits.
 * Currently works with Points, Polylines and Polygons.
 * Indexes edits for successful/unsuccessful update validation as well as for more advanced workflows.
 * Monitors available storage and is configured by default to stop edits at a maximum threshold and alert that the threshold has been reached. This is intended to help prevent data loss.
+* Can store base map tiles for offline pan and zoom.
 
 ##OfflineStore Library
 
@@ -78,28 +77,133 @@ While the library works in Chrome, Firefox and Safari with the internet turned o
         }
 
 
-##OfflineTileStore Library
-
-####OfflineTileStore()
-* Constructor. Stores tiles for offline panning and zoom. 
+##`tiles` library
 
 
-####storeLayer()
-* Stores tiled in either localStorage or IndexedDB if it is available. Storage process is initiated by forcing a refresh on the basemap layer.
+The `tiles` library allows a developer to extend a tiled layer with offline support.
 
-####useIndexedDB
-* Property. Manually sets whether library used localStorage or IndexedDB. Default is false. 
+**Step 1** Configure paths for dojo loader to find the tiles and vendor modules (you need to set paths relative to the location of your html document), before loading ArcGIS JavaScript API
+
+	<script>
+		// configure paths BEFORE loading arcgis or dojo libs
+		var locationPath = location.pathname.replace(/\/[^/]+$/, "");
+		var dojoConfig = {
+			paths: { 
+				tiles: locationPath  + "/../../lib/tiles",
+				vendor: locationPath + "/../../vendor"
+			}
+		}
+	</script>
+	<script src="//js.arcgis.com/3.7compact"></script>
 
 
-####getLocalStorageUsed()
-* Returns amount of storage used by the calling domain. Typical browser limit is 5MBs.
+
+**Step 2** Include the `tiles/offlineEnabler` library in your app.
+
+	require([
+		"esri/map", 
+		"tiles/offlineEnabler"], 
+		function(Map,offlineEnabler)
+	{
+		...	});
+
+**Step 3** Once your map is created (either using new Map() or using esriUtils.createMap(webmapid,...), you extend the basemap layer with the offline functionality
+
+	var basemapLayer = map.getLayer( map.layerIds[0] );
+	offlineEnabler.extend(basemapLayer,function(success)
+	{
+		if(success)	{
+			/* now we can use offline functionality on this layer */		} else {
+			alert('indexed db is not supported in this browser);		}
+	});
+
+**Step 4** Use the new offline methods on the layer to prepare for offline mode while still online:
+
+####basemap.getLevelEstimation(extent,level)
+Returns an object that contains the number of tiles that would need to be downloaded for the specified extent and zoom level, and the estimated byte size of such tiles. This method is useful to give the user an indication of the required time and space before launching the actual download operation:
+
+	{
+		level: /* level number */
+		tileCount: /* count of tiles */
+		sizeBytes: /* total size of tiles */	
+	}
+	
+**NOTE**: The byte size estimation is very rough.
+
+####basemap.prepareForOffline(minLevel,maxLevel,reportProgress,finishedDownloading)
+
+* Integer	minLevel
+* Integer	maxLevel
+* Extent	extent
+* callback	reportProgress(Object progress)
+* callback	finishedDownloading(Boolean cancelled)
+
+This method starts the process of downloading and storing in local storage all tiles within the specified extent. 
+For each downloaded tile it will call the reportProgress() callback. It will pass an object with the following fields
+
+	{
+		countNow: /* current count of downloaded tiles */
+		countMax: /* number of total tiles that need to be downloaded */
+		error: /* if some error has happened, it contains an error object with cell and msg fields, otherwise it is undefined */
+	} 
+
+The reportProgress() callback function should return `true` if the download operation should be cancelled or `false` if it can go on.
+	
+Once all tiles have been downloaded, it will call the finishedDownloading() callback, passing `true` if the operation was cancelled without finishing or `true` if it was completed.
+
+
+####basemap.deleteAllTiles(callback)
+Deletes all tiles stored in the indexed db database.
+The callback is called to indicate success (true) or failure (false,err)
+
+
+####basemap.getOfflineUsage(callback)
+It calculates the number of tiles that are stored in the indexed db database and the space used by them. The callback is called with an object containing the result of this calculation:
+
+	{
+		tileCount: /* count of tiles */
+		size: /* total size of tiles */	
+	}
+
+####basemap.getTilePolygons(callback)
+It calculates the geographic boundary of each of the tiles stored in the indexed db. This method calls the callback once for each tile, passing an esri/geometry/Polygon that can be added to a GraphicsLayer. This method is useful to show graphically which tiles are stored in the local database, like this:
+
+	graphics = new GraphicsLayer();
+	map.addLayer( graphics );
+	basemapLayer.getTilePolygons(function(polygon,err)
+	{
+		if(polygon) {
+			var graphic = new Graphic(polygon, symbol);
+			graphics.add(graphic);
+		} else {
+			console.log("showStoredTiles: ", err);
+		}
+	}
+	
+####basemap.goOffline()
+This method puts the layer in offline mode. When in offline mode, the layer will not fetch any tile from the remote server. It will look up the tiles in the indexed db database and display them in the layer. If the tile can't be found in the local database it will show up blank (even if there is actual connectivity)
+
+####basemap.goOnline()
+This method puts the layer in online mode. When in online mode, the layer will behave as regular layers, fetching all tiles from the remote server. If there is no internet connectivity the tiles may appear thanks to the browsers cache, but no attempt will be made to look up tiles in the local database.
+
+**NOTE**: The pair of methods goOffline() and goOnline() allows the developer to manually control the behaviour of the layer. Used in conjunction with the offline dectection library, you can put the layer in the appropriate mode when the offline condition changes.
 
 ##Testing
-Run Jasmine's SpecRunner.html in a browser. You can find it in the /test directory.
+Open Jasmine's `SpecRunner.html` and `SpecRunner.tiles.html` in a browser. You can find them in the `/test` directory.
 
 ##Dependencies
-* ArcGIS API for JavaScript
-* [offline.js](https://github.com/hubspot/offline) - It is included as a git submodule. Once you clone the repo, you need to do "git submodule init" and "git submodule update" to get the exact same version that this project was tested against.
+Online dependencies:
+
+* ArcGIS API for JavaScript (tested with v3.7)
+
+Dependencies included in the `vendor` directory as git submodules
+
+* [offline.js](https://github.com/hubspot/offline) - it allows detection of the online/offline condition and provides events to hook callbacks on when this condition changes
+* [bootstrap-map](https://github.com/Esri/bootstrap-map-js.git) - UI creation using bootstrap and ArcGIS maps (used in samples)
+* [IndexedDBShim](https://github.com/axemclion/IndexedDBShim) - polyfill to simulate indexed db functionality in browsers/platforms where it is not supported (notably iOS Safari, PhoneGap, Android Chrome)
+* [jasmine.async](https://github.com/derickbailey/jasmine.async.git) - library to help implementing tests of async functionality (used in tests)
+
+__NOTE__: Once you clone the repo, you need to do "git submodule init" and "git submodule update" to get the exact same version of submodules that this project has been developed and tested against.
 
 ## Resources
 

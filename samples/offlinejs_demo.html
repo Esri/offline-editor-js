@@ -18,6 +18,9 @@
 	}
 	#state.up	{		background-color: green;	}
 	#state.down	{		background-color: red;		}
+	#msg {
+		margin: 100px 30%;
+	}
 	</style>
 	<link href="http://netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/css/bootstrap-combined.min.css" rel="stylesheet">
 	<link href="http://netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" rel="stylesheet">
@@ -27,6 +30,14 @@
 </head>
 <body>
 	<div id="state">? unknown</div>
+
+	<div id="msg">
+		Simple demonstrator of the offline.js library.
+		<ul>
+			<li>Unplug the network wire (or disable wifi adapter) and the state indicator will change.</li>
+			<li>Plug the wire again and the indicator will report network availability again</li>
+		</ul>
+	</div>
 
 	<script>
 
