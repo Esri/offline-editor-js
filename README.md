@@ -35,7 +35,7 @@ While the library works in Chrome, Firefox and Safari with the internet turned o
 * Monitors available storage and is configured by default to stop edits at a maximum threshold and alert that the threshold has been reached. This is intended to help prevent data loss.
 * Can store base map tiles for offline pan and zoom.
 
-##OfflineStore Library
+##`edit` Library
 
 ####OfflineStore(/\* Map \*/ map)
 * Constructor. Requires a reference to an ArcGIS API for JavaScript Map.
@@ -189,7 +189,7 @@ This method puts the layer in online mode. When in online mode, the layer will b
 **NOTE**: The pair of methods goOffline() and goOnline() allows the developer to manually control the behaviour of the layer. Used in conjunction with the offline dectection library, you can put the layer in the appropriate mode when the offline condition changes.
 
 ##Testing
-Open Jasmine's `SpecRunner.html` and `SpecRunner.tiles.html` in a browser. You can find them in the `/test` directory.
+Open Jasmine's `SpecRunner.edit.html` and `SpecRunner.tiles.html` in a browser. You can find them in the `/test` directory.
 
 ##Dependencies
 Online dependencies:
@@ -213,7 +213,7 @@ __NOTE__: Once you clone the repo, you need to do "git submodule init" and "git 
 
 ## Issues
 
-Find a bug or want to request a new feature?  Please let us know by submitting an issue.
+Find a bug or want to request a new feature?  Please let us know by submitting an [issue](https://github.com/Esri/offline-editor-js/issues?state=open).
 
 ## Contributing
 
