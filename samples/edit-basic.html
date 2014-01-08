@@ -80,6 +80,10 @@ Sample demonstrates basic offline editing functionality for points, lines and po
     .templatePicker {
         border: solid 2px #444;
     }
+
+    #editInfo,#editInfoTextArea{
+        height: 100%;
+    }
 </style>
 
 
@@ -119,6 +123,8 @@ var map;
 var offlineStore;
 var vertices;
 var updateFlag = false;
+var _logValue = "";
+
 require([
     "esri/map",
     "esri/geometry/Point",
@@ -136,6 +142,7 @@ require([
     "esri/symbols/SimpleFillSymbol",
 
     "esri/dijit/editing/TemplatePicker",
+    "esri/dijit/AttributeInspector",
 
     "dojo/_base/array",
     "dojo/_base/event",
@@ -149,10 +156,12 @@ require([
         Map, Point, Polygon, Polyline, Draw, Edit, Graphic, esriConfig,
         FeatureLayer,
         SimpleMarkerSymbol, SimpleLineSymbol, SimpleFillSymbol,
-        TemplatePicker,
+        TemplatePicker, AttributeInspector,
         arrayUtils, event, lang, parser, registry
         ) {
     parser.parse();
+
+    var selectionSymbol;
 
     // refer to "Using the Proxy Page" for more information:  https://developers.arcgis.com/en/javascript/jshelp/ags_proxy.html
     esriConfig.defaults.io.proxyUrl = "/proxy";
@@ -195,6 +204,22 @@ require([
             document.getElementById("offlineIndicator").style.backgroundColor = "yellow";
         }
     },false);
+
+    function configureFeatureLayer(){
+        selectionSymbol = new SimpleFillSymbol(
+                SimpleFillSymbol.STYLE_NULL,
+                new SimpleLineSymbol(
+                        "solid",
+                        new Color("yellow"),
+                        2
+                ),
+                null
+        );
+
+        map.infoWindow.on("hide", function() {
+            landusePointLayer.clearSelection();
+        });
+    }
 
 
     function initEditing(evt) {
@@ -254,6 +279,9 @@ require([
         var editToolbar = new Edit(map);
 
         editToolbar.on("deactivate", function(evt) {
+
+            updateLog(evt.graphic,"Attempting to update");
+
             if(updateFlag == true){
                 offlineStore.applyEdits(vertices.graphic,vertices.layer,offlineStore.enum().UPDATE,function(count,success,id){
                     headerDiv.innerHTML = getStorageInfo();
@@ -293,6 +321,9 @@ require([
             layer.on("click", function(evt) {
                 event.stop(evt);
                 if (evt.ctrlKey === true || evt.metaKey === true) {  //delete feature if ctrl key is depressed
+
+                    updateLog(evt.graphic,"Attempting to delete");
+
                     try{
                         offlineStore.applyEdits(evt.graphic,layer,offlineStore.enum().DELETE,function(count,success,id){
                             headerDiv.innerHTML = getStorageInfo();
@@ -346,6 +377,9 @@ require([
             var newAttributes = lang.mixin({}, selectedTemplate.template.prototype.attributes);
             var newGraphic = new Graphic(evt.geometry, null, newAttributes);
             //selectedTemplate.featureLayer.applyEdits([newGraphic], null, null);
+
+            updateLog(newGraphic,"Attempting to Add");
+
             offlineStore.applyEdits(newGraphic,selectedTemplate.featureLayer,offlineStore.enum().ADD,function(count,success,id){
                 headerDiv.innerHTML = "Storage Used: " +  offlineStore.getlocalStorageUsed() + " MBs";
             });
@@ -357,6 +391,25 @@ require([
     }
 
 });
+
+function updateLog(graphic,/* String */ evt){
+    var date = new Date();
+    var dateHMS = (date.getMonth()+1) + "/"+ date.getDate()
+            + "/" + date.getFullYear() + " "
+            + date.getHours() + ":"
+            + date.getMinutes() + ":"
+            + date.getSeconds();
+    var attributes = graphic.attributes;
+    var objectid = attributes.objectid;
+    var geometryType = graphic.geometry.type;
+
+    if (typeof objectid == "undefined"){
+        objectid = "new. Symbol name = " + attributes.symbolname;
+    }
+
+    _logValue += dateHMS + " " + evt + " " + geometryType + " " + objectid + "\n\r";
+    document.getElementById("editInfoTextArea").innerHTML = _logValue;
+}
 
 function getLocalStorage(){
     console.log("LocalStorage: " + offlineStore._getLocalStorage());
