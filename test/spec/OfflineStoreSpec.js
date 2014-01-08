@@ -426,8 +426,18 @@ describe("Validate local storage index functionality",function(){
     })
 
     it("get item from local storage index", function(){
-        var item = offlineStore._getItemLocalStoreIndex("testIdString");
+        var item = offlineStore._isItemLocalStoreIndex("testIdString");
         expect(item).toEqual(true);
+    })
+
+    it("verify Id matches inserted value in storage index", function() {
+        var item = offlineStore._getItemLocalStoreIndex("testIdString");
+        expect("testIdString").toEqual(item.id);
+    })
+
+    it("verify layerId matches inserted value in storage index", function() {
+        var item = offlineStore._getItemLocalStoreIndex("testIdString");
+        expect("6").toEqual(item.layerId);
     })
 
     it("delete local storage index", function() {
@@ -441,7 +451,7 @@ describe("Validate local storage index functionality",function(){
     })
 
     it("get item from local storage index (internal) is false", function(){
-        var item = offlineStore._getItemLocalStoreIndex("testIdString");
+        var item = offlineStore._isItemLocalStoreIndex("testIdString");
         expect(item).toEqual(false);
     })
 })
