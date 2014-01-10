@@ -421,7 +421,9 @@ describe("Validate local storage functionality - complex Polygon Graphic",functi
 describe("Validate local storage index functionality",function(){
 
     it("set item in local storage index", function(){
-        var item = offlineStore._setItemLocalStoreIndex("6","testIdString","testTypeString",true);
+
+        var indexObject = new offlineStore._indexObject("6","testIdString","testTypeString",true,"polygon","1/20/30")
+        var item = offlineStore._setItemLocalStoreIndexObject(indexObject);
         expect(item).toEqual(true);
     })
 
@@ -470,28 +472,29 @@ describe("Test custom event handling", function(){
 
     function testTrue(evt){
         validate = evt.detail.message;
+        document.removeEventListener(offlineStore._localEnum().INTERNET_STATUS_EVENT,testTrue,false);
         expect(validate).toEqual(true);
     }
 
     function testFalse(evt){
         validate = evt.detail.message;
+        document.removeEventListener(offlineStore._localEnum().INTERNET_STATUS_EVENT,testFalse,false);
         expect(validate).toEqual(false);
-        document.removeEventListener(offlineStore._localEnum().ONLINE_STATUS_EVENT,testFalse,false);
     }
 
     it("send and receive true event", function(){
         var validate = null;
 
-        document.addEventListener(offlineStore._localEnum().ONLINE_STATUS_EVENT,testTrue,false);
+        document.addEventListener(offlineStore._localEnum().INTERNET_STATUS_EVENT,testTrue,false);
 
-        offlineStore._sendEvent(true,offlineStore._localEnum().ONLINE_STATUS_EVENT);
+        offlineStore._dispatchEvent(true,offlineStore._localEnum().INTERNET_STATUS_EVENT);
     })
     it("send and receive false event", function(){
         var validate = null;
-        document.removeEventListener(offlineStore._localEnum().ONLINE_STATUS_EVENT,testTrue,false);
-        document.addEventListener(offlineStore._localEnum().ONLINE_STATUS_EVENT,testFalse,false);
 
-        offlineStore._sendEvent(false,offlineStore._localEnum().ONLINE_STATUS_EVENT);
+        document.addEventListener(offlineStore._localEnum().INTERNET_STATUS_EVENT,testFalse,false);
+
+        offlineStore._dispatchEvent(false,offlineStore._localEnum().INTERNET_STATUS_EVENT);
     })
 })
 

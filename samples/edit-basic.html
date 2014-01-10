@@ -21,6 +21,8 @@ Sample demonstrates basic offline editing functionality for points, lines and po
         margin: 0;
         padding: 0;
         overflow:hidden;
+        font: helvetica;
+        font-family: helvetica;
     }
     .btn1{
         width: 100%;
@@ -75,17 +77,18 @@ Sample demonstrates basic offline editing functionality for points, lines and po
         background-color: #000000;
         -moz-border-radius: 4px;
         border-radius: 4px;
-        width:200px;
+        width:220px;
     }
     .templatePicker {
         border: solid 2px #444;
     }
 
-    #editInfo,#editInfoTextArea{
-        height: 100%;
+    #editInfo, #historyTextArea,#pendingEdits,#pendingTextArea{
+        height: 300px;
         background-color: #000000;
         color: #ffffff;
     }
+
 </style>
 
 
@@ -103,14 +106,19 @@ Sample demonstrates basic offline editing functionality for points, lines and po
             <div id="offlineIndicator"><img id="offlineImg" src="../samples/img/32-Link.png" alt="Internet Connectivity" /></div>
         </div>
         <div id="info" data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:'top'">Storage used: 0 MBs</div>
+        <div id="pendingEdits" data-dojo-type="dijit/layout/ContentPane" >
+            <div id="pendingEditsHeader" data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:'top'">Pending Edits</div>
+            <textarea id="pendingTextArea" style="overflow:auto !important" readonly wrap="hard"></textarea>
+        </div>
+        <div id="editInfo" data-dojo-type="dijit/layout/ContentPane" >
+            <div id="historyHeader" data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:'top'">History</div>
+            <textarea id="historyTextArea" readonly wrap="hard"></textarea>
+        </div>
         <div id="buttons" data-dojo-type="dijit/layout/ContentPane" >
             <button class="btn1" style="background-color: red" onclick="getLocalStorage()">Get localStorage</button>
             <button class="btn1" style="background-color: red" onclick="offlineStore._deleteStore()">Delete localStorage</button>
             <button class="btn1" style="background-color: red" onclick="getIndex()" >Get Index</button>
             <button class="btn1" style="background-color: red" onclick="offlineStore._deleteLocalStoreIndex()" >Delete Index</button>
-        </div>
-        <div id="editInfo" data-dojo-type="dijit/layout/ContentPane" >
-            <textarea id="editInfoTextArea" readonly wrap="hard"></textarea>
         </div>
     </div>
 </div>
@@ -124,6 +132,7 @@ var offlineStore;
 var vertices;
 var updateFlag = false;
 var _logValue = "";
+var _historyLog = "";
 
 require([
     "esri/map",
@@ -214,22 +223,17 @@ require([
 
     function setListeners(){
 
-        //Changes online status icon based on internet status being up or down.
-        document.addEventListener("OnlineStatusEvent",function(evt){
-            if(evt.detail.message == true){
-                document.getElementById("offlineImg").src = "../samples/img/32-Link.png";
-                document.getElementById("offlineIndicator").style.backgroundColor = "green";
-            }
-            else{
-                document.getElementById("offlineImg").src = "../samples/img/32-Alert.png";
-                document.getElementById("offlineIndicator").style.backgroundColor = "yellow";
-            }
-        },false);
-
-        //Listens for the index being updated. That means an edit event has been sent to the server.
-        document.addEventListener("indexUpdateEvent",function(evt){   console.log("indexUpdateEvent rcvd")
-            updateChangesLog(evt);
-        },false)
+//        //Changes online status icon based on internet status being up or down.
+//        document.addEventListener("OnlineStatusEvent",function(evt){
+//            if(evt.detail.message == true){
+//                document.getElementById("offlineImg").src = "../samples/img/32-Link.png";
+//                document.getElementById("offlineIndicator").style.backgroundColor = "green";
+//            }
+//            else{
+//                document.getElementById("offlineImg").src = "../samples/img/32-Alert.png";
+//                document.getElementById("offlineIndicator").style.backgroundColor = "yellow";
+//            }
+//        },false);
     }
 
     function initEditing(evt) {
@@ -247,38 +251,46 @@ require([
         console.log(getStorageInfo());
         headerDiv.innerHTML = getStorageInfo();
         try{
-            document.addEventListener("editEvent",function(evt){
-
-                  if(evt.type == "editEvent"){
-                      if(evt.detail.message == null){
-                          alert("There was a problem submitted the edit(s). See console for details.")
-                      }
-                      if(evt.detail.message.hasOwnProperty("success") && evt.detail.message.success == true){
-                          console.log("editEvent: All edits successfully pushed");
-                      }
-                      else if(evt.detail.message.hasOwnProperty("success") && evt.detail.message.success == false){
-                          alert("Not all edits were successfully pushed to the server");
-                      }
-
-                      headerDiv.innerHTML = getStorageInfo();
-
-                  }
-            },
-            false);
+            document.addEventListener("offlineEditEvent",function(evt){
+                switch(evt.detail.type){
+                    case "editEvent":
+                        if(evt.detail.message == null){
+                            alert("There was a problem submitted the edit(s). See console for details.")
+                        }
+                        if(evt.detail.message.hasOwnProperty("success") && evt.detail.message.success == true){
+                            console.log("editEvent: All edits successfully pushed");
+                        }
+                        else if(evt.detail.message.hasOwnProperty("success") && evt.detail.message.success == false){
+                            alert("Not all edits were successfully pushed to the server");
+                        }
+                        headerDiv.innerHTML = getStorageInfo();
+                        break;
+                    case "internetStatusChangeEvent":
+                        if(evt.detail.message == true){
+                            document.getElementById("offlineImg").src = "../samples/img/32-Link.png";
+                            document.getElementById("offlineIndicator").style.backgroundColor = "green";
+                        }
+                        else{
+                            document.getElementById("offlineImg").src = "../samples/img/32-Alert.png";
+                            document.getElementById("offlineIndicator").style.backgroundColor = "yellow";
+                        }
+                        break;
+                    case "indexUpdateEvent":
+                        updateHistoryTextArea(evt);
+                        break;
+                    case "OfflineEditAttempt":
+                        headerDiv.innerHTML = getStorageInfo();
+                        break;
+                    case "duplicateEditEvent":
+                        console.log("duplicate event attempt");
+                        break;
+                }
+            },false);
 
             document.addEventListener("windowErrorEvent",function(evt){
                         alert("Error: " + evt.detail.message);
             },
             false);
-
-            document.addEventListener("OfflineEditAttempt",function(evt){
-                headerDiv.innerHTML = getStorageInfo();
-            },false)
-
-            document.addEventListener("duplicateEditEvent",function(evt){
-                console.log("duplicate event attempt");
-            },false)
-
         }
         catch(err){
             console.log("Attempting to set events listeners:  " + err.toString());
@@ -290,19 +302,17 @@ require([
 
         editToolbar.on("deactivate", function(evt) {
 
-            updatePendingChangesLog(evt.graphic,"Attempting to update",null);
+            updatePendingTextArea(evt.graphic,"Attempting to update",null);
 
             if(updateFlag == true){
                 offlineStore.applyEdits(vertices.graphic,vertices.layer,offlineStore.enum().UPDATE,function(count,success,id){
                     headerDiv.innerHTML = getStorageInfo();
-                    updatePendingChangesLog(evt.graphic,"Update success = " + success,null);
                 });
                 updateFlag = false;
             }
             else{
                 offlineStore.applyEdits(evt.graphic,currentLayer,offlineStore.enum().UPDATE,function(count,success,id){
                     headerDiv.innerHTML = getStorageInfo();
-                    updatePendingChangesLog(evt.graphic,"Update success = " + success,null);
                 });
             }
         });
@@ -334,12 +344,11 @@ require([
                 event.stop(evt);
                 if (evt.ctrlKey === true || evt.metaKey === true) {  //delete feature if ctrl key is depressed
 
-                    updatePendingChangesLog(evt.graphic,"Attempting to delete",null);
+                    updatePendingTextArea(evt.graphic,"Attempting to delete",null);
 
                     try{
                         offlineStore.applyEdits(evt.graphic,layer,offlineStore.enum().DELETE,function(count,success,id){
                             headerDiv.innerHTML = getStorageInfo();
-                            updatePendingChangesLog(evt.graphic,"Delete success = " + success,id);
                         });
                     }
                     catch(err){
@@ -391,11 +400,10 @@ require([
             var newGraphic = new Graphic(evt.geometry, null, newAttributes);
             //selectedTemplate.featureLayer.applyEdits([newGraphic], null, null);
 
-            updatePendingChangesLog(newGraphic,"Attempting to Add",null);
+            updatePendingTextArea(newGraphic,"Attempting to Add",null);
 
             offlineStore.applyEdits(newGraphic,selectedTemplate.featureLayer,offlineStore.enum().ADD,function(count,success,id){
                 headerDiv.innerHTML = "Storage Used: " +  offlineStore.getlocalStorageUsed() + " MBs";
-                updatePendingChangesLog(newGraphic,"Draw success = " + success,id);
             });
         });
 
@@ -406,13 +414,15 @@ require([
 
 });
 
-function updatePendingChangesLog(graphic,/* String */ evt,id){
+/**
+ * Sends pending changes to the update log
+ * @param graphic
+ * @param evt
+ * @param id
+ */
+function updatePendingTextArea(graphic,/* String */ evt,id){
     var date = new Date();
-    var dateHMS = (date.getMonth()+1) + "/"+ date.getDate()
-            + "/" + date.getFullYear() + " "
-            + date.getHours() + ":"
-            + date.getMinutes() + ":"
-            + date.getSeconds();
+    var dateHMS = getDateHMS();
     var attributes = graphic.attributes;
     var objectid = attributes.objectid;
     var geometryType = graphic.geometry.type;
@@ -431,10 +441,14 @@ function updatePendingChangesLog(graphic,/* String */ evt,id){
     }
 
     _logValue += dateHMS + " " + evt + " " + geometryType + " " + objectid + "\n\r";
-    document.getElementById("editInfoTextArea").innerHTML = _logValue;
+    document.getElementById("pendingTextArea").innerHTML = _logValue;
 }
 
-function updateChangesLog(evt){
+/**
+ * Sends actual changes to the update log
+ * @param evt
+ */
+function updateHistoryTextArea(evt){
     var dateHMS = getDateHMS();
     var evtObjMsg = evt.detail.message;
 
@@ -453,16 +467,24 @@ function updateChangesLog(evt){
     }
 
     _logValue += dateHMS + " " + evtType + " for " + evtObjMsg.geometryType + " id: " + evtObjMsg.id + "\n\r";
-    document.getElementById("editInfoTextArea").innerHTML = _logValue;
+    document.getElementById("historyTextArea").innerHTML = _logValue;
 }
 
 function getDateHMS(){
     var date = new Date();
+    var hh = date.getHours();
+    var mm = date.getMinutes();
+    var ss = date.getSeconds();
+
+    hh = hh < 10 ? "0" + hh : hh;
+    mm = mm < 10 ? "0" + mm : mm;
+    ss = ss < 10 ? "0" + ss : ss;
+
     var dateHMS = (date.getMonth()+1) + "/"+ date.getDate()
             + "/" + date.getFullYear() + " "
-            + date.getHours() + ":"
-            + date.getMinutes() + ":"
-            + date.getSeconds();
+            + hh + ":"
+            + mm + ":"
+            + ss;
 
     return dateHMS;
 }
