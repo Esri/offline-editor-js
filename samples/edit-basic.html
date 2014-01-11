@@ -21,8 +21,7 @@ Sample demonstrates basic offline editing functionality for points, lines and po
         margin: 0;
         padding: 0;
         overflow:hidden;
-        font: helvetica;
-        font-family: helvetica;
+        font-family: Helvetica;
     }
     .btn1{
         width: 100%;
@@ -87,6 +86,7 @@ Sample demonstrates basic offline editing functionality for points, lines and po
         height: 300px;
         background-color: #000000;
         color: #ffffff;
+        overflow: hidden;
     }
 
 </style>
@@ -108,7 +108,7 @@ Sample demonstrates basic offline editing functionality for points, lines and po
         <div id="info" data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:'top'">Storage used: 0 MBs</div>
         <div id="pendingEdits" data-dojo-type="dijit/layout/ContentPane" >
             <div id="pendingEditsHeader" data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:'top'">Pending Edits</div>
-            <textarea id="pendingTextArea" style="overflow:auto !important" readonly wrap="hard"></textarea>
+            <textarea id="pendingTextArea" style="overflow:hidden !important" readonly wrap="hard"></textarea>
         </div>
         <div id="editInfo" data-dojo-type="dijit/layout/ContentPane" >
             <div id="historyHeader" data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:'top'">History</div>
@@ -116,7 +116,7 @@ Sample demonstrates basic offline editing functionality for points, lines and po
         </div>
         <div id="buttons" data-dojo-type="dijit/layout/ContentPane" >
             <button class="btn1" style="background-color: red" onclick="getLocalStorage()">Get localStorage</button>
-            <button class="btn1" style="background-color: red" onclick="offlineStore._deleteStore()">Delete localStorage</button>
+            <button class="btn1" style="background-color: red" onclick="offlineStore._deleteTempLocalStore()">Delete localStorage</button>
             <button class="btn1" style="background-color: red" onclick="getIndex()" >Get Index</button>
             <button class="btn1" style="background-color: red" onclick="offlineStore._deleteLocalStoreIndex()" >Delete Index</button>
         </div>
@@ -129,6 +129,7 @@ Sample demonstrates basic offline editing functionality for points, lines and po
 <script>
 var map;
 var offlineStore;
+var offlineUtils;
 var vertices;
 var updateFlag = false;
 var _logValue = "";
@@ -248,25 +249,29 @@ require([
 
 //////////
         offlineStore = new OfflineStore(map);
+
         console.log(getStorageInfo());
         headerDiv.innerHTML = getStorageInfo();
         try{
             document.addEventListener("offlineEditEvent",function(evt){
+                offlineUtils = new OfflineUtils();
+                var message = evt.detail.message;
+
                 switch(evt.detail.type){
                     case "editEvent":
-                        if(evt.detail.message == null){
+                        if(message == null){
                             alert("There was a problem submitted the edit(s). See console for details.")
                         }
-                        if(evt.detail.message.hasOwnProperty("success") && evt.detail.message.success == true){
+                        if(message.hasOwnProperty("success") && message.success == true){
                             console.log("editEvent: All edits successfully pushed");
                         }
-                        else if(evt.detail.message.hasOwnProperty("success") && evt.detail.message.success == false){
+                        else if(message.hasOwnProperty("success") && message.success == false){
                             alert("Not all edits were successfully pushed to the server");
                         }
                         headerDiv.innerHTML = getStorageInfo();
                         break;
                     case "internetStatusChangeEvent":
-                        if(evt.detail.message == true){
+                        if(message == true){
                             document.getElementById("offlineImg").src = "../samples/img/32-Link.png";
                             document.getElementById("offlineIndicator").style.backgroundColor = "green";
                         }
@@ -278,7 +283,10 @@ require([
                     case "indexUpdateEvent":
                         updateHistoryTextArea(evt);
                         break;
-                    case "OfflineEditAttempt":
+                    case "pendingEditEvent":
+                        if(message != null){
+                            addPendingTextArea(message);
+                        }
                         headerDiv.innerHTML = getStorageInfo();
                         break;
                     case "duplicateEditEvent":
@@ -302,7 +310,7 @@ require([
 
         editToolbar.on("deactivate", function(evt) {
 
-            updatePendingTextArea(evt.graphic,"Attempting to update",null);
+//            updatePendingTextArea(evt.graphic,"Attempting to update",null);
 
             if(updateFlag == true){
                 offlineStore.applyEdits(vertices.graphic,vertices.layer,offlineStore.enum().UPDATE,function(count,success,id){
@@ -344,7 +352,7 @@ require([
                 event.stop(evt);
                 if (evt.ctrlKey === true || evt.metaKey === true) {  //delete feature if ctrl key is depressed
 
-                    updatePendingTextArea(evt.graphic,"Attempting to delete",null);
+//                    updatePendingTextArea(evt.graphic,"Attempting to delete",null);
 
                     try{
                         offlineStore.applyEdits(evt.graphic,layer,offlineStore.enum().DELETE,function(count,success,id){
@@ -400,7 +408,7 @@ require([
             var newGraphic = new Graphic(evt.geometry, null, newAttributes);
             //selectedTemplate.featureLayer.applyEdits([newGraphic], null, null);
 
-            updatePendingTextArea(newGraphic,"Attempting to Add",null);
+//            updatePendingTextArea(newGraphic,"Attempting to Add",null);
 
             offlineStore.applyEdits(newGraphic,selectedTemplate.featureLayer,offlineStore.enum().ADD,function(count,success,id){
                 headerDiv.innerHTML = "Storage Used: " +  offlineStore.getlocalStorageUsed() + " MBs";
@@ -413,6 +421,18 @@ require([
     }
 
 });
+
+function graphicInfoModel(/* Graphic */ graphic){
+    this.attributes;
+    this.objectid;
+    this.geometryType;
+    graphic.hasOwnProperty("attributes") ? this.attributes = graphic.attributes : this.attributes = null;
+    if(this.attributes != null){
+        this.attributes.hasOwnProperty("objectid") ? this.objectid = attributes.objectid : this.objectid = null;
+    }
+    graphic.hasOwnProperty("geometry") ? this.geometryType = graphic.geometry.type : this.geometryType = null;
+}
+
 
 /**
  * Sends pending changes to the update log
@@ -442,6 +462,23 @@ function updatePendingTextArea(graphic,/* String */ evt,id){
 
     _logValue += dateHMS + " " + evt + " " + geometryType + " " + objectid + "\n\r";
     document.getElementById("pendingTextArea").innerHTML = _logValue;
+}
+
+function addPendingTextArea(message){
+    var objectid = null;
+    var layer = message.layerId;
+    var enumValue = message.enumValue;
+    var date = offlineUtils.getDateMDYHMS();
+    var graphic = message.graphic;
+    var geometryType = graphic.geometry.type;
+    if(graphic.hasOwnProperty("attributes") && graphic.attributes.hasOwnProperty("objectid")){
+        objectid = graphic.attributes.objectid;
+    }
+
+    _logValue += date + " " + enumValue + " " + geometryType + " " + objectid + "\n\r";
+    document.getElementById("pendingTextArea").innerHTML = _logValue;
+
+//    console.log(date + ", " + objectid + ", " + layer + ", " + enumValue);
 }
 
 /**
@@ -490,8 +527,8 @@ function getDateHMS(){
 }
 
 function getLocalStorage(){
-    alert(offlineStore._getLocalStorage())
-    console.log("LocalStorage: " + offlineStore._getLocalStorage());
+    alert(offlineStore._getTempLocalStore())
+    console.log("LocalStorage: " + offlineStore._getTempLocalStore());
 }
 
 function getIndex(){

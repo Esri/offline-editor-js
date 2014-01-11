@@ -26,6 +26,7 @@
         var vertices;
         var landusePointLayer;
         var point, line, polygon;
+        var serializedGraphic1,serializedGraphic2,serializedGraphicsArr = [];
         var simplePtGraphic, simplePolygonGraphic, simpleLineGraphic;
         var complexPtGraphic, complexPolygonGraphic, complexLineGraphic;
         var updateFlag = false;
@@ -65,6 +66,11 @@
 
             try{
                 var wkid = map.spatialReference;
+
+                serializedGraphic1 = {"layer":6,"enumValue":"delete","geometry":"{\"type\":\"point\",\"x\":-9266721.493065935,\"y\":5248417.656692019,\"spatialReference\":{\"wkid\":102100,\"latestWkid\":3857}}","attributes":"{\"objectid\":42749,\"echelon\":null,\"reinforced\":0,\"combateffectiveness\":null,\"higherformation\":null,\"iff_sif\":null,\"direction\":-1,\"speed\":null,\"countrycode\":\"US\",\"staffcomment\":null,\"additionalinformation\":null,\"credibility\":null,\"reliability\":null,\"datetimevalid\":null,\"datetimeexpired\":null,\"uniquedesignation\":null,\"x\":null,\"y\":null,\"z\":null,\"symbolname\":\"Armored Combat BTG\",\"__hydrate_id\":\"0\"}"};
+                serializedGraphic2 = {"layer":6,"enumValue":"delete","geometry":"{\"type\":\"point\",\"x\":-9267129.475771423,\"y\":5247671.918014977,\"spatialReference\":{\"wkid\":102100,\"latestWkid\":3857}}","attributes":"{\"objectid\":43946,\"echelon\":null,\"reinforced\":0,\"combateffectiveness\":null,\"higherformation\":null,\"iff_sif\":null,\"direction\":-1,\"speed\":null,\"countrycode\":\"US\",\"staffcomment\":null,\"additionalinformation\":null,\"credibility\":null,\"reliability\":null,\"datetimevalid\":null,\"datetimeexpired\":null,\"uniquedesignation\":null,\"x\":null,\"y\":null,\"z\":null,\"symbolname\":\"Armored Combat Battalion\",\"__hydrate_id\":\"0\"}"};
+                serializedGraphicsArr[0] = JSON.stringify(serializedGraphic1);
+                serializedGraphicsArr[1] = JSON.stringify(serializedGraphic2);
 
                 var simplePtGeom = new esri.geometry.Point(11111,-111111,map.spatialReference);
                 simplePtGraphic = new esri.Graphic(simplePtGeom);
