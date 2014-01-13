@@ -402,7 +402,6 @@ require(["esri/map",
 				.removeClass('fa-info-circle')
 				.addClass(icon);
 			esri.show(dojo.byId('error-div'));
-			window.scrollTo(0,0);
 		}
 
 		function hideAlert()

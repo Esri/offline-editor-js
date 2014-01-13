@@ -28,7 +28,7 @@ body > .container {
 }
 
 #ready-to-download-ui, #downloading-ui {
-  margin-top: 15px;
+  margin-bottom: 10px;
 }
 
 #ready-to-download-ui button
@@ -39,4 +39,8 @@ body > .container {
 #error-div {
   margin-top: 10px;
   display: none;
+}
+
+.alert {
+  margin-bottom: 0px;
 }
