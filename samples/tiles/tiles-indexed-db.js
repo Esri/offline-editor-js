@@ -247,7 +247,11 @@ require(["esri/map",
 				else
 					showAlert("alert-danger", "Can't delete tiles: " + err);
 
-				setTimeout(updateOfflineUsage,0); // request execution in the next turn of the event loop
+				setTimeout(function()
+				{
+					updateOfflineUsage();
+					showStoredTiles(showTiles);
+				},0); // request execution in the next turn of the event loop
 			});
 		}
 
@@ -371,12 +375,23 @@ require(["esri/map",
 
 		function loadFromFile()
 		{
-			basemapLayer.loadFromFile("tiles.csv", function(success,msg)
+			var selectedFile = dojo.byId('file-select').files[0];
+			
+			if( !selectedFile )
+			{
+				showAlert('alert-warning',"Please, select one file");
+				return;
+			}	
+
+			basemapLayer.loadFromFile(selectedFile, function(success,msg)
 			{
 				if(success)
 					showAlert('alert-success',msg);
 				else
 					showAlert('alert-danger',msg);
+
+				updateOfflineUsage();
+				showStoredTiles(showTiles);				
 			});
 		}
 
