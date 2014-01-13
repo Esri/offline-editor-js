@@ -27,6 +27,11 @@ body > .container {
 	display: none;
 }
 
+#ready-to-download-ui button
+{
+  margin-top: 5px;
+}
+
 #error-div {
   margin-top: 10px;
   display: none;

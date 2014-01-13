@@ -129,6 +129,9 @@ require(["esri/map",
 					on(dojo.byId('go-online-btn'),'click', goOnline);
 					on(dojo.byId('update-offline-usage'),'click', updateOfflineUsage);
 					on(dojo.byId('show-stored-tiles'),'click', toggleShowStoredTiles);
+					on(dojo.byId('save-file'),'click', saveToFile);
+					on(dojo.byId('load-file'),'click', loadFromFile);
+					dojo.byId('go-online-btn').style.display = "none";
 					esri.show(dojo.byId('ready-to-download-ui'));
 					esri.hide(dojo.byId('downloading-ui'));
 					updateOfflineUsage();
@@ -140,6 +143,7 @@ require(["esri/map",
 					dojo.byId('delete-all-tiles-btn').disabled = true;
 					dojo.byId('go-offline-btn').disabled = true;
 					dojo.byId('go-online-btn').disabled = true;
+					esri.hide(dojo.byId('go-online-btn'));
 					dojo.byId('update-offline-usage').disabled = true;
 					dojo.byId('show-stored-tiles').disabled = true;
 					esri.hide(dojo.byId('downloading-ui'));
@@ -216,6 +220,8 @@ require(["esri/map",
 		{
 			dojo.byId('go-offline-btn').disabled = true;
 			dojo.byId('go-online-btn').disabled = undefined;
+			dojo.byId('go-offline-btn').style.display = "none";
+			dojo.byId('go-online-btn').style.display = "";
 
 			basemapLayer.goOffline();
 		}
@@ -224,6 +230,8 @@ require(["esri/map",
 		{
 			dojo.byId('go-offline-btn').disabled = undefined;
 			dojo.byId('go-online-btn').disabled = true;
+			dojo.byId('go-offline-btn').style.display = "";
+			dojo.byId('go-online-btn').style.display = "none";
 
 			basemapLayer.goOnline();
 		}
@@ -348,6 +356,28 @@ require(["esri/map",
 					}
 				}.bind(this));
 			}
+		}
+
+		function saveToFile()
+		{
+			basemapLayer.saveToFile("tiles.csv", function(success,msg)
+			{
+				if(success)
+					showAlert('alert-success',msg);
+				else
+					showAlert('alert-danger',msg);
+			});
+		}
+
+		function loadFromFile()
+		{
+			basemapLayer.loadFromFile("tiles.csv", function(success,msg)
+			{
+				if(success)
+					showAlert('alert-success',msg);
+				else
+					showAlert('alert-danger',msg);
+			});
 		}
 
 		function showAlert(type, msg)
