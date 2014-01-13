@@ -5,7 +5,7 @@ describe("Initialize Offline Library", function() {
     })
 
     it("get graphics layer by id", function(){
-        var layer = offlineStore._getGraphicsLayerById(6);
+        var layer = offlineStore.getGraphicsLayerById(6);
         expect(layer).toEqual(jasmine.any(Object));
     })
 
@@ -98,7 +98,7 @@ describe("Serialize/Deserialize Graphic - simple Point Graphic", function(){
 
     it("delete one graphic from local storage", function(){
         var value = null;
-        var attempt = offlineStore._deleteItemInLocalStore("42749",function(evt){
+        var attempt = offlineStore._deleteObjectIdInLocalStore("42749",function(evt){
             value = evt;
         }.bind(this))
         expect(value).toEqual(true);
@@ -484,13 +484,28 @@ describe("Validate local storage index functionality",function(){
 })
 
 describe("Reestablish internet", function(){
+
+    it("set item in local storage", function(){
+        offlineStore._deleteLocalStoreIndex();
+        var json = offlineStore._serializeGraphic(complexPolygonGraphic,landusePointLayer,offlineStore.enum().ADD);
+        var setItem = offlineStore._setTempLocalStore(json);
+        expect(setItem).toEqual(true);
+    })
+
     it("reestablish internet handler with empty store", function(){
         var validate = null;
-        offlineStore._reestablishedInternet(function(evt){
-            validate = evt;
-        });
-        expect(validate).toEqual(false);
+        offlineStore._reestablishedInternet();
+
+        var item = offlineStore.getLocalStoreIndex();
+        expect(item).toEqual(null);
     })
+
+    it("get item from local storage using getStore()", function(){
+        var data = offlineStore.getStore();
+        var type = Object.prototype.toString.call( data ); // === '[object Array]';
+        expect(type).toEqual('[object Array]');
+    })
+
 })
 
 describe("Test custom event handling", function(){

@@ -258,18 +258,6 @@ require([
                 var message = evt.detail.message;
 
                 switch(evt.detail.type){
-                    case "editEvent":
-                        if(message == null){
-                            alert("There was a problem submitted the edit(s). See console for details.")
-                        }
-                        if(message.hasOwnProperty("success") && message.success == true){
-                            console.log("editEvent: All edits successfully pushed");
-                        }
-                        else if(message.hasOwnProperty("success") && message.success == false){
-                            alert("Not all edits were successfully pushed to the server");
-                        }
-                        headerDiv.innerHTML = getStorageInfo();
-                        break;
                     case "internetStatusChangeEvent":
                         if(message == true){
                             document.getElementById("offlineImg").src = "../samples/img/32-Link.png";
@@ -281,15 +269,17 @@ require([
                         }
                         break;
                     case "indexUpdateEvent":
+                        headerDiv.innerHTML = getStorageInfo();
                         updateHistoryTextArea(evt);
                         break;
                     case "pendingEditEvent":
                         if(message != null){
-                            addPendingTextArea(message);
+                            addPendingTextArea();
                         }
                         headerDiv.innerHTML = getStorageInfo();
                         break;
                     case "duplicateEditEvent":
+                        alert("Duplicate edit event");
                         console.log("duplicate event attempt");
                         break;
                 }
@@ -309,8 +299,6 @@ require([
         var editToolbar = new Edit(map);
 
         editToolbar.on("deactivate", function(evt) {
-
-//            updatePendingTextArea(evt.graphic,"Attempting to update",null);
 
             if(updateFlag == true){
                 offlineStore.applyEdits(vertices.graphic,vertices.layer,offlineStore.enum().UPDATE,function(count,success,id){
@@ -351,8 +339,6 @@ require([
             layer.on("click", function(evt) {
                 event.stop(evt);
                 if (evt.ctrlKey === true || evt.metaKey === true) {  //delete feature if ctrl key is depressed
-
-//                    updatePendingTextArea(evt.graphic,"Attempting to delete",null);
 
                     try{
                         offlineStore.applyEdits(evt.graphic,layer,offlineStore.enum().DELETE,function(count,success,id){
@@ -408,8 +394,6 @@ require([
             var newGraphic = new Graphic(evt.geometry, null, newAttributes);
             //selectedTemplate.featureLayer.applyEdits([newGraphic], null, null);
 
-//            updatePendingTextArea(newGraphic,"Attempting to Add",null);
-
             offlineStore.applyEdits(newGraphic,selectedTemplate.featureLayer,offlineStore.enum().ADD,function(count,success,id){
                 headerDiv.innerHTML = "Storage Used: " +  offlineStore.getlocalStorageUsed() + " MBs";
             });
@@ -433,52 +417,32 @@ function graphicInfoModel(/* Graphic */ graphic){
     graphic.hasOwnProperty("geometry") ? this.geometryType = graphic.geometry.type : this.geometryType = null;
 }
 
+function addPendingTextArea(){
 
-/**
- * Sends pending changes to the update log
- * @param graphic
- * @param evt
- * @param id
- */
-function updatePendingTextArea(graphic,/* String */ evt,id){
-    var date = new Date();
-    var dateHMS = getDateHMS();
-    var attributes = graphic.attributes;
-    var objectid = attributes.objectid;
-    var geometryType = graphic.geometry.type;
+    var logText = "";
+    var graphicsArr = offlineStore.getStore();
 
-    if (typeof objectid == "undefined" && attributes.hasOwnProperty("symbolname") == true){
-        objectid = "new. Symbol name = " + attributes.symbolname;
-    }
-    else if (typeof objectid == "undefined" && attributes.hasOwnProperty("symbolname") == false){
-        objectid = "new. Symbol name = unknown";
-    }
-    else if(attributes != null || typeof attributes != "undefined" && attributes.hasOwnProperty("objectid")){
-        objectid = attributes.objectid;
-    }
-    else if (id != null || typeof id != "undefined"){
-        objectid = id;
+    if(graphicsArr != null){
+        var length = graphicsArr.length;
+        for(var i = 0; i < length; i++){
+            var symbolname = null;
+            var graphic = graphicsArr[i].graphic;
+            var layer = graphicsArr[i].layer;
+            var enumValue = graphicsArr[i].enumValue;
+            var date = graphicsArr[i].date;
+            var geometryType = graphic.geometry.type;
+            if(graphic.hasOwnProperty("attributes") && graphic.attributes.hasOwnProperty("objectid")){
+                objectid = graphic.attributes.objectid;
+                graphic.attributes.hasOwnProperty("symbolname") == true ? symbolname = graphic.attributes.symbolname : symbolname = null;
+            }
+            else{
+
+            }
+            logText += date + " " + enumValue + " " + geometryType + " " + objectid + ", symbolname: " + symbolname + ", date:" + date + "\n\r";
+        }
     }
 
-    _logValue += dateHMS + " " + evt + " " + geometryType + " " + objectid + "\n\r";
-    document.getElementById("pendingTextArea").innerHTML = _logValue;
-}
-
-function addPendingTextArea(message){
-    var objectid = null;
-    var layer = message.layerId;
-    var enumValue = message.enumValue;
-    var date = offlineUtils.getDateMDYHMS();
-    var graphic = message.graphic;
-    var geometryType = graphic.geometry.type;
-    if(graphic.hasOwnProperty("attributes") && graphic.attributes.hasOwnProperty("objectid")){
-        objectid = graphic.attributes.objectid;
-    }
-
-    _logValue += date + " " + enumValue + " " + geometryType + " " + objectid + "\n\r";
-    document.getElementById("pendingTextArea").innerHTML = _logValue;
-
-//    console.log(date + ", " + objectid + ", " + layer + ", " + enumValue);
+    document.getElementById("pendingTextArea").innerHTML = logText;
 }
 
 /**
@@ -486,25 +450,17 @@ function addPendingTextArea(message){
  * @param evt
  */
 function updateHistoryTextArea(evt){
-    var dateHMS = getDateHMS();
-    var evtObjMsg = evt.detail.message;
+    var logText = "";
+    var index = offlineStore.getLocalStoreIndex();
 
-    var evtType;
-
-    switch(evtObjMsg.type){
-        case "delete":
-            evtType = "Delete success = " + evtObjMsg.success;
-            break;
-        case "add":
-            evtType = "Add success = " + evtObjMsg.success;
-            break;
-        case "update":
-            evtType = "Update success = " + evtObjMsg.success;
-            break;
+    if(index != null){
+        for(var property in index){
+            var item = index[property];
+            logText += item + "\n\r";
+        }
     }
 
-    _logValue += dateHMS + " " + evtType + " for " + evtObjMsg.geometryType + " id: " + evtObjMsg.id + "\n\r";
-    document.getElementById("historyTextArea").innerHTML = _logValue;
+    document.getElementById("historyTextArea").innerHTML = logText;
 }
 
 function getDateHMS(){
