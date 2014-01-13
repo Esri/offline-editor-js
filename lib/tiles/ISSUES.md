@@ -24,6 +24,9 @@
 	+ http://www.html5rocks.com/es/tutorials/file/dndfiles/
 
 - [ ] better UI for selecting file to load
+	+ drag & drop
+	+ test in iPad (save / load)
+
 - [ ] include FileSaver.js and Blob.js as submodules? https://github.com/eligrey/Blob.js and https://github.com/eligrey/FileSaver.js
 
 - [ ] search for CDN included files and bring them to local
