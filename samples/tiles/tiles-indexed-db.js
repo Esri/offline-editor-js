@@ -260,7 +260,7 @@ require(["esri/map",
 			/* launch offline preparation process */
 			var minLevel = parseInt(dojo.byId('minLevel').value);
 			var maxLevel = parseInt(dojo.byId('maxLevel').value);
-			basemapLayer.prepareForOffline(minLevel, maxLevel, map.extent, reportProgress, finishedDownloading);
+			basemapLayer.prepareForOffline(minLevel, maxLevel, map.extent, reportProgress);
 		}
 
 		function cancel()
@@ -270,50 +270,56 @@ require(["esri/map",
 
 		function reportProgress(progress)
 		{			
-			var pbar = query('#download-progress [role=progressbar]')[0];
-			var percent = progress.countMax? (progress.countNow / progress.countMax * 100) : 0;
-			pbar.style.width = percent+"%";
-
-			if( progress.error )
+			if( progress.finishedDownloading )
 			{
-				query('#download-progress [role=progressbar]')
-					.removeClass('progress-bar-success')
-					.addClass('progress-bar-warning');
+				if( progress.cancelRequested )
+					showAlert('alert-warning', 'Cancelled');
+				else if (errorList.length == 0)
+					showAlert('alert-success', 'All tiles downloaded and stored');
+				else
+					showAlert('alert-warning', "Finished downloading tiles, " + errorList.length + " tiles couldn't be downloaded");
 
-				errorList.push(progress.error.msg);
-
-				showAlert('alert-warning', progress.error.msg);
+				setTimeout(function()
+				{				
+					esri.show(dojo.byId('ready-to-download-ui'));
+					esri.hide(dojo.byId('downloading-ui'));
+					updateOfflineUsage();
+					showStoredTiles(showTiles);
+				}, 1000);
 			}
-
-			if( progress.countNow > 5 )
-			{
-				var currentTime = new Date();
-				var elapsedTime = currentTime - startTime;
-				var remainingTime = (elapsedTime / progress.countNow) * (progress.countMax - progress.countNow);
-				var sec = 1 + Math.floor(remainingTime / 1000);
-				var min = Math.floor(sec / 60);
-				sec -= (min * 60);
-				dojo.byId('remaining-time').innerHTML = ((min<10)? "0" + min : min) + ":" + ((sec<10)? "0" + sec : sec);
-			}
-			return cancelRequested;
-		}
-
-		function finishedDownloading(cancelled)
-		{		
-			if( cancelled )
-				showAlert('alert-warning', 'Cancelled');
-			else if (errorList.length == 0)
-				showAlert('alert-success', 'All tiles downloaded and stored');
 			else
-				showAlert('alert-warning', "Finished downloading tiles, " + errorList.length + " tiles couldn't be downloaded");
+			{
+				// progress bar
+				var pbar = query('#download-progress [role=progressbar]')[0];
+				var percent = progress.countMax? (progress.countNow / progress.countMax * 100) : 0;
+				pbar.style.width = percent+"%";
 
-			setTimeout(function()
-			{				
-				esri.show(dojo.byId('ready-to-download-ui'));
-				esri.hide(dojo.byId('downloading-ui'));
-				updateOfflineUsage();
-				showStoredTiles(showTiles);
-			}, 1000);
+				// any errors?
+				if( progress.error )
+				{
+					query('#download-progress [role=progressbar]')
+						.removeClass('progress-bar-success')
+						.addClass('progress-bar-warning');
+
+					errorList.push(progress.error.msg);
+
+					showAlert('alert-warning', progress.error.msg);
+				}
+
+				// remaining time
+				if( progress.countNow > 5 )
+				{
+					var currentTime = new Date();
+					var elapsedTime = currentTime - startTime;
+					var remainingTime = (elapsedTime / progress.countNow) * (progress.countMax - progress.countNow);
+					var sec = 1 + Math.floor(remainingTime / 1000);
+					var min = Math.floor(sec / 60);
+					sec -= (min * 60);
+					dojo.byId('remaining-time').innerHTML = ((min<10)? "0" + min : min) + ":" + ((sec<10)? "0" + sec : sec);
+				}
+
+				return cancelRequested;
+			}
 		}
 
 		function toggleShowStoredTiles()
