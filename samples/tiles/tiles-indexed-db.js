@@ -130,7 +130,7 @@ require(["esri/map",
 					on(dojo.byId('update-offline-usage'),'click', updateOfflineUsage);
 					on(dojo.byId('show-stored-tiles'),'click', toggleShowStoredTiles);
 					on(dojo.byId('save-file'),'click', saveToFile);
-					on(dojo.byId('load-file'),'click', loadFromFile);
+					on(dojo.byId('file-select'),'change', loadFromFile);
 					dojo.byId('go-online-btn').style.display = "none";
 					esri.show(dojo.byId('ready-to-download-ui'));
 					esri.hide(dojo.byId('downloading-ui'));

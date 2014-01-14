@@ -31,7 +31,7 @@ body > .container {
   margin-bottom: 10px;
 }
 
-#ready-to-download-ui button
+#ready-to-download-ui .btn
 {
   margin-top: 5px;
 }
@@ -43,4 +43,24 @@ body > .container {
 
 .alert {
   margin-bottom: 0px;
+}
+
+#load-file {
+    position: relative;
+    overflow: hidden;
+}
+
+#load-file input[type=file] {
+    position: absolute;
+    top: 0;
+    right: 0;
+    min-width: 100%;
+    min-height: 100%;
+    font-size: 999px;
+    text-align: right;
+    filter: alpha(opacity=0);
+    opacity: 0;
+    background: red;
+    cursor: inherit;
+    display: block;
 }
