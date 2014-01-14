@@ -129,6 +129,9 @@ require(["esri/map",
 					on(dojo.byId('go-online-btn'),'click', goOnline);
 					on(dojo.byId('update-offline-usage'),'click', updateOfflineUsage);
 					on(dojo.byId('show-stored-tiles'),'click', toggleShowStoredTiles);
+					on(dojo.byId('save-file'),'click', saveToFile);
+					on(dojo.byId('file-select'),'change', loadFromFile);
+					dojo.byId('go-online-btn').style.display = "none";
 					esri.show(dojo.byId('ready-to-download-ui'));
 					esri.hide(dojo.byId('downloading-ui'));
 					updateOfflineUsage();
@@ -140,6 +143,7 @@ require(["esri/map",
 					dojo.byId('delete-all-tiles-btn').disabled = true;
 					dojo.byId('go-offline-btn').disabled = true;
 					dojo.byId('go-online-btn').disabled = true;
+					esri.hide(dojo.byId('go-online-btn'));
 					dojo.byId('update-offline-usage').disabled = true;
 					dojo.byId('show-stored-tiles').disabled = true;
 					esri.hide(dojo.byId('downloading-ui'));
@@ -216,6 +220,8 @@ require(["esri/map",
 		{
 			dojo.byId('go-offline-btn').disabled = true;
 			dojo.byId('go-online-btn').disabled = undefined;
+			dojo.byId('go-offline-btn').style.display = "none";
+			dojo.byId('go-online-btn').style.display = "";
 
 			basemapLayer.goOffline();
 		}
@@ -224,6 +230,8 @@ require(["esri/map",
 		{
 			dojo.byId('go-offline-btn').disabled = undefined;
 			dojo.byId('go-online-btn').disabled = true;
+			dojo.byId('go-offline-btn').style.display = "";
+			dojo.byId('go-online-btn').style.display = "none";
 
 			basemapLayer.goOnline();
 		}
@@ -239,7 +247,11 @@ require(["esri/map",
 				else
 					showAlert("alert-danger", "Can't delete tiles: " + err);
 
-				setTimeout(updateOfflineUsage,0); // request execution in the next turn of the event loop
+				setTimeout(function()
+				{
+					updateOfflineUsage();
+					showStoredTiles(showTiles);
+				},0); // request execution in the next turn of the event loop
 			});
 		}
 
@@ -260,7 +272,7 @@ require(["esri/map",
 			/* launch offline preparation process */
 			var minLevel = parseInt(dojo.byId('minLevel').value);
 			var maxLevel = parseInt(dojo.byId('maxLevel').value);
-			basemapLayer.prepareForOffline(minLevel, maxLevel, map.extent, reportProgress, finishedDownloading);
+			basemapLayer.prepareForOffline(minLevel, maxLevel, map.extent, reportProgress);
 		}
 
 		function cancel()
@@ -270,50 +282,56 @@ require(["esri/map",
 
 		function reportProgress(progress)
 		{			
-			var pbar = query('#download-progress [role=progressbar]')[0];
-			var percent = progress.countMax? (progress.countNow / progress.countMax * 100) : 0;
-			pbar.style.width = percent+"%";
-
-			if( progress.error )
+			if( progress.finishedDownloading )
 			{
-				query('#download-progress [role=progressbar]')
-					.removeClass('progress-bar-success')
-					.addClass('progress-bar-warning');
+				if( progress.cancelRequested )
+					showAlert('alert-warning', 'Cancelled');
+				else if (errorList.length == 0)
+					showAlert('alert-success', 'All tiles downloaded and stored');
+				else
+					showAlert('alert-warning', "Finished downloading tiles, " + errorList.length + " tiles couldn't be downloaded");
 
-				errorList.push(progress.error.msg);
-
-				showAlert('alert-warning', progress.error.msg);
+				setTimeout(function()
+				{				
+					esri.show(dojo.byId('ready-to-download-ui'));
+					esri.hide(dojo.byId('downloading-ui'));
+					updateOfflineUsage();
+					showStoredTiles(showTiles);
+				}, 1000);
 			}
-
-			if( progress.countNow > 5 )
-			{
-				var currentTime = new Date();
-				var elapsedTime = currentTime - startTime;
-				var remainingTime = (elapsedTime / progress.countNow) * (progress.countMax - progress.countNow);
-				var sec = 1 + Math.floor(remainingTime / 1000);
-				var min = Math.floor(sec / 60);
-				sec -= (min * 60);
-				dojo.byId('remaining-time').innerHTML = ((min<10)? "0" + min : min) + ":" + ((sec<10)? "0" + sec : sec);
-			}
-			return cancelRequested;
-		}
-
-		function finishedDownloading(cancelled)
-		{		
-			if( cancelled )
-				showAlert('alert-warning', 'Cancelled');
-			else if (errorList.length == 0)
-				showAlert('alert-success', 'All tiles downloaded and stored');
 			else
-				showAlert('alert-warning', "Finished downloading tiles, " + errorList.length + " tiles couldn't be downloaded");
+			{
+				// progress bar
+				var pbar = query('#download-progress [role=progressbar]')[0];
+				var percent = progress.countMax? (progress.countNow / progress.countMax * 100) : 0;
+				pbar.style.width = percent+"%";
 
-			setTimeout(function()
-			{				
-				esri.show(dojo.byId('ready-to-download-ui'));
-				esri.hide(dojo.byId('downloading-ui'));
-				updateOfflineUsage();
-				showStoredTiles(showTiles);
-			}, 1000);
+				// any errors?
+				if( progress.error )
+				{
+					query('#download-progress [role=progressbar]')
+						.removeClass('progress-bar-success')
+						.addClass('progress-bar-warning');
+
+					errorList.push(progress.error.msg);
+
+					showAlert('alert-warning', progress.error.msg);
+				}
+
+				// remaining time
+				if( progress.countNow > 5 )
+				{
+					var currentTime = new Date();
+					var elapsedTime = currentTime - startTime;
+					var remainingTime = (elapsedTime / progress.countNow) * (progress.countMax - progress.countNow);
+					var sec = 1 + Math.floor(remainingTime / 1000);
+					var min = Math.floor(sec / 60);
+					sec -= (min * 60);
+					dojo.byId('remaining-time').innerHTML = ((min<10)? "0" + min : min) + ":" + ((sec<10)? "0" + sec : sec);
+				}
+
+				return cancelRequested;
+			}
 		}
 
 		function toggleShowStoredTiles()
@@ -344,6 +362,39 @@ require(["esri/map",
 			}
 		}
 
+		function saveToFile()
+		{
+			basemapLayer.saveToFile("tiles.csv", function(success,msg)
+			{
+				if(success)
+					showAlert('alert-success',msg);
+				else
+					showAlert('alert-danger',msg);
+			});
+		}
+
+		function loadFromFile()
+		{
+			var selectedFile = dojo.byId('file-select').files[0];
+			
+			if( !selectedFile )
+			{
+				showAlert('alert-warning',"Please, select one file");
+				return;
+			}	
+
+			basemapLayer.loadFromFile(selectedFile, function(success,msg)
+			{
+				if(success)
+					showAlert('alert-success',msg);
+				else
+					showAlert('alert-danger',msg);
+
+				updateOfflineUsage();
+				showStoredTiles(showTiles);				
+			});
+		}
+
 		function showAlert(type, msg)
 		{
 			var icon = "";
@@ -366,7 +417,6 @@ require(["esri/map",
 				.removeClass('fa-info-circle')
 				.addClass(icon);
 			esri.show(dojo.byId('error-div'));
-			window.scrollTo(0,0);
 		}
 
 		function hideAlert()

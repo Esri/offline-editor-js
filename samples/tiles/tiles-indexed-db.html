@@ -52,14 +52,6 @@
 
 <div class="container">
 	<div class="row">
-		<div class="col-xs-12" id="error-div">
-			<div class="alert alert-danger">
-				<a class="close" data-dismiss="alert">&times;</a>
-				<i class="fa fa-info-circle"></i><strong></strong> <span id="error-msg">Change a few things up and try submitting again..</span>
-			</div>
-		</div>
-	</div>
-	<div class="row">
 		<div class="col-sm-4">
 		</div>
 		<div class="col-sm-8">
@@ -108,9 +100,11 @@
 				<button id="prepare-for-offline-btn" type="button" class="btn btn-primary"><i class="glyphicon glyphicon-cloud-download"></i> Prepare for Offline</button>
 				<button id="delete-all-tiles-btn" type="button" class="btn btn-danger"><i class="glyphicon glyphicon-floppy-remove"></i> Delete All Tiles</button>
 				<button id="go-offline-btn" type="button" class="btn btn-default"><i class="fa fa-chain-broken"></i> Go Offline</button>
-				<button id="go-online-btn" type="button" class="btn btn-default" disabled="disabled"><i class="fa fa-link"></i> Go Online</button>
+				<button id="go-online-btn" type="button" class="btn btn-default" disabled="disabled" style="display:none;"><i class="fa fa-link"></i> Go Online</button>
 				<button id="update-offline-usage" type="button" class="btn btn-default"><i class="fa fa-refresh"></i> Usage: <span id="offline-usage">[click to update]</span></button>
 				<button id="show-stored-tiles" type="button" class="btn btn-default"><i class="fa fa-th"></i> <span id="show-stored-tiles-caption">Show Stored Tiles</span></button>
+				<button id="save-file" type="button" class="btn btn-default"><i class="fa fa-download"></i> Save to File</button>
+				<span id="load-file" type="button" class="btn btn-default"><i class="fa fa-upload"></i> Load from File <input type="file" id="file-select" name="file-select"></span>
 			</div>
 		</div>
 		<div id="downloading-ui">
@@ -123,6 +117,15 @@
 				</div>
 			</div>
 			<div id="remaining-time" class="col-xs-1">__:__</div>
+		</div>
+	</div>
+
+	<div class="row">
+		<div class="col-xs-12" id="error-div">
+			<div class="alert alert-danger">
+				<a class="close" data-dismiss="alert">&times;</a>
+				<i class="fa fa-info-circle"></i><strong></strong> <span id="error-msg">Change a few things up and try submitting again..</span>
+			</div>
 		</div>
 	</div>
 

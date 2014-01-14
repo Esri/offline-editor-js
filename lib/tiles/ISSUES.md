@@ -20,7 +20,16 @@
 - [x] keep on downloading tiles even if one of them fails
 - [x] add message telling that something failed while initing the indexedDB
 - [x] update README.md
+- [x] save/load to/from csv file
+	+ http://www.html5rocks.com/es/tutorials/file/dndfiles/
 
+- [x] better UI for selecting file to load
+	+ drag & drop (NO)
+	+ test in iPad (save / load) - 'save' seems to work, but no file is stored anywhere, 'load' opens the picture gallery selection :-(
+
+- [ ] include FileSaver.js and Blob.js as submodules? https://github.com/eligrey/Blob.js and https://github.com/eligrey/FileSaver.js
+
+- [ ] search for CDN included files and bring them to local
 - [ ] better tile estimation and limits
 
 - [ ] allow naming caches?
