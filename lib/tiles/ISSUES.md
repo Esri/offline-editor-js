@@ -23,9 +23,9 @@
 - [x] save/load to/from csv file
 	+ http://www.html5rocks.com/es/tutorials/file/dndfiles/
 
-- [ ] better UI for selecting file to load
-	+ drag & drop
-	+ test in iPad (save / load)
+- [x] better UI for selecting file to load
+	+ drag & drop (NO)
+	+ test in iPad (save / load) - 'save' seems to work, but no file is stored anywhere, 'load' opens the picture gallery selection :-(
 
 - [ ] include FileSaver.js and Blob.js as submodules? https://github.com/eligrey/Blob.js and https://github.com/eligrey/FileSaver.js
 
