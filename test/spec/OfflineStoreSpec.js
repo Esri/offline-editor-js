@@ -80,29 +80,6 @@ describe("Serialize/Deserialize Graphic - simple Point Graphic", function(){
         expect(graphic.layer).toEqual(jasmine.any(Number));
         expect(graphic.enumValue).toEqual(jasmine.any(String));
     })
-
-    it("re-serialize a graphics array", function(){
-        jsonFromArr = offlineStore._reserializeGraphicsArray(serializedGraphicsArr);
-        expect(jsonFromArr).toEqual(jasmine.any(String));
-    })
-
-    it("set re-serialized graphic in local storage", function(){
-        var setItem = offlineStore._setTempLocalStore(jsonFromArr);
-        expect(setItem).toEqual(true);
-    })
-
-    it("get re-serialized graphic from local storage", function(){
-        var data = localStorage.getItem(offlineStore._localEnum().STORAGE_KEY);
-        expect(data).not.toBeNull();
-    })
-
-    it("delete one graphic from local storage", function(){
-        var value = null;
-        var attempt = offlineStore._deleteObjectIdInLocalStore("42749",function(evt){
-            value = evt;
-        }.bind(this))
-        expect(value).toEqual(true);
-    })
 });
 
 describe("Serialize/Deserialize Graphic - complex Point Graphic", function(){
@@ -207,13 +184,13 @@ describe("Validate local storage functionality - simple Point Graphic",function(
     it("add item to existing local storage - duplicate", function(){
         var json = offlineStore._serializeGraphic(simplePtGraphic,landusePointLayer,offlineStore.enum().ADD);
         var test = offlineStore._updateExistingLocalStore(json);
-        expect(test).toBe(false);
+        expect(test.duplicate).toBe(true);
     })
 
     it("add additional item to local storage - not a duplicate", function(){
         var json = offlineStore._serializeGraphic(simplePolygonGraphic,landusePointLayer,offlineStore.enum().ADD);
         var test = offlineStore._updateExistingLocalStore(json);
-        expect(test).toBe(true);
+        expect(test.success).toBe(true);
     })
 
     it("get item from local storage using getStore()", function(){
@@ -225,6 +202,33 @@ describe("Validate local storage functionality - simple Point Graphic",function(
     it("delete local storage", function() {
         var store = offlineStore._deleteTempLocalStore();
         expect(store).toEqual(true);
+    })
+})
+
+describe("Validate local storage functionality - delete single Point",function(){
+    var jsonArray;
+
+    it("re-serialize a graphics array", function(){
+        jsonFromArr = offlineStore._reserializeGraphicsArray(serializedGraphicsArr);
+        expect(jsonFromArr).toEqual(jasmine.any(String));
+    })
+
+    it("set re-serialized graphic in local storage", function(){
+        var setItem = offlineStore._setTempLocalStore(jsonFromArr);
+        expect(setItem).toEqual(true);
+    })
+
+    it("get re-serialized graphic from local storage", function(){
+        var data = localStorage.getItem(offlineStore._localEnum().STORAGE_KEY);
+        expect(data).not.toBeNull();
+    })
+
+    it("delete one graphic from local storage", function(){
+        var value = null;
+        var attempt = offlineStore._deleteObjectIdInLocalStore("42749",function(evt){
+            value = evt;
+        }.bind(this))
+        expect(value).toEqual(true);
     })
 })
 
@@ -250,13 +254,13 @@ describe("Validate local storage functionality - complex Point Graphic",function
     it("add item to existing local storage - duplicate", function(){
         var json = offlineStore._serializeGraphic(complexPtGraphic,landusePointLayer,offlineStore.enum().ADD);
         var test = offlineStore._updateExistingLocalStore(json);
-        expect(test).toBe(false);
+        expect(test.duplicate).toBe(true);
     })
 
     it("add additional item to local storage - not a duplicate", function(){
         var json = offlineStore._serializeGraphic(simplePolygonGraphic,landusePointLayer,offlineStore.enum().ADD);
         var test = offlineStore._updateExistingLocalStore(json);
-        expect(test).toBe(true);
+        expect(test.success).toBe(true);
     })
 
     it("get item from local storage using getStore()", function(){
@@ -293,13 +297,13 @@ describe("Validate local storage functionality - simple Line Graphic",function()
     it("add item to existing local storage - duplicate", function(){
         var json = offlineStore._serializeGraphic(simpleLineGraphic,landusePointLayer,offlineStore.enum().ADD);
         var test = offlineStore._updateExistingLocalStore(json);
-        expect(test).toBe(false);
+        expect(test.duplicate).toBe(true);
     })
 
     it("add additional item to local storage - not a duplicate", function(){
         var json = offlineStore._serializeGraphic(simplePolygonGraphic,landusePointLayer,offlineStore.enum().ADD);
         var test = offlineStore._updateExistingLocalStore(json);
-        expect(test).toBe(true);
+        expect(test.success).toBe(true);
     })
 
     it("get item from local storage using getStore()", function(){
@@ -336,13 +340,13 @@ describe("Validate local storage functionality - complex Line Graphic",function(
     it("add item to existing local storage - duplicate", function(){
         var json = offlineStore._serializeGraphic(complexLineGraphic,landusePointLayer,offlineStore.enum().ADD);
         var test = offlineStore._updateExistingLocalStore(json);
-        expect(test).toBe(false);
+        expect(test.duplicate).toBe(true);
     })
 
     it("add additional item to local storage - not a duplicate", function(){
         var json = offlineStore._serializeGraphic(simplePolygonGraphic,landusePointLayer,offlineStore.enum().ADD);
         var test = offlineStore._updateExistingLocalStore(json);
-        expect(test).toBe(true);
+        expect(test.success).toBe(true);
     })
 
     it("get item from local storage using getStore()", function(){
@@ -379,13 +383,13 @@ describe("Validate local storage functionality - simple Polygon Graphic",functio
     it("add item to existing local storage - duplicate", function(){
         var json = offlineStore._serializeGraphic(simplePolygonGraphic,landusePointLayer,offlineStore.enum().ADD);
         var test = offlineStore._updateExistingLocalStore(json);
-        expect(test).toBe(false);
+        expect(test.duplicate).toBe(true);
     })
 
     it("add additional item to local storage - not a duplicate", function(){
         var json = offlineStore._serializeGraphic(complexPolygonGraphic,landusePointLayer,offlineStore.enum().ADD);
         var test = offlineStore._updateExistingLocalStore(json);
-        expect(test).toBe(true);
+        expect(test.success).toBe(true);
     })
 
     it("get item from local storage using getStore()", function(){
@@ -422,13 +426,13 @@ describe("Validate local storage functionality - complex Polygon Graphic",functi
     it("add item to existing local storage - duplicate", function(){
         var json = offlineStore._serializeGraphic(complexPolygonGraphic,landusePointLayer,offlineStore.enum().ADD);
         var test = offlineStore._updateExistingLocalStore(json);
-        expect(test).toBe(false);
+        expect(test.duplicate).toBe(true);
     })
 
     it("add additional item to local storage - not a duplicate", function(){
         var json = offlineStore._serializeGraphic(complexPtGraphic,landusePointLayer,offlineStore.enum().ADD);
         var test = offlineStore._updateExistingLocalStore(json);
-        expect(test).toBe(true);
+        expect(test.success).toBe(true);
     })
 
     it("get item from local storage using getStore()", function(){
