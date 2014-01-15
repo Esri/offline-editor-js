@@ -243,6 +243,9 @@ Sample demonstrates basic offline editing functionality for points, lines and po
                             alert("Duplicate edit event");
                             console.log("duplicate event attempt");
                             break;
+                        case "deleteItemFromTempStoreEvent":
+                            updatePendingTextArea();
+                            break;
                     }
                 },false);
                 document.addEventListener("windowErrorEvent",function(evt){
@@ -416,7 +419,6 @@ Sample demonstrates basic offline editing functionality for points, lines and po
      * @param evt
      */
     function updateHistoryTextArea(){
-        updatePendingTextArea();
         var logText = "";
         var index = offlineStore.getLocalStoreIndex();
         if(index != null){
