@@ -225,7 +225,7 @@ describe("Validate local storage functionality - delete single Point",function()
 
     it("delete one graphic from local storage", function(){
         var value = null;
-        var attempt = offlineStore._deleteObjectIdInLocalStore("42749",function(evt){
+        var attempt = offlineStore._deleteObjectIdTempLocalStore("42749",function(evt){
             value = evt;
         }.bind(this))
         expect(value).toEqual(true);

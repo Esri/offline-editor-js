@@ -363,7 +363,7 @@ Sample demonstrates basic offline editing functionality for points, lines and po
                 editToolbar.deactivate();
                 var newAttributes = lang.mixin({}, selectedTemplate.template.prototype.attributes);
                 var newGraphic = new Graphic(evt.geometry, null, newAttributes);
-    //selectedTemplate.featureLayer.applyEdits([newGraphic], null, null);
+
                 offlineStore.applyEdits(newGraphic,selectedTemplate.featureLayer,offlineStore.enum().ADD,function(count,result,id){
                     if(result.success == true){
                         updatePendingTextArea()
