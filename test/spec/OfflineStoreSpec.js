@@ -74,8 +74,7 @@ describe("Serialize/Deserialize Graphic - simple Point Graphic", function(){
 
     it("deserialize a graphic", function(){
         var json = offlineStore._serializeGraphic(simplePtGraphic,landusePointLayer,offlineStore.enum().ADD);
-        var portion = json.substring(0, json.length - 3); //remove tokens
-        var graphic = offlineStore._deserializeGraphic(portion);
+        var graphic = offlineStore._deserializeGraphic(json);
         expect(graphic.graphic).toEqual(jasmine.any(Object));
         expect(graphic.layer).toEqual(jasmine.any(Number));
         expect(graphic.enumValue).toEqual(jasmine.any(String));
@@ -90,8 +89,7 @@ describe("Serialize/Deserialize Graphic - complex Point Graphic", function(){
 
     it("deserialize a graphic", function(){
         var json = offlineStore._serializeGraphic(complexPtGraphic,landusePointLayer,offlineStore.enum().ADD);
-        var portion = json.substring(0, json.length - 3); //remove tokens
-        var graphic = offlineStore._deserializeGraphic(portion);
+        var graphic = offlineStore._deserializeGraphic(json);
         expect(graphic.graphic).toEqual(jasmine.any(Object));
         expect(graphic.layer).toEqual(jasmine.any(Number));
         expect(graphic.enumValue).toEqual(jasmine.any(String));
@@ -106,8 +104,7 @@ describe("Serialize/Deserialize Graphic - simple Line Graphic", function(){
 
     it("deserialize a graphic", function(){
         var json = offlineStore._serializeGraphic(simpleLineGraphic,landusePointLayer,offlineStore.enum().ADD);
-        var portion = json.substring(0, json.length - 3); //remove tokens
-        var graphic = offlineStore._deserializeGraphic(portion);
+        var graphic = offlineStore._deserializeGraphic(json);
         expect(graphic.graphic).toEqual(jasmine.any(Object));
         expect(graphic.layer).toEqual(jasmine.any(Number));
         expect(graphic.enumValue).toEqual(jasmine.any(String));
@@ -122,8 +119,7 @@ describe("Serialize/Deserialize Graphic - complex Line Graphic", function(){
 
     it("deserialize a graphic", function(){
         var json = offlineStore._serializeGraphic(complexLineGraphic,landusePointLayer,offlineStore.enum().ADD);
-        var portion = json.substring(0, json.length - 3); //remove tokens
-        var graphic = offlineStore._deserializeGraphic(portion);
+        var graphic = offlineStore._deserializeGraphic(json);
         expect(graphic.graphic).toEqual(jasmine.any(Object));
         expect(graphic.layer).toEqual(jasmine.any(Number));
         expect(graphic.enumValue).toEqual(jasmine.any(String));
@@ -138,8 +134,7 @@ describe("Serialize/Deserialize Graphic - simple Polygon Graphic", function(){
 
     it("deserialize a graphic", function(){
         var json = offlineStore._serializeGraphic(simplePolygonGraphic,landusePointLayer,offlineStore.enum().ADD);
-        var portion = json.substring(0, json.length - 3); //remove tokens
-        var graphic = offlineStore._deserializeGraphic(portion);
+        var graphic = offlineStore._deserializeGraphic(json);
         expect(graphic.graphic).toEqual(jasmine.any(Object));
         expect(graphic.layer).toEqual(jasmine.any(Number));
         expect(graphic.enumValue).toEqual(jasmine.any(String));
@@ -154,8 +149,7 @@ describe("Serialize/Deserialize Graphic - complex Polygon Graphic", function(){
 
     it("deserialize a graphic", function(){
         var json = offlineStore._serializeGraphic(complexPolygonGraphic,landusePointLayer,offlineStore.enum().ADD);
-        var portion = json.substring(0, json.length - 3); //remove tokens
-        var graphic = offlineStore._deserializeGraphic(portion);
+        var graphic = offlineStore._deserializeGraphic(json);
         expect(graphic.graphic).toEqual(jasmine.any(Object));
         expect(graphic.layer).toEqual(jasmine.any(Number));
         expect(graphic.enumValue).toEqual(jasmine.any(String));

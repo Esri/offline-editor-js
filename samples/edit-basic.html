@@ -186,21 +186,6 @@ Sample demonstrates basic offline editing functionality for points, lines and po
         });
         map.addLayers([landusePointLayer, landuseLineLayer, landusePolygonLayer]);
 
-        function configureFeatureLayer(){
-            selectionSymbol = new SimpleFillSymbol(
-                    SimpleFillSymbol.STYLE_NULL,
-                    new SimpleLineSymbol(
-                            "solid",
-                            new Color("yellow"),
-                            2
-                    ),
-                    null
-            );
-            map.infoWindow.on("hide", function() {
-                landusePointLayer.clearSelection();
-            });
-        }
-
         function initEditing(evt) {
             console.log("initEditing", evt);
 
@@ -259,28 +244,13 @@ Sample demonstrates basic offline editing functionality for points, lines and po
     //////////
             var editToolbar = new Edit(map);
             editToolbar.on("deactivate", function(evt) {
-                if(updateFlag == true){
-                    offlineStore.applyEdits(vertices.graphic,vertices.layer,offlineStore.enum().UPDATE,function(count,result,id){
-                        if(result.success == true){
-                            updatePendingTextArea()
-                        }
-                        if(result.duplicate == true){
-                            alert("Attempt to enter a duplicate edit.")
-                        }
-                        headerDiv.innerHTML = getStorageInfo();
-                    });
+                if(updateFlag == true)
+                {
+                    applyEdits(vertices.graphic,vertices.layer,offlineStore.enum().UPDATE);
                     updateFlag = false;
                 }
                 else{
-                    offlineStore.applyEdits(evt.graphic,currentLayer,offlineStore.enum().UPDATE,function(count,result,id){
-                        if(result.success == true){
-                            updatePendingTextArea()
-                        }
-                        if(result.duplicate == true){
-                            alert("Attempt to enter a duplicate edit.")
-                        }
-                        headerDiv.innerHTML = getStorageInfo();
-                    });
+                    applyEdits(evt.graphic,currentLayer,offlineStore.enum().UPDATE);
                 }
             });
 
@@ -310,15 +280,7 @@ Sample demonstrates basic offline editing functionality for points, lines and po
                     event.stop(evt);
                     if (evt.ctrlKey === true || evt.metaKey === true) { //delete feature if ctrl key is depressed
                         try{
-                            offlineStore.applyEdits(evt.graphic,layer,offlineStore.enum().DELETE,function(count,result,id){
-                                if(result.success == true){
-                                    updatePendingTextArea()
-                                }
-                                if(result.duplicate == true){
-                                    alert("Attempt to enter a duplicate edit.")
-                                }
-                                headerDiv.innerHTML = getStorageInfo();
-                            });
+                            applyEdits(evt.graphic,layer,offlineStore.enum().DELETE);
                         }
                         catch(err){
                             console.log("error " + err.toString());
@@ -367,24 +329,29 @@ Sample demonstrates basic offline editing functionality for points, lines and po
                 var newAttributes = lang.mixin({}, selectedTemplate.template.prototype.attributes);
                 var newGraphic = new Graphic(evt.geometry, null, newAttributes);
 
-                offlineStore.applyEdits(newGraphic,selectedTemplate.featureLayer,offlineStore.enum().ADD,function(count,result,id){
+                applyEdits(newGraphic,selectedTemplate.featureLayer,offlineStore.enum().ADD);
+            });
+            function getStorageInfo(){
+                return "Storage Used: " + offlineStore.getlocalStorageUsed() + " MBs";
+            }
+            function applyEdits(graphic, layer, operation)
+            {
+                offlineStore.applyEdits(graphic,layer,operation,function(count,result,id)
+                {
                     if(result.success == true){
                         updatePendingTextArea()
                     }
                     if(result.duplicate == true){
                         alert("Attempt to enter a duplicate edit.")
                     }
-                    headerDiv.innerHTML = "Storage Used: " + offlineStore.getlocalStorageUsed() + " MBs";
-                });
-            });
-            function getStorageInfo(){
-                return "Storage Used: " + offlineStore.getlocalStorageUsed() + " MBs";
+                    headerDiv.innerHTML = getStorageInfo();
+                });                
             }
         }
     });
 
     function updatePendingTextArea(){
-        var logText = "";
+        var logText = [];
         var graphicsArr = offlineStore.getStore();
         if(graphicsArr != null){
             var length = graphicsArr.length;
@@ -408,10 +375,10 @@ Sample demonstrates basic offline editing functionality for points, lines and po
                         objectid = null;
                     }
                 }
-                logText += enumValue + " " + geometryType + " " + objectid + ", symbolname: " + symbolname +  ", layer: " + layerId + "\n\r";
+                logText.push(enumValue + " " + geometryType + " " + objectid + ", symbolname: " + symbolname +  ", layer: " + layerId);
             }
         }
-        document.getElementById("pendingTextArea").innerHTML = logText;
+        document.getElementById("pendingTextArea").innerHTML = logText.join("\r\n");
     }
 
     /**
@@ -419,15 +386,15 @@ Sample demonstrates basic offline editing functionality for points, lines and po
      * @param evt
      */
     function updateHistoryTextArea(){
-        var logText = "";
+        var logText = [];
         var index = offlineStore.getLocalStoreIndex();
         if(index != null){
             for(var property in index){
                 var item = index[property];
-                logText += item + "\n\r";
+                logText.push(item);
             }
         }
-        document.getElementById("historyTextArea").innerHTML = logText;
+        document.getElementById("historyTextArea").innerHTML = logText.join("\r\n");
     }
 
     function getDateHMS(){
