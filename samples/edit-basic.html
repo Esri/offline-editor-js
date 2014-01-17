@@ -185,21 +185,6 @@ Sample demonstrates basic offline editing functionality for points, lines and po
         });
         map.addLayers([landusePointLayer, landuseLineLayer, landusePolygonLayer]);
 
-        function configureFeatureLayer(){
-            selectionSymbol = new SimpleFillSymbol(
-                    SimpleFillSymbol.STYLE_NULL,
-                    new SimpleLineSymbol(
-                            "solid",
-                            new Color("yellow"),
-                            2
-                    ),
-                    null
-            );
-            map.infoWindow.on("hide", function() {
-                landusePointLayer.clearSelection();
-            });
-        }
-
         function initEditing(evt) {
             console.log("initEditing", evt);
 
@@ -238,6 +223,9 @@ Sample demonstrates basic offline editing functionality for points, lines and po
                         case "deleteItemFromTempStoreEvent":
                             updatePendingTextArea();
                             headerDiv.innerHTML = getStorageInfo();
+                            break;
+                        case "editCompleteEvent":
+                            updatePendingTextArea();
                             break;
                     }
                 },false);
