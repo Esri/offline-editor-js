@@ -230,6 +230,34 @@ describe("Validate local storage functionality - delete single Point",function()
         }.bind(this))
         expect(value).toEqual(true);
     })
+
+    it("delete local storage", function(){
+        var attempt = offlineStore._deleteTempLocalStore();
+        expect(attempt).toEqual(true);
+    })
+
+    it("re-serialize a graphics array", function(){
+        jsonFromArr = offlineStore._reserializeGraphicsArray(serializedGraphicsArr);
+        expect(jsonFromArr).toEqual(jasmine.any(String));
+    })
+
+    it("set re-serialized graphic in local storage", function(){
+        var setItem = offlineStore._setTempLocalStore(jsonFromArr);
+        expect(setItem).toEqual(true);
+    })
+
+    it("get re-serialized graphic from local storage", function(){
+        var data = localStorage.getItem(offlineStore._localEnum().STORAGE_KEY);
+        expect(data).not.toBeNull();
+    })
+
+    it("delete one graphic from local storage", function(){
+        var value = null;
+        offlineStore._deleteItemTempLocalStore(serializedGraphicsArr[0],function(evt){
+            value = evt;
+        }.bind(this))
+        expect(value).toEqual(true);
+    })
 })
 
 describe("Validate local storage functionality - complex Point Graphic",function(){
@@ -491,12 +519,13 @@ describe("Reestablish internet", function(){
 
     it("set item in local storage", function(){
         offlineStore._deleteLocalStoreIndex();
+        offlineStore._deleteTempLocalStore();
         var json = offlineStore._serializeGraphic(complexPolygonGraphic,landusePointLayer,offlineStore.enum().ADD);
         var setItem = offlineStore._setTempLocalStore(json);
         expect(setItem).toEqual(true);
     })
 
-    it("reestablish internet handler with empty store", function(){
+    it("reestablish internet handler with one item in temp store", function(){
         var validate = null;
         offlineStore._reestablishedInternet();
 
@@ -504,7 +533,7 @@ describe("Reestablish internet", function(){
         expect(item).toEqual(null);
     })
 
-    it("get item from local storage using getStore()", function(){
+    it("verify temp local storage is empty after successful sync with server", function(){
         var data = offlineStore.getStore();
         var type = Object.prototype.toString.call( data ); // === '[object Array]';
         expect(type).toEqual('[object Array]');

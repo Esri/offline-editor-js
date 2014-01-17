@@ -108,9 +108,9 @@ Sample demonstrates basic offline editing functionality for points, lines and po
         </div>
         <div id="buttons" data-dojo-type="dijit/layout/ContentPane" >
             <button class="btn1" style="background-color: red" onclick="getLocalStorage()">Get localStorage</button>
-            <button class="btn1" style="background-color: red" onclick="offlineStore._deleteTempLocalStore()">Delete localStorage</button>
+            <button class="btn1" style="background-color: red" onclick="offlineStore._deleteTempLocalStore();updatePendingTextArea();">Delete localStorage</button>
             <button class="btn1" style="background-color: red" onclick="getIndex()" >Get Index</button>
-            <button class="btn1" style="background-color: red" onclick="offlineStore._deleteLocalStoreIndex()" >Delete Index</button>
+            <button class="btn1" style="background-color: red" onclick="offlineStore._deleteLocalStoreIndex();updateHistoryTextArea();" >Delete Index</button>
         </div>
     </div>
 </div>
@@ -121,7 +121,6 @@ Sample demonstrates basic offline editing functionality for points, lines and po
 
     var map;
     var offlineStore;
-    var offlineUtils;
     var vertices;
     var updateFlag = false;
     var _logValue = "";
@@ -216,7 +215,6 @@ Sample demonstrates basic offline editing functionality for points, lines and po
 
             try{
                 document.addEventListener("offlineEditEvent",function(evt){
-                    offlineUtils = new OfflineUtils();
                     var message = evt.detail.message;
                     switch(evt.detail.type){
                         case "internetStatusChangeEvent":
@@ -233,18 +231,13 @@ Sample demonstrates basic offline editing functionality for points, lines and po
                             headerDiv.innerHTML = getStorageInfo();
                             updateHistoryTextArea();
                             break;
-                        case "pendingEditEvent":
-                            if(message != null){
-                                updatePendingTextArea();
-                            }
-                            headerDiv.innerHTML = getStorageInfo();
-                            break;
                         case "duplicateEditEvent":
                             alert("Duplicate edit event");
                             console.log("duplicate event attempt");
                             break;
                         case "deleteItemFromTempStoreEvent":
                             updatePendingTextArea();
+                            headerDiv.innerHTML = getStorageInfo();
                             break;
                     }
                 },false);

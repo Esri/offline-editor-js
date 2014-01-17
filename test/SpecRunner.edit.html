@@ -30,6 +30,8 @@
         var simplePtGraphic, simplePolygonGraphic, simpleLineGraphic;
         var complexPtGraphic, complexPolygonGraphic, complexLineGraphic;
         var updateFlag = false;
+        var SLS;
+        var dojoColor;
 
         require([
             "esri/map",
@@ -37,8 +39,10 @@
             "esri/geometry/Polygon",
             "esri/geometry/Polyline",
             "esri/layers/FeatureLayer",
+            "esri/symbols/SimpleLineSymbol",
+            "dojo/_base/Color",
             "dojo/domReady!"],
-                function(Map,Point,Polygon,Polyline,FeatureLayer) {
+                function(Map,Point,Polygon,Polyline,FeatureLayer,SimpleLineSymbol,Color) {
 
             map = new Map("map", {
                 basemap: "topo",
@@ -59,7 +63,8 @@
             })
 
             map.addLayer(landusePointLayer);
-
+            SLS = SimpleLineSymbol;
+            dojoColor = Color;
         });
 
         function initGraphics(){
@@ -91,14 +96,21 @@
                     "symbol":{"color":[0,0,0,255],"width":1,"type":"esriSLS","style":"esriSLSSolid"}};
                 complexLineGraphic = new esri.Graphic(complexLineGeom);
 
-                var complexPolygonGeom = {"geometry":{"rings":[[[-115.312,37.96875],[-111.4453125,37.96875],
+//                var complexPolygon = new esri.geometry.Polygon(wkid);
+//                complexPolygon.addRings([[[-115.312,37.96875],[-111.4453125,37.96875],
+//                    [-99.84375,36.2109375],[-99.84375,23.90625],[-116.015625,24.609375],
+//                    [-115.3125,37.96875]]]);
+                var complexPolygonSymbol = new SLS(SLS.STYLE_DASH,new dojoColor([255,0,0]), 3);
+//                var complexPolygonAttr = {"Xcoord":evt.mapPoint.x,"Ycoord":evt.mapPoint.y,"Plant":"Mesa Mint"};
+                var complexPolygonGeom  =
+                {"rings":[[[-115.312,37.96875],[-111.4453125,37.96875],
                     [-99.84375,36.2109375],[-99.84375,23.90625],[-116.015625,24.609375],
-                    [-115.3125,37.96875]]],"spatialReference":{"wkid":wkid}},
-                    "symbol":{"color":[0,0,0,64],"outline":{"color":[0,0,0,255],
-                        "width":1,"type":"esriSLS","style":"esriSLSSolid"},
-                        "type":"esriSFS","style":"esriSFSSolid"}};
+                    [-115.3125,37.96875]]],"spatialReference":{"wkid":wkid}};
+                var complexPoly = new esri.geometry.Polygon(complexPolygonGeom)
 
-                complexPolygonGraphic = new esri.Graphic(complexPolygonGeom);
+                complexPolygonGraphic = new esri.Graphic(complexPoly);
+                complexPolygonGraphic.symbol = complexPolygonSymbol;
+                complexPolygonGraphic.attributes = {"ruleid":2,"name":null,"__hydrate_id":"0"};
 
 
                 var complexPtGeom = {"geometry":{"x":-104.4140625,"y":69.2578125,
