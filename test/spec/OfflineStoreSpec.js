@@ -1,3 +1,5 @@
+"use strict"
+
 describe("Initialize Offline Library", function() {
     it("validate map", function(){
         expect(map.id).toEqual("map");
@@ -206,7 +208,7 @@ describe("Validate local storage functionality - simple Point Graphic",function(
 })
 
 describe("Validate local storage functionality - delete single Point",function(){
-    var jsonArray;
+    var jsonFromArr;
 
     it("re-serialize a graphics array", function(){
         jsonFromArr = offlineStore._reserializeGraphicsArray(serializedGraphicsArr);
