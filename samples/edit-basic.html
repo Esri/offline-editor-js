@@ -242,27 +242,11 @@ Sample demonstrates basic offline editing functionality for points, lines and po
             var editToolbar = new Edit(map);
             editToolbar.on("deactivate", function(evt) {
                 if(updateFlag == true){
-                    offlineStore.applyEdits(vertices.graphic,vertices.layer,offlineStore.enum().UPDATE,function(count,result,id){
-                        if(result.success == true){
-                            updatePendingTextArea()
-                        }
-                        if(result.duplicate == true){
-                            alert("Attempt to enter a duplicate edit.")
-                        }
-                        headerDiv.innerHTML = getStorageInfo();
-                    });
+                    applyEdits(vertices.graphic,vertices.layer,offlineStore.enum().UPDATE);
                     updateFlag = false;
                 }
                 else{
-                    offlineStore.applyEdits(evt.graphic,currentLayer,offlineStore.enum().UPDATE,function(count,result,id){
-                        if(result.success == true){
-                            updatePendingTextArea()
-                        }
-                        if(result.duplicate == true){
-                            alert("Attempt to enter a duplicate edit.")
-                        }
-                        headerDiv.innerHTML = getStorageInfo();
-                    });
+                    applyEdits(evt.graphic,currentLayer,offlineStore.enum().UPDATE);
                 }
             });
 
@@ -292,15 +276,7 @@ Sample demonstrates basic offline editing functionality for points, lines and po
                     event.stop(evt);
                     if (evt.ctrlKey === true || evt.metaKey === true) { //delete feature if ctrl key is depressed
                         try{
-                            offlineStore.applyEdits(evt.graphic,layer,offlineStore.enum().DELETE,function(count,result,id){
-                                if(result.success == true){
-                                    updatePendingTextArea()
-                                }
-                                if(result.duplicate == true){
-                                    alert("Attempt to enter a duplicate edit.")
-                                }
-                                headerDiv.innerHTML = getStorageInfo();
-                            });
+                            applyEdits(evt.graphic,layer,offlineStore.enum().DELETE);
                         }
                         catch(err){
                             console.log("error " + err.toString());
@@ -349,16 +325,23 @@ Sample demonstrates basic offline editing functionality for points, lines and po
                 var newAttributes = lang.mixin({}, selectedTemplate.template.prototype.attributes);
                 var newGraphic = new Graphic(evt.geometry, null, newAttributes);
 
-                offlineStore.applyEdits(newGraphic,selectedTemplate.featureLayer,offlineStore.enum().ADD,function(count,result,id){
-                    if(result.success == true){
-                        updatePendingTextArea()
+                applyEdits(newGraphic,selectedTemplate.featureLayer,offlineStore.enum().ADD);
+            });
+
+            function applyEdits(graphic,layer,operation)
+            {
+                offlineStore.applyEdits(graphic,layer,operation, function(count,result,id)
+                {
+                    if( result.success ) {
+                        updatePendingTextArea();
                     }
-                    if(result.duplicate == true){
-                        alert("Attempt to enter a duplicate edit.")
-                    }
+                    if( result.duplicate ) {
+                        alert("Attempt to enter a duplicate edit.");
+                    } 
                     headerDiv.innerHTML = "Storage Used: " + offlineStore.getlocalStorageUsed() + " MBs";
                 });
-            });
+            }
+
             function getStorageInfo(){
                 return "Storage Used: " + offlineStore.getlocalStorageUsed() + " MBs";
             }
