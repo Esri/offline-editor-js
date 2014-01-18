@@ -404,8 +404,8 @@ Sample demonstrates basic offline editing functionality for points, lines and po
         var logText = "";
         var index = offlineStore.getLocalStoreIndex();
         if(index != null){
-            for(var property in index){
-                var item = index[property];
+            for(var i=0; i<index.length; i++){
+                var item = index[i];
                 logText += item + "\n\r";
             }
         }
