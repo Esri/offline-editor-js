@@ -119,7 +119,7 @@ Sample demonstrates basic offline editing functionality for points, lines and po
 <script src="../lib/edit/OfflineStore.js"></script>
 <script>
     "use strict"
-    
+
     var map;
     var offlineStore;
     var vertices;
@@ -366,11 +366,12 @@ Sample demonstrates basic offline editing functionality for points, lines and po
     });
 
     function updatePendingTextArea(){
-        var logText = "";
+        var logText = [];
         var graphicsArr = offlineStore.getStore();
         if(graphicsArr != null){
             var length = graphicsArr.length;
             for(var i = 0; i < length; i++){
+                var objectid = null;
                 var symbolname = null;
                 var graphic = graphicsArr[i].graphic;
                 var layerId = graphicsArr[i].layer;
@@ -386,14 +387,11 @@ Sample demonstrates basic offline editing functionality for points, lines and po
                     if(graphic.attributes.hasOwnProperty("objectid")){
                         objectid = graphic.attributes.objectid;
                     }
-                    else{
-                        objectid = null;
-                    }
                 }
-                logText += enumValue + " " + geometryType + " " + objectid + ", symbolname: " + symbolname +  ", layer: " + layerId + "\n\r";
+                logText.push(enumValue + " " + geometryType + " " + objectid + ", symbolname: " + symbolname +  ", layer: " + layerId);
             }
         }
-        document.getElementById("pendingTextArea").innerHTML = logText;
+        document.getElementById("pendingTextArea").innerHTML = logText.join("\n");
     }
 
     /**
@@ -401,15 +399,8 @@ Sample demonstrates basic offline editing functionality for points, lines and po
      * @param evt
      */
     function updateHistoryTextArea(){
-        var logText = "";
         var index = offlineStore.getLocalStoreIndex();
-        if(index != null){
-            for(var i=0; i<index.length; i++){
-                var item = index[i];
-                logText += item + "\n\r";
-            }
-        }
-        document.getElementById("historyTextArea").innerHTML = logText;
+        document.getElementById("historyTextArea").innerHTML = index? index.join("\n") : "nothing";
     }
 
     function getDateHMS(){
