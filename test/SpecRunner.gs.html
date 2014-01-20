@@ -2,6 +2,7 @@
   "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
   <title>Jasmine Spec Runner - Graphics Store</title>
 
 	<link rel="shortcut icon" type="image/png" href="../vendor/jasmine-1.3.1/jasmine_favicon.png">
@@ -30,14 +31,14 @@
 	var g_graphicsStore;
 
 	require(["esri/map", 
-	"esri/layers/GraphicsLayer", "esri/graphic", "esri/symbols/SimpleFillSymbol", "esri/symbols/SimpleMarkerSymbol", "esri/SpatialReference",
-	"esri/geometry",
+	"esri/layers/GraphicsLayer", "esri/graphic", "esri/symbols/SimpleFillSymbol", "esri/symbols/SimpleMarkerSymbol", "esri/symbols/SimpleLineSymbol",
+	"esri/SpatialReference","esri/geometry",
 	"edit/graphicsStore",
 	"dojo/dom", "dojo/on", "dojo/query", 
 	"dojo/dom-construct", "dojo/domReady!"], 
 	function(Map, 
-		GraphicsLayer, Graphic, SimpleFillSymbol, SimpleMarkerSymbol, SpatialReference,
-		geometry, 
+		GraphicsLayer, Graphic, SimpleFillSymbol, SimpleMarkerSymbol, SimpleLineSymbol,
+		SpatialReference, geometry, 
 		graphicsStore,
 		dom, on, query, 
 		domConstruct) 
@@ -68,9 +69,28 @@
 			});
 
 			// some symbols
-			g_test.pointSymbol = new SimpleMarkerSymbol();
+			g_test.pointSymbol = new SimpleMarkerSymbol({"color": [255,255,255,64],
+				"size": 12,	"angle": -30,
+				"xoffset": 0, "yoffset": 0,
+				"type": "esriSMS", "style": "esriSMSCircle",
+				"outline": { "color": [0,0,0,255], "width": 1, "type": "esriSLS", "style": "esriSLSSolid"}
+			});
 
-			g_test.pointFeature = new Graphic( g_test.point, g_test.pointSymbol, {"name": "the name of the feature", "objectid":2} );
+			g_test.lineSymbol = new SimpleLineSymbol({
+				"type": "esriSLS", "style": "esriSLSDot", 
+				"color": [115,76,0,255],"width": 1 
+			});
+
+			g_test.polygonSymbol = new SimpleFillSymbol({
+				"type": "esriSFS",
+				"style": "esriSFSSolid",
+				"color": [115,76,0,255],
+			    "outline": { "type": "esriSLS", "style": "esriSLSSolid", "color": [110,110,110,255], "width": 1 }
+			});
+
+			g_test.pointFeature = new Graphic( g_test.point, g_test.pointSymbol, {"name": "the name of the feature", "objectid":2});
+			g_test.lineFeature = new Graphic( g_test.line, g_test.lineSymbol, {"nombre": "España","objectid":5});
+			g_test.polygonFeature = new Graphic( g_test.polygon, g_test.polygonSymbol, {"nombre": "España","timestamp": new Date().getTime(), "objectid":5});
 
 			console.log(g_test);
 		}
