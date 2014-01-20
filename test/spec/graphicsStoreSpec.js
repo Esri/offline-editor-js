@@ -179,3 +179,28 @@ describe("Serialize/Deserialize Graphics", function()
 		});
 	});
 });
+
+describe("Edit queue management", function()
+{
+	it("Reset edits queue", function()
+	{
+		g_graphicsStore.resetEditsQueue();
+		expect(g_graphicsStore.pendingEditsCount()).toBe(0);
+	});
+
+	it("Add edits to edits queue", function()
+	{
+		g_graphicsStore.appendEdit(g_graphicsStore.ADD, 6, g_test.pointFeature);
+		expect(g_graphicsStore.pendingEditsCount()).toBe(1);
+	});
+
+	it("Pops edit from edits queue", function()
+	{
+		g_graphicsStore.pop
+	});
+
+	it("Undo/Redo management", function()
+	{
+
+	});
+});
