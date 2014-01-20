@@ -71,13 +71,13 @@ describe("Serialize/Deserialize Graphics", function()
 
 		it("serialize", function()
 		{
-			str = g_graphicsStore.serialize(g_test.pointFeature);
-			expect(typeof(str)).toBe("string");
+			str = g_graphicsStore._serialize(g_test.pointFeature);
+			expect(typeof(str)).toBe("object");
 		});
 
 		it("deserialize", function()
 		{
-			graphic = g_graphicsStore.deserialize(str);
+			graphic = g_graphicsStore._deserialize(str);
 			expect(typeof(graphic)).toBe("object");
 			expect(graphic.declaredClass).toEqual("esri.Graphic");
 		});
@@ -109,13 +109,13 @@ describe("Serialize/Deserialize Graphics", function()
 
 		it("serialize", function()
 		{
-			str = g_graphicsStore.serialize(g_test.lineFeature);
-			expect(typeof(str)).toBe("string");
+			str = g_graphicsStore._serialize(g_test.lineFeature);
+			expect(typeof(str)).toBe("object");
 		});
 
 		it("deserialize", function()
 		{
-			graphic = g_graphicsStore.deserialize(str);
+			graphic = g_graphicsStore._deserialize(str);
 			expect(typeof(graphic)).toBe("object");
 			expect(graphic.declaredClass).toEqual("esri.Graphic");
 		});
@@ -147,13 +147,13 @@ describe("Serialize/Deserialize Graphics", function()
 
 		it("serialize", function()
 		{
-			str = g_graphicsStore.serialize(g_test.polygonFeature);
-			expect(typeof(str)).toBe("string");
+			str = g_graphicsStore._serialize(g_test.polygonFeature);
+			expect(typeof(str)).toBe("object");
 		});
 
 		it("deserialize", function()
 		{
-			graphic = g_graphicsStore.deserialize(str);
+			graphic = g_graphicsStore._deserialize(str);
 			expect(typeof(graphic)).toBe("object");
 			expect(graphic.declaredClass).toEqual("esri.Graphic");
 		});
@@ -192,6 +192,10 @@ describe("Edit queue management", function()
 	{
 		g_graphicsStore.appendEdit(g_graphicsStore.ADD, 6, g_test.pointFeature);
 		expect(g_graphicsStore.pendingEditsCount()).toBe(1);
+		g_graphicsStore.appendEdit(g_graphicsStore.UPDATE, 6, g_test.polygonFeature);
+		expect(g_graphicsStore.pendingEditsCount()).toBe(2);
+		g_graphicsStore.appendEdit(g_graphicsStore.DELETE, 6, g_test.lineFeature);
+		expect(g_graphicsStore.pendingEditsCount()).toBe(3);
 	});
 
 	it("Pops edit from edits queue", function()
