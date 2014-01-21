@@ -10,10 +10,19 @@
     <script type="text/javascript" src="../vendor/jasmine-1.3.1/jasmine-html.js"></script>
     <link rel="stylesheet" href="http://js.arcgis.com/3.6/js/dojo/dijit/themes/claro/claro.css">
     <link rel="stylesheet" href="http://js.arcgis.com/3.6/js/esri/css/esri.css">
+
+  <script>
+    var dojoConfig = {
+        paths: { 
+            edit: location.pathname.replace(/\/[^/]+$/, "") + "../../lib/edit",
+            vendor: location.pathname.replace(/\/[^/]+$/, "") + "../../vendor" 
+        }
+    }
+  </script>
+
     <script src="http://js.arcgis.com/3.6/"></script>
 
   <!-- include source files here... -->
-    <script type="text/javascript" src="../lib/edit/OfflineStore.js"></script>
     <script type="text/javascript" src="../lib/tiles/phoneGapConnector.js"></script>
 
     <!-- include spec files here... -->
@@ -41,8 +50,9 @@
             "esri/layers/FeatureLayer",
             "esri/symbols/SimpleLineSymbol",
             "dojo/_base/Color",
+            "edit/OfflineStore",
             "dojo/domReady!"],
-                function(Map,Point,Polygon,Polyline,FeatureLayer,SimpleLineSymbol,Color) {
+                function(Map,Point,Polygon,Polyline,FeatureLayer,SimpleLineSymbol,Color,OfflineStore) {
 
             map = new Map("map", {
                 basemap: "topo",
@@ -65,7 +75,6 @@
             map.addLayer(landusePointLayer);
             SLS = SimpleLineSymbol;
             dojoColor = Color;
-        });
 
         function initGraphics(){
 
@@ -168,6 +177,7 @@
                 }
             }
         }
+        });
 
   </script>
 </head>
