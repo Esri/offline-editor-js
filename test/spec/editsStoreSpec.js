@@ -73,13 +73,13 @@ describe("Internal Methods", function()
 
 			it("serialize", function()
 			{
-				str = g_graphicsStore._serialize(g_test.pointFeature);
+				str = g_editsStore._serialize(g_test.pointFeature);
 				expect(typeof(str)).toBe("string");
 			});
 
 			it("deserialize", function()
 			{
-				graphic = g_graphicsStore._deserialize(str);
+				graphic = g_editsStore._deserialize(str);
 				expect(typeof(graphic)).toBe("object");
 				expect(graphic.declaredClass).toEqual("esri.Graphic");
 			});
@@ -111,13 +111,13 @@ describe("Internal Methods", function()
 
 			it("serialize", function()
 			{
-				str = g_graphicsStore._serialize(g_test.lineFeature);
+				str = g_editsStore._serialize(g_test.lineFeature);
 				expect(typeof(str)).toBe("string");
 			});
 
 			it("deserialize", function()
 			{
-				graphic = g_graphicsStore._deserialize(str);
+				graphic = g_editsStore._deserialize(str);
 				expect(typeof(graphic)).toBe("object");
 				expect(graphic.declaredClass).toEqual("esri.Graphic");
 			});
@@ -149,13 +149,13 @@ describe("Internal Methods", function()
 
 			it("serialize", function()
 			{
-				str = g_graphicsStore._serialize(g_test.polygonFeature);
+				str = g_editsStore._serialize(g_test.polygonFeature);
 				expect(typeof(str)).toBe("string");
 			});
 
 			it("deserialize", function()
 			{
-				graphic = g_graphicsStore._deserialize(str);
+				graphic = g_editsStore._deserialize(str);
 				expect(typeof(graphic)).toBe("object");
 				expect(graphic.declaredClass).toEqual("esri.Graphic");
 			});
@@ -196,35 +196,35 @@ describe("Public Interface", function()
 		{
 			it("reset edits queue", function()
 			{
-				g_graphicsStore.resetEditsQueue();
-				expect(g_graphicsStore.pendingEditsCount()).toBe(0);
+				g_editsStore.resetEditsQueue();
+				expect(g_editsStore.pendingEditsCount()).toBe(0);
 			});
 
 			it("add edits to edits queue", function()
 			{
 				var success;
-				success = g_graphicsStore.pushEdit(g_graphicsStore.ADD, 6, g_test.pointFeature);
+				success = g_editsStore.pushEdit(g_editsStore.ADD, 6, g_test.pointFeature);
 				expect(success).toBeTruthy();
-				expect(g_graphicsStore.pendingEditsCount()).toBe(1);
-				success = g_graphicsStore.pushEdit(g_graphicsStore.UPDATE, 3, g_test.polygonFeature);
+				expect(g_editsStore.pendingEditsCount()).toBe(1);
+				success = g_editsStore.pushEdit(g_editsStore.UPDATE, 3, g_test.polygonFeature);
 				expect(success).toBeTruthy();
-				expect(g_graphicsStore.pendingEditsCount()).toBe(2);
-				success = g_graphicsStore.pushEdit(g_graphicsStore.DELETE, 2, g_test.lineFeature);
+				expect(g_editsStore.pendingEditsCount()).toBe(2);
+				success = g_editsStore.pushEdit(g_editsStore.DELETE, 2, g_test.lineFeature);
 				expect(success).toBeTruthy();
-				expect(g_graphicsStore.pendingEditsCount()).toBe(3);
+				expect(g_editsStore.pendingEditsCount()).toBe(3);
 			});
 
 			it("pending edits", function()
 			{
-				expect(g_graphicsStore.hasPendingEdits()).toBeTruthy();
+				expect(g_editsStore.hasPendingEdits()).toBeTruthy();
 			});
 
 			it("pop edit from edits queue - 1", function()
 			{
-				var firstEdit = g_graphicsStore.popFirstEdit();
-				expect(g_graphicsStore.pendingEditsCount()).toBe(2);
+				var firstEdit = g_editsStore.popFirstEdit();
+				expect(g_editsStore.pendingEditsCount()).toBe(2);
 				expect(typeof(firstEdit)).toBe("object");
-				expect(firstEdit.operation).toBe(g_graphicsStore.ADD);
+				expect(firstEdit.operation).toBe(g_editsStore.ADD);
 				expect(firstEdit.layer).toBe(6);
 				expect(firstEdit.graphic.attributes).toEqual(g_test.pointFeature.attributes);
 				expect(firstEdit.graphic.geometry).toEqual(g_test.pointFeature.geometry);
@@ -233,10 +233,10 @@ describe("Public Interface", function()
 
 			it("pop edit from edits queue - 2", function()
 			{
-				var secondEdit = g_graphicsStore.popFirstEdit();
-				expect(g_graphicsStore.pendingEditsCount()).toBe(1);
+				var secondEdit = g_editsStore.popFirstEdit();
+				expect(g_editsStore.pendingEditsCount()).toBe(1);
 				expect(typeof(secondEdit)).toBe("object");
-				expect(secondEdit.operation).toBe(g_graphicsStore.UPDATE);
+				expect(secondEdit.operation).toBe(g_editsStore.UPDATE);
 				expect(secondEdit.layer).toBe(3);
 				expect(secondEdit.graphic.attributes).toEqual(g_test.polygonFeature.attributes);
 				expect(secondEdit.graphic.geometry).toEqual(g_test.polygonFeature.geometry);
@@ -245,10 +245,10 @@ describe("Public Interface", function()
 
 			it("pop edit from edits queue - 3", function()
 			{
-				var thirdEdit = g_graphicsStore.popFirstEdit();
-				expect(g_graphicsStore.pendingEditsCount()).toBe(0);
+				var thirdEdit = g_editsStore.popFirstEdit();
+				expect(g_editsStore.pendingEditsCount()).toBe(0);
 				expect(typeof(thirdEdit)).toBe("object");
-				expect(thirdEdit.operation).toBe(g_graphicsStore.DELETE);
+				expect(thirdEdit.operation).toBe(g_editsStore.DELETE);
 				expect(thirdEdit.layer).toBe(2);
 				expect(thirdEdit.graphic.attributes).toEqual(g_test.lineFeature.attributes);
 				expect(thirdEdit.graphic.geometry).toEqual(g_test.lineFeature.geometry);
@@ -257,7 +257,7 @@ describe("Public Interface", function()
 
 			it("pending edits", function()
 			{
-				expect(g_graphicsStore.hasPendingEdits()).toBeFalsy();
+				expect(g_editsStore.hasPendingEdits()).toBeFalsy();
 			});
 		});
 
@@ -265,22 +265,22 @@ describe("Public Interface", function()
 		{
 			it("reset edits queue", function()
 			{
-				g_graphicsStore.resetEditsQueue();
-				expect(g_graphicsStore.pendingEditsCount()).toBe(0);
+				g_editsStore.resetEditsQueue();
+				expect(g_editsStore.pendingEditsCount()).toBe(0);
 			});
 
 			it("try to add duplicate edits to edits queue", function()
 			{
 				var success;
-				success = g_graphicsStore.pushEdit(g_graphicsStore.ADD, 6, g_test.pointFeature);
-				expect(g_graphicsStore.pendingEditsCount()).toBe(1);
+				success = g_editsStore.pushEdit(g_editsStore.ADD, 6, g_test.pointFeature);
+				expect(g_editsStore.pendingEditsCount()).toBe(1);
 				expect(success).toBeTruthy();
-				success = g_graphicsStore.pushEdit(g_graphicsStore.UPDATE, 3, g_test.polygonFeature);
+				success = g_editsStore.pushEdit(g_editsStore.UPDATE, 3, g_test.polygonFeature);
 				expect(success).toBeTruthy();
-				expect(g_graphicsStore.pendingEditsCount()).toBe(2);
+				expect(g_editsStore.pendingEditsCount()).toBe(2);
 
-				success = g_graphicsStore.pushEdit(g_graphicsStore.ADD, 6, g_test.pointFeature);
-				expect(g_graphicsStore.pendingEditsCount()).toBe(2);
+				success = g_editsStore.pushEdit(g_editsStore.ADD, 6, g_test.pointFeature);
+				expect(g_editsStore.pendingEditsCount()).toBe(2);
 				expect(success).toBeFalsy();
 			});
 		});
@@ -289,134 +289,134 @@ describe("Public Interface", function()
 		{
 			it("reset edits queue", function()
 			{
-				g_graphicsStore.resetEditsQueue();
-				expect(g_graphicsStore.pendingEditsCount()).toBe(0);
+				g_editsStore.resetEditsQueue();
+				expect(g_editsStore.pendingEditsCount()).toBe(0);
 			});
 
 			it("can undo? - no", function()
 			{
-				expect(g_graphicsStore.canUndoEdit()).toBeFalsy();
+				expect(g_editsStore.canUndoEdit()).toBeFalsy();
 			});
 
 			it("can redo? - no", function()
 			{
-				expect(g_graphicsStore.canRedoEdit()).toBeFalsy();
+				expect(g_editsStore.canRedoEdit()).toBeFalsy();
 			});
 
 			it("add edits to edits queue", function()
 			{
 				var success;
-				success = g_graphicsStore.pushEdit(g_graphicsStore.ADD, 6, g_test.pointFeature);
+				success = g_editsStore.pushEdit(g_editsStore.ADD, 6, g_test.pointFeature);
 				expect(success).toBeTruthy();
-				expect(g_graphicsStore.pendingEditsCount()).toBe(1);
-				success = g_graphicsStore.pushEdit(g_graphicsStore.UPDATE, 3, g_test.polygonFeature);
+				expect(g_editsStore.pendingEditsCount()).toBe(1);
+				success = g_editsStore.pushEdit(g_editsStore.UPDATE, 3, g_test.polygonFeature);
 				expect(success).toBeTruthy();
-				expect(g_graphicsStore.pendingEditsCount()).toBe(2);
-				success = g_graphicsStore.pushEdit(g_graphicsStore.DELETE, 2, g_test.lineFeature);
+				expect(g_editsStore.pendingEditsCount()).toBe(2);
+				success = g_editsStore.pushEdit(g_editsStore.DELETE, 2, g_test.lineFeature);
 				expect(success).toBeTruthy();
-				expect(g_graphicsStore.pendingEditsCount()).toBe(3);
+				expect(g_editsStore.pendingEditsCount()).toBe(3);
 			});
 
 			it("pending edits", function()
 			{
-				expect(g_graphicsStore.hasPendingEdits()).toBeTruthy();
+				expect(g_editsStore.hasPendingEdits()).toBeTruthy();
 			});
 
 			it("can undo? - yes", function()
 			{
-				expect(g_graphicsStore.canUndoEdit()).toBeTruthy();
+				expect(g_editsStore.canUndoEdit()).toBeTruthy();
 			});
 
 			it("can redo? - no", function()
 			{
-				expect(g_graphicsStore.canRedoEdit()).toBeFalsy();
+				expect(g_editsStore.canRedoEdit()).toBeFalsy();
 			});
 
 			it("undo", function()
 			{
-				expect(g_graphicsStore.pendingEditsCount()).toBe(3);
-				g_graphicsStore.undoEdit();
-				expect(g_graphicsStore.pendingEditsCount()).toBe(2);
+				expect(g_editsStore.pendingEditsCount()).toBe(3);
+				g_editsStore.undoEdit();
+				expect(g_editsStore.pendingEditsCount()).toBe(2);
 			});
 
 			it("can undo? - yes", function()
 			{
-				expect(g_graphicsStore.canUndoEdit()).toBeTruthy();
+				expect(g_editsStore.canUndoEdit()).toBeTruthy();
 			});
 
 			it("can redo? - yes", function()
 			{
-				expect(g_graphicsStore.canRedoEdit()).toBeTruthy();
+				expect(g_editsStore.canRedoEdit()).toBeTruthy();
 			});
 
 			it("redo", function()
 			{
-				expect(g_graphicsStore.pendingEditsCount()).toBe(2);
-				g_graphicsStore.redoEdit();
-				expect(g_graphicsStore.pendingEditsCount()).toBe(3);
+				expect(g_editsStore.pendingEditsCount()).toBe(2);
+				g_editsStore.redoEdit();
+				expect(g_editsStore.pendingEditsCount()).toBe(3);
 			});
 
 			it("can undo? - yes", function()
 			{
-				expect(g_graphicsStore.canUndoEdit()).toBeTruthy();
+				expect(g_editsStore.canUndoEdit()).toBeTruthy();
 			});
 
 			it("can redo? - no", function()
 			{
-				expect(g_graphicsStore.canRedoEdit()).toBeFalsy();
+				expect(g_editsStore.canRedoEdit()).toBeFalsy();
 			});
 
 			it("undo x 3", function()
 			{
-				expect(g_graphicsStore.pendingEditsCount()).toBe(3);
-				g_graphicsStore.undoEdit();
-				expect(g_graphicsStore.pendingEditsCount()).toBe(2);
-				g_graphicsStore.undoEdit();
-				expect(g_graphicsStore.pendingEditsCount()).toBe(1);
-				g_graphicsStore.undoEdit();
-				expect(g_graphicsStore.pendingEditsCount()).toBe(0);
+				expect(g_editsStore.pendingEditsCount()).toBe(3);
+				g_editsStore.undoEdit();
+				expect(g_editsStore.pendingEditsCount()).toBe(2);
+				g_editsStore.undoEdit();
+				expect(g_editsStore.pendingEditsCount()).toBe(1);
+				g_editsStore.undoEdit();
+				expect(g_editsStore.pendingEditsCount()).toBe(0);
 			});
 
 			it("can undo? - no", function()
 			{
-				expect(g_graphicsStore.canUndoEdit()).toBeFalsy();
+				expect(g_editsStore.canUndoEdit()).toBeFalsy();
 			});
 
 			it("can redo? - yes", function()
 			{
-				expect(g_graphicsStore.canRedoEdit()).toBeTruthy();
+				expect(g_editsStore.canRedoEdit()).toBeTruthy();
 			});
 
 			it("redo x 2", function()
 			{
-				expect(g_graphicsStore.pendingEditsCount()).toBe(0);
-				g_graphicsStore.redoEdit();
-				expect(g_graphicsStore.pendingEditsCount()).toBe(1);
-				g_graphicsStore.redoEdit();
-				expect(g_graphicsStore.pendingEditsCount()).toBe(2);
+				expect(g_editsStore.pendingEditsCount()).toBe(0);
+				g_editsStore.redoEdit();
+				expect(g_editsStore.pendingEditsCount()).toBe(1);
+				g_editsStore.redoEdit();
+				expect(g_editsStore.pendingEditsCount()).toBe(2);
 			});
 
 			it("can undo? - yes", function()
 			{
-				expect(g_graphicsStore.canUndoEdit()).toBeTruthy();
+				expect(g_editsStore.canUndoEdit()).toBeTruthy();
 			});
 
 			it("can redo? - yes", function()
 			{
-				expect(g_graphicsStore.canRedoEdit()).toBeTruthy();
+				expect(g_editsStore.canRedoEdit()).toBeTruthy();
 			});
 
 			it("add new edit", function()
 			{
 				var success;
-				success = g_graphicsStore.pushEdit(g_graphicsStore.ADD, 10, g_test.pointFeature);
+				success = g_editsStore.pushEdit(g_editsStore.ADD, 10, g_test.pointFeature);
 				expect(success).toBeTruthy();
-				expect(g_graphicsStore.pendingEditsCount()).toBe(3);
+				expect(g_editsStore.pendingEditsCount()).toBe(3);
 			});
 
 			it("can redo? - no", function()
 			{
-				expect(g_graphicsStore.canRedoEdit()).toBeFalsy();
+				expect(g_editsStore.canRedoEdit()).toBeFalsy();
 			});
 		});
 	});
@@ -426,6 +426,6 @@ describe("Reset store", function()
 {
 	it("reset the store", function()
 	{
-		g_graphicsStore.resetEditsQueue();			
+		g_editsStore.resetEditsQueue();			
 	})
 });
