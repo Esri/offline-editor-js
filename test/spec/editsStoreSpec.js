@@ -190,6 +190,14 @@ describe("Internal Methods", function()
 
 describe("Public Interface", function()
 {
+	describe("Support detection", function()
+	{
+		it("detect local storage support", function()
+		{
+			expect(g_editsStore.isSupported()).toBeTruthy();
+		})
+	});
+	
 	describe("Edit queue management", function()
 	{
 		describe("Normal edits", function()
@@ -420,6 +428,23 @@ describe("Public Interface", function()
 			});
 		});
 	});
+
+	describe("Local Storage size", function()
+	{
+		var usedBytes, totalBytes;
+
+		it("report edit store size", function()
+		{
+			usedBytes = g_editsStore.getEditsStoreSizeBytes();
+			expect(usedBytes).toBe(678);
+		});
+
+		it("report total local storage size", function()
+		{
+			totalBytes = g_editsStore.getLocalStorageSizeBytes();
+			expect(usedBytes).not.toBeGreaterThan(totalBytes);
+		})
+	})
 });
 
 describe("Reset store", function()
