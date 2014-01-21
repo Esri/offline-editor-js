@@ -115,8 +115,17 @@ Sample demonstrates basic offline editing functionality for points, lines and po
     </div>
 </div>
 
+<script>
+    var locationPath = location.pathname.replace(/\/[^/]+$/, "");
+    var dojoConfig = {
+        paths: { 
+            tiles: locationPath  + "/../lib/tiles",
+            edit: locationPath  + "/../lib/edit",
+            vendor: locationPath + "/../vendor"
+        }
+    }
+</script>
 <script src="http://js.arcgis.com/3.7/"></script>
-<script src="../lib/edit/OfflineStore.js"></script>
 <script>
     "use strict"
 
@@ -147,6 +156,7 @@ Sample demonstrates basic offline editing functionality for points, lines and po
         "dojo/_base/lang",
         "dojo/parser",
         "dijit/registry",
+        "edit/OfflineStore",
         "dijit/layout/BorderContainer", "dijit/layout/ContentPane",
         "dijit/form/Button", "dojo/domReady!"
     ], function(
@@ -154,7 +164,8 @@ Sample demonstrates basic offline editing functionality for points, lines and po
             FeatureLayer,
             SimpleMarkerSymbol, SimpleLineSymbol, SimpleFillSymbol,
             TemplatePicker, AttributeInspector,
-            arrayUtils, event, lang, parser, registry
+            arrayUtils, event, lang, parser, registry,
+            OfflineStore
             ) {
         parser.parse();
 
@@ -195,7 +206,14 @@ Sample demonstrates basic offline editing functionality for points, lines and po
             });
             console.log("layers", layers);
     //////////
+        try{
             offlineStore = new OfflineStore(map);
+        }
+        catch(err)
+        {
+            console.log(err);
+            alert(err);
+        }
             console.log(getStorageInfo());
             headerDiv.innerHTML = getStorageInfo();
 
