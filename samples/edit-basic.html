@@ -171,7 +171,7 @@ Sample demonstrates basic offline editing functionality for points, lines and po
 
         var selectionSymbol;
         // refer to "Using the Proxy Page" for more information: https://developers.arcgis.com/en/javascript/jshelp/ags_proxy.html
-        esriConfig.defaults.io.proxyUrl = "/proxy";
+        esriConfig.defaults.io.proxyUrl = "../lib/proxy.php";
         // This service is for development and testing purposes only. We recommend that you create your own geometry service for use within your applications.
         esriConfig.defaults.geometryService = new esri.tasks.GeometryService("http://tasks.arcgisonline.com/ArcGIS/rest/services/Geometry/GeometryServer");
 

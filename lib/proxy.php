@@ -36,6 +36,7 @@
    *              empty
    */
   $serverUrls = array(
+    array( 'url' => 'http://sampleserver6.arcgisonline.com/arcgis/rest/services', 'matchAll' => true, 'token' => ''),
     array( 'url' => 'http://tiles1.arcgis.com/tiles/', 'matchAll' => true, 'token' => '' ),
     array( 'url' => 'http://tiles2.arcgis.com/tiles/', 'matchAll' => true, 'token' => '' ),
     array( 'url' => 'http://tiles3.arcgis.com/tiles/', 'matchAll' => true, 'token' => '' ),
