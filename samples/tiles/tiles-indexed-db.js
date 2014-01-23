@@ -150,7 +150,7 @@ require(["esri/map",
 
 					showAlert("alert-danger","Failed initializing storage, probably your browser doesn't support <a href='http://caniuse.com/#feat=indexeddb'>IndexedDB</a> nor <a href='http://caniuse.com/#feat=sql-storage'>WebSQL</a>");
 				}
-			});
+            });
 
 			Offline.on('up', goOnline );
 			Offline.on('down', goOffline );
