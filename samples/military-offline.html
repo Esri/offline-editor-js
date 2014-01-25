@@ -79,8 +79,8 @@
 		map.on('layers-add-result', initEditor);
 
 		var fsUrl = "http://services2.arcgis.com/CQWCKwrSm5dkM28A/arcgis/rest/services/Military/FeatureServer/";
-		var layersIds = [0,1,2,3,4,5,6];
-		// var layersIds = [0];
+		// var layersIds = [0,1,2,3,4,5,6];
+		var layersIds = [1,2,3];
 		var layers = [];
 
 		layersIds.forEach(function(layerId)
@@ -130,7 +130,6 @@
 					}
 				};
 
-				console.log(settings);
 				var editor = new Editor({ settings: settings }, 'editorDiv');
 				editor.startup();
 
