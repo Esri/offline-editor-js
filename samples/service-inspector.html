@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Feature Service Inspector</title>
+    <link rel="stylesheet" href="http://js.arcgis.com/3.8/js/esri/css/esri.css">
+	<link rel="stylesheet" href="../vendor/bootstrap-map-js/bootstrap_v3/dist/css/bootstrap.css" >
+	<link rel="stylesheet" href="../vendor/bootstrap-map-js/src/css/bootstrapmap.css">   
+	<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" >
+
+	<style>
+
+		body {
+		  padding-top: 50px;
+		}
+
+		body > .container {
+		  padding-bottom: 20px;
+		}
+
+	</style>
+</head>
+<body>
+	
+	<div class="navbar navbar-inverse navbar-fixed-top">
+		<div class="container">
+			<div class="navbar-header">
+				<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+				</button>
+				<a class="navbar-brand" href="http://github.com/Esri/offline-editor-js"><i class="fa fa-html5"></i> JS Offline Mapping</a>
+				<a class="navbar-brand" href="http://developers.arcgis.com"><i class="fa fa-globe"></i> esri</a>
+			</div>
+		</div>
+	</div>
+
+	<div class="container">
+		<div class="row">
+			<div class="col-sm-6">
+
+				<h3>Feature Service: <span id="service-name"></span> <small id="service-url"></small></h3>
+				<table id="service-summary-table" class="table table-striped table-condensed table-hover">
+					<thead>
+						<tr>
+							<th>id</th>
+							<th>Layer</th>
+							<th>Count</th>
+							<th>Features</th>
+						</tr>
+					</thead>
+					<tbody id="service-summary-table-body">
+					</tbody>
+				</table>
+				<button id="refresh-btn" type="button" class="btn btn-primary"><i class="fa fa-refresh"></i> Refresh</button>				
+			</div>
+		</div>
+	</div>
+
+
+
+<script>
+	dojoConfig = 
+	{
+		async: true,
+		packages: [
+			{ 
+				name: 'jquery', 
+				location: 'http://ajax.googleapis.com/ajax/libs/jquery/1.10.2', 
+				main: 'jquery' 
+			}
+		]
+	}
+</script>
+<script src="http://js.arcgis.com/3.8/"></script>
+<script>
+	"use strict";
+
+	require([
+		"esri/request",
+		"dojo/dom", "dojo/on", "dojo/query", 
+		"dojo/dom-construct",
+		'jquery','dojo/domReady!'],
+		function(
+			esriRequest,
+			dom, on, query, 
+			domConstruct,
+			$)
+	{
+		var serverUrl = "http://services2.arcgis.com/CQWCKwrSm5dkM28A/arcgis/rest/services";
+		var serviceName = "Military";
+
+		on(dom.byId('refresh-btn'), 'click', function(){ refreshSummaryTable(serverUrl, serviceName);});
+
+		refreshSummaryTable(serverUrl, serviceName);
+
+		function errorCb(error)
+		{
+			console.log('error:',error);
+		}
+
+		function refreshSummaryTable(serverUrl, serviceName)
+		{
+			var fsUrl = serverUrl + '/' + serviceName + '/' + 'FeatureServer';
+			dom.byId('service-url').innerHTML = fsUrl;
+			dom.byId('service-name').innerHTML = serviceName;
+
+			domConstruct.empty('service-summary-table-body');
+
+			var request = esriRequest({
+				url: fsUrl,
+				content: { f: 'json' },
+				handleAs: 'json'
+			});
+			request.then(
+				function(response)
+				{
+					console.log("success:",response);
+
+					response.layers.forEach(function(layer)
+					{					
+						var rowContent = 
+							"<td class='id'>" + layer.id + "</td>" +
+							"<td class='name'></td>" +
+							"<td class='count'></td>" + 
+							"<td class='features'></td>";
+						var tr = domConstruct.place("<tr>", dom.byId('service-summary-table-body'),'last');
+						tr.id = "layer" + layer.id;
+						domConstruct.place(rowContent, tr,'last');
+
+						var layerFeatureCountRequest = esriRequest(
+						{
+							url: fsUrl + '/' + layer.id + '/query',
+							content: { 
+								f: 'json',
+								where: '1=1',
+								returnIdsOnly: true
+								},
+							handleAs: 'json'
+						});
+						layerFeatureCountRequest.then(
+							function(response)
+							{
+								query('#layer' + layer.id + ' .count')[0].innerHTML = response.objectIds.length;
+								query('#layer' + layer.id + ' .features')[0].innerHTML = response.objectIds.join(', ');
+							},
+							errorCb
+						);
+
+						var layerFeatureNameRequest = esriRequest(
+						{
+							url: fsUrl + '/' + layer.id,
+							content: { f: 'json' },
+							handleAs: 'json'
+						});
+						layerFeatureNameRequest.then(
+							function(response)
+							{
+								query('#layer' + layer.id + ' .name')[0].innerHTML = response.name;
+							},
+							errorCb
+						);
+
+					});
+
+					console.log("ok!");
+				},
+				errorCb
+			);
+		}
+
+	});
+
+
+</script>
+
+</body>
+</html>
