@@ -21,6 +21,8 @@
 		}
 		.templatePicker {
 			border: none;
+			overflow: scroll;
+			height: 500px;
 		}
 
 		.dj_ie .infowindow .window .top .right .user .content { position: relative; }
@@ -29,6 +31,8 @@
 	
 	<script src="http://js.arcgis.com/3.8/"></script>
 	<script>
+
+	// based on https://developers.arcgis.com/javascript/jssamples/ed_simpletoolbar.html
 	
 	var map;
 
@@ -63,17 +67,20 @@
 	) {
 		parser.parse();
 
+		esriConfig.defaults.io.proxyUrl = "../lib/proxy.php";
+
 		map = new Map("map", {
 			basemap: "satellite",
 			center: [-0.958, 41.846],
 			zoom: 13,
-			slider: false
+			slider: true
 		});
 
 		map.on('layers-add-result', initEditor);
 
 		var fsUrl = "http://services2.arcgis.com/CQWCKwrSm5dkM28A/arcgis/rest/services/Military/FeatureServer/";
 		var layersIds = [0,1,2,3,4,5,6];
+		// var layersIds = [0];
 		var layers = [];
 
 		layersIds.forEach(function(layerId)
@@ -87,11 +94,52 @@
 
 		map.addLayers(layers);
 
+		//////////////////////////////////////
 
-
-		function initEditor()
+		function initEditor(evt)
 		{
+			try {
+				/* template picker */
+				var templateLayers = evt.layers.map(function(result){return result.layer;});
+				var templatePicker = new TemplatePicker({
+					featureLayers: templateLayers,
+					grouping: true,
+					rows: "auto",
+					columns: 3,
+				}, "templateDiv");
+				templatePicker.startup();
 
+				/* editor */
+				var layers = evt.layers.map(function(result){return {featureLayer: result.layer};});
+				var settings = {
+					map: map,
+					templatePicker: templatePicker,
+					layerInfos: layers,
+					toolbarVisible: true,
+					createOptions: {
+						polylineDrawTools: [ 
+							Editor.CREATE_TOOL_FREEHAND_POLYLINE,
+							Editor.CREATE_TOOL_POLYLINE ],
+						polygonDrawTools: [
+							Editor.CREATE_TOOL_FREEHAND_POLYGON,
+							Editor.CREATE_TOOL_POLYGON,
+							Editor.CREATE_TOOL_RECTANGLE ]
+					},
+					toolbarOptions: {
+						reshapeVisible: false
+					}
+				};
+
+				console.log(settings);
+				var editor = new Editor({ settings: settings }, 'editorDiv');
+				editor.startup();
+
+				console.log("ok!");
+			}
+			catch(err)
+			{
+				console.log(err);
+			}
 		}
 	});
 	</script>
