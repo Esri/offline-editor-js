@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Military Offline Editor</title>
+
+    <link rel="stylesheet" href="http://js.arcgis.com/3.8/js/dojo/dijit/themes/claro/claro.css">
+    <link rel="stylesheet" href="http://js.arcgis.com/3.8/js/esri/css/esri.css" />
+
+	<style>
+		html,body{height:100%;width:100%;margin:0;overflow:hidden;}
+		#map{
+			padding:0;
+		}
+		#header{
+			font-size: 1.1em;
+			font-family: sans-serif;
+			padding-left: 1em;
+			padding-top:4px;
+			color:#660000;
+		}
+		.templatePicker {
+			border: none;
+		}
+
+		.dj_ie .infowindow .window .top .right .user .content { position: relative; }
+		.dj_ie .simpleInfoWindow .content {position: relative;}	
+	</style>
+	
+	<script src="http://js.arcgis.com/3.8/"></script>
+	<script>
+	
+	var map;
+
+	require([
+	    "esri/map", 
+	    "esri/tasks/GeometryService",
+	    "esri/toolbars/edit",
+
+	    "esri/layers/ArcGISTiledMapServiceLayer",
+	    "esri/layers/FeatureLayer",
+
+	    "esri/symbols/SimpleMarkerSymbol",
+	    "esri/symbols/SimpleLineSymbol",
+
+	    "esri/dijit/editing/Editor",
+	    "esri/dijit/editing/TemplatePicker",
+
+	    "esri/config",
+	    "dojo/i18n!esri/nls/jsapi",
+
+	    "dojo/_base/array", "dojo/parser", "dojo/keys",
+
+	    "dijit/layout/BorderContainer", "dijit/layout/ContentPane", 
+	    "dojo/domReady!"
+	], function(
+	    Map, GeometryService, Edit, 
+	    ArcGISTiledMapServiceLayer, FeatureLayer,
+	    SimpleMarkerSymbol, SimpleLineSymbol, 
+	    Editor, TemplatePicker,
+	    esriConfig, jsapiBundle,
+	    arrayUtils, parser, keys
+	) {
+		parser.parse();
+
+		map = new Map("map", {
+			basemap: "satellite",
+			center: [-0.958, 41.846],
+			zoom: 13,
+			slider: false
+		});
+
+		map.on('layers-add-result', initEditor);
+
+		var fsUrl = "http://services2.arcgis.com/CQWCKwrSm5dkM28A/arcgis/rest/services/Military/FeatureServer/";
+		var layersIds = [0,1,2,3,4,5,6];
+		var layers = [];
+
+		layersIds.forEach(function(layerId)
+		{
+			var layer = new FeatureLayer(fsUrl + layerId, {
+				mode: FeatureLayer.MODE_SNAPSHOT,
+				outFields: ['*']
+			});
+			layers.push(layer);
+		})
+
+		map.addLayers(layers);
+
+
+
+		function initEditor()
+		{
+
+		}
+	});
+	</script>
+</head>
+<body class="claro">
+<div id="main" data-dojo-type="dijit/layout/BorderContainer" data-dojo-props="design:'headline'" style="height:width:100%;height:100%;">
+	<div data-dojo-type="dijit/layout/ContentPane" id="header" data-dojo-props="region:'top'">
+	Common Operational Picture
+	</div>
+	<div data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:'left'" style="width: 300px;overflow:hidden;">
+		<div id="templateDiv"></div>
+		<div id="editorDiv"></div>
+	</div>
+	<div data-dojo-type="dijit/layout/ContentPane" id="map" data-dojo-props="region:'center'"></div>
+</div>
+</body>
+</html>
