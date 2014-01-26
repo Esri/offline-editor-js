@@ -4,6 +4,7 @@
 	<meta charset="UTF-8">
 	<title>Military Offline Editor</title>
 
+	<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" >
     <link rel="stylesheet" href="http://js.arcgis.com/3.8/js/dojo/dijit/themes/claro/claro.css">
     <link rel="stylesheet" href="http://js.arcgis.com/3.8/js/esri/css/esri.css" />
 
@@ -19,16 +20,38 @@
 			padding-top:4px;
 			color:#660000;
 		}
+		.claro .dijitContentPane {
+			padding: 2px;
+		}
 		.templatePicker {
 			border: none;
-			overflow: scroll;
-			height: 500px;
+		}
+		.templatePicker .itemLabel {
+			font-size: 11px;
+		}
+
+		#connectivityIndicator {
+            text-align: center;
+            color: white;
+            background-color: #0C0;
+            padding: 4px;
 		}
 
 		.dj_ie .infowindow .window .top .right .user .content { position: relative; }
 		.dj_ie .simpleInfoWindow .content {position: relative;}	
 	</style>
 	
+	<script>
+		var locationPath = location.pathname.replace(/\/[^/]+$/, "");
+		var dojoConfig = {
+			paths: { 
+				edit: locationPath  + "/../lib/edit",
+				vendor: locationPath + "/../vendor"
+			}
+		}
+		window.proxyPath = "../../lib/proxy.php";
+	</script>
+
 	<script src="http://js.arcgis.com/3.8/"></script>
 	<script>
 
@@ -43,6 +66,7 @@
 
 	    "esri/layers/ArcGISTiledMapServiceLayer",
 	    "esri/layers/FeatureLayer",
+	    "edit/offlineFeatureService",
 
 	    "esri/symbols/SimpleMarkerSymbol",
 	    "esri/symbols/SimpleLineSymbol",
@@ -59,7 +83,7 @@
 	    "dojo/domReady!"
 	], function(
 	    Map, GeometryService, Edit, 
-	    ArcGISTiledMapServiceLayer, FeatureLayer,
+	    ArcGISTiledMapServiceLayer, FeatureLayer, offlineFeatureService,
 	    SimpleMarkerSymbol, SimpleLineSymbol, 
 	    Editor, TemplatePicker,
 	    esriConfig, jsapiBundle,
@@ -89,7 +113,7 @@
 				mode: FeatureLayer.MODE_SNAPSHOT,
 				outFields: ['*']
 			});
-			layers.push(layer);
+			layers.push(layer);			
 		})
 
 		map.addLayers(layers);
@@ -99,6 +123,14 @@
 		function initEditor(evt)
 		{
 			try {
+
+				/* extend layer with offline detection functionality */
+				evt.layers.forEach(function(result)
+				{
+					var layer = result.layer;
+					offlineFeatureService.extend(layer);
+				});
+
 				/* template picker */
 				var templateLayers = evt.layers.map(function(result){return result.layer;});
 				var templatePicker = new TemplatePicker({
@@ -148,11 +180,16 @@
 	<div data-dojo-type="dijit/layout/ContentPane" id="header" data-dojo-props="region:'top'">
 	Common Operational Picture
 	</div>
-	<div data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:'left'" style="width: 300px;overflow:hidden;">
+	<div data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:'left'" style="width: 200px;overflow:hidden;">
+        <div id="connectivityPanel" data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:'top'">
+            <div id="connectivityIndicator"><i class="fa fa-link"></i></div>
+        </div>
+	</div>
+	<div data-dojo-type="dijit/layout/ContentPane" id="map" data-dojo-props="region:'center'"></div>
+	<div data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:'right'" style="width: 272px;overflow:scroll;padding:1px;">
 		<div id="templateDiv"></div>
 		<div id="editorDiv"></div>
 	</div>
-	<div data-dojo-type="dijit/layout/ContentPane" id="map" data-dojo-props="region:'center'"></div>
 </div>
 </body>
 </html>
