@@ -59,6 +59,10 @@
 			padding: 4px;
 		}
 
+		#pendingEdits li {
+			border-bottom: 1px solid #ddd;
+		}
+
 		.dj_ie .infowindow .window .top .right .user .content { position: relative; }
 		.dj_ie .simpleInfoWindow .content {position: relative;}	
 	</style>
@@ -295,9 +299,9 @@
 		</div>
 	</div>
 	<div data-dojo-type="dijit/layout/ContentPane" id="map" data-dojo-props="region:'center'"></div>
-	<div data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:'right'" style="width: 222px;overflow:scroll;padding:1px;">
-		<div id="templateDiv"></div>
+	<div data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:'right'" style="width: 222px;padding:1px;">
 		<div id="editorDiv"></div>
+		<div id="templateDiv"></div>
 	</div>
 </div>
 </body>
