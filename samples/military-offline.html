@@ -30,8 +30,9 @@
 		.templatePicker .itemLabel {
 			font-size: 11px;
 		}
-        .btn1{
-            width: 100%;
+        .btn1
+        {
+            width: 32%;
             padding: 4px;
         }
 		#connectivityIndicator,#storageInfo
@@ -105,7 +106,7 @@
 	    "dojo/domReady!"
 	], function(
 	    Map, GeometryService, Edit, 
-	    ArcGISTiledMapServiceLayer, FeatureLayer, offlineFeatureService, editsStore,
+	    ArcGISTiledMapServiceLayer, FeatureLayer, OfflineFeatureService, editsStore,
 	    SimpleMarkerSymbol, SimpleLineSymbol, 
 	    Editor, TemplatePicker,
 	    esriConfig, jsapiBundle,
@@ -119,7 +120,13 @@
 		updateStorageInfo();
 		updatePendingEditsList();
 		on(dom.byId('clear-pending-edits-btn'),'click', clearPendingEdits);
-		//offlineFeatureService.on('edit-enqueued', updateStatus);
+		on(dom.byId('update-status-btn'),'click', updateStatus);
+		on(dom.byId('go-offline-btn'),'click', goOffline);
+		on(dom.byId('go-online-btn'),'click', goOnline);
+		on(dom.byId('refresh-feature-layers-btn'),'click', refreshFeatureLayers);
+		var offlineFeatureService = new OfflineFeatureService();
+		offlineFeatureService.on('edits-enqueued', updateStatus);
+		offlineFeatureService.on('edits-sent', updateStatus);
 
 		//
 
@@ -137,7 +144,7 @@
 		var fsUrl = "http://services2.arcgis.com/CQWCKwrSm5dkM28A/arcgis/rest/services/Military/FeatureServer/";
 		// var layersIds = [0,1,2,3,4,5,6];
 		var layersIds = [1,2,3];
-		var layers = [];
+		var featureLayers = [];
 
 		layersIds.forEach(function(layerId)
 		{
@@ -145,10 +152,10 @@
 				mode: FeatureLayer.MODE_SNAPSHOT,
 				outFields: ['*']
 			});
-			layers.push(layer);			
+			featureLayers.push(layer);			
 		})
 
-		map.addLayers(layers);
+		map.addLayers(featureLayers);
 
 		//////////////////////////////////////
 
@@ -207,6 +214,7 @@
 
 		function updateStatus()
 		{
+			console.log("updatingStatus");
 			updateStorageInfo();
 			updatePendingEditsList();
 		}
@@ -229,7 +237,8 @@
 			var edits = editsStore._retrieveEditsQueue();
 			edits.forEach(function(edit)
 			{
-				var li = "<li>" + edit.operation + ", " + edit.layer + ", " + "{}" + "</li>";
+				var readableEdit = editsStore.getReadableEdit(edit);
+				var li = "<li>" + readableEdit + "</li>";
 				domConstruct.place(li, 'pendingEdits','last');
 			});
 		}
@@ -238,6 +247,24 @@
 		{
 			editsStore.resetEditsQueue();
 			updateStatus();
+		}
+
+		function goOnline()
+		{
+			offlineFeatureService.goOnline();
+		}
+
+		function goOffline()
+		{
+			offlineFeatureService.goOffline();
+		}
+
+		function refreshFeatureLayers()
+		{
+			featureLayers.forEach(function(featureLayer)
+			{
+				featureLayer.refresh();
+			})
 		}
 	});
 	</script>
@@ -257,6 +284,10 @@
 		</div>
 		<div id="pendingEditsPane" data-dojo-type="dijit/layout/ContentPane" data-dojo-propos="region:'top'">
             <button id="clear-pending-edits-btn" class="btn1">Clear</button>			
+            <button id="go-offline-btn" class="btn1">Offline</button>
+            <button id="go-online-btn" class="btn1">Online</button>
+            <button id="update-status-btn" class="btn1">Update</button>			
+            <button id="refresh-feature-layers-btn" class="btn1">Refesh</button>			
 			<ul id="pendingEdits"></ul>
 		</div>
 	</div>

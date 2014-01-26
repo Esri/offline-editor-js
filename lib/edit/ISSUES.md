@@ -1,0 +1,5 @@
+- complete offline editing workflow
+- change pushEdit() to pushEdits()
+- feedback graphics layer
+- add timestamp to edits
+- undo
