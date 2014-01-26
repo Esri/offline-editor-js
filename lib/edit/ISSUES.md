@@ -1,5 +1,9 @@
 - complete offline editing workflow
+	- updates: OK
+	- adds: OK
+	- deletes: OK
 - change pushEdit() to pushEdits()
 - feedback graphics layer
 - add timestamp to edits
 - undo
+- attachments
