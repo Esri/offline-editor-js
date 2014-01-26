@@ -7,3 +7,5 @@
 - add timestamp to edits
 - undo
 - attachments
+
+- store the original layers in localStorage?
