@@ -170,6 +170,9 @@
 					offlineFeatureService.extend(layer);
 				});
 
+				// jabadia: only if we have internet available
+				offlineFeatureService.replayStoredEdits();
+
 				/* template picker */
 				var templateLayers = evt.layers.map(function(result){return result.layer;});
 				var templatePicker = new TemplatePicker({
