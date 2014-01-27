@@ -3,13 +3,12 @@
 	- adds: OK
 	- deletes: OK
 - change pushEdit() to pushEdits(), NO
-- control QuotaError error gracefully, ONGOING
-
+- control QuotaError error gracefully, OK
 - try and fill localStorage to see what happens... OK, localStorage.setItem() throws error
-- prevent attributeEditor to appear after replaying the stored edits
-- be careful with updates for features added offline (replace tmp id by final id)
-- goOnline()/goOffline() automatically
+- prevent attributeEditor to appear after replaying the stored edits, OK
+- be careful with updates for features added offline (replace tmp id by final id), ONGOING
 
+- goOnline()/goOffline() automatically
 - unit tests
 - feedback graphics layer
 - add timestamp to edits

@@ -166,7 +166,6 @@
 		function initEditor(evt)
 		{
 			try {
-
 				/* extend layer with offline detection functionality */
 				evt.layers.forEach(function(result)
 				{
@@ -176,7 +175,13 @@
 
 				// jabadia: only if we have internet available
 				offlineFeatureService.replayStoredEdits();
+			}
+			catch(err)
+			{
+				console.log(err);
+			}
 
+			try {
 				/* template picker */
 				var templateLayers = evt.layers.map(function(result){return result.layer;});
 				var templatePicker = new TemplatePicker({
