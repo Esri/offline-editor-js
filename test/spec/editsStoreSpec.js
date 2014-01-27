@@ -1,5 +1,8 @@
 "use strict"
 
+var KEY_PREFIX = "__LOCAL_STORAGE_TEST__";
+var EXECUTE_LONG_TESTS = true;
+
 describe("Internal Methods", function()
 {
 	describe("Serialize/Deserialize Graphics", function()
@@ -204,6 +207,12 @@ describe("Public Interface", function()
 		{
 			it("reset edits queue", function()
 			{
+				for( var key in window.localStorage )
+				{
+					if( key.indexOf(KEY_PREFIX)==0 )
+						window.localStorage.removeItem(key);
+				}
+
 				g_editsStore.resetEditsQueue();
 				expect(g_editsStore.pendingEditsCount()).toBe(0);
 			});
@@ -436,14 +445,59 @@ describe("Public Interface", function()
 		it("report edit store size", function()
 		{
 			usedBytes = g_editsStore.getEditsStoreSizeBytes();
-			expect(usedBytes).toBe(678);
+			expect(usedBytes).toBe(705);
 		});
 
 		it("report total local storage size", function()
 		{
 			totalBytes = g_editsStore.getLocalStorageSizeBytes();
 			expect(usedBytes).not.toBeGreaterThan(totalBytes);
-		})
+		});
+
+		it("exhaust localStorage capacity", function()
+		{
+			if( EXECUTE_LONG_TESTS )
+			{
+				console.log("this will take some time");
+
+				var sizeBefore = g_editsStore.getLocalStorageSizeBytes();
+
+				// first, fill localStorage up to max capacity
+				try
+				{
+					var index = 0;
+					var value = "0123456789";
+					var value8 = value + value + value + value + value + value + value + value;
+					while(true)
+					{
+						var key = KEY_PREFIX + index;
+						window.localStorage.setItem(key, value8 + value8 + value8 + value8);
+						index += 1;
+
+						if( index % 1000 == 0)
+							console.log(index, g_editsStore.getLocalStorageSizeBytes());
+					}				
+				}
+				catch(err)
+				{
+					console.log(err);
+				}
+
+				// now, try to push one edit
+				var success = g_editsStore.pushEdit(g_editsStore.ADD, 20, g_test.polygonFeature);
+				expect(success).toBeFalsy();
+
+				// clean everything
+				for( var key in window.localStorage )
+				{
+					if( key.indexOf(KEY_PREFIX)==0 )
+						window.localStorage.removeItem(key);
+				}
+
+				var sizeAfter = g_editsStore.getLocalStorageSizeBytes();
+				expect(sizeBefore).toEqual(sizeAfter);				
+			}
+		});
 	})
 });
 
