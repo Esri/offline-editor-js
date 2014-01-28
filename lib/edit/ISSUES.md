@@ -7,7 +7,9 @@
 - try and fill localStorage to see what happens... OK, localStorage.setItem() throws error
 - prevent attributeEditor to appear after replaying the stored edits, OK
 - be careful with updates for features added offline (replace tmp id by final id), ONGOING
+	- updates/deletes of features added offline (not yet in the server) are not updated correctly in the local layer
 
+- rename offlineFeatureService to offlineFeaturesManager
 - goOnline()/goOffline() automatically
 - unit tests
 - feedback graphics layer
