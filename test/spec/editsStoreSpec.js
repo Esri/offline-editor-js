@@ -4,7 +4,7 @@ var KEY_PREFIX = "__LOCAL_STORAGE_TEST__";
 var EDITS_QUEUE_KEY = "esriEditsQueue";
 var REDO_STACK_KEY  = "esriRedoStack";
 
-var EXECUTE_LONG_TESTS = true;
+var EXECUTE_LONG_TESTS = false;
 
 describe("Internal Methods", function()
 {
@@ -465,9 +465,9 @@ describe("Public Interface", function()
 			expect(usedBytes).toBe(0);
 		});
 
-		it("exhaust localStorage capacity", function()
+		if( EXECUTE_LONG_TESTS )
 		{
-			if( EXECUTE_LONG_TESTS )
+			it("exhaust localStorage capacity", function()
 			{
 				console.log("this will take some time");
 
@@ -514,8 +514,14 @@ describe("Public Interface", function()
 
 				var sizeAfter = g_editsStore.getLocalStorageSizeBytes();
 				expect(sizeBefore).toEqual(sizeAfter);				
-			}
-		});
+			});	
+		}
+		else
+		{
+			it("exhaust localStorage capacity - LONG TEST NOT EXECUTED", function()
+			{				
+			});
+		}
 	})
 });
 
