@@ -93,7 +93,7 @@
 	    "esri/layers/ArcGISTiledMapServiceLayer",
 	    "esri/layers/FeatureLayer",
 		
-	    "edit/offlineFeatureService",
+	    "edit/offlineFeaturesManager",
 	    "edit/editsStore",
 
 	    "esri/symbols/SimpleMarkerSymbol",
@@ -113,7 +113,7 @@
 	], function(
 	    Map, GeometryService, Edit, 
 	    ArcGISTiledMapServiceLayer, FeatureLayer, 
-		OfflineFeatureService, editsStore,
+		OfflineFeaturesManager, editsStore,
 	    SimpleMarkerSymbol, SimpleLineSymbol, 
 	    Editor, TemplatePicker,
 	    esriConfig, jsapiBundle,
@@ -132,9 +132,9 @@
 		on(dom.byId('go-offline-btn'),'click', goOffline);
 		on(dom.byId('go-online-btn'),'click', goOnline);
 		on(dom.byId('refresh-feature-layers-btn'),'click', refreshFeatureLayers);
-		var offlineFeatureService = new OfflineFeatureService();
-		offlineFeatureService.on('edits-enqueued', updateStatus);
-		offlineFeatureService.on('edits-sent', updateStatus);
+		var offlineFeaturesManager = new OfflineFeaturesManager();
+		offlineFeaturesManager.on('edits-enqueued', updateStatus);
+		offlineFeaturesManager.on('edits-sent', updateStatus);
 
 		//
 
@@ -174,11 +174,11 @@
 				evt.layers.forEach(function(result)
 				{
 					var layer = result.layer;
-					offlineFeatureService.extend(layer);
+					offlineFeaturesManager.extend(layer);
 				});
 
 				// jabadia: only if we have internet available
-				offlineFeatureService.replayStoredEdits();
+				offlineFeaturesManager.replayStoredEdits();
 			}
 			catch(err)
 			{
@@ -267,12 +267,12 @@
 
 		function goOnline()
 		{
-			offlineFeatureService.goOnline();
+			offlineFeaturesManager.goOnline();
 		}
 
 		function goOffline()
 		{
-			offlineFeatureService.goOffline();
+			offlineFeaturesManager.goOffline();
 		}
 
 		function refreshFeatureLayers()
