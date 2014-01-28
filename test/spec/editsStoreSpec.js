@@ -1,6 +1,9 @@
-"use strict"
+"use strict";
 
 var KEY_PREFIX = "__LOCAL_STORAGE_TEST__";
+var EDITS_QUEUE_KEY = "esriEditsQueue";
+var REDO_STACK_KEY  = "esriRedoStack";
+
 var EXECUTE_LONG_TESTS = true;
 
 describe("Internal Methods", function()
@@ -445,13 +448,21 @@ describe("Public Interface", function()
 		it("report edit store size", function()
 		{
 			usedBytes = g_editsStore.getEditsStoreSizeBytes();
-			expect(usedBytes).toBe(705);
+			expect(usedBytes).toBe(692);
 		});
 
 		it("report total local storage size", function()
 		{
 			totalBytes = g_editsStore.getLocalStorageSizeBytes();
 			expect(usedBytes).not.toBeGreaterThan(totalBytes);
+		});
+
+		it("report edit store size when uninitalized", function()
+		{
+			window.localStorage.removeItem( EDITS_QUEUE_KEY );
+			window.localStorage.removeItem( REDO_STACK_KEY );
+			var usedBytes = g_editsStore.getEditsStoreSizeBytes();
+			expect(usedBytes).toBe(0);
 		});
 
 		it("exhaust localStorage capacity", function()
@@ -461,6 +472,13 @@ describe("Public Interface", function()
 				console.log("this will take some time");
 
 				var sizeBefore = g_editsStore.getLocalStorageSizeBytes();
+				if( sizeBefore == 0)
+				{
+					// if not initialized, create the empty elements
+					window.localStorage.setItem( EDITS_QUEUE_KEY, "");
+					window.localStorage.setItem( REDO_STACK_KEY, "");
+					sizeBefore = g_editsStore.getLocalStorageSizeBytes();
+				}
 
 				// first, fill localStorage up to max capacity
 				try
@@ -505,6 +523,6 @@ describe("Reset store", function()
 {
 	it("reset the store", function()
 	{
-		g_editsStore.resetEditsQueue();			
+		g_editsStore.resetEditsQueue();
 	})
 });
