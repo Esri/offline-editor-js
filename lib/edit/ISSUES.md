@@ -10,6 +10,7 @@
 - be careful with updates for features added offline (replace tmp id by final id), ONGOING
 	- updates/deletes of features added offline (not yet in the server) are not updated correctly in the local layer
 
+- explicit feedback to user when QuotaError happens
 - goOnline()/goOffline() automatically
 - unit tests
 - feedback graphics layer
