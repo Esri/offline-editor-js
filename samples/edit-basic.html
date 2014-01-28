@@ -235,6 +235,12 @@ Sample demonstrates basic offline editing functionality for points, lines and po
                             headerDiv.innerHTML = getStorageInfo();
                             updateHistoryTextArea();
                             break;
+                        case "pendingEditEvent":
+                            if(message != null){
+                                updatePendingTextArea();
+                            }
+                            headerDiv.innerHTML = getStorageInfo();
+                            break;
                         case "duplicateEditEvent":
                             alert("Duplicate edit event");
                             console.log("duplicate event attempt");
