@@ -17,5 +17,6 @@
 - add timestamp to edits
 - undo
 - attachments
+- code comments (for automatic doc generation)
 
 - store the original layers in localStorage?
