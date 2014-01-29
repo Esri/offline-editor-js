@@ -9,7 +9,7 @@ var showTiles = false;
 require(["esri/map", 
 	"esri/layers/GraphicsLayer", "esri/graphic", "esri/symbols/SimpleFillSymbol",
 	"esri/dijit/Scalebar", "esri/arcgis/utils", "esri/geometry",
-	"dojo/dom", "dojo/on", "dojo/query", 
+	"dojo/dom", "dojo/on", "dojo/query",
 	"vendor/bootstrap-map-js/src/js/bootstrapmap",
 	"esri/urlUtils", "esri/geometry/webMercatorUtils",
 	"tiles/offlineEnabler",
@@ -376,6 +376,12 @@ require(["esri/map",
 		function loadFromFile()
 		{
 			var selectedFile = dojo.byId('file-select').files[0];
+
+			// clear input.files variable, so that next time it is empty again
+			// otherwise selecting the same file twice will not trigger the 'change' event the second time
+			var form = domConstruct.create('form');
+			domConstruct.place(dojo.byId('file-select'), form, "before");
+			form.reset();
 			
 			if( !selectedFile )
 			{
