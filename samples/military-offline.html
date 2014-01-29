@@ -1,0 +1,342 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>Military Offline Editor</title>
+
+	<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" >
+    <link rel="stylesheet" href="http://js.arcgis.com/3.8/js/dojo/dijit/themes/claro/claro.css">
+    <link rel="stylesheet" href="http://js.arcgis.com/3.8/js/esri/css/esri.css" />
+
+	<style>
+		html,body{height:100%;width:100%;margin:0;overflow:hidden;font-family: sans-serif;}
+		#loader-cloak {height:100%;width:100%;margin:0;position:absolute;z-index:999;background: #ddd;}
+		#map{
+			padding:0;
+		}
+		#header{
+			font-size: 1.1em;
+			padding-left: 1em;
+			padding-top:4px;
+			color:#660000;
+		}
+		.claro .dijitContentPane {
+			padding: 2px;
+			font-size: 12px;
+		}
+		.templatePicker {
+			border: none;
+		}
+		.templatePicker .itemLabel {
+			font-size: 11px;
+		}
+        .btn1
+        {
+            /*width: 96px;*/
+            padding: 4px;
+        }
+		#connectivityIndicator,#storageInfo
+		{
+            text-align: center;
+            border: 1px solid black;
+            padding: 4px;
+		}
+
+		#connectivityIndicator 			{ color: white; background-color: #aaa;  }
+		#connectivityIndicator.online 	{ background-color: #0C0; }
+		#connectivityIndicator.offline  { background-color: #E00; }
+
+		#pendingEdits {
+            border: 1px solid black;
+			overflow: scroll;
+			height: 400px;
+			margin: 0px;
+			list-style: none;
+			padding: 4px;
+		}
+
+		#pendingEdits li {
+			border-bottom: 1px solid #ddd;
+		}
+
+		.dj_ie .infowindow .window .top .right .user .content { position: relative; }
+		.dj_ie .simpleInfoWindow .content {position: relative;}	
+	</style>
+	
+	<script>
+		var locationPath = location.pathname.replace(/\/[^/]+$/, "");
+		var dojoConfig = {
+			paths: { 
+				edit: locationPath  + "/../lib/edit",
+				vendor: locationPath + "/../vendor"
+			}
+		}
+		window.proxyPath = "../../lib/proxy.php";
+	</script>
+
+	<script src="http://js.arcgis.com/3.8"></script>
+	<script>
+
+	// based on https://developers.arcgis.com/javascript/jssamples/ed_simpletoolbar.html
+	
+	var map;
+
+	require([
+	    "esri/map", 
+	    "esri/tasks/GeometryService",
+	    "esri/toolbars/edit",
+
+	    "esri/layers/ArcGISTiledMapServiceLayer",
+	    "esri/layers/FeatureLayer",
+		
+	    "edit/offlineFeaturesManager",
+	    "edit/editsStore",
+
+	    "esri/symbols/SimpleMarkerSymbol",
+	    "esri/symbols/SimpleLineSymbol",
+
+	    "esri/dijit/editing/Editor",
+	    "esri/dijit/editing/TemplatePicker",
+
+	    "esri/config",
+	    "dojo/i18n!esri/nls/jsapi",
+
+	    "dojo/_base/array", "dojo/parser", "dojo/keys", 
+		"dojo/dom", "dojo/on", "dojo/dom-construct", "dojo/dom-class",
+
+	    "dijit/layout/BorderContainer", "dijit/layout/ContentPane", 
+	    "dojo/domReady!"
+	], function(
+	    Map, GeometryService, Edit, 
+	    ArcGISTiledMapServiceLayer, FeatureLayer, 
+		OfflineFeaturesManager, editsStore,
+	    SimpleMarkerSymbol, SimpleLineSymbol, 
+	    Editor, TemplatePicker,
+	    esriConfig, jsapiBundle,
+	    arrayUtils, parser, keys, 
+		dom, on, domConstruct, domClass
+	) {
+		parser.parse();
+		dojo.fadeOut({node:'loader-cloak', onEnd: function(n){n.style.display="none"}}).play();
+
+		// user interface
+		on(dom.byId('storageInfo'), 'click', updateStorageInfo);
+		updateStorageInfo();
+		updatePendingEditsList();
+		on(dom.byId('clear-pending-edits-btn'),'click', clearPendingEdits);
+		on(dom.byId('go-offline-btn'),'click', goOffline);
+		on(dom.byId('go-online-btn'),'click', goOnline);
+		on(dom.byId('refresh-feature-layers-btn'),'click', refreshFeatureLayers);
+		var offlineFeaturesManager = new OfflineFeaturesManager();
+		offlineFeaturesManager.on('edits-enqueued', updateStatus);
+		offlineFeaturesManager.on('edits-sent', updateStatus);
+		offlineFeaturesManager.on('all-edits-sent', updateStatus);
+		updateConnectivityIndicator();
+
+		//
+
+		esriConfig.defaults.io.proxyUrl = "../lib/proxy.php";
+
+		map = new Map("map", {
+			basemap: "satellite",
+			center: [-0.958, 41.846],
+			zoom: 13,
+			slider: true
+		});
+
+		map.on('layers-add-result', initEditor);
+
+		var fsUrl = "http://services2.arcgis.com/CQWCKwrSm5dkM28A/arcgis/rest/services/Military/FeatureServer/";
+		// var layersIds = [0,1,2,3,4,5,6];
+		var layersIds = [1,2,3];
+		var featureLayers = [];
+
+		layersIds.forEach(function(layerId)
+		{
+			var layer = new FeatureLayer(fsUrl + layerId, {
+				mode: FeatureLayer.MODE_SNAPSHOT,
+				outFields: ['*']
+			});
+			featureLayers.push(layer);			
+		})
+
+		map.addLayers(featureLayers);
+
+		//////////////////////////////////////
+
+		function initEditor(evt)
+		{
+			try {
+				/* extend layer with offline detection functionality */
+				evt.layers.forEach(function(result)
+				{
+					var layer = result.layer;
+					offlineFeaturesManager.extend(layer);
+				});
+
+				// jabadia: only if we have internet available
+				offlineFeaturesManager.replayStoredEdits();
+			}
+			catch(err)
+			{
+				console.log(err);
+			}
+
+			try {
+				/* template picker */
+				var templateLayers = evt.layers.map(function(result){return result.layer;});
+				var templatePicker = new TemplatePicker({
+					featureLayers: templateLayers,
+					grouping: true,
+					rows: "auto",
+					columns: 3,
+				}, "templateDiv");
+				templatePicker.startup();
+
+				/* editor */
+				var layers = evt.layers.map(function(result){return {featureLayer: result.layer};});
+				var settings = {
+					map: map,
+					templatePicker: templatePicker,
+					layerInfos: layers,
+					toolbarVisible: true,
+					createOptions: {
+						polylineDrawTools: [ 
+							Editor.CREATE_TOOL_FREEHAND_POLYLINE,
+							Editor.CREATE_TOOL_POLYLINE ],
+						polygonDrawTools: [
+							Editor.CREATE_TOOL_FREEHAND_POLYGON,
+							Editor.CREATE_TOOL_POLYGON,
+							Editor.CREATE_TOOL_RECTANGLE ]
+					},
+					toolbarOptions: {
+						reshapeVisible: false
+					}
+				};
+
+				var editor = new Editor({ settings: settings }, 'editorDiv');
+				editor.startup();
+
+				console.log("ok!");
+			}
+			catch(err)
+			{
+				console.log(err);
+			}
+		}
+
+		function updateStatus()
+		{
+			console.log("updatingStatus");
+			updateStorageInfo();
+			updatePendingEditsList();
+		}
+
+		function updateStorageInfo()
+		{
+			var formatMb = function(bytes)
+			{
+				return Math.floor(bytes / 1024 / 1024 * 100)/100 + " MBs";
+			}
+			var localStorageSizeBytes = editsStore.getLocalStorageSizeBytes();
+			var editsStoreSizeBytes = editsStore.getEditsStoreSizeBytes();
+
+			var info = "Used " + formatMb(localStorageSizeBytes) + " (" + formatMb(editsStoreSizeBytes) + ")";
+			dom.byId('storageInfo').innerHTML = info;
+		}
+		function updatePendingEditsList()
+		{
+			var li;
+			domConstruct.empty('pendingEdits');
+			if( editsStore.hasPendingEdits())
+			{
+				var edits = editsStore._retrieveEditsQueue();
+				edits.forEach(function(edit)
+				{
+					var readableEdit = editsStore.getReadableEdit(edit);
+					li = "<li>" + readableEdit + "</li>";
+					domConstruct.place(li, 'pendingEdits','last');
+				},this);
+			}
+			else
+			{
+				li = "<li>No edits pending</li>";
+				domConstruct.place(li, 'pendingEdits','last');
+			}
+		}
+
+		function clearPendingEdits()
+		{
+			editsStore.resetEditsQueue();
+			updateStatus();
+		}
+
+		function goOnline()
+		{
+			offlineFeaturesManager.goOnline();
+			updateConnectivityIndicator();
+		}
+
+		function goOffline()
+		{
+			offlineFeaturesManager.goOffline();
+			updateConnectivityIndicator();
+		}
+
+		function updateConnectivityIndicator()
+		{
+			var node = dom.byId('connectivityIndicator');
+
+			domClass.remove(node, "online offline");
+
+			if( offlineFeaturesManager.isOnline() )
+			{
+				node.innerHTML = "<i class='fa fa-link'></i> online";
+				domClass.add(node, "online");
+			}
+			else
+			{
+				node.innerHTML = "<i class='fa fa-chain-broken'></i> offline";
+				domClass.add(node, "offline");
+			}
+		}
+
+		function refreshFeatureLayers()
+		{
+			featureLayers.forEach(function(featureLayer)
+			{
+				featureLayer.refresh();
+			})
+		}
+	});
+	</script>
+</head>
+<body class="claro">
+<div id="loader-cloak"></div>
+<div id="main" data-dojo-type="dijit/layout/BorderContainer" data-dojo-props="design:'headline'" style="height:width:100%;height:100%;">
+	<div data-dojo-type="dijit/layout/ContentPane" id="header" data-dojo-props="region:'top'">
+	Common Operational Picture
+	</div>
+	<div data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:'left'" style="width: 200px;overflow:hidden;">
+        <div id="connectivityPane" data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:'top'">
+            <div id="connectivityIndicator" >unknown</div>
+        </div>
+		<div id="storageInfoPane" data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:'top'">
+			<div id="storageInfo">Storage used: 0 MBs</div>
+		</div>
+		<div id="pendingEditsPane" data-dojo-type="dijit/layout/ContentPane" data-dojo-propos="region:'top'">
+            <button style="width:60%" id="clear-pending-edits-btn" class="btn1">Clear Local Edits</button>			
+            <button style="width:38%" id="go-offline-btn" class="btn1">Go Offline</button>
+            <button style="width:60%" id="refresh-feature-layers-btn" class="btn1">Refesh Layer</button>			
+            <button style="width:38%" id="go-online-btn" class="btn1">Go Online</button>
+			<ul id="pendingEdits"></ul>
+		</div>
+	</div>
+	<div data-dojo-type="dijit/layout/ContentPane" id="map" data-dojo-props="region:'center'"></div>
+	<div data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:'right'" style="width:222px;padding:1px;">
+		<div id="editorDiv"></div>
+		<div id="templateDiv"></div>
+	</div>
+</div>
+</body>
+</html>

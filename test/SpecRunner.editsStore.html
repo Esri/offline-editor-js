@@ -90,7 +90,10 @@
 
 			g_test.pointFeature = new Graphic( g_test.point, g_test.pointSymbol, {"name": "the name of the feature", "objectid":2});
 			g_test.lineFeature = new Graphic( g_test.line, g_test.lineSymbol, {"nombre": "España","objectid":5});
-			g_test.polygonFeature = new Graphic( g_test.polygon, g_test.polygonSymbol, {"nombre": "España","timestamp": new Date().getTime(), "objectid":5});
+			g_test.polygonFeature = new Graphic( g_test.polygon, g_test.polygonSymbol, {"nombre": "España","timestamp": new Date().getTime(), "objectid":8});
+
+			g_test.newPointFeature        = new Graphic( g_test.point, g_test.pointSymbol, {"name": "the name of the feature", "objectid":-1});
+			g_test.newPointFeatureUpdated = new Graphic( g_test.point, g_test.pointSymbol, {"name": "the name of the feature modified", "objectid":-1});
 
 			console.log(g_test);
 		}

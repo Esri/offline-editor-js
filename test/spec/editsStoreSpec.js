@@ -1,4 +1,10 @@
-"use strict"
+"use strict";
+
+var KEY_PREFIX = "__LOCAL_STORAGE_TEST__";
+var EDITS_QUEUE_KEY = "esriEditsQueue";
+var REDO_STACK_KEY  = "esriRedoStack";
+
+var EXECUTE_LONG_TESTS = false;
 
 describe("Internal Methods", function()
 {
@@ -204,6 +210,12 @@ describe("Public Interface", function()
 		{
 			it("reset edits queue", function()
 			{
+				for( var key in window.localStorage )
+				{
+					if( key.indexOf(KEY_PREFIX)==0 )
+						window.localStorage.removeItem(key);
+				}
+
 				g_editsStore.resetEditsQueue();
 				expect(g_editsStore.pendingEditsCount()).toBe(0);
 			});
@@ -292,6 +304,66 @@ describe("Public Interface", function()
 				expect(success).toBeFalsy();
 			});
 		});
+
+		describe("Replacement of Temporary Ids", function()
+		{
+			function getObjectIds()
+			{
+				var edits = g_editsStore._retrieveEditsQueue();
+				var objectids = edits.map(function(edit) 
+				{ 
+					return g_editsStore._deserialize(edit.graphic).attributes.objectid 
+				});
+				return objectids;
+			}
+
+			it("reset edits queue", function()
+			{
+				g_editsStore.resetEditsQueue();
+				expect(g_editsStore.pendingEditsCount()).toBe(0);
+			});
+
+			it("add edits to edits queue", function()
+			{
+				var success, objectids;
+				expect(g_test.newPointFeature.attributes.objectid).toBe(-1);
+				success = g_editsStore.pushEdit(g_editsStore.ADD, 6, g_test.newPointFeature);
+				expect(g_editsStore.pendingEditsCount()).toBe(1);
+				expect(success).toBeTruthy();
+				expect(g_editsStore.peekFirstEdit().graphic.attributes.objectid).toBe(-1);
+				
+				expect(g_test.polygonFeature.attributes.objectid).toBe(8);
+				success = g_editsStore.pushEdit(g_editsStore.UPDATE, 3, g_test.polygonFeature);
+				expect(success).toBeTruthy();
+				expect(g_editsStore.pendingEditsCount()).toBe(2);
+				objectids = getObjectIds();
+				expect(objectids).toEqual([-1,8]);
+
+				expect(g_test.lineFeature.attributes.objectid).toBe(5);
+				success = g_editsStore.pushEdit(g_editsStore.UPDATE, 3, g_test.lineFeature);
+				expect(success).toBeTruthy();
+				expect(g_editsStore.pendingEditsCount()).toBe(3);
+				objectids = getObjectIds();
+				expect(objectids).toEqual([-1,8,5]);
+			});
+
+			it("replace ids", function()
+			{
+				var replaceCount, objectids;
+
+				objectids = getObjectIds();
+				expect(objectids).toEqual([-1,8,5]);
+
+				replaceCount = g_editsStore.replaceTempId(-1,10,"objectid");
+
+				expect(replaceCount).toBe(1);
+				objectids = getObjectIds();
+				expect(objectids).toEqual([10,8,5]);
+
+				replaceCount = g_editsStore.replaceTempId(-1,10,"objectid");
+				expect(replaceCount).toBe(0);
+			});
+		})
 
 		describe("Undo/Redo management", function()
 		{
@@ -436,14 +508,80 @@ describe("Public Interface", function()
 		it("report edit store size", function()
 		{
 			usedBytes = g_editsStore.getEditsStoreSizeBytes();
-			expect(usedBytes).toBe(678);
+			expect(usedBytes).toBe(692);
 		});
 
 		it("report total local storage size", function()
 		{
 			totalBytes = g_editsStore.getLocalStorageSizeBytes();
 			expect(usedBytes).not.toBeGreaterThan(totalBytes);
-		})
+		});
+
+		it("report edit store size when uninitalized", function()
+		{
+			window.localStorage.removeItem( EDITS_QUEUE_KEY );
+			window.localStorage.removeItem( REDO_STACK_KEY );
+			var usedBytes = g_editsStore.getEditsStoreSizeBytes();
+			expect(usedBytes).toBe(0);
+		});
+
+		if( EXECUTE_LONG_TESTS )
+		{
+			it("exhaust localStorage capacity", function()
+			{
+				console.log("this will take some time");
+
+				var sizeBefore = g_editsStore.getLocalStorageSizeBytes();
+				if( sizeBefore == 0)
+				{
+					// if not initialized, create the empty elements
+					window.localStorage.setItem( EDITS_QUEUE_KEY, "");
+					window.localStorage.setItem( REDO_STACK_KEY, "");
+					sizeBefore = g_editsStore.getLocalStorageSizeBytes();
+				}
+
+				// first, fill localStorage up to max capacity
+				try
+				{
+					var index = 0;
+					var value = "0123456789";
+					var value8 = value + value + value + value + value + value + value + value;
+					while(true)
+					{
+						var key = KEY_PREFIX + index;
+						window.localStorage.setItem(key, value8 + value8 + value8 + value8);
+						index += 1;
+
+						if( index % 1000 == 0)
+							console.log(index, g_editsStore.getLocalStorageSizeBytes());
+					}				
+				}
+				catch(err)
+				{
+					console.log(err);
+				}
+
+				// now, try to push one edit
+				var success = g_editsStore.pushEdit(g_editsStore.ADD, 20, g_test.polygonFeature);
+				expect(success).toBeFalsy();
+
+				// clean everything
+				for( var key in window.localStorage )
+				{
+					if( key.indexOf(KEY_PREFIX)==0 )
+						window.localStorage.removeItem(key);
+				}
+
+				var sizeAfter = g_editsStore.getLocalStorageSizeBytes();
+				expect(sizeBefore).toEqual(sizeAfter);				
+			});	
+		}
+		else
+		{
+			it("exhaust localStorage capacity - LONG TEST NOT EXECUTED", function()
+			{				
+			});
+		}
 	})
 });
 
@@ -451,6 +589,6 @@ describe("Reset store", function()
 {
 	it("reset the store", function()
 	{
-		g_editsStore.resetEditsQueue();			
+		g_editsStore.resetEditsQueue();
 	})
 });
