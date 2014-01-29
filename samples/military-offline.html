@@ -244,6 +244,7 @@
 			var info = "Used " + formatMb(localStorageSizeBytes) + " (" + formatMb(editsStoreSizeBytes) + ")";
 			dom.byId('storageInfo').innerHTML = info;
 		}
+
 		function updatePendingEditsList()
 		{
 			var li;
@@ -253,7 +254,7 @@
 				var edits = editsStore._retrieveEditsQueue();
 				edits.forEach(function(edit)
 				{
-					var readableEdit = editsStore.getReadableEdit(edit);
+					var readableEdit = offlineFeaturesManager.getReadableEdit(edit);
 					li = "<li>" + readableEdit + "</li>";
 					domConstruct.place(li, 'pendingEdits','last');
 				},this);
