@@ -121,8 +121,6 @@
 
 		// user interface
 		on(dom.byId('storageInfo'), 'click', updateStorageInfo);
-		updateStorageInfo();
-		updatePendingEditsList();
 		on(dom.byId('clear-pending-edits-btn'),'click', clearPendingEdits);
 		on(dom.byId('go-offline-btn'),'click', goOffline);
 		on(dom.byId('go-online-btn'),'click', goOnline);
@@ -132,6 +130,7 @@
 		offlineFeaturesManager.on('edits-sent', updateStatus);
 		offlineFeaturesManager.on('all-edits-sent', updateStatus);
 		updateConnectivityIndicator();
+		updateStorageInfo();
 
 		//
 
@@ -174,6 +173,8 @@
 					offlineFeaturesManager.extend(layer);
 				});
 
+				updatePendingEditsList();
+				
 				// jabadia: only if we have internet available
 				offlineFeaturesManager.replayStoredEdits();
 			}
