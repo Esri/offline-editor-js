@@ -7,9 +7,10 @@
 - try and fill localStorage to see what happens... OK, localStorage.setItem() throws error
 - prevent attributeEditor to appear after replaying the stored edits, OK
 - rename offlineFeatureService to offlineFeaturesManager, OK
-- be careful with updates for features added offline (replace tmp id by final id), ONGOING
-	- updates/deletes of features added offline (not yet in the server) are not updated correctly in the local layer
+- be careful with updates for features added offline (replace tmp id by final id), DONE
+- updates/deletes of features added offline (not yet in the server) are not updated correctly in the local layer, FIXED
 
+- 'loader.gif' when replaying edits to server
 - explicit feedback to user when QuotaError happens
 - goOnline()/goOffline() automatically
 - unit tests
