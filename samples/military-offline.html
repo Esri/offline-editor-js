@@ -42,7 +42,7 @@
             padding: 4px;
 		}
 
-		#connectivityIndicator 				{ color: white; background-color: #aaa;  }
+		#connectivityIndicator 				{ color: white; background-color: #aaa; font-size: 16px;  }
 		#connectivityIndicator.online 		{ background-color: #0C0; }
 		#connectivityIndicator.offline  	{ background-color: #E00; }
 		#connectivityIndicator.reconnecting { background-color: orange; }
@@ -287,18 +287,14 @@
 		}
 
 		function goOnline()
-		{
-			var node = dom.byId('connectivityIndicator');
-			domClass.remove(node, "online offline reconnecting");
-			node.innerHTML = "<i class='fa fa-spinner fa-spin'></i> reconnecting";
-			domClass.add(node, "reconnecting");
-
+		{			
 			domUtils.show(editor.progressBar.domNode);
 			offlineFeaturesManager.goOnline(function()
 			{
 				domUtils.hide(editor.progressBar.domNode);
 				updateConnectivityIndicator();
 			});
+			updateConnectivityIndicator();
 		}
 
 		function goOffline()
@@ -310,18 +306,21 @@
 		function updateConnectivityIndicator()
 		{
 			var node = dom.byId('connectivityIndicator');
-
 			domClass.remove(node, "online offline reconnecting");
-
-			if( offlineFeaturesManager.isOnline() )
+			switch( offlineFeaturesManager.getOnlineStatus() )
 			{
-				node.innerHTML = "<i class='fa fa-link'></i> online";
-				domClass.add(node, "online");
-			}
-			else
-			{
-				node.innerHTML = "<i class='fa fa-chain-broken'></i> offline";
-				domClass.add(node, "offline");
+				case offlineFeaturesManager.OFFLINE:
+					node.innerHTML = "<i class='fa fa-chain-broken'></i> offline";
+					domClass.add(node, "offline");
+					break;
+				case offlineFeaturesManager.ONLINE:
+					node.innerHTML = "<i class='fa fa-link'></i> online";
+					domClass.add(node, "online");
+					break;
+				case offlineFeaturesManager.RECONNECTING:
+					node.innerHTML = "<i class='fa fa-cog fa-spin'></i> reconnecting";
+					domClass.add(node, "reconnecting");
+					break;
 			}
 		}
 
