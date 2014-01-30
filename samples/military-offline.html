@@ -42,9 +42,10 @@
             padding: 4px;
 		}
 
-		#connectivityIndicator 			{ color: white; background-color: #aaa;  }
-		#connectivityIndicator.online 	{ background-color: #0C0; }
-		#connectivityIndicator.offline  { background-color: #E00; }
+		#connectivityIndicator 				{ color: white; background-color: #aaa; font-size: 16px;  }
+		#connectivityIndicator.online 		{ background-color: #0C0; }
+		#connectivityIndicator.offline  	{ background-color: #E00; }
+		#connectivityIndicator.reconnecting { background-color: orange; }
 
 		#pendingEdits {
             border: 1px solid black;
@@ -102,7 +103,7 @@
 	    "dojo/i18n!esri/nls/jsapi",
 
 	    "dojo/_base/array", "dojo/parser", "dojo/keys", 
-		"dojo/dom", "dojo/on", "dojo/dom-construct", "dojo/dom-class",
+		"dojo/dom", "dojo/on", "dojo/dom-construct", "dojo/dom-class", "esri/domUtils",
 
 	    "dijit/layout/BorderContainer", "dijit/layout/ContentPane", 
 	    "dojo/domReady!"
@@ -114,15 +115,15 @@
 	    Editor, TemplatePicker,
 	    esriConfig, jsapiBundle,
 	    arrayUtils, parser, keys, 
-		dom, on, domConstruct, domClass
+		dom, on, domConstruct, domClass, domUtils
 	) {
+		var editor;
+
 		parser.parse();
 		dojo.fadeOut({node:'loader-cloak', onEnd: function(n){n.style.display="none"}}).play();
 
 		// user interface
 		on(dom.byId('storageInfo'), 'click', updateStorageInfo);
-		updateStorageInfo();
-		updatePendingEditsList();
 		on(dom.byId('clear-pending-edits-btn'),'click', clearPendingEdits);
 		on(dom.byId('go-offline-btn'),'click', goOffline);
 		on(dom.byId('go-online-btn'),'click', goOnline);
@@ -132,6 +133,7 @@
 		offlineFeaturesManager.on('edits-sent', updateStatus);
 		offlineFeaturesManager.on('all-edits-sent', updateStatus);
 		updateConnectivityIndicator();
+		updateStorageInfo();
 
 		//
 
@@ -174,8 +176,7 @@
 					offlineFeaturesManager.extend(layer);
 				});
 
-				// jabadia: only if we have internet available
-				offlineFeaturesManager.replayStoredEdits();
+				updatePendingEditsList();
 			}
 			catch(err)
 			{
@@ -214,11 +215,24 @@
 					}
 				};
 
-				var editor = new Editor({ settings: settings }, 'editorDiv');
+				editor = new Editor({ settings: settings }, 'editorDiv');
 				editor.startup();
 
 				console.log("ok!");
 			}
+			catch(err)
+			{
+				console.log(err);
+			}
+
+			try {
+				// jabadia: only if we have internet available
+				domUtils.show(editor.progressBar.domNode);
+				offlineFeaturesManager.replayStoredEdits(function()
+				{
+					domUtils.hide(editor.progressBar.domNode);
+				});
+			} 
 			catch(err)
 			{
 				console.log(err);
@@ -273,8 +287,13 @@
 		}
 
 		function goOnline()
-		{
-			offlineFeaturesManager.goOnline();
+		{			
+			domUtils.show(editor.progressBar.domNode);
+			offlineFeaturesManager.goOnline(function()
+			{
+				domUtils.hide(editor.progressBar.domNode);
+				updateConnectivityIndicator();
+			});
 			updateConnectivityIndicator();
 		}
 
@@ -287,18 +306,21 @@
 		function updateConnectivityIndicator()
 		{
 			var node = dom.byId('connectivityIndicator');
-
-			domClass.remove(node, "online offline");
-
-			if( offlineFeaturesManager.isOnline() )
+			domClass.remove(node, "online offline reconnecting");
+			switch( offlineFeaturesManager.getOnlineStatus() )
 			{
-				node.innerHTML = "<i class='fa fa-link'></i> online";
-				domClass.add(node, "online");
-			}
-			else
-			{
-				node.innerHTML = "<i class='fa fa-chain-broken'></i> offline";
-				domClass.add(node, "offline");
+				case offlineFeaturesManager.OFFLINE:
+					node.innerHTML = "<i class='fa fa-chain-broken'></i> offline";
+					domClass.add(node, "offline");
+					break;
+				case offlineFeaturesManager.ONLINE:
+					node.innerHTML = "<i class='fa fa-link'></i> online";
+					domClass.add(node, "online");
+					break;
+				case offlineFeaturesManager.RECONNECTING:
+					node.innerHTML = "<i class='fa fa-cog fa-spin'></i> reconnecting";
+					domClass.add(node, "reconnecting");
+					break;
 			}
 		}
 
@@ -328,7 +350,7 @@
 		<div id="pendingEditsPane" data-dojo-type="dijit/layout/ContentPane" data-dojo-propos="region:'top'">
             <button style="width:60%" id="clear-pending-edits-btn" class="btn1">Clear Local Edits</button>			
             <button style="width:38%" id="go-offline-btn" class="btn1">Go Offline</button>
-            <button style="width:60%" id="refresh-feature-layers-btn" class="btn1">Refesh Layer</button>			
+            <button style="width:60%" id="refresh-feature-layers-btn" class="btn1">Refresh Layers</button>			
             <button style="width:38%" id="go-online-btn" class="btn1">Go Online</button>
 			<ul id="pendingEdits"></ul>
 		</div>
