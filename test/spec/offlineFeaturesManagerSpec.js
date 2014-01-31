@@ -267,6 +267,7 @@ describe("Normal online editing", function()
 describe("Offline Editing", function()
 {
 	var g1,g2,g3;
+	var g4,g5,g6;
 
 	async.it("clear feature Layers", function(done)
 	{
@@ -415,28 +416,112 @@ describe("Offline Editing", function()
 
 	async.it("Add new features", function(done)
 	{
-		expect("Not Implemented").toBe(null);
-		done();
+		expect(g_featureLayers[0].graphics.length).toBe(2);
+		expect(g_offlineFeaturesManager.getOnlineStatus()).toBe(g_offlineFeaturesManager.OFFLINE);
+
+		g4 = new g_modules.Graphic({"geometry":{"x":-109100,"y":5137000,"spatialReference":{"wkid":102100}},"attributes":{"symbolname":"Reference Point DLRP","z":null,"additionalinformation":null,"eny":null,"datetimevalid":null,"datetimeexpired":null,"distance":null,"azimuth":null,"uniquedesignation":null,"x":null,"y":null}} );
+		g5 = new g_modules.Graphic({"geometry":{"x":-109500,"y":5137000,"spatialReference":{"wkid":102100}},"attributes":{"symbolname":"Reference Point DLRP","z":null,"additionalinformation":null,"eny":null,"datetimevalid":null,"datetimeexpired":null,"distance":null,"azimuth":null,"uniquedesignation":null,"x":null,"y":null}} );
+		g6 = new g_modules.Graphic({"geometry":{"x":-109900,"y":5137000,"spatialReference":{"wkid":102100}},"attributes":{"symbolname":"Reference Point DLRP","z":null,"additionalinformation":null,"eny":null,"datetimevalid":null,"datetimeexpired":null,"distance":null,"azimuth":null,"uniquedesignation":null,"x":null,"y":null}} );
+
+		var adds = [g4,g5,g6];
+		g_featureLayers[0].applyEdits(adds,null,null,function(addResults,updateResults,deleteResults)
+		{
+			expect(addResults.length).toBe(3);
+			expect(g_editsStore.pendingEditsCount()).toBe(10);
+			expect(g_featureLayers[0].graphics.length).toBe(5);
+			g4.attributes.objectid = addResults[0].objectId;
+			g5.attributes.objectid = addResults[1].objectId;
+			g6.attributes.objectid = addResults[2].objectId;
+			expect(g4.attributes.objectid).toBeLessThan(0);
+			expect(g5.attributes.objectid).toBeLessThan(g4.attributes.objectid);
+			expect(g6.attributes.objectid).toBeLessThan(g5.attributes.objectid);
+			countFeatures(g_featureLayers[0], function(success,result)
+			{
+				expect(success).toBeTruthy();
+				expect(result.count).toBe(3); // still 3
+				done();
+			});
+		},
+		function(error)
+		{
+			expect(true).toBeFalsy();
+		});
 	});
 
 	async.it("Update new features", function(done)
 	{
-		expect("Not Implemented").toBe(null);
-		done();
+		expect(g_featureLayers[0].graphics.length).toBe(5);
+		expect(g_offlineFeaturesManager.getOnlineStatus()).toBe(g_offlineFeaturesManager.OFFLINE);
+
+		g4.geometry.y += 100;
+		g5.geometry.y += 50;
+		g6.geometry.y -= 50;
+		var updates = [g4,g5,g6];
+		g_featureLayers[0].applyEdits(null,updates,null,function(addResults,updateResults,deleteResults)
+		{
+			expect(updateResults.length).toBe(3);
+			expect(updateResults[0].success).toBeTruthy();
+			expect(updateResults[1].success).toBeTruthy();
+			expect(updateResults[2].success).toBeTruthy();
+			expect(g_featureLayers[0].graphics.length).toBe(5);
+			expect(g_editsStore.pendingEditsCount()).toBe(13);
+			countFeatures(g_featureLayers[0], function(success,result)
+			{
+				expect(success).toBeTruthy();
+				expect(result.count).toBe(3); // still 3
+				done();
+			});
+		},
+		function(error)
+		{
+			expect(true).toBeFalsy();
+			done();
+		});
 	});
 	
 	async.it("Delete new features", function(done)
 	{
-		expect("Not Implemented").toBe(null);
-		done();
+		expect(g_featureLayers[0].graphics.length).toBe(5);
+		expect(g_offlineFeaturesManager.getOnlineStatus()).toBe(g_offlineFeaturesManager.OFFLINE);
+
+		var deletes = [g5];
+		g_featureLayers[0].applyEdits(null,null,deletes,function(addResults,updateResults,deleteResults)
+		{
+			expect(deleteResults.length).toBe(1);
+			expect(deleteResults[0].success).toBeTruthy();
+			expect(g_featureLayers[0].graphics.length).toBe(4);
+			expect(g_editsStore.pendingEditsCount()).toBe(14);
+			countFeatures(g_featureLayers[0], function(success,result)
+			{
+				expect(success).toBeTruthy();
+				expect(result.count).toBe(3); // still 3, the delete is still offline
+				done();
+			});
+		},
+		function(error)
+		{
+			expect(true).toBeFalsy();
+			done();
+		});
 	});
 
 	async.it("Go Online", function(done)
 	{
+		console.log(g_featureLayers[0].graphics.map(function(g) { return [g.attributes.objectid, g.geometry.x, g.geometry.y];}));
+		expect(g_featureLayers[0].graphics.length).toBe(4);
+
 		g_offlineFeaturesManager.goOnline(function()
 		{
 			expect(g_offlineFeaturesManager.getOnlineStatus()).toBe(g_offlineFeaturesManager.ONLINE);
 			expect(g_editsStore.pendingEditsCount()).toBe(0);
+			console.log(g_featureLayers[0].graphics.map(function(g) { return [g.attributes.objectid, g.geometry.x, g.geometry.y];}));
+			expect(g_featureLayers[0].graphics.length).toBe(4);
+			countFeatures(g_featureLayers[0], function(success,result)
+			{
+				expect(success).toBeTruthy();
+				expect(result.count).toBe(4);
+				done();
+			});
 			done();
 		});;
 		expect(g_offlineFeaturesManager.getOnlineStatus()).toBe(g_offlineFeaturesManager.RECONNECTING);
