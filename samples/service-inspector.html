@@ -18,6 +18,11 @@
 		  padding-bottom: 20px;
 		}
 
+		#service-summary-table i
+		{
+			cursor: pointer;
+		}
+
 	</style>
 </head>
 <body>
@@ -49,6 +54,7 @@
 							<th>Layer</th>
 							<th>Count</th>
 							<th>Features</th>
+							<th></th>							
 						</tr>
 					</thead>
 					<tbody id="service-summary-table-body">
@@ -108,13 +114,13 @@
 		"esri/request",
 		"edit/editsStore",
 		"dojo/dom", "dojo/on", "dojo/query", 
-		"dojo/dom-construct",
+		"dojo/dom-construct", "dojo/dom-attr",
 		'jquery','dojo/domReady!'],
 		function(
 			esriRequest,
 			editsStore,
 			dom, on, query, 
-			domConstruct,
+			domConstruct, domAttr,
 			$)
 	{
 		var serverUrl = "http://services2.arcgis.com/CQWCKwrSm5dkM28A/arcgis/rest/services";
@@ -155,47 +161,73 @@
 							"<td class='id'>" + layer.id + "</td>" +
 							"<td class='name'></td>" +
 							"<td class='count'></td>" + 
-							"<td class='features'></td>";
+							"<td class='features'></td>" + 
+							"<td id='remove-" + layer.id + "-btn'><i class='glyphicon glyphicon-remove'></i></td>";
 						var tr = domConstruct.place("<tr>", dom.byId('service-summary-table-body'),'last');
 						tr.id = "layer" + layer.id;
 						domConstruct.place(rowContent, tr,'last');
-
-						var layerFeatureCountRequest = esriRequest(
+						on(dom.byId('remove-' + layer.id + "-btn"),'click', function(evt)
 						{
-							url: fsUrl + '/' + layer.id + '/query',
-							content: { 
-								f: 'json',
-								where: '1=1',
-								returnIdsOnly: true
+							var featureLayerUrl =  fsUrl + '/' + layer.id;
+							var layerDeleteAllRequest = esriRequest(
+							{
+								url: featureLayerUrl + '/deleteFeatures',
+								content: {f: 'json', where:'1=1'},
+								handleAs:'json'
+							},{usePost:true});
+							layerDeleteAllRequest.then(
+								function(response)
+								{
+									console.log(response);
+									refreshSummaryRow(fsUrl,layer.id);
+									alert("All (" + response.deleteResults.length + ") features deleted");
 								},
-							handleAs: 'json'
+								function(error)
+								{
+									alert(error);
+								})
 						});
-						layerFeatureCountRequest.then(
-							function(response)
-							{
-								query('#layer' + layer.id + ' .count')[0].innerHTML = response.objectIds.length;
-								query('#layer' + layer.id + ' .features')[0].innerHTML = response.objectIds.join(', ');
-							},
-							errorCb
-						);
 
-						var layerFeatureNameRequest = esriRequest(
-						{
-							url: fsUrl + '/' + layer.id,
-							content: { f: 'json' },
-							handleAs: 'json'
-						});
-						layerFeatureNameRequest.then(
-							function(response)
-							{
-								query('#layer' + layer.id + ' .name')[0].innerHTML = response.name;
-							},
-							errorCb
-						);
-
+						refreshSummaryRow(fsUrl,layer.id);
 					});
 
 					console.log("ok!");
+				},
+				errorCb
+			);
+		}
+
+		function refreshSummaryRow(fsUrl,layerId)
+		{			
+			var layerFeatureCountRequest = esriRequest(
+			{
+				url: fsUrl + '/' + layerId + '/query',
+				content: { 
+					f: 'json',
+					where: '1=1',
+					returnIdsOnly: true
+					},
+				handleAs: 'json'
+			});
+			layerFeatureCountRequest.then(
+				function(response)
+				{
+					query('#layer' + layerId + ' .count')[0].innerHTML = response.objectIds.length;
+					query('#layer' + layerId + ' .features')[0].innerHTML = response.objectIds.join(', ');
+				},
+				errorCb
+			);
+
+			var layerFeatureNameRequest = esriRequest(
+			{
+				url: fsUrl + '/' + layerId,
+				content: { f: 'json' },
+				handleAs: 'json'
+			});
+			layerFeatureNameRequest.then(
+				function(response)
+				{
+					query('#layer' + layerId + ' .name')[0].innerHTML = response.name;
 				},
 				errorCb
 			);
