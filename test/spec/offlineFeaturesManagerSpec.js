@@ -282,6 +282,7 @@ describe("Offline Editing", function()
 {
 	var g1,g2,g3;
 	var g4,g5,g6;
+	var l1,l2,l3;
 
 	async.it("clear feature Layers", function(done)
 	{
@@ -313,6 +314,13 @@ describe("Offline Editing", function()
 		});
 	});
 
+	async.it("clear local store",function(done)
+	{
+		g_editsStore.resetEditsQueue();
+		expect(g_editsStore.hasPendingEdits()).toBeFalsy();
+		done();
+	});
+
 	async.it("add some features", function(done)
 	{
 		expect(g_offlineFeaturesManager.getOnlineStatus()).toBe(g_offlineFeaturesManager.ONLINE);
@@ -328,6 +336,33 @@ describe("Offline Editing", function()
 			expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2,g3]));
 			expect(g_featureLayers[0].graphics.length).toBe(3);
 			countFeatures(g_featureLayers[0], function(success,result)
+			{
+				expect(success).toBeTruthy();
+				expect(result.count).toBe(3);
+				done();
+			});
+		},
+		function(error)
+		{
+			expect(true).toBeFalsy();
+		});
+	});
+
+	async.it("add some features - lines ", function(done)
+	{
+		expect(g_offlineFeaturesManager.getOnlineStatus()).toBe(g_offlineFeaturesManager.ONLINE);
+
+		l1 = new g_modules.Graphic({"geometry":{"paths":[[[-101300,5136900],[-108400,5136900]]],"spatialReference":{"wkid":102100}},"attributes":{"ruleid":40,"zmax":null,"additionalinformation":null,"eny":null,"uniquedesignation":null,"datetimevalid":null,"datetimeexpired":null,"distance":null,"azimuth":null,"echelon":null,"x":null,"y":null,"z":null,"zmin":null}});
+		l2 = new g_modules.Graphic({"geometry":{"paths":[[[-101300,5136800],[-108400,5136800]]],"spatialReference":{"wkid":102100}},"attributes":{"ruleid":40,"zmax":null,"additionalinformation":null,"eny":null,"uniquedesignation":null,"datetimevalid":null,"datetimeexpired":null,"distance":null,"azimuth":null,"echelon":null,"x":null,"y":null,"z":null,"zmin":null}});
+		l3 = new g_modules.Graphic({"geometry":{"paths":[[[-101300,5136700],[-108400,5136700]]],"spatialReference":{"wkid":102100}},"attributes":{"ruleid":40,"zmax":null,"additionalinformation":null,"eny":null,"uniquedesignation":null,"datetimevalid":null,"datetimeexpired":null,"distance":null,"azimuth":null,"echelon":null,"x":null,"y":null,"z":null,"zmin":null}});
+
+		var adds = [l1,l2,l3];
+		g_featureLayers[1].applyEdits(adds,null,null,function(addResults,updateResults,deleteResults)
+		{
+			expect(addResults.length).toBe(3);
+			expect(getObjectIds(g_featureLayers[1].graphics)).toEqual(getObjectIds([l1,l2,l3]));
+			expect(g_featureLayers[1].graphics.length).toBe(3);
+			countFeatures(g_featureLayers[1], function(success,result)
 			{
 				expect(success).toBeTruthy();
 				expect(result.count).toBe(3);
@@ -376,6 +411,34 @@ describe("Offline Editing", function()
 		});
 	});
 	
+	async.it("Update existing features - lines", function(done)
+	{
+		expect(getObjectIds(g_featureLayers[1].graphics)).toEqual(getObjectIds([l1,l2,l3]));
+		expect(g_featureLayers[1].graphics.length).toBe(3);
+		expect(g_offlineFeaturesManager.getOnlineStatus()).toBe(g_offlineFeaturesManager.OFFLINE);
+
+		l1.geometry.y += 300; // jabadia: change
+		l2.geometry.y += 100;
+		l3.geometry.y -= 200;
+		var updates = [l1,l2,l3];
+		g_featureLayers[1].applyEdits(null,updates,null,function(addResults,updateResults,deleteResults)
+		{
+			expect(updateResults.length).toBe(3);
+			expect(updateResults[0].success).toBeTruthy();
+			expect(updateResults[1].success).toBeTruthy();
+			expect(updateResults[2].success).toBeTruthy();
+			expect(getObjectIds(g_featureLayers[1].graphics)).toEqual(getObjectIds([l1,l2,l3]));
+			expect(g_featureLayers[1].graphics.length).toBe(3);
+			expect(g_editsStore.pendingEditsCount()).toBe(6);
+			done();
+		},
+		function(error)
+		{
+			expect(true).toBeFalsy();
+			done();
+		});
+	});
+	
 	async.it("Update existing features again", function(done)
 	{
 		expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2,g3]));
@@ -394,7 +457,7 @@ describe("Offline Editing", function()
 			expect(updateResults[2].success).toBeTruthy();
 			expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2,g3]));
 			expect(g_featureLayers[0].graphics.length).toBe(3);
-			expect(g_editsStore.pendingEditsCount()).toBe(6);
+			expect(g_editsStore.pendingEditsCount()).toBe(9);
 			countFeatures(g_featureLayers[0], function(success,result)
 			{
 				expect(success).toBeTruthy();
@@ -420,7 +483,7 @@ describe("Offline Editing", function()
 			expect(deleteResults.length).toBe(1);
 			expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2]));
 			expect(g_featureLayers[0].graphics.length).toBe(2);
-			expect(g_editsStore.pendingEditsCount()).toBe(7);
+			expect(g_editsStore.pendingEditsCount()).toBe(10);
 			countFeatures(g_featureLayers[0], function(success,result)
 			{
 				expect(success).toBeTruthy();
@@ -449,7 +512,7 @@ describe("Offline Editing", function()
 		g_featureLayers[0].applyEdits(adds,null,null,function(addResults,updateResults,deleteResults)
 		{
 			expect(addResults.length).toBe(3);
-			expect(g_editsStore.pendingEditsCount()).toBe(10);
+			expect(g_editsStore.pendingEditsCount()).toBe(13);
 			expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2,g4,g5,g6]));
 			expect(g_featureLayers[0].graphics.length).toBe(5);
 			g4.attributes.objectid = addResults[0].objectId;
@@ -489,7 +552,7 @@ describe("Offline Editing", function()
 			expect(updateResults[2].success).toBeTruthy();
 			expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2,g4,g5,g6]));
 			expect(g_featureLayers[0].graphics.length).toBe(5);
-			expect(g_editsStore.pendingEditsCount()).toBe(13);
+			expect(g_editsStore.pendingEditsCount()).toBe(16);
 			countFeatures(g_featureLayers[0], function(success,result)
 			{
 				expect(success).toBeTruthy();
@@ -517,7 +580,7 @@ describe("Offline Editing", function()
 			expect(deleteResults[0].success).toBeTruthy();
 			expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2,g4,g6]));
 			expect(g_featureLayers[0].graphics.length).toBe(4);
-			expect(g_editsStore.pendingEditsCount()).toBe(14);
+			expect(g_editsStore.pendingEditsCount()).toBe(17);
 			countFeatures(g_featureLayers[0], function(success,result)
 			{
 				expect(success).toBeTruthy();
@@ -532,10 +595,27 @@ describe("Offline Editing", function()
 		});
 	});
 
+/*
+	async.it("Optimize Queue", function(done)
+	{
+		try
+		{			
+			g_offlineFeaturesManager.optimizeEditsQueue();
+		}
+		catch(err)
+		{
+			console.log(err);
+			expect(err).toBeUndefined();
+		}
+		done();
+	});
+*/
 	async.it("Go Online", function(done)
 	{
 		expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2,g4,g6]));
+		expect(getObjectIds(g_featureLayers[1].graphics)).toEqual(getObjectIds([l1,l2,l3]));
 		expect(g_featureLayers[0].graphics.length).toBe(4);
+		expect(g_featureLayers[1].graphics.length).toBe(3);
 
 		g_offlineFeaturesManager.goOnline(function()
 		{
@@ -545,15 +625,22 @@ describe("Offline Editing", function()
 			//expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2,g4,g6]));
 			// all of them are positive
 			expect(getObjectIds(g_featureLayers[0].graphics).filter(function(id){ return id<0; })).toEqual([]);
+			expect(getObjectIds(g_featureLayers[1].graphics).filter(function(id){ return id<0; })).toEqual([]);
 			expect(g_featureLayers[0].graphics.length).toBe(4);
+			expect(g_featureLayers[1].graphics.length).toBe(3);
 			countFeatures(g_featureLayers[0], function(success,result)
 			{
 				expect(success).toBeTruthy();
 				expect(result.count).toBe(4);
-				done();
+				countFeatures(g_featureLayers[1], function(success,result)
+				{
+					expect(success).toBeTruthy();
+					expect(result.count).toBe(3);
+					done();
+				});
 			});
-			done();
 		});;
 		expect(g_offlineFeaturesManager.getOnlineStatus()).toBe(g_offlineFeaturesManager.RECONNECTING);
 	});
+
 });
