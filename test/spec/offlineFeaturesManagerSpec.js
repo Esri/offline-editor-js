@@ -36,6 +36,11 @@ function countFeatures(featureLayer, cb)
 	});
 }
 
+function getObjectIds(graphics)
+{
+	return graphics.map( function(g) { return g.attributes.objectid; });
+}
+
 /*
  * tests begin here
  */
@@ -95,6 +100,7 @@ describe("Normal online editing", function()
 				g1.attributes.objectid = addResults[0].objectId;
 				g2.attributes.objectid = addResults[1].objectId;
 				g3.attributes.objectid = addResults[2].objectId;
+				expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2,g3]));
 				expect(g_featureLayers[0].graphics.length).toBe(3);
 				countFeatures(g_featureLayers[0], function(success,result)
 				{
@@ -112,6 +118,7 @@ describe("Normal online editing", function()
 
 		async.it("update test features", function(done)
 		{
+			expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2,g3]));
 			expect(g_featureLayers[0].graphics.length).toBe(3);
 
 			g1.geometry.y += 300;
@@ -124,6 +131,7 @@ describe("Normal online editing", function()
 				expect(updateResults[0].success).toBeTruthy();
 				expect(updateResults[1].success).toBeTruthy();
 				expect(updateResults[2].success).toBeTruthy();
+				expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2,g3]));
 				expect(g_featureLayers[0].graphics.length).toBe(3);
 				done();
 			},
@@ -136,12 +144,14 @@ describe("Normal online editing", function()
 
 		async.it("delete test features", function(done)
 		{
+			expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2,g3]));
 			expect(g_featureLayers[0].graphics.length).toBe(3);
 
 			var deletes = [g3];
 			g_featureLayers[0]._applyEdits(null,null,deletes,function(addResults,updateResults,deleteResults)
 			{
 				expect(deleteResults.length).toBe(1);
+				expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2]));
 				expect(g_featureLayers[0].graphics.length).toBe(2);
 				done();
 			},
@@ -204,7 +214,7 @@ describe("Normal online editing", function()
 				g1.attributes.objectid = addResults[0].objectId;
 				g2.attributes.objectid = addResults[1].objectId;
 				g3.attributes.objectid = addResults[2].objectId;
-				console.log(g_featureLayers[0].graphics);
+				expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2,g3]));
 				expect(g_featureLayers[0].graphics.length).toBe(3);
 				countFeatures(g_featureLayers[0], function(success,result)
 				{
@@ -222,6 +232,7 @@ describe("Normal online editing", function()
 
 		async.it("update test features", function(done)
 		{
+			expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2,g3]));
 			expect(g_featureLayers[0].graphics.length).toBe(3);
 
 			g1.geometry.y += 300;
@@ -234,6 +245,7 @@ describe("Normal online editing", function()
 				expect(updateResults[0].success).toBeTruthy();
 				expect(updateResults[1].success).toBeTruthy();
 				expect(updateResults[2].success).toBeTruthy();
+				expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2,g3]));
 				expect(g_featureLayers[0].graphics.length).toBe(3);
 				done();
 			},
@@ -246,12 +258,14 @@ describe("Normal online editing", function()
 
 		async.it("delete test features", function(done)
 		{
+			expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2,g3]));
 			expect(g_featureLayers[0].graphics.length).toBe(3);
 
 			var deletes = [g3];
 			g_featureLayers[0].applyEdits(null,null,deletes,function(addResults,updateResults,deleteResults)
 			{
 				expect(deleteResults.length).toBe(1);
+				expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2]));
 				expect(g_featureLayers[0].graphics.length).toBe(2);
 				done();
 			},
@@ -311,6 +325,7 @@ describe("Offline Editing", function()
 		g_featureLayers[0].applyEdits(adds,null,null,function(addResults,updateResults,deleteResults)
 		{
 			expect(addResults.length).toBe(3);
+			expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2,g3]));
 			expect(g_featureLayers[0].graphics.length).toBe(3);
 			countFeatures(g_featureLayers[0], function(success,result)
 			{
@@ -335,6 +350,7 @@ describe("Offline Editing", function()
 
 	async.it("Update existing features", function(done)
 	{
+		expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2,g3]));
 		expect(g_featureLayers[0].graphics.length).toBe(3);
 		expect(g_offlineFeaturesManager.getOnlineStatus()).toBe(g_offlineFeaturesManager.OFFLINE);
 
@@ -348,6 +364,7 @@ describe("Offline Editing", function()
 			expect(updateResults[0].success).toBeTruthy();
 			expect(updateResults[1].success).toBeTruthy();
 			expect(updateResults[2].success).toBeTruthy();
+			expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2,g3]));
 			expect(g_featureLayers[0].graphics.length).toBe(3);
 			expect(g_editsStore.pendingEditsCount()).toBe(3);
 			done();
@@ -361,6 +378,7 @@ describe("Offline Editing", function()
 	
 	async.it("Update existing features again", function(done)
 	{
+		expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2,g3]));
 		expect(g_featureLayers[0].graphics.length).toBe(3);
 		expect(g_offlineFeaturesManager.getOnlineStatus()).toBe(g_offlineFeaturesManager.OFFLINE);
 
@@ -374,6 +392,7 @@ describe("Offline Editing", function()
 			expect(updateResults[0].success).toBeTruthy();
 			expect(updateResults[1].success).toBeTruthy();
 			expect(updateResults[2].success).toBeTruthy();
+			expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2,g3]));
 			expect(g_featureLayers[0].graphics.length).toBe(3);
 			expect(g_editsStore.pendingEditsCount()).toBe(6);
 			countFeatures(g_featureLayers[0], function(success,result)
@@ -392,12 +411,14 @@ describe("Offline Editing", function()
 	
 	async.it("Delete existing features", function(done)
 	{
+		expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2,g3]));
 		expect(g_featureLayers[0].graphics.length).toBe(3);
 
 		var deletes = [g3];
 		g_featureLayers[0].applyEdits(null,null,deletes,function(addResults,updateResults,deleteResults)
 		{
 			expect(deleteResults.length).toBe(1);
+			expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2]));
 			expect(g_featureLayers[0].graphics.length).toBe(2);
 			expect(g_editsStore.pendingEditsCount()).toBe(7);
 			countFeatures(g_featureLayers[0], function(success,result)
@@ -416,6 +437,7 @@ describe("Offline Editing", function()
 
 	async.it("Add new features", function(done)
 	{
+		expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2]));
 		expect(g_featureLayers[0].graphics.length).toBe(2);
 		expect(g_offlineFeaturesManager.getOnlineStatus()).toBe(g_offlineFeaturesManager.OFFLINE);
 
@@ -428,6 +450,7 @@ describe("Offline Editing", function()
 		{
 			expect(addResults.length).toBe(3);
 			expect(g_editsStore.pendingEditsCount()).toBe(10);
+			expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2,g4,g5,g6]));
 			expect(g_featureLayers[0].graphics.length).toBe(5);
 			g4.attributes.objectid = addResults[0].objectId;
 			g5.attributes.objectid = addResults[1].objectId;
@@ -450,6 +473,7 @@ describe("Offline Editing", function()
 
 	async.it("Update new features", function(done)
 	{
+		expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2,g4,g5,g6]));
 		expect(g_featureLayers[0].graphics.length).toBe(5);
 		expect(g_offlineFeaturesManager.getOnlineStatus()).toBe(g_offlineFeaturesManager.OFFLINE);
 
@@ -463,6 +487,7 @@ describe("Offline Editing", function()
 			expect(updateResults[0].success).toBeTruthy();
 			expect(updateResults[1].success).toBeTruthy();
 			expect(updateResults[2].success).toBeTruthy();
+			expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2,g4,g5,g6]));
 			expect(g_featureLayers[0].graphics.length).toBe(5);
 			expect(g_editsStore.pendingEditsCount()).toBe(13);
 			countFeatures(g_featureLayers[0], function(success,result)
@@ -481,6 +506,7 @@ describe("Offline Editing", function()
 	
 	async.it("Delete new features", function(done)
 	{
+		expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2,g4,g5,g6]));
 		expect(g_featureLayers[0].graphics.length).toBe(5);
 		expect(g_offlineFeaturesManager.getOnlineStatus()).toBe(g_offlineFeaturesManager.OFFLINE);
 
@@ -489,6 +515,7 @@ describe("Offline Editing", function()
 		{
 			expect(deleteResults.length).toBe(1);
 			expect(deleteResults[0].success).toBeTruthy();
+			expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2,g4,g6]));
 			expect(g_featureLayers[0].graphics.length).toBe(4);
 			expect(g_editsStore.pendingEditsCount()).toBe(14);
 			countFeatures(g_featureLayers[0], function(success,result)
@@ -507,14 +534,17 @@ describe("Offline Editing", function()
 
 	async.it("Go Online", function(done)
 	{
-		console.log(g_featureLayers[0].graphics.map(function(g) { return [g.attributes.objectid, g.geometry.x, g.geometry.y];}));
+		expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2,g4,g6]));
 		expect(g_featureLayers[0].graphics.length).toBe(4);
 
 		g_offlineFeaturesManager.goOnline(function()
 		{
 			expect(g_offlineFeaturesManager.getOnlineStatus()).toBe(g_offlineFeaturesManager.ONLINE);
 			expect(g_editsStore.pendingEditsCount()).toBe(0);
-			console.log(g_featureLayers[0].graphics.map(function(g) { return [g.attributes.objectid, g.geometry.x, g.geometry.y];}));
+			// how to get the final id of g4 and g6 ?
+			//expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2,g4,g6]));
+			// all of them are positive
+			expect(getObjectIds(g_featureLayers[0].graphics).filter(function(id){ return id<0; })).toEqual([]);
 			expect(g_featureLayers[0].graphics.length).toBe(4);
 			countFeatures(g_featureLayers[0], function(success,result)
 			{
