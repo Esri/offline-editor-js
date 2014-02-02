@@ -129,9 +129,9 @@
 		on(dom.byId('go-online-btn'),'click', goOnline);
 		on(dom.byId('refresh-feature-layers-btn'),'click', refreshFeatureLayers);
 		var offlineFeaturesManager = new OfflineFeaturesManager();
-		offlineFeaturesManager.on('edits-enqueued', updateStatus);
-		offlineFeaturesManager.on('edits-sent', updateStatus);
-		offlineFeaturesManager.on('all-edits-sent', updateStatus);
+		offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_ENQUEUED, updateStatus);
+		offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_SENT, updateStatus);
+		offlineFeaturesManager.on(offlineFeaturesManager.events.ALL_EDITS_SENT, updateStatus);
 		updateConnectivityIndicator();
 		updateStorageInfo();
 
