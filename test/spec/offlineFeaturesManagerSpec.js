@@ -284,7 +284,7 @@ describe("Offline Editing", function()
 	var g4,g5,g6;
 	var l1,l2,l3;
 
-	async.it("clear feature Layers", function(done)
+	async.it("clear feature Layers - points - lines", function(done)
 	{
 		var count = 0;
 		function completedOne()
@@ -314,14 +314,14 @@ describe("Offline Editing", function()
 		});
 	});
 
-	async.it("clear local store",function(done)
+	async.it("clear local store - points - lines",function(done)
 	{
 		g_editsStore.resetEditsQueue();
 		expect(g_editsStore.hasPendingEdits()).toBeFalsy();
 		done();
 	});
 
-	async.it("add some features", function(done)
+	async.it("add some features - points", function(done)
 	{
 		expect(g_offlineFeaturesManager.getOnlineStatus()).toBe(g_offlineFeaturesManager.ONLINE);
 
@@ -348,7 +348,7 @@ describe("Offline Editing", function()
 		});
 	});
 
-	async.it("add some features - lines ", function(done)
+	async.it("add some features - lines", function(done)
 	{
 		expect(g_offlineFeaturesManager.getOnlineStatus()).toBe(g_offlineFeaturesManager.ONLINE);
 
@@ -383,7 +383,7 @@ describe("Offline Editing", function()
 		done();
 	});
 
-	async.it("Update existing features", function(done)
+	async.it("update existing features - points", function(done)
 	{
 		expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2,g3]));
 		expect(g_featureLayers[0].graphics.length).toBe(3);
@@ -411,7 +411,7 @@ describe("Offline Editing", function()
 		});
 	});
 	
-	async.it("Update existing features - lines", function(done)
+	async.it("update existing features - lines", function(done)
 	{
 		expect(getObjectIds(g_featureLayers[1].graphics)).toEqual(getObjectIds([l1,l2,l3]));
 		expect(g_featureLayers[1].graphics.length).toBe(3);
@@ -441,7 +441,7 @@ describe("Offline Editing", function()
 		});
 	});
 	
-	async.it("Update existing features again", function(done)
+	async.it("update existing features again - points", function(done)
 	{
 		expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2,g3]));
 		expect(g_featureLayers[0].graphics.length).toBe(3);
@@ -474,7 +474,7 @@ describe("Offline Editing", function()
 		});
 	});
 	
-	async.it("Delete existing features", function(done)
+	async.it("delete existing features - points", function(done)
 	{
 		expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2,g3]));
 		expect(g_featureLayers[0].graphics.length).toBe(3);
@@ -500,7 +500,7 @@ describe("Offline Editing", function()
 		});
 	});
 
-	async.it("Add new features", function(done)
+	async.it("add new features offline - points", function(done)
 	{
 		expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2]));
 		expect(g_featureLayers[0].graphics.length).toBe(2);
@@ -536,7 +536,7 @@ describe("Offline Editing", function()
 		});
 	});
 
-	async.it("Update new features", function(done)
+	async.it("update new features - points", function(done)
 	{
 		expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2,g4,g5,g6]));
 		expect(g_featureLayers[0].graphics.length).toBe(5);
@@ -569,7 +569,7 @@ describe("Offline Editing", function()
 		});
 	});
 	
-	async.it("Delete new features", function(done)
+	async.it("delete new features - points", function(done)
 	{
 		expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2,g4,g5,g6]));
 		expect(g_featureLayers[0].graphics.length).toBe(5);
@@ -597,21 +597,6 @@ describe("Offline Editing", function()
 		});
 	});
 
-/*
-	async.it("Optimize Queue", function(done)
-	{
-		try
-		{			
-			g_offlineFeaturesManager.optimizeEditsQueue();
-		}
-		catch(err)
-		{
-			console.log(err);
-			expect(err).toBeUndefined();
-		}
-		done();
-	});
-*/
 	async.it("Go Online", function(done)
 	{
 		expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2,g4,g6]));
@@ -619,10 +604,38 @@ describe("Offline Editing", function()
 		expect(g_featureLayers[0].graphics.length).toBe(4);
 		expect(g_featureLayers[1].graphics.length).toBe(3);
 
-		g_offlineFeaturesManager.goOnline(function()
+		g_offlineFeaturesManager.goOnline(function(success,responses)
 		{
 			console.log("went online");
 			expect(g_offlineFeaturesManager.getOnlineStatus()).toBe(g_offlineFeaturesManager.ONLINE);
+			expect(success).toBeTruthy();
+			expect(Object.keys(responses).length).toBe(2);
+			for(var layerUrl in responses)
+			{
+				var layerResponses = responses[layerUrl];
+				var layerId = layerUrl.substring(layerUrl.lastIndexOf('/')+1);
+				console.log(layerId, layerResponses);
+				if( layerId == "1")
+				{
+					expect(layerResponses.addResults.length).toBe(2); // two adds (three offline adds minus one delete)
+					expect(layerResponses.updateResults.length).toBe(2); // two updates (three updates to existing features minus one delete)
+					expect(layerResponses.deleteResults.length).toBe(1); // one delete (one delete to an already existing feature)
+
+					expect(layerResponses.addResults.filter(function(r){return !r.success;})).toEqual([]);
+					expect(layerResponses.updateResults.filter(function(r){return !r.success;})).toEqual([]);
+					expect(layerResponses.deleteResults.filter(function(r){return !r.success;})).toEqual([]);
+				}
+				else if( layerId == "2")
+				{
+					expect(layerResponses.addResults.length).toBe(0); // no adds
+					expect(layerResponses.updateResults.length).toBe(3); // three updates
+					expect(layerResponses.deleteResults.length).toBe(0); // no deletes
+
+					expect(layerResponses.addResults.filter(function(r){return !r.success;})).toEqual([]);
+					expect(layerResponses.updateResults.filter(function(r){return !r.success;})).toEqual([]);
+					expect(layerResponses.deleteResults.filter(function(r){return !r.success;})).toEqual([]);
+				}
+			}
 			expect(g_editsStore.pendingEditsCount()).toBe(0);
 			// how to get the final id of g4 and g6 ?
 			//expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2,g4,g6]));
