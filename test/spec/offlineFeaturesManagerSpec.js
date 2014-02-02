@@ -417,9 +417,11 @@ describe("Offline Editing", function()
 		expect(g_featureLayers[1].graphics.length).toBe(3);
 		expect(g_offlineFeaturesManager.getOnlineStatus()).toBe(g_offlineFeaturesManager.OFFLINE);
 
+		/*
 		l1.geometry.y += 300; // jabadia: change
 		l2.geometry.y += 100;
 		l3.geometry.y -= 200;
+		*/
 		var updates = [l1,l2,l3];
 		g_featureLayers[1].applyEdits(null,updates,null,function(addResults,updateResults,deleteResults)
 		{
@@ -619,6 +621,7 @@ describe("Offline Editing", function()
 
 		g_offlineFeaturesManager.goOnline(function()
 		{
+			console.log("went online");
 			expect(g_offlineFeaturesManager.getOnlineStatus()).toBe(g_offlineFeaturesManager.ONLINE);
 			expect(g_editsStore.pendingEditsCount()).toBe(0);
 			// how to get the final id of g4 and g6 ?
