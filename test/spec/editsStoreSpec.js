@@ -304,66 +304,6 @@ describe("Public Interface", function()
 				expect(success).toBeFalsy();
 			});
 		});
-
-		describe("Replacement of Temporary Ids", function()
-		{
-			function getObjectIds()
-			{
-				var edits = g_editsStore._retrieveEditsQueue();
-				var objectids = edits.map(function(edit) 
-				{ 
-					return g_editsStore._deserialize(edit.graphic).attributes.objectid 
-				});
-				return objectids;
-			}
-
-			it("reset edits queue", function()
-			{
-				g_editsStore.resetEditsQueue();
-				expect(g_editsStore.pendingEditsCount()).toBe(0);
-			});
-
-			it("add edits to edits queue", function()
-			{
-				var success, objectids;
-				expect(g_test.newPointFeature.attributes.objectid).toBe(-1);
-				success = g_editsStore.pushEdit(g_editsStore.ADD, 6, g_test.newPointFeature);
-				expect(g_editsStore.pendingEditsCount()).toBe(1);
-				expect(success).toBeTruthy();
-				expect(g_editsStore.peekFirstEdit().graphic.attributes.objectid).toBe(-1);
-				
-				expect(g_test.polygonFeature.attributes.objectid).toBe(8);
-				success = g_editsStore.pushEdit(g_editsStore.UPDATE, 3, g_test.polygonFeature);
-				expect(success).toBeTruthy();
-				expect(g_editsStore.pendingEditsCount()).toBe(2);
-				objectids = getObjectIds();
-				expect(objectids).toEqual([-1,8]);
-
-				expect(g_test.lineFeature.attributes.objectid).toBe(5);
-				success = g_editsStore.pushEdit(g_editsStore.UPDATE, 3, g_test.lineFeature);
-				expect(success).toBeTruthy();
-				expect(g_editsStore.pendingEditsCount()).toBe(3);
-				objectids = getObjectIds();
-				expect(objectids).toEqual([-1,8,5]);
-			});
-
-			it("replace ids", function()
-			{
-				var replaceCount, objectids;
-
-				objectids = getObjectIds();
-				expect(objectids).toEqual([-1,8,5]);
-
-				replaceCount = g_editsStore.replaceTempId(-1,10,"objectid");
-
-				expect(replaceCount).toBe(1);
-				objectids = getObjectIds();
-				expect(objectids).toEqual([10,8,5]);
-
-				replaceCount = g_editsStore.replaceTempId(-1,10,"objectid");
-				expect(replaceCount).toBe(0);
-			});
-		})
 	});
 
 	describe("Local Storage size", function()
@@ -373,7 +313,7 @@ describe("Public Interface", function()
 		it("report edit store size", function()
 		{
 			usedBytes = g_editsStore.getEditsStoreSizeBytes();
-			expect(usedBytes).toBe(738);
+			expect(usedBytes).toBe(505);
 		});
 
 		it("report total local storage size", function()
