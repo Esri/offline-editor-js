@@ -174,6 +174,11 @@
 				{
 					var layer = result.layer;
 					offlineFeaturesManager.extend(layer);
+					//layer.on('edits-completed', logCurrentObjectIds);
+					layer.on('update-end', logCurrentObjectIds);
+					layer.on('graphic-add', logCurrentObjectIds)
+					layer.on('graphic-remove', logCurrentObjectIds)
+					layer.on('graphics-clear', logCurrentObjectIds)
 				});
 
 				updatePendingEditsList();
@@ -244,6 +249,7 @@
 			console.log("updatingStatus");
 			updateStorageInfo();
 			updatePendingEditsList();
+			logCurrentObjectIds();
 		}
 
 		function updateStorageInfo()
@@ -257,6 +263,16 @@
 
 			var info = "Used " + formatMb(localStorageSizeBytes) + " (" + formatMb(editsStoreSizeBytes) + ")";
 			dom.byId('storageInfo').innerHTML = info;
+		}
+
+		function logCurrentObjectIds(evt)
+		{
+			var layers = ( evt && evt.target )? [evt.target] : featureLayers;
+			layers.forEach(function(layer)
+			{				
+				var objectIds = layer.graphics.map( function(g) { return g.attributes[ layer.objectIdField ];});
+				console.log(layer.name, objectIds);
+			});
 		}
 
 		function updatePendingEditsList()
