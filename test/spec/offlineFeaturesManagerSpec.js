@@ -597,7 +597,7 @@ describe("Offline Editing", function()
 		});
 	});
 
-	async.it("Go Online", function(done)
+	async.it("go Online", function(done)
 	{
 		expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2,g4,g6]));
 		expect(getObjectIds(g_featureLayers[1].graphics)).toEqual(getObjectIds([l1,l2,l3]));
@@ -612,6 +612,9 @@ describe("Offline Editing", function()
 			expect(Object.keys(responses).length).toBe(2);
 			for(var layerUrl in responses)
 			{
+				if( !responses.hasOwnProperty(layerUrl))
+					continue;
+				
 				var layerResponses = responses[layerUrl];
 				var layerId = layerUrl.substring(layerUrl.lastIndexOf('/')+1);
 				console.log(layerId, layerResponses);
