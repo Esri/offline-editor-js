@@ -9,11 +9,12 @@
 - rename offlineFeatureService to offlineFeaturesManager, OK
 - be careful with updates for features added offline (replace tmp id by final id), DONE
 - updates/deletes of features added offline (not yet in the server) are not updated correctly in the local layer, FIXED
+- 'loader.gif' when replaying edits to server, OK
+- unit tests, OK
 
-- 'loader.gif' when replaying edits to server
+- unit tests for failure cases
 - explicit feedback to user when QuotaError happens
 - goOnline()/goOffline() automatically
-- unit tests
 - feedback graphics layer
 - add timestamp to edits
 - undo
