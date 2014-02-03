@@ -62,8 +62,10 @@
 				</table>
 				<button id="refresh-service-summary-btn" type="button" class="btn btn-primary"><i class="fa fa-refresh"></i> Refresh</button>				
 			</div>
-
-			<div class="col-sm-6">
+		</div>
+		<hr>
+		<div class="row">
+			<div class="col-sm-12">
 
 				<h3>Local Storage:</h3>
 				<table id="local-storage-summary-table" class="table table-striped table-condensed table-hover">
@@ -71,8 +73,7 @@
 						<tr>
 							<th>Operation</th>
 							<th>Layer</th>
-							<th>Count</th>
-							<th>Features</th>
+							<th>Graphic</th>
 						</tr>
 					</thead>
 					<tbody id="local-storage-summary-table-body">
@@ -239,7 +240,9 @@
 			var edits = editsStore._retrieveEditsQueue();
 			edits.forEach(function(edit)
 			{
-				var rowContent = [edit.operation, edit.layer, edit.graphic];
+				var components = edit.layer.split('/');
+				var layerId = components[components.length-3] + " [" + components[components.length-1] + "]"; 
+				var rowContent = [edit.operation, layerId, edit.graphic];
 				rowContent = '<td>' + rowContent.join('</td><td>') + '</td>';
 				var tr = domConstruct.place("<tr>", dom.byId('local-storage-summary-table-body'),'last');
 				domConstruct.place(rowContent,tr,'last');
