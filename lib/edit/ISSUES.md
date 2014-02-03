@@ -12,6 +12,7 @@
 - 'loader.gif' when replaying edits to server, OK
 - unit tests, OK
 
+- going online fails if all edits cancel themselves (for instance one add + one delete)
 - unit tests for failure cases
 - explicit feedback to user when QuotaError happens
 - goOnline()/goOffline() automatically
