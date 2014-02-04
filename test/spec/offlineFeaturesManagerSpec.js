@@ -604,10 +604,14 @@ describe("Offline Editing", function()
 		expect(g_featureLayers[0].graphics.length).toBe(4);
 		expect(g_featureLayers[1].graphics.length).toBe(3);
 
+		var listener = jasmine.createSpy('event listener');
+		g_offlineFeaturesManager.on(g_offlineFeaturesManager.events.ALL_EDITS_SENT, listener);
+		
 		g_offlineFeaturesManager.goOnline(function(success,responses)
 		{
 			console.log("went online");
 			expect(g_offlineFeaturesManager.getOnlineStatus()).toBe(g_offlineFeaturesManager.ONLINE);
+			expect(listener).toHaveBeenCalled();
 			expect(success).toBeTruthy();
 			expect(Object.keys(responses).length).toBe(2);
 			for(var layerUrl in responses)
@@ -738,10 +742,14 @@ describe("Offline edits optimized in zero edits", function()
 		expect(g_featureLayers[0].graphics.length).toBe(4);
 		expect(g_featureLayers[1].graphics.length).toBe(3);
 
+		var listener = jasmine.createSpy('event listener');
+		g_offlineFeaturesManager.on(g_offlineFeaturesManager.events.ALL_EDITS_SENT, listener);
+
 		g_offlineFeaturesManager.goOnline(function(success,responses)
 		{
 			console.log("went online");
 			expect(g_offlineFeaturesManager.getOnlineStatus()).toBe(g_offlineFeaturesManager.ONLINE);
+			expect(listener).toHaveBeenCalled();
 			expect(success).toBeTruthy();
 			expect(Object.keys(responses).length).toBe(0);
 			expect(g_editsStore.pendingEditsCount()).toBe(0);
