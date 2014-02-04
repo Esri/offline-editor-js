@@ -222,15 +222,15 @@ describe("Public Interface", function()
 
 			it("add edits to edits queue", function()
 			{
-				var success;
-				success = g_editsStore.pushEdit(g_editsStore.ADD, 6, g_test.pointFeature);
-				expect(success).toBeTruthy();
+				var result;
+				result = g_editsStore.pushEdit(g_editsStore.ADD, 6, g_test.pointFeature);
+				expect(result.success).toBeTruthy();
 				expect(g_editsStore.pendingEditsCount()).toBe(1);
-				success = g_editsStore.pushEdit(g_editsStore.UPDATE, 3, g_test.polygonFeature);
-				expect(success).toBeTruthy();
+				result = g_editsStore.pushEdit(g_editsStore.UPDATE, 3, g_test.polygonFeature);
+				expect(result.success).toBeTruthy();
 				expect(g_editsStore.pendingEditsCount()).toBe(2);
-				success = g_editsStore.pushEdit(g_editsStore.DELETE, 2, g_test.lineFeature);
-				expect(success).toBeTruthy();
+				result = g_editsStore.pushEdit(g_editsStore.DELETE, 2, g_test.lineFeature);
+				expect(result.success).toBeTruthy();
 				expect(g_editsStore.pendingEditsCount()).toBe(3);
 			});
 
@@ -291,212 +291,20 @@ describe("Public Interface", function()
 
 			it("try to add duplicate edits to edits queue", function()
 			{
-				var success;
-				success = g_editsStore.pushEdit(g_editsStore.ADD, 6, g_test.pointFeature);
+				var result;
+				result = g_editsStore.pushEdit(g_editsStore.ADD, 6, g_test.pointFeature);
 				expect(g_editsStore.pendingEditsCount()).toBe(1);
-				expect(success).toBeTruthy();
-				success = g_editsStore.pushEdit(g_editsStore.UPDATE, 3, g_test.polygonFeature);
-				expect(success).toBeTruthy();
+				expect(result.success).toBeTruthy();
+				expect(result.error).toBeUndefined();
+				result = g_editsStore.pushEdit(g_editsStore.UPDATE, 3, g_test.polygonFeature);
+				expect(result.success).toBeTruthy();
+				expect(result.error).toBeUndefined();
 				expect(g_editsStore.pendingEditsCount()).toBe(2);
 
-				success = g_editsStore.pushEdit(g_editsStore.ADD, 6, g_test.pointFeature);
+				result = g_editsStore.pushEdit(g_editsStore.ADD, 6, g_test.pointFeature);
 				expect(g_editsStore.pendingEditsCount()).toBe(2);
-				expect(success).toBeFalsy();
-			});
-		});
-
-		describe("Replacement of Temporary Ids", function()
-		{
-			function getObjectIds()
-			{
-				var edits = g_editsStore._retrieveEditsQueue();
-				var objectids = edits.map(function(edit) 
-				{ 
-					return g_editsStore._deserialize(edit.graphic).attributes.objectid 
-				});
-				return objectids;
-			}
-
-			it("reset edits queue", function()
-			{
-				g_editsStore.resetEditsQueue();
-				expect(g_editsStore.pendingEditsCount()).toBe(0);
-			});
-
-			it("add edits to edits queue", function()
-			{
-				var success, objectids;
-				expect(g_test.newPointFeature.attributes.objectid).toBe(-1);
-				success = g_editsStore.pushEdit(g_editsStore.ADD, 6, g_test.newPointFeature);
-				expect(g_editsStore.pendingEditsCount()).toBe(1);
-				expect(success).toBeTruthy();
-				expect(g_editsStore.peekFirstEdit().graphic.attributes.objectid).toBe(-1);
-				
-				expect(g_test.polygonFeature.attributes.objectid).toBe(8);
-				success = g_editsStore.pushEdit(g_editsStore.UPDATE, 3, g_test.polygonFeature);
-				expect(success).toBeTruthy();
-				expect(g_editsStore.pendingEditsCount()).toBe(2);
-				objectids = getObjectIds();
-				expect(objectids).toEqual([-1,8]);
-
-				expect(g_test.lineFeature.attributes.objectid).toBe(5);
-				success = g_editsStore.pushEdit(g_editsStore.UPDATE, 3, g_test.lineFeature);
-				expect(success).toBeTruthy();
-				expect(g_editsStore.pendingEditsCount()).toBe(3);
-				objectids = getObjectIds();
-				expect(objectids).toEqual([-1,8,5]);
-			});
-
-			it("replace ids", function()
-			{
-				var replaceCount, objectids;
-
-				objectids = getObjectIds();
-				expect(objectids).toEqual([-1,8,5]);
-
-				replaceCount = g_editsStore.replaceTempId(-1,10,"objectid");
-
-				expect(replaceCount).toBe(1);
-				objectids = getObjectIds();
-				expect(objectids).toEqual([10,8,5]);
-
-				replaceCount = g_editsStore.replaceTempId(-1,10,"objectid");
-				expect(replaceCount).toBe(0);
-			});
-		})
-
-		describe("Undo/Redo management", function()
-		{
-			it("reset edits queue", function()
-			{
-				g_editsStore.resetEditsQueue();
-				expect(g_editsStore.pendingEditsCount()).toBe(0);
-			});
-
-			it("can undo? - no", function()
-			{
-				expect(g_editsStore.canUndoEdit()).toBeFalsy();
-			});
-
-			it("can redo? - no", function()
-			{
-				expect(g_editsStore.canRedoEdit()).toBeFalsy();
-			});
-
-			it("add edits to edits queue", function()
-			{
-				var success;
-				success = g_editsStore.pushEdit(g_editsStore.ADD, 6, g_test.pointFeature);
-				expect(success).toBeTruthy();
-				expect(g_editsStore.pendingEditsCount()).toBe(1);
-				success = g_editsStore.pushEdit(g_editsStore.UPDATE, 3, g_test.polygonFeature);
-				expect(success).toBeTruthy();
-				expect(g_editsStore.pendingEditsCount()).toBe(2);
-				success = g_editsStore.pushEdit(g_editsStore.DELETE, 2, g_test.lineFeature);
-				expect(success).toBeTruthy();
-				expect(g_editsStore.pendingEditsCount()).toBe(3);
-			});
-
-			it("pending edits", function()
-			{
-				expect(g_editsStore.hasPendingEdits()).toBeTruthy();
-			});
-
-			it("can undo? - yes", function()
-			{
-				expect(g_editsStore.canUndoEdit()).toBeTruthy();
-			});
-
-			it("can redo? - no", function()
-			{
-				expect(g_editsStore.canRedoEdit()).toBeFalsy();
-			});
-
-			it("undo", function()
-			{
-				expect(g_editsStore.pendingEditsCount()).toBe(3);
-				g_editsStore.undoEdit();
-				expect(g_editsStore.pendingEditsCount()).toBe(2);
-			});
-
-			it("can undo? - yes", function()
-			{
-				expect(g_editsStore.canUndoEdit()).toBeTruthy();
-			});
-
-			it("can redo? - yes", function()
-			{
-				expect(g_editsStore.canRedoEdit()).toBeTruthy();
-			});
-
-			it("redo", function()
-			{
-				expect(g_editsStore.pendingEditsCount()).toBe(2);
-				g_editsStore.redoEdit();
-				expect(g_editsStore.pendingEditsCount()).toBe(3);
-			});
-
-			it("can undo? - yes", function()
-			{
-				expect(g_editsStore.canUndoEdit()).toBeTruthy();
-			});
-
-			it("can redo? - no", function()
-			{
-				expect(g_editsStore.canRedoEdit()).toBeFalsy();
-			});
-
-			it("undo x 3", function()
-			{
-				expect(g_editsStore.pendingEditsCount()).toBe(3);
-				g_editsStore.undoEdit();
-				expect(g_editsStore.pendingEditsCount()).toBe(2);
-				g_editsStore.undoEdit();
-				expect(g_editsStore.pendingEditsCount()).toBe(1);
-				g_editsStore.undoEdit();
-				expect(g_editsStore.pendingEditsCount()).toBe(0);
-			});
-
-			it("can undo? - no", function()
-			{
-				expect(g_editsStore.canUndoEdit()).toBeFalsy();
-			});
-
-			it("can redo? - yes", function()
-			{
-				expect(g_editsStore.canRedoEdit()).toBeTruthy();
-			});
-
-			it("redo x 2", function()
-			{
-				expect(g_editsStore.pendingEditsCount()).toBe(0);
-				g_editsStore.redoEdit();
-				expect(g_editsStore.pendingEditsCount()).toBe(1);
-				g_editsStore.redoEdit();
-				expect(g_editsStore.pendingEditsCount()).toBe(2);
-			});
-
-			it("can undo? - yes", function()
-			{
-				expect(g_editsStore.canUndoEdit()).toBeTruthy();
-			});
-
-			it("can redo? - yes", function()
-			{
-				expect(g_editsStore.canRedoEdit()).toBeTruthy();
-			});
-
-			it("add new edit", function()
-			{
-				var success;
-				success = g_editsStore.pushEdit(g_editsStore.ADD, 10, g_test.pointFeature);
-				expect(success).toBeTruthy();
-				expect(g_editsStore.pendingEditsCount()).toBe(3);
-			});
-
-			it("can redo? - no", function()
-			{
-				expect(g_editsStore.canRedoEdit()).toBeFalsy();
+				expect(result.success).toBeFalsy();
+				expect(result.error).toEqual(g_editsStore.ERROR_DUPLICATE_EDIT);
 			});
 		});
 	});
@@ -508,7 +316,7 @@ describe("Public Interface", function()
 		it("report edit store size", function()
 		{
 			usedBytes = g_editsStore.getEditsStoreSizeBytes();
-			expect(usedBytes).toBe(692);
+			expect(usedBytes).toBe(505);
 		});
 
 		it("report total local storage size", function()
@@ -562,8 +370,9 @@ describe("Public Interface", function()
 				}
 
 				// now, try to push one edit
-				var success = g_editsStore.pushEdit(g_editsStore.ADD, 20, g_test.polygonFeature);
-				expect(success).toBeFalsy();
+				var result = g_editsStore.pushEdit(g_editsStore.ADD, 20, g_test.polygonFeature);
+				expect(result.success).toBeFalsy();
+				expect(result.error).toEqual(g_editsStore.ERROR_LOCALSTORAGE_FULL);
 
 				// clean everything
 				for( var key in window.localStorage )
