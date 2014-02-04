@@ -11,13 +11,14 @@
 - updates/deletes of features added offline (not yet in the server) are not updated correctly in the local layer, FIXED
 - 'loader.gif' when replaying edits to server, OK
 - unit tests, OK
+- going online fails if all edits cancel themselves (for instance one add + one delete), OK
+- undo, OK
 
 - unit tests for failure cases
 - explicit feedback to user when QuotaError happens
 - goOnline()/goOffline() automatically
 - feedback graphics layer
 - add timestamp to edits
-- undo
 - attachments
 - code comments (for automatic doc generation)
 

@@ -176,9 +176,9 @@
 					offlineFeaturesManager.extend(layer);
 					//layer.on('edits-completed', logCurrentObjectIds);
 					layer.on('update-end', logCurrentObjectIds);
-					layer.on('graphic-add', logCurrentObjectIds)
-					layer.on('graphic-remove', logCurrentObjectIds)
-					layer.on('graphics-clear', logCurrentObjectIds)
+					// layer.on('graphic-add', logCurrentObjectIds)
+					// layer.on('graphic-remove', logCurrentObjectIds)
+					// layer.on('graphics-clear', logCurrentObjectIds)
 				});
 
 				updatePendingEditsList();
@@ -206,6 +206,8 @@
 					templatePicker: templatePicker,
 					layerInfos: layers,
 					toolbarVisible: true,
+					enableUndoRedo: true,
+					maxUndoRedoOperations: 15,
 					createOptions: {
 						polylineDrawTools: [ 
 							Editor.CREATE_TOOL_FREEHAND_POLYLINE,
@@ -372,7 +374,7 @@
 		</div>
 	</div>
 	<div data-dojo-type="dijit/layout/ContentPane" id="map" data-dojo-props="region:'center'"></div>
-	<div data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:'right'" style="width:222px;padding:1px;">
+	<div data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:'right'" style="width:232px;padding:1px;">
 		<div id="editorDiv"></div>
 		<div id="templateDiv"></div>
 	</div>
