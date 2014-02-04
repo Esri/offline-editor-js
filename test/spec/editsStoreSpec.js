@@ -222,15 +222,15 @@ describe("Public Interface", function()
 
 			it("add edits to edits queue", function()
 			{
-				var success;
-				success = g_editsStore.pushEdit(g_editsStore.ADD, 6, g_test.pointFeature);
-				expect(success).toBeTruthy();
+				var result;
+				result = g_editsStore.pushEdit(g_editsStore.ADD, 6, g_test.pointFeature);
+				expect(result.success).toBeTruthy();
 				expect(g_editsStore.pendingEditsCount()).toBe(1);
-				success = g_editsStore.pushEdit(g_editsStore.UPDATE, 3, g_test.polygonFeature);
-				expect(success).toBeTruthy();
+				result = g_editsStore.pushEdit(g_editsStore.UPDATE, 3, g_test.polygonFeature);
+				expect(result.success).toBeTruthy();
 				expect(g_editsStore.pendingEditsCount()).toBe(2);
-				success = g_editsStore.pushEdit(g_editsStore.DELETE, 2, g_test.lineFeature);
-				expect(success).toBeTruthy();
+				result = g_editsStore.pushEdit(g_editsStore.DELETE, 2, g_test.lineFeature);
+				expect(result.success).toBeTruthy();
 				expect(g_editsStore.pendingEditsCount()).toBe(3);
 			});
 
@@ -291,17 +291,20 @@ describe("Public Interface", function()
 
 			it("try to add duplicate edits to edits queue", function()
 			{
-				var success;
-				success = g_editsStore.pushEdit(g_editsStore.ADD, 6, g_test.pointFeature);
+				var result;
+				result = g_editsStore.pushEdit(g_editsStore.ADD, 6, g_test.pointFeature);
 				expect(g_editsStore.pendingEditsCount()).toBe(1);
-				expect(success).toBeTruthy();
-				success = g_editsStore.pushEdit(g_editsStore.UPDATE, 3, g_test.polygonFeature);
-				expect(success).toBeTruthy();
+				expect(result.success).toBeTruthy();
+				expect(result.error).toBeUndefined();
+				result = g_editsStore.pushEdit(g_editsStore.UPDATE, 3, g_test.polygonFeature);
+				expect(result.success).toBeTruthy();
+				expect(result.error).toBeUndefined();
 				expect(g_editsStore.pendingEditsCount()).toBe(2);
 
-				success = g_editsStore.pushEdit(g_editsStore.ADD, 6, g_test.pointFeature);
+				result = g_editsStore.pushEdit(g_editsStore.ADD, 6, g_test.pointFeature);
 				expect(g_editsStore.pendingEditsCount()).toBe(2);
-				expect(success).toBeFalsy();
+				expect(result.success).toBeFalsy();
+				expect(result.error).toEqual(g_editsStore.ERROR_DUPLICATE_EDIT);
 			});
 		});
 	});
@@ -367,8 +370,9 @@ describe("Public Interface", function()
 				}
 
 				// now, try to push one edit
-				var success = g_editsStore.pushEdit(g_editsStore.ADD, 20, g_test.polygonFeature);
-				expect(success).toBeFalsy();
+				var result = g_editsStore.pushEdit(g_editsStore.ADD, 20, g_test.polygonFeature);
+				expect(result.success).toBeFalsy();
+				expect(result.error).toEqual(g_editsStore.ERROR_LOCALSTORAGE_FULL);
 
 				// clean everything
 				for( var key in window.localStorage )
