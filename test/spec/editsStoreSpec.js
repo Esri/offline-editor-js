@@ -281,37 +281,30 @@ describe("Public Interface", function()
 			});
 		});
 
-		describe("Duplicate edit detection", function()
-		{
-			it("reset edits queue", function()
-			{
-				g_editsStore.resetEditsQueue();
-				expect(g_editsStore.pendingEditsCount()).toBe(0);
-			});
-
-			it("try to add duplicate edits to edits queue", function()
-			{
-				var result;
-				result = g_editsStore.pushEdit(g_editsStore.ADD, 6, g_test.pointFeature);
-				expect(g_editsStore.pendingEditsCount()).toBe(1);
-				expect(result.success).toBeTruthy();
-				expect(result.error).toBeUndefined();
-				result = g_editsStore.pushEdit(g_editsStore.UPDATE, 3, g_test.polygonFeature);
-				expect(result.success).toBeTruthy();
-				expect(result.error).toBeUndefined();
-				expect(g_editsStore.pendingEditsCount()).toBe(2);
-
-				result = g_editsStore.pushEdit(g_editsStore.ADD, 6, g_test.pointFeature);
-				expect(g_editsStore.pendingEditsCount()).toBe(2);
-				expect(result.success).toBeFalsy();
-				expect(result.error).toEqual(g_editsStore.ERROR_DUPLICATE_EDIT);
-			});
-		});
 	});
 
 	describe("Local Storage size", function()
 	{
 		var usedBytes, totalBytes;
+
+		it("reset edits queue", function()
+		{
+			g_editsStore.resetEditsQueue();
+			expect(g_editsStore.pendingEditsCount()).toBe(0);
+		});
+
+		it("add edits", function()
+		{
+			var result;
+			result = g_editsStore.pushEdit(g_editsStore.ADD, 6, g_test.pointFeature);
+			expect(g_editsStore.pendingEditsCount()).toBe(1);
+			expect(result.success).toBeTruthy();
+			expect(result.error).toBeUndefined();
+			result = g_editsStore.pushEdit(g_editsStore.UPDATE, 3, g_test.polygonFeature);
+			expect(result.success).toBeTruthy();
+			expect(result.error).toBeUndefined();
+			expect(g_editsStore.pendingEditsCount()).toBe(2);
+		});
 
 		it("report edit store size", function()
 		{
