@@ -6,22 +6,22 @@ var graphics;
 var cancelRequested, startTime, errorList;
 var showTiles = false;
 
-require(["esri/map", 
+require(["esri/map",
 	"esri/layers/GraphicsLayer", "esri/graphic", "esri/symbols/SimpleFillSymbol",
 	"esri/dijit/Scalebar", "esri/arcgis/utils", "esri/geometry",
 	"dojo/dom", "dojo/on", "dojo/query",
 	"vendor/bootstrap-map-js/src/js/bootstrapmap",
 	"esri/urlUtils", "esri/geometry/webMercatorUtils",
 	"tiles/offlineEnabler",
-	"dojo/dom-construct", "dojo/domReady!"], 
-	function(Map, 
-		GraphicsLayer, Graphic, SimpleFillSymbol, 
-		Scalebar, esriUtils, geometry, 
-		dom, on, query, 
-		BootstrapMap, 
-		urlUtils, webMercatorUtils, 
+	"dojo/dom-construct", "dojo/domReady!"],
+	function(Map,
+		GraphicsLayer, Graphic, SimpleFillSymbol,
+		Scalebar, esriUtils, geometry,
+		dom, on, query,
+		BootstrapMap,
+		urlUtils, webMercatorUtils,
 		offlineEnabler,
-		domConstruct) 
+		domConstruct)
 	{
 		var scalebar;
 		var symbol;
@@ -33,8 +33,8 @@ require(["esri/map",
 			webmapid = urlObject.query.webmap;
 
 		loadWebmap(webmapid);
-		
-		function loadWebmap(webmapid) 
+
+		function loadWebmap(webmapid)
 		{
 			webmapid = webmapid || "bbc1a04a3eca4430be144d7a08b43a17";
 			// Get new webmap and extract map and map parts
@@ -46,11 +46,11 @@ require(["esri/map",
 				}
 			});
 
-			mapDeferred.then(function(response) 
-			{   
+			mapDeferred.then(function(response)
+			{
 				map = response.map;
 
-				// Bind to map 
+				// Bind to map
 				BootstrapMap.bindTo(map);
 
 				// Add title and description
@@ -80,9 +80,9 @@ require(["esri/map",
 				console.log("Error loading webmap:",error);
 			});
 		}
-	  
+
 	  	function initMapParts()
-	  	{		
+	  	{
 			scalebar = new Scalebar({
 				map:map,
 				scalebarUnit: 'metric'
@@ -138,7 +138,7 @@ require(["esri/map",
 					updateTileCountEstimation();
 				}
 				else
-				{	
+				{
 					dojo.byId('prepare-for-offline-btn').disabled = true;
 					dojo.byId('delete-all-tiles-btn').disabled = true;
 					dojo.byId('go-offline-btn').disabled = true;
@@ -165,7 +165,7 @@ require(["esri/map",
 				console.log("Avg tile size:", Math.round(usage.size * 1024 / usage.tileCount * 100) / 100, "Kb");
 				var usageStr = usage.size + " Mb (" + usage.tileCount + " tiles)";
 				dojo.byId('offline-usage').innerHTML = usageStr;
-			});		
+			});
 		}
 
 		function updateTileCountEstimation()
@@ -176,7 +176,7 @@ require(["esri/map",
 
 			var minLevel = parseInt(dojo.byId('minLevel').value);
 			var maxLevel = parseInt(dojo.byId('maxLevel').value);
-			
+
 			if( maxLevel > zoomLevel + 3 || maxLevel > basemapLayer.maxLevel)
 			{
 				maxLevel = Math.min(basemapLayer.maxLevel, zoomLevel + 3);
@@ -187,16 +187,19 @@ require(["esri/map",
 
 			domConstruct.empty('tile-count-table-body');
 
+            //NOTE: Number of tiles per zoom level will not change unless the map div changes size
+            try{var levelEstimation = basemapLayer.getLevelEstimation(map.extent,minLevel);}catch(err){console.log("ERROR " + err.toString)}
+
 			for(var level=minLevel; level<=maxLevel; level++)
 			{
-				var levelEstimation = basemapLayer.getLevelEstimation(map.extent,level);
+
 
 				totalEstimation.tileCount += levelEstimation.tileCount;
 				totalEstimation.sizeBytes += levelEstimation.sizeBytes;
 
-				if( levelEstimation.tileCount > 1)
+				if( levelEstimation.tileCount > 1 && levelEstimation.tileCount < 5000)
 				{
-					var rowContent = [levelEstimation.level, levelEstimation.tileCount, Math.round(levelEstimation.sizeBytes / 1024 / 1024 * 100) / 100 + " Mb"]
+					var rowContent = [level, levelEstimation.tileCount, Math.round(levelEstimation.sizeBytes / 1024 / 1024 * 100) / 100 + " Mb"]
 					rowContent = "<td>" + rowContent.join("</td><td>") + "</td>";
 					var tr = domConstruct.place("<tr>", dojo.byId('tile-count-table-body'),'last')
 					domConstruct.place(rowContent, tr,'last');
@@ -213,7 +216,7 @@ require(["esri/map",
 			rowContent = ["Total", totalEstimation.tileCount, Math.floor(totalEstimation.sizeBytes / 1024 / 1024 * 100)/100 + " Mb"];
 			rowContent = "<td><b>" + rowContent.join("</b></td><td><b>") + "</b></td>";
 			tr = domConstruct.place("<tr>", dojo.byId('tile-count-table-body'),'last')
-			domConstruct.place(rowContent, tr,'last');			 
+			domConstruct.place(rowContent, tr,'last');
 		}
 
 		function goOffline()
@@ -236,7 +239,7 @@ require(["esri/map",
 			basemapLayer.goOnline();
 		}
 
-		function deleteAllTiles() 
+		function deleteAllTiles()
 		{
 			basemapLayer.deleteAllTiles(function(success, err)
 			{
@@ -281,7 +284,7 @@ require(["esri/map",
 		}
 
 		function reportProgress(progress)
-		{			
+		{
 			if( progress.finishedDownloading )
 			{
 				if( progress.cancelRequested )
@@ -292,7 +295,7 @@ require(["esri/map",
 					showAlert('alert-warning', "Finished downloading tiles, " + errorList.length + " tiles couldn't be downloaded");
 
 				setTimeout(function()
-				{				
+				{
 					esri.show(dojo.byId('ready-to-download-ui'));
 					esri.hide(dojo.byId('downloading-ui'));
 					updateOfflineUsage();
@@ -337,8 +340,8 @@ require(["esri/map",
 		function toggleShowStoredTiles()
 		{
 			showTiles = !showTiles;
-			dojo.byId('show-stored-tiles-caption').innerHTML = showTiles? "Hide Stored Tiles" : "Show Stored Tiles";			
-			showStoredTiles(showTiles);	
+			dojo.byId('show-stored-tiles-caption').innerHTML = showTiles? "Hide Stored Tiles" : "Show Stored Tiles";
+			showStoredTiles(showTiles);
 		}
 
 		function showStoredTiles(showTiles)
@@ -382,12 +385,12 @@ require(["esri/map",
 			var form = domConstruct.create('form');
 			domConstruct.place(dojo.byId('file-select'), form, "before");
 			form.reset();
-			
+
 			if( !selectedFile )
 			{
 				showAlert('alert-warning',"Please, select one file");
 				return;
-			}	
+			}
 
 			basemapLayer.loadFromFile(selectedFile, function(success,msg)
 			{
@@ -397,7 +400,7 @@ require(["esri/map",
 					showAlert('alert-danger',msg);
 
 				updateOfflineUsage();
-				showStoredTiles(showTiles);				
+				showStoredTiles(showTiles);
 			});
 		}
 
