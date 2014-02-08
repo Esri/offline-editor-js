@@ -188,35 +188,37 @@ require(["esri/map",
 			domConstruct.empty('tile-count-table-body');
 
             //NOTE: Number of tiles per zoom level will not change unless the map div changes size
-            try{var levelEstimation = basemapLayer.getLevelEstimation(map.extent,minLevel);}catch(err){console.log("ERROR " + err.toString)}
+            var levelEstimation;
+            try{basemapLayer.getLevelEstimation(map.extent,minLevel,function(result){
+                levelEstimation = result;
 
-			for(var level=minLevel; level<=maxLevel; level++)
-			{
+                for(var level=minLevel; level<=maxLevel; level++)
+                {
+                    totalEstimation.tileCount += levelEstimation.tileCount;
+                    totalEstimation.sizeBytes += levelEstimation.sizeBytes;
 
+                    if( levelEstimation.tileCount > 1 && levelEstimation.tileCount < 5000)
+                    {
+                        var rowContent = [level, levelEstimation.tileCount, Math.round(levelEstimation.sizeBytes / 1024 / 1024 * 100) / 100 + " Mb"]
+                        rowContent = "<td>" + rowContent.join("</td><td>") + "</td>";
+                        var tr = domConstruct.place("<tr>", dojo.byId('tile-count-table-body'),'last')
+                        domConstruct.place(rowContent, tr,'last');
+                    }
 
-				totalEstimation.tileCount += levelEstimation.tileCount;
-				totalEstimation.sizeBytes += levelEstimation.sizeBytes;
+                    if( totalEstimation.tileCount > 5000 )
+                    {
+                        var tr = domConstruct.place("<tr>", dojo.byId('tile-count-table-body'),'last')
+                        domConstruct.place("<td colspan=4>...</td>", tr,'last');
+                        break;
+                    }
+                }
 
-				if( levelEstimation.tileCount > 1 && levelEstimation.tileCount < 5000)
-				{
-					var rowContent = [level, levelEstimation.tileCount, Math.round(levelEstimation.sizeBytes / 1024 / 1024 * 100) / 100 + " Mb"]
-					rowContent = "<td>" + rowContent.join("</td><td>") + "</td>";
-					var tr = domConstruct.place("<tr>", dojo.byId('tile-count-table-body'),'last')
-					domConstruct.place(rowContent, tr,'last');
-				}
+                rowContent = ["Total", totalEstimation.tileCount, Math.floor(totalEstimation.sizeBytes / 1024 / 1024 * 100)/100 + " Mb"];
+                rowContent = "<td><b>" + rowContent.join("</b></td><td><b>") + "</b></td>";
+                tr = domConstruct.place("<tr>", dojo.byId('tile-count-table-body'),'last')
+                domConstruct.place(rowContent, tr,'last');
+            }).bind(this);}catch(err){console.log("ERROR " + err.toString)}
 
-				if( totalEstimation.tileCount > 5000 )
-				{
-					var tr = domConstruct.place("<tr>", dojo.byId('tile-count-table-body'),'last')
-					domConstruct.place("<td colspan=4>...</td>", tr,'last');
-					break;
-				}
-			}
-
-			rowContent = ["Total", totalEstimation.tileCount, Math.floor(totalEstimation.sizeBytes / 1024 / 1024 * 100)/100 + " Mb"];
-			rowContent = "<td><b>" + rowContent.join("</b></td><td><b>") + "</b></td>";
-			tr = domConstruct.place("<tr>", dojo.byId('tile-count-table-body'),'last')
-			domConstruct.place(rowContent, tr,'last');
 		}
 
 		function goOffline()
