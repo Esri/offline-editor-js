@@ -116,21 +116,26 @@ describe("offline enabler library", function()
 			g_basemapLayer.deleteAllTiles(function(success)
 			{
 				var extent = new Extent({"xmin":-822542.2830377579,"ymin":4580841.761960262,"xmax":94702.05638410954,"ymax":5131188.365613382,"spatialReference":{"wkid":102100}});
-				var reportProgress = jasmine.createSpy();
-				var finishedDownloading = function(err)
+				var callCount = 0;
+				var reportProgress = function(progress)
 				{
-					expect(err).not.toBeTruthy();
-					expect(reportProgress).toHaveBeenCalled();
-					expect(reportProgress.callCount).toEqual(28);
+					callCount += 1;
+					expect(progress.error).not.toBeDefined();
 
-					g_basemapLayer.getOfflineUsage(function(usage)
+					if( progress.finishedDownloading )
 					{
-						expect(usage.tileCount).toEqual(28);
-				        done();
-					});
+						g_basemapLayer.getOfflineUsage(function(usage)
+						{
+							expect(usage.tileCount).toEqual(28);
+							expect(callCount).toEqual(29);
+					        done();
+						});
+					}
+
+					return false; // cancelRequested = false;
 				}
 
-				g_basemapLayer.prepareForOffline(8,8,extent,reportProgress, finishedDownloading);
+				g_basemapLayer.prepareForOffline(8,8,extent,reportProgress);
 			});
 		});
 	});

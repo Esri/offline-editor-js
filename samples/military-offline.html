@@ -76,6 +76,8 @@
 	</script>
 
 	<script src="http://js.arcgis.com/3.8"></script>
+	<script src="../vendor/offline/offline.min.js"></script>
+
 	<script>
 
 	// based on https://developers.arcgis.com/javascript/jssamples/ed_simpletoolbar.html
@@ -135,7 +137,8 @@
 		updateConnectivityIndicator();
 		updateStorageInfo();
 
-		//
+		Offline.on('up', goOnline );
+		Offline.on('down', goOffline );
 
 		esriConfig.defaults.io.proxyUrl = "../lib/proxy.php";
 
@@ -174,11 +177,7 @@
 				{
 					var layer = result.layer;
 					offlineFeaturesManager.extend(layer);
-					//layer.on('edits-completed', logCurrentObjectIds);
 					layer.on('update-end', logCurrentObjectIds);
-					// layer.on('graphic-add', logCurrentObjectIds)
-					// layer.on('graphic-remove', logCurrentObjectIds)
-					// layer.on('graphics-clear', logCurrentObjectIds)
 				});
 
 				updatePendingEditsList();
@@ -233,12 +232,11 @@
 			}
 
 			try {
-				// jabadia: only if we have internet available
-				domUtils.show(editor.progressBar.domNode);
-				offlineFeaturesManager.replayStoredEdits(function()
+				if( Offline.state === 'up' )
 				{
-					domUtils.hide(editor.progressBar.domNode);
-				});
+					// if we have pending edits from previous executions and we are online, then try to replay them
+					goOnline();
+				}
 			} 
 			catch(err)
 			{
@@ -374,7 +372,7 @@
 		</div>
 	</div>
 	<div data-dojo-type="dijit/layout/ContentPane" id="map" data-dojo-props="region:'center'"></div>
-	<div data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:'right'" style="width:232px;padding:1px;">
+	<div data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:'right'" style="width:242px;padding:1px;">
 		<div id="editorDiv"></div>
 		<div id="templateDiv"></div>
 	</div>
