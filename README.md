@@ -191,6 +191,10 @@ This method puts the layer in online mode. When in online mode, the layer will b
 ##Testing
 Open Jasmine's `SpecRunner.edit.html` and `SpecRunner.tiles.html` in a browser. You can find them in the `/test` directory.
 
+##Setup Instructions
+1. After cloning from github, `cd` into the `offline-editor-js` folder
+2. Run `git submodule init` and `git submodule update`
+
 ##Dependencies
 Online dependencies:
 
