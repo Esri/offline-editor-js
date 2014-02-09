@@ -13,10 +13,10 @@
 - unit tests, OK
 - going online fails if all edits cancel themselves (for instance one add + one delete), OK
 - undo, OK
+- goOnline()/goOffline() automatically
 
 - unit tests for failure cases
 - explicit feedback to user when QuotaError happens
-- goOnline()/goOffline() automatically
 - feedback graphics layer
 - add timestamp to edits
 - attachments
