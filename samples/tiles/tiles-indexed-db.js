@@ -12,7 +12,7 @@ require(["esri/map",
 	"dojo/dom", "dojo/on", "dojo/query",
 	"vendor/bootstrap-map-js/src/js/bootstrapmap",
 	"esri/urlUtils", "esri/geometry/webMercatorUtils",
-	"tiles/offlineEnabler",
+	"tiles/offlineEnabler","utils/debouncer",
 	"dojo/dom-construct", "dojo/domReady!"],
 	function(Map,
 		GraphicsLayer, Graphic, SimpleFillSymbol,
@@ -20,7 +20,7 @@ require(["esri/map",
 		dom, on, query,
 		BootstrapMap,
 		urlUtils, webMercatorUtils,
-		offlineEnabler,
+		offlineEnabler,debouncer,
 		domConstruct)
 	{
 		var scalebar;
@@ -106,7 +106,9 @@ require(["esri/map",
 
 		function initEvents()
 		{
-			map.on('extent-change', updateTileCountEstimation );
+			map.on('extent-change',debouncer.debounceMap(function(){
+                updateTileCountEstimation();
+            }) );
 			on(dojo.byId('minLevel'),'change', updateTileCountEstimation);
 			on(dojo.byId('maxLevel'),'change', updateTileCountEstimation);
 
@@ -117,6 +119,7 @@ require(["esri/map",
 		function initOffline()
 		{
 			console.log("extending");
+
 			offlineEnabler.extend(basemapLayer,function(success)
 			{
 				if(success)
@@ -189,7 +192,8 @@ require(["esri/map",
 
             //NOTE: Number of tiles per zoom level will not change unless the map div changes size
             var levelEstimation;
-            try{basemapLayer.getLevelEstimation(map.extent,minLevel,function(result){
+
+            basemapLayer.getLevelEstimation(map.extent,minLevel,function(result){
                 levelEstimation = result;
 
                 for(var level=minLevel; level<=maxLevel; level++)
@@ -217,7 +221,7 @@ require(["esri/map",
                 rowContent = "<td><b>" + rowContent.join("</b></td><td><b>") + "</b></td>";
                 tr = domConstruct.place("<tr>", dojo.byId('tile-count-table-body'),'last')
                 domConstruct.place(rowContent, tr,'last');
-            }).bind(this);}catch(err){console.log("ERROR " + err.toString)}
+            });
 
 		}
 
