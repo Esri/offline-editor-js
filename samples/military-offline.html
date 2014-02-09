@@ -232,12 +232,11 @@
 			}
 
 			try {
-				// jabadia: only if we have internet available
-				domUtils.show(editor.progressBar.domNode);
-				offlineFeaturesManager.replayStoredEdits(function()
+				if( Offline.state === 'up' )
 				{
-					domUtils.hide(editor.progressBar.domNode);
-				});
+					// if we have pending edits from previous executions and we are online, then try to replay them
+					goOnline();
+				}
 			} 
 			catch(err)
 			{
