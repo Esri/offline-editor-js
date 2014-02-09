@@ -184,7 +184,9 @@ require(["esri/map",
 			var zoomLevel = map.getLevel();
             dojo.byId('currentLevel').value = zoomLevel;
 
-            var minLevel = parseInt(dojo.byId('minLevel').value);
+//            var minLevel = parseInt(dojo.byId('minLevel').value);
+            var minLevel = zoomLevel;
+            dojo.byId('minLevel').value = zoomLevel;
             var maxLevel = parseInt(dojo.byId('maxLevel').value);
 
             if( maxLevel > zoomLevel + 3 || maxLevel > basemapLayer.maxLevel)
