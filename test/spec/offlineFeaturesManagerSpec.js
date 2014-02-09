@@ -706,8 +706,6 @@ describe("Offline edits optimized in zero edits", function()
 			expect(true).toBeFalsy();
 			done();
 		});
-
-		done();
 	});
 
 	async.it("delete the feature", function(done)
@@ -733,8 +731,6 @@ describe("Offline edits optimized in zero edits", function()
 			expect(true).toBeFalsy();
 			done();
 		});
-
-		done();
 	});
 
 	async.it("go Online", function(done)
@@ -771,7 +767,7 @@ describe("Offline edits optimized in zero edits", function()
 					done();
 				});
 			});
-		});;
+		});
 		expect(g_offlineFeaturesManager.getOnlineStatus()).toBe(g_offlineFeaturesManager.ONLINE);
 	});
 
