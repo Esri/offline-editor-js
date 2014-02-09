@@ -25,6 +25,7 @@ require(["esri/map",
 	{
 		var scalebar;
 		var symbol;
+        var orientationChange = false;
 
 		// Load web map when page loads
 		var urlObject = urlUtils.urlToObject(window.location.href);
@@ -108,7 +109,13 @@ require(["esri/map",
 		{
 			map.on('extent-change',debouncer.debounceMap(function(){
                 updateTileCountEstimation();
-            }) );
+            },250));
+
+            debouncer.setOrientationListener(250,function(){
+                console.log("orientation"); orientationChange = true;
+                //updateTileCountEstimation();
+            })
+
 			on(dojo.byId('minLevel'),'change', updateTileCountEstimation);
 			on(dojo.byId('maxLevel'),'change', updateTileCountEstimation);
 
@@ -176,15 +183,10 @@ require(["esri/map",
 			console.log('updating');
 			var zoomLevel = map.getLevel();
 			dojo.byId('currentLevel').value = zoomLevel;
+            dojo.byId('maxLevel').value = zoomLevel;
 
 			var minLevel = parseInt(dojo.byId('minLevel').value);
-			var maxLevel = parseInt(dojo.byId('maxLevel').value);
-
-			if( maxLevel > zoomLevel + 3 || maxLevel > basemapLayer.maxLevel)
-			{
-				maxLevel = Math.min(basemapLayer.maxLevel, zoomLevel + 3);
-				dojo.byId('maxLevel').value = maxLevel;
-			}
+            var maxLevel = zoomLevel;
 
 			var totalEstimation = { tileCount:0, sizeBytes:0 }
 
@@ -280,7 +282,7 @@ require(["esri/map",
 
 			/* launch offline preparation process */
 			var minLevel = parseInt(dojo.byId('minLevel').value);
-			var maxLevel = parseInt(dojo.byId('maxLevel').value);
+            var maxLevel = map.getLevel();
 			basemapLayer.prepareForOffline(minLevel, maxLevel, map.extent, reportProgress);
 		}
 

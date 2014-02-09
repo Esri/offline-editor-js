@@ -4,15 +4,15 @@ define([],function(){
         /**
          * Activates the orientation listener and listens for native events.
          * Handle orientation events to allow for resizing the map and working around
-         * jQuery mobile bugs related to how and when the view settles after such an event
+         * 3rd party library bugs related to how and when the view settles after such an event
          */
-        setOrientationListener: function(callback){
+        setOrientationListener: function(delay,callback){
             var supportsOrientationChange = "onorientationchange" in window,
                 orientationEvent = supportsOrientationChange ? "orientationchange" : "resize";
 
             window.addEventListener(orientationEvent, this.debounceMap(function(){
                 callback();
-            },this.DEBOUNCE_DELAY).bind(this), false);
+            },delay).bind(this), false);
         },
 
         /**
