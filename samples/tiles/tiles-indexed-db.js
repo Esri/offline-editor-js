@@ -313,7 +313,8 @@ require(["esri/map",
 
 			/* launch offline preparation process */
 			var minLevel = parseInt(dojo.byId('minLevel').value);
-            var maxLevel = map.getLevel();  //current zoom level sets max extent
+//            var maxLevel = map.getLevel();  //current zoom level sets max extent
+            var maxLevel = parseInt(dojo.byId('maxLevel').value);
 			basemapLayer.prepareForOffline(minLevel, maxLevel, map.extent, reportProgress);
 		}
 
