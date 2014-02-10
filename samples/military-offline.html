@@ -180,6 +180,20 @@
 					layer.on('update-end', logCurrentObjectIds);
 				});
 
+				offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_ENQUEUED, function(results)
+				{
+					var errors = Array.prototype.concat(
+						results.addResults.filter(function(r){ return !r.success }),
+						results.updateResults.filter(function(r){ return !r.success }),
+						results.deleteResults.filter(function(r){ return !r.success }) 
+					);
+
+					if( errors.length )
+					{
+						errors.map(function(e){ return e.error });
+					}
+				});
+
 				updatePendingEditsList();
 			}
 			catch(err)
