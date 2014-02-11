@@ -115,6 +115,7 @@ describe("offline enabler library", function()
 		{			
 			g_basemapLayer.deleteAllTiles(function(success)
 			{
+				expect(success).toEqual(true);
 				var extent = new Extent({"xmin":-822542.2830377579,"ymin":4580841.761960262,"xmax":94702.05638410954,"ymax":5131188.365613382,"spatialReference":{"wkid":102100}});
 				var callCount = 0;
 				var reportProgress = function(progress)
