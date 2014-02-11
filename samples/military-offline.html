@@ -180,6 +180,7 @@
 					layer.on('update-end', logCurrentObjectIds);
 				});
 
+				/* handle errors that happen while storing offline edits */
 				offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_ENQUEUED, function(results)
 				{
 					var errors = Array.prototype.concat(
@@ -190,7 +191,8 @@
 
 					if( errors.length )
 					{
-						errors.map(function(e){ return e.error });
+						var messages = errors.map(function(e){ return e.error.message });
+						alert("Error editing features: " + messages.join('\n'));
 					}
 				});
 
