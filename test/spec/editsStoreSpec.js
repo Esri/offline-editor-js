@@ -332,6 +332,13 @@ describe("Public Interface", function()
 			{
 				console.log("this will take some time");
 
+				// clean everything before
+				for( var key in window.localStorage )
+				{
+					if( key.indexOf(KEY_PREFIX)==0 )
+						window.localStorage.removeItem(key);
+				}
+
 				var sizeBefore = g_editsStore.getLocalStorageSizeBytes();
 				if( sizeBefore == 0)
 				{
@@ -365,8 +372,8 @@ describe("Public Interface", function()
 				// now, try to push one edit
 				var result = g_editsStore.pushEdit(g_editsStore.ADD, 20, g_test.polygonFeature);
 				expect(result.success).toBeFalsy();
-				expect(result.error.code).toEqual(-1);
-				expect(result.error.message).toEqual(g_editsStore.ERROR_LOCALSTORAGE_FULL);
+				expect(result.error.code).toEqual(1000);
+				expect(result.error.description).toEqual(g_editsStore.ERROR_LOCALSTORAGE_FULL);
 
 				// clean everything
 				for( var key in window.localStorage )
