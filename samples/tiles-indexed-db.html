@@ -7,12 +7,12 @@
 	<meta name="description" content="">
 	<meta name="author" content="">
 
-	<link rel="shortcut icon" href="../../vendor/bootstrap-map-js/bootstrap_v3/docs-assets/ico/favicon.png">
+	<link rel="shortcut icon" href="../vendor/bootstrap-map-js/bootstrap_v3/docs-assets/ico/favicon.png">
 
 	<link rel="stylesheet" href="//js.arcgis.com/3.7/js/esri/css/esri.css">
 
-	<link rel="stylesheet" href="../../vendor/bootstrap-map-js/bootstrap_v3/dist/css/bootstrap.css" >
-	<link rel="stylesheet" href="../../vendor/bootstrap-map-js/src/css/bootstrapmap.css">   
+	<link rel="stylesheet" href="../vendor/bootstrap-map-js/bootstrap_v3/dist/css/bootstrap.css" >
+	<link rel="stylesheet" href="../vendor/bootstrap-map-js/src/css/bootstrapmap.css">   
 	<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" >
 	<style>
 		#state
@@ -232,18 +232,18 @@
 	var locationPath = location.pathname.replace(/\/[^/]+$/, "");
 	var dojoConfig = {
 		paths: { 
-			tiles: locationPath  + "/../../lib/tiles",
-			vendor: locationPath + "/../../vendor",
-            utils: locationPath  + "/../../utils"
+			tiles: locationPath  + "/../lib/tiles",
+			vendor: locationPath + "/../vendor",
+            utils: locationPath  + "/../utils"
 		}
 	}
-	window.proxyPath = "../../lib/proxy.php";
+	window.proxyPath = "../lib/proxy.php";
 </script>
 
 
 <script src="//js.arcgis.com/3.7compact"></script>
-<script src="../../vendor/offline/offline.min.js"></script>
-<script src="../../vendor/IndexedDBShim/dist/IndexedDBShim.min.js"></script>
+<script src="../vendor/offline/offline.min.js"></script>
+<script src="../vendor/IndexedDBShim/dist/IndexedDBShim.min.js"></script>
 <script>
 "use strict";
 
@@ -413,7 +413,7 @@ require(["esri/map",
 			{
 				if(success)
 				{
-					basemapLayer.offline.proxyPath = window.proxyPath || "../../lib/proxy.php";
+					basemapLayer.offline.proxyPath = window.proxyPath || "../lib/proxy.php";
 					on(dojo.byId('prepare-for-offline-btn'),'click', prepareForOffline);
 					on(dojo.byId('cancel-btn'),'click', cancel);
 					on(dojo.byId('delete-all-tiles-btn'),'click', deleteAllTiles);
@@ -510,34 +510,6 @@ require(["esri/map",
                 tr = domConstruct.place("<tr>", dojo.byId('tile-count-table-body'),'last')
                 domConstruct.place(rowContent, tr,'last');
             })
-
-//                    for(var level=minLevel; level<=maxLevel; level++)
-//                    {
-//                        totalEstimation.tileCount += levelEstimation.tileCount;
-//                        totalEstimation.sizeBytes += levelEstimation.sizeBytes;
-//
-//                        if( levelEstimation.tileCount > 1 && levelEstimation.tileCount < 5000)
-//                        {
-//                            var rowContent = [level, levelEstimation.tileCount, Math.round(levelEstimation.sizeBytes / 1024 / 1024 * 100) / 100 + " Mb"]
-//                            rowContent = "<td>" + rowContent.join("</td><td>") + "</td>";
-//                            var tr = domConstruct.place("<tr>", dojo.byId('tile-count-table-body'),'last')
-//                            domConstruct.place(rowContent, tr,'last');
-//                        }
-//
-//                        if( totalEstimation.tileCount > 5000 )
-//                        {
-//                            var tr = domConstruct.place("<tr>", dojo.byId('tile-count-table-body'),'last')
-//                            domConstruct.place("<td colspan=4>...</td>", tr,'last');
-//                            break;
-//                        }
-//                    }
-//
-//                    rowContent = ["Total", totalEstimation.tileCount, Math.floor(totalEstimation.sizeBytes / 1024 / 1024 * 100)/100 + " Mb"];
-//                    rowContent = "<td><b>" + rowContent.join("</b></td><td><b>") + "</b></td>";
-//                    tr = domConstruct.place("<tr>", dojo.byId('tile-count-table-body'),'last')
-//                    domConstruct.place(rowContent, tr,'last');
-//                });
-//            })
 		}
 
 		function goOffline()
@@ -595,7 +567,6 @@ require(["esri/map",
 
 			/* launch offline preparation process */
 			var minLevel = parseInt(dojo.byId('minLevel').value);
-//            var maxLevel = map.getLevel();  //current zoom level sets max extent
             var maxLevel = parseInt(dojo.byId('maxLevel').value);
 			basemapLayer.prepareForOffline(minLevel, maxLevel, map.extent, reportProgress);
 		}
