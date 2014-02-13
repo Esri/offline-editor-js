@@ -1,3 +1,285 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta name="description" content="">
+	<meta name="author" content="">
+
+	<link rel="shortcut icon" href="../vendor/bootstrap-map-js/bootstrap_v3/docs-assets/ico/favicon.png">
+
+	<link rel="stylesheet" href="//js.arcgis.com/3.7/js/esri/css/esri.css">
+
+	<link rel="stylesheet" href="../vendor/bootstrap-map-js/bootstrap_v3/dist/css/bootstrap.css" >
+	<link rel="stylesheet" href="../vendor/bootstrap-map-js/src/css/bootstrapmap.css">   
+	<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" >
+	<style>
+		#state
+		{
+			position: fixed;
+			top: 7px;
+			right: 7px;
+			width: 105px;
+			padding: 8px 10px;
+			background-color: blue;
+			color: white;
+			text-align: center;
+			z-index:2000;
+		}
+		#state.up	{		background-color: green;	}
+		#state.down	{		background-color: red;		}
+	</style>
+	<style>
+		body {
+		  padding-top: 50px;
+		}
+
+		body > .container {
+		  padding-bottom: 20px;
+		}
+
+		#mapDiv {
+		  min-height: 450px; 
+		  max-height: 450px; 
+		  margin-bottom: 20px;
+		}
+
+		#mapDiv_layers>:first-child .layerTile {
+		  /*border: 1px solid red !important;*/
+		  /*
+		  border-width: 1px !important;
+		  border-style: solid !important; */
+		}
+
+		#tile-count-table-body tr td {
+			text-align: center;
+		}
+
+		#downloading-ui {
+			display: none;
+		}
+
+		#ready-to-download-ui, #downloading-ui {
+		  margin-bottom: 10px;
+		}
+
+		#ready-to-download-ui .btn
+		{
+		  margin-top: 5px;
+		}
+
+		#error-div {
+		  margin-top: 10px;
+		  display: none;
+		}
+
+		.alert {
+		  margin-bottom: 0px;
+		}
+
+		#load-file {
+		    position: relative;
+		    overflow: hidden;
+		}
+
+		#load-file input[type=file] {
+		    position: absolute;
+		    top: 0;
+		    right: 0;
+		    min-width: 100%;
+		    min-height: 100%;
+		    font-size: 999px;
+		    text-align: right;
+		    filter: alpha(opacity=0);
+		    opacity: 0;
+		    background: red;
+		    cursor: inherit;
+		    display: block;
+		}
+	</style>
+
+	<!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+	<!--[if lt IE 9]>
+	  <script src="../vendor/bootstrap-map-js/bootstrap_v3/docs-assets/js/html5shiv.js"></script>
+	  <script src="../vendor/bootstrap-map-js/bootstrap_v3/docs-assets/js/respond.min.js"></script>
+	  <![endif]-->
+
+	  <title>Offline</title>
+
+  </head>
+  <body>
+	<div class="navbar navbar-inverse navbar-fixed-top">
+		<div class="container">
+			<div class="navbar-header">
+				<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+				</button>
+				<a class="navbar-brand" href="http://github.com/Esri/offline-editor-js"><i class="fa fa-html5"></i> JS Offline Mapping</a>
+				<a class="navbar-brand" href="http://developers.arcgis.com"><i class="fa fa-globe"></i> esri</a>
+			</div>
+		<!--
+		<div class="collapse navbar-collapse">
+		  <ul class="nav navbar-nav">
+			<li class="active"><a href="#">Home</a></li>
+			<li><a href="#about">About</a></li>
+			<li><a href="#contact">Contact</a></li>
+		  </ul>
+		</div>
+	--><!--/.nav-collapse -->
+		</div>
+	</div>
+
+<div class="container">
+	<div class="row">
+		<div class="col-sm-4">
+		</div>
+		<div class="col-sm-8">
+			<h3>Map: <span id="mapTitle">[none]</span></h3>
+			<p id="mapDescription">[none]</p>
+		</div>
+	</div>
+
+	<div class="row">
+		<div class="col-sm-4">
+			<form role="form">
+				<div class="form-group">
+					<label class="control-label" for="minLevel">Min Zoom Level (farthest from ground)</label>
+					<input type="number" id="minLevel" name"minLevel" class="form-control" value=1 min=0 max=19>
+				</div>
+				<div class="form-group">
+					<label class="control-label" for="currentLevel">Current Zoom Level</label>
+					<input type="number" id="currentLevel" name"currentLevel" class="form-control" value=19 min=0 max=19>
+				</div>
+				<div class="form-group">
+					<label class="control-label" for="maxLevel">Max Zoom Level (closer to ground)</label>
+					<input type="number" id="maxLevel" name"maxLevel" class="form-control" value=19 min=0 max=19>
+				</div>
+			</form>
+			<table id="tile-count-table" class="table table-striped table-condensed table-hover">
+				<thead>
+					<tr>
+						<th>Level</th>
+						<th>Tile Count</th>
+						<th>Size Mb (aprox.)</th>
+					</tr>
+				</thead>
+				<tbody id="tile-count-table-body">
+				</tbody>
+			</table>
+		</div>
+		<div class="col-sm-8">
+			<!-- Bootstrap-map-js -->
+			<div id="mapDiv"></div>
+		</div>
+	</div>
+
+	<div class="row">
+		<div id="ready-to-download-ui">
+			<div class="col-xs-12">
+				<button id="prepare-for-offline-btn" type="button" class="btn btn-primary"><i class="glyphicon glyphicon-cloud-download"></i> Prepare for Offline</button>
+				<button id="delete-all-tiles-btn" type="button" class="btn btn-danger"><i class="glyphicon glyphicon-floppy-remove"></i> Delete All Tiles</button>
+				<button id="go-offline-btn" type="button" class="btn btn-default"><i class="fa fa-chain-broken"></i> Go Offline</button>
+				<button id="go-online-btn" type="button" class="btn btn-default" disabled="disabled" style="display:none;"><i class="fa fa-link"></i> Go Online</button>
+				<button id="update-offline-usage" type="button" class="btn btn-default"><i class="fa fa-refresh"></i> Usage: <span id="offline-usage">[click to update]</span></button>
+				<button id="show-stored-tiles" type="button" class="btn btn-default"><i class="fa fa-th"></i> <span id="show-stored-tiles-caption">Show Stored Tiles</span></button>
+				<button id="save-file" type="button" class="btn btn-default"><i class="fa fa-download"></i> Save to File</button>
+				<span id="load-file" type="button" class="btn btn-default"><i class="fa fa-upload"></i> Load from File <input type="file" id="file-select" name="file-select"></span>
+			</div>
+		</div>
+		<div id="downloading-ui">
+			<div class="col-xs-1">
+				<button id="cancel-btn" type="button" class="btn btn-warning"><i class="glyphicon glyphicon-remove"></i> Cancel</button>
+			</div>
+			<div id="download-progress" class="col-xs-10">
+				<div class="progress progress-striped active">
+					<div class="progress-bar progress-bar-success" role="progressbar" style="width:0%;"></div>
+				</div>
+			</div>
+			<div id="remaining-time" class="col-xs-1">__:__</div>
+		</div>
+	</div>
+
+	<div class="row">
+		<div class="col-xs-12" id="error-div">
+			<div class="alert alert-danger">
+				<a class="close" data-dismiss="alert">&times;</a>
+				<i class="fa fa-info-circle"></i><strong></strong> <span id="error-msg">Change a few things up and try submitting again..</span>
+			</div>
+		</div>
+	</div>
+
+	<hr>
+
+	<div class="row">
+		<div class="col-xs-12 col-sm-4">
+			<div class="well lead step-1"><i class="fa fa-arrows"></i> 1. Navigate to your area of interest</div>
+		</div>
+		<div class="col-xs-12 col-sm-4">
+			<div class="well lead step-2"><i class="glyphicon glyphicon-cloud-download"></i> 2. Click 'Prepare for Offline' button</div>
+		</div>
+		<div class="col-xs-12 col-sm-4">
+			<div class="well lead step-3"><i class="fa fa-chain-broken"></i> 3. Go Offline and enjoy!</div>
+		</div>
+	</div>
+
+
+</div><!-- /.container -->
+
+<script>
+	var locationPath = location.pathname.replace(/\/[^/]+$/, "");
+	var dojoConfig = {
+		paths: { 
+			tiles: locationPath  + "/../lib/tiles",
+			vendor: locationPath + "/../vendor",
+            utils: locationPath  + "/../utils"
+		}
+	}
+	window.proxyPath = "../lib/proxy.php";
+</script>
+
+
+<script src="//js.arcgis.com/3.7compact"></script>
+<script src="../vendor/offline/offline.min.js"></script>
+<script src="../vendor/IndexedDBShim/dist/IndexedDBShim.min.js"></script>
+<script>
+"use strict";
+
+require([
+	"dojo/dom-construct",
+	"dojo/dom-class",
+	"dojo/_base/window",
+	"dojo/domReady!"],
+	function(domConstruct,domClass,win)
+	{
+		var stateNode;
+
+		function updateState()
+		{
+			console.log('updateState', Offline.state);
+			var icon = Offline.state === 'up' ?  "fa-link" : "fa-chain-broken";
+			domClass.remove(stateNode, "up down");
+			domClass.add(stateNode, Offline.state);
+			stateNode.innerHTML = '<i class="fa '+icon+'"></i> ' + Offline.state;
+		}
+
+		stateNode = domConstruct.create("div", 
+			{
+				id: "state", 
+				innerHTML: "? unknown"
+			}, win.body(), "first");
+		console.log(stateNode);
+
+		Offline.options = { checkOnLoad: true, reconnect: true, requests: false };
+		Offline.check();
+		updateState();
+
+		Offline.on('up down', updateState );
+	});	
+</script>
+<script>
 "use strict"
 
 var map;
@@ -131,7 +413,7 @@ require(["esri/map",
 			{
 				if(success)
 				{
-					basemapLayer.offline.proxyPath = window.proxyPath || "../../lib/proxy.php";
+					basemapLayer.offline.proxyPath = window.proxyPath || "../lib/proxy.php";
 					on(dojo.byId('prepare-for-offline-btn'),'click', prepareForOffline);
 					on(dojo.byId('cancel-btn'),'click', cancel);
 					on(dojo.byId('delete-all-tiles-btn'),'click', deleteAllTiles);
@@ -228,34 +510,6 @@ require(["esri/map",
                 tr = domConstruct.place("<tr>", dojo.byId('tile-count-table-body'),'last')
                 domConstruct.place(rowContent, tr,'last');
             })
-
-//                    for(var level=minLevel; level<=maxLevel; level++)
-//                    {
-//                        totalEstimation.tileCount += levelEstimation.tileCount;
-//                        totalEstimation.sizeBytes += levelEstimation.sizeBytes;
-//
-//                        if( levelEstimation.tileCount > 1 && levelEstimation.tileCount < 5000)
-//                        {
-//                            var rowContent = [level, levelEstimation.tileCount, Math.round(levelEstimation.sizeBytes / 1024 / 1024 * 100) / 100 + " Mb"]
-//                            rowContent = "<td>" + rowContent.join("</td><td>") + "</td>";
-//                            var tr = domConstruct.place("<tr>", dojo.byId('tile-count-table-body'),'last')
-//                            domConstruct.place(rowContent, tr,'last');
-//                        }
-//
-//                        if( totalEstimation.tileCount > 5000 )
-//                        {
-//                            var tr = domConstruct.place("<tr>", dojo.byId('tile-count-table-body'),'last')
-//                            domConstruct.place("<td colspan=4>...</td>", tr,'last');
-//                            break;
-//                        }
-//                    }
-//
-//                    rowContent = ["Total", totalEstimation.tileCount, Math.floor(totalEstimation.sizeBytes / 1024 / 1024 * 100)/100 + " Mb"];
-//                    rowContent = "<td><b>" + rowContent.join("</b></td><td><b>") + "</b></td>";
-//                    tr = domConstruct.place("<tr>", dojo.byId('tile-count-table-body'),'last')
-//                    domConstruct.place(rowContent, tr,'last');
-//                });
-//            })
 		}
 
 		function goOffline()
@@ -313,7 +567,6 @@ require(["esri/map",
 
 			/* launch offline preparation process */
 			var minLevel = parseInt(dojo.byId('minLevel').value);
-//            var maxLevel = map.getLevel();  //current zoom level sets max extent
             var maxLevel = parseInt(dojo.byId('maxLevel').value);
 			basemapLayer.prepareForOffline(minLevel, maxLevel, map.extent, reportProgress);
 		}
@@ -473,3 +726,7 @@ require(["esri/map",
 			esri.hide(dojo.byId('error-div'));
 		}
 	});
+	
+</script>
+</body>
+</html>
