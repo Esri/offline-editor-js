@@ -108,7 +108,7 @@ Methods | Returns | Description
 The `tiles` library allows a developer to extend a tiled layer with offline support.
 
 **Step 1** Configure paths for dojo loader to find the tiles and vendor modules (you need to set paths relative to the location of your html document), before loading ArcGIS JavaScript API
-
+```html
 	<script>
 		// configure paths BEFORE loading arcgis or dojo libs
 		var locationPath = location.pathname.replace(/\/[^/]+$/, "");
@@ -121,10 +121,10 @@ The `tiles` library allows a developer to extend a tiled layer with offline supp
 	</script>
 	<script src="//js.arcgis.com/3.7compact"></script>
 
-
+```
 
 **Step 2** Include the `tiles/offlineEnabler` library in your app.
-
+```js
 	require([
 		"esri/map", 
 		"tiles/offlineEnabler"], 
@@ -132,9 +132,9 @@ The `tiles` library allows a developer to extend a tiled layer with offline supp
 	{
 		...
 	});
-
+```
 **Step 3** Once your map is created (either using new Map() or using esriUtils.createMap(webmapid,...), you extend the basemap layer with the offline functionality
-
+```js
 	var basemapLayer = map.getLayer( map.layerIds[0] );
 	offlineEnabler.extend(basemapLayer,function(success)
 	{
@@ -144,12 +144,12 @@ The `tiles` library allows a developer to extend a tiled layer with offline supp
 			alert('indexed db is not supported in this browser);
 		}
 	});
-
+```
 **Step 4** Use the new offline methods on the layer to prepare for offline mode while still online:
 
 ####basemap.getLevelEstimation(extent,level)
 Returns an object that contains the number of tiles that would need to be downloaded for the specified extent and zoom level, and the estimated byte size of such tiles. This method is useful to give the user an indication of the required time and space before launching the actual download operation:
-
+```js
 	{
 		level: /* level number */
 		tileCount: /* count of tiles */
@@ -157,7 +157,7 @@ Returns an object that contains the number of tiles that would need to be downlo
 	}
 	
 **NOTE**: The byte size estimation is very rough.
-
+```
 ####basemap.prepareForOffline(minLevel,maxLevel,reportProgress,finishedDownloading)
 
 * Integer	minLevel
@@ -179,13 +179,13 @@ For e
 
 This method starts the process of downloading and storing in local storage all tiles within the specified extent. 
 For each downloaded tile it will call the reportProgress() callback. It will pass an object with the following fields
-
+```js
 	{
 		countNow: /* current count of downloaded tiles */
 		countMax: /* number of total tiles that need to be downloaded */
 		error: /* if some error has happened, it contains an error object with cell and msg fields, otherwise it is undefined */
 	} 
-
+```
 The reportProgress() callback function should return `true` if the download operation should be cancelled or `false` if it can go on.
 	
 Once all tiles have been downloaded, it will call the finishedDownloading() callback, passing `true` if the operation was cancelled without finishing or `true` if it was completed.
@@ -198,15 +198,15 @@ The callback is called to indicate success (true) or failure (false,err)
 
 ####basemap.getOfflineUsage(callback)
 It calculates the number of tiles that are stored in the indexed db database and the space used by them. The callback is called with an object containing the result of this calculation:
-
+```js
 	{
 		tileCount: /* count of tiles */
 		size: /* total size of tiles */	
 	}
-
+```
 ####basemap.getTilePolygons(callback)
 It calculates the geographic boundary of each of the tiles stored in the indexed db. This method calls the callback once for each tile, passing an esri/geometry/Polygon that can be added to a GraphicsLayer. This method is useful to show graphically which tiles are stored in the local database, like this:
-
+```js
 	graphics = new GraphicsLayer();
 	map.addLayer( graphics );
 	basemapLayer.getTilePolygons(function(polygon,err)
@@ -218,13 +218,13 @@ It calculates the geographic boundary of each of the tiles stored in the indexed
 			console.log("showStoredTiles: ", err);
 		}
 	}
-
+```
 ##`edit` library
 
 The `edit` library allows a developer to extend a feature layer with offline editing support.
 
 **Step 1** Include `offline.min.js` and `tiles/offlineEnabler` in your app.
-	
+```html	
 	<script src="../vendor/offline/offline.min.js"></script>
 	<script>
 	require([
@@ -235,16 +235,16 @@ The `edit` library allows a developer to extend a feature layer with offline edi
 	{
 		...
 	});
-
+```
 **Step 2** Once your map is created (either using new Map() or using esriUtils.createMap(webmapid,...), you create a new OfflineFeaturesManager and starting assigning events listeners to tie the library into your user interface:
-
+```js
 		var offlineFeaturesManager = new OfflineFeaturesManager();
 		offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_ENQUEUED, updateStatus);
 		offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_SENT, updateStatus);
 		offlineFeaturesManager.on(offlineFeaturesManager.events.ALL_EDITS_SENT, updateStatus);
-		
+```		
 **Step 3** Listener for the `layers-add-result` event. Create an array of FeatureLayers and add them to the map.
-
+```js
 		map.on('layers-add-result', initEditor);
 
 		var fsUrl = "http://services2.arcgis.com/CQWCKwrSm5dkM28A/arcgis/rest/services/Military/FeatureServer/";
@@ -262,9 +262,9 @@ The `edit` library allows a developer to extend a feature layer with offline edi
 		})
 
 		map.addLayers(featureLayers);
-
+```
 **Step 4** After the `layers-add-result` event fires, iterate thru each layer and extend it using the `extend()` method:
-
+```js
 		function initEditor(evt)
 		{
 			try {
@@ -278,21 +278,22 @@ The `edit` library allows a developer to extend a feature layer with offline edi
 			catch(err){
 			 	. . .
 			}		
-		}			``
+		}			
+```
 **Step 5** Use the new offline methods on the layer to prepare for offline mode while still online. Here are a few examples that include code snippets of how to take advantage of some of the libraries methods. You can use a combination of methods from `editsStore` and `offlineFeaturesManager`.
 
 ####offlineFeaturesManager.goOffline()
 Force the library to go offline. Once this condition is set, then any offline edits will be cached locally.
-
+```js
 		function goOffline()
 		{
 			offlineFeaturesManager.goOffline();
 			//TO-DO
 		}
-
+```
 ####offlineFeaturesManager.goOnline()
 Force the library to return to an online condition. If there are pending edits, the library will attempt to sync them.
-
+```js
 		function goOnline()
 		{			
 			offlineFeaturesManager.goOnline(function()
@@ -300,10 +301,10 @@ Force the library to return to an online condition. If there are pending edits, 
 				//Modify user inteface depending on success/failure
 			});
 		}
-
+```
 ####offlineFeaturesManager.getOnlineStatus()
 Within your application you can manually check online status and then update your user interface. By using a switch/case statement you can check against three enums that indicate if the library thinks it is offline, online or in the process of reconnecting.
-		
+```js		
 			switch( offlineFeaturesManager.getOnlineStatus() )
 			{
 				case offlineFeaturesManager.OFFLINE:
@@ -320,10 +321,10 @@ Within your application you can manually check online status and then update you
 					break;
 			}
 		
-
+```
 ####editsStore.hasPendingEdits()
 You can check if there are any edits pending. If there are then iterate `editsStore._retrieveEditsQueue()` and then convert the edits to a readable format via `offlineFeaturesManager.getReadableEdit(edit)`. 		
-
+```js
 			if( editsStore.hasPendingEdits())
 			{
 				var edits = editsStore._retrieveEditsQueue();
@@ -337,7 +338,7 @@ You can check if there are any edits pending. If there are then iterate `editsSt
 			{
 				//Tell user interface no edits are pending
 			}
-
+```
 ##Setup Instructions
 
 1. [Fork and clone the repo.](https://help.github.com/articles/fork-a-repo)
