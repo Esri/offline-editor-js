@@ -99,7 +99,7 @@ Methods | Returns | Description
 `saveToFile( filename, callback)` | `callback( boolean, error)` | Saves tile cache into a portable csv format.
 `loadFromFile( filename, callback)` | `callback( boolean, error)` | Reads a csv file into local tile cache.
 `estimateTileSize(callback)` | `callback(number)` | Retrieves one tile from a layer and then returns its size.
-<span>`prepareForOffline(minLevel,  maxLevel,  extent,  reportProgress)`</span> | `callback(number)` | Retrieves tiles and stores them in the local cache.
+`prepareForOffline(minLevel,`  `maxLevel, extent,  reportProgress)`  | `callback(number)` | Retrieves tiles and stores them in the local cache.
 
 
 ##`tiles` library
