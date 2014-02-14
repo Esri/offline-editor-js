@@ -44,6 +44,20 @@ ALL_EDITS_SENT | 'all-edits-sent' | After going online and there are no pending 
 Methods | Returns | Description
 --- | --- | ---
 `applyEdits(adds,updates,deletes,callback,errback)` | `deferred`| `adds` creates a new edit entry. `updates` modifies an existing entry. `deletes` removes an existing entry. `callback` called when the edit operation is complete.
+
+##editsStore
+
+Provides a number of public static methods for use within your application. These methods don't require a `new` statement or a constructor. After the module has been included in your application you can access these methods directly for example: `editsStore.getEditsStoreSizeBytes();`. `editsStore` is also used internally by the `offlineFeaturesManager` library.
+
+###Methods
+Methods | Returns | Description
+--- | --- | ---
+`isSupported()` | boolean | Determines if local storage is available. If it is not available then the storage cache will not work. It's a best practice to verify this before attempting to write to the local cache.
+`hasPendingEdits()` | String | Determines if there are any queued edits in the local cache. If there are then the edits are returned as a String and if not then an empty string will be returned.
+`pendingEditsCount()` | int | The total number of edits that are queued in the local cache.
+`getEditsStoreSizeBytes()` | Number | Returns the total size of all pending edits in bytes.
+`getLocalStorageSizeBytes()` | Number | Returns the total size of all items in bytes for local storage cached using the current domain name. 
+
  
 ##offlineEnabler
 
@@ -258,6 +272,12 @@ The `edit` library allows a developer to extend a feature layer with offline edi
 ##Dependencies
 
 * ArcGIS API for JavaScript (v3.7+)
+* NOTE: browser limitations and technical dependencies. The offline capabilities in this toolkit depend on the following (psuedo-persistent ) HTML5 capabilities being present in the browser:
+	* localStorage. The limits vary by browser and is typically 5MBs per domain name. For additional information see W3C's webstorage specification, [Section 5](http://www.w3.org/TR/webstorage/).
+	* indexedDB. Storage limits for indexedDB are not necessarily consistent across browsers. It's generally understood to be 50MB. Here is a Mozilla [document](https://developer.mozilla.org/en-US/docs/IndexedDB#Storage_limits) discussing limits across different browsers. 
+	* Advanced users of the library should be aware that JavaScript stores strings as UTF-16. More information can be found in this Mozilla [article](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/length).
+	* If a user completely flushes their browser cache all queued edits and tiles will most likely be lost.
+	* The data should persist even if the browser is shutdown and restarted.
 
 * Sub-mobiles (see `/vendor` directory)
 
