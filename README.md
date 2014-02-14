@@ -260,7 +260,64 @@ The `edit` library allows a developer to extend a feature layer with offline edi
 			 	. . .
 			}		
 		}	
-**Step 5** Use the new offline methods on the layer to prepare for offline mode while still online:		
+**Step 5** Use the new offline methods on the layer to prepare for offline mode while still online. Here are a few examples that include code snippets of how to take advantage of some of the libraries methods. You can use a combination of methods from `editsStore` and `offlineFeaturesManager`.
+
+####offlineFeaturesManager.goOffline()
+Force the library to go offline. Once this condition is set, then any offline edits will be cached locally.
+
+		function goOffline()
+		{
+			offlineFeaturesManager.goOffline();
+			//TO-DO
+		}
+
+####offlineFeaturesManager.goOnline()
+Force the library to return to an online condition. If there are pending edits, the library will attempt to sync them.
+
+		function goOnline()
+		{			
+			offlineFeaturesManager.goOnline(function()
+			{
+				//Modify user inteface depending on success/failure
+			});
+		}
+
+####offlineFeaturesManager.getOnlineStatus()
+Within your application you can manually check online status and then update your user interface. By using a switch/case statement you can check against three enums that indicate if the library thinks it is offline, online or in the process of reconnecting.
+		
+			switch( offlineFeaturesManager.getOnlineStatus() )
+			{
+				case offlineFeaturesManager.OFFLINE:
+					node.innerHTML = "<i class='fa fa-chain-broken'></i> offline";
+					domClass.add(node, "offline");
+					break;
+				case offlineFeaturesManager.ONLINE:
+					node.innerHTML = "<i class='fa fa-link'></i> online";
+					domClass.add(node, "online");
+					break;
+				case offlineFeaturesManager.RECONNECTING:
+					node.innerHTML = "<i class='fa fa-cog fa-spin'></i> reconnecting";
+					domClass.add(node, "reconnecting");
+					break;
+			}
+		}
+
+####editsStore.hasPendingEdits()
+You can check if there are any edits pending. If there are then iterate `editsStore._retrieveEditsQueue()` and then convert the edits to a readable format via `offlineFeaturesManager.getReadableEdit(edit)`. 		
+
+			if( editsStore.hasPendingEdits())
+			{
+				var edits = editsStore._retrieveEditsQueue();
+				edits.forEach(function(edit)
+				{
+					var readableEdit = offlineFeaturesManager.getReadableEdit(edit);
+					//Update user interface to display readable edits
+				},this);
+			}
+			else
+			{
+				//Tell user interface no edits are pending
+			}
 
 ##Setup Instructions
 
@@ -277,7 +334,7 @@ The `edit` library allows a developer to extend a feature layer with offline edi
 	* indexedDB. Storage limits for indexedDB are not necessarily consistent across browsers. It's generally understood to be 50MB. Here is a Mozilla [document](https://developer.mozilla.org/en-US/docs/IndexedDB#Storage_limits) discussing limits across different browsers. 
 	* Advanced users of the library should be aware that JavaScript stores strings as UTF-16. More information can be found in this Mozilla [article](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/length).
 	* If a user completely flushes their browser cache all queued edits and tiles will most likely be lost.
-	* The data should persist even if the browser is shutdown and restarted.
+	* The data should persist if the browser is shutdown and restarted.
 
 * Sub-mobiles (see `/vendor` directory)
 
