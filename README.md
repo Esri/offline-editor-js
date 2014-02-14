@@ -88,9 +88,9 @@ Methods | Returns | Description
 ###ArcGISTiledMapServiceLayer Overrides
 
 Methods | Returns | Description
---- | --- | ---
+--- | -- | ----
 `getTileUrl(level, row, col)` | Url | Retrieves tiles as requested by the ArcGIS API for JavaScript. If a tile is in cache it is returned. If it is not in cache then one is retrieved over the internet. 
-`getLevelEstimation(extent, level, tileSize)` | {level,tileCount,sizeBytes} | Returns an object that contains the number of tiles that would need to be downloaded for the specified extent and zoom level, and the estimated byte size of such tiles. This method is useful to give the user an indication of the required time and space before launching the actual download operation. The byte size estimation is very rough.
+`getLevelEstimation(extent, level, tileSize)` | {level, tileCount, sizeBytes} | Returns an object that contains the number of tiles that would need to be downloaded for the specified extent and zoom level, and the estimated byte size of such tiles. This method is useful to give the user an indication of the required time and space before launching the actual download operation. The byte size estimation is very rough.
 `goOffline()` | nothing | This method puts the layer in offline mode. When in offline mode, the layer will not fetch any tile from the remote server. It will look up the tiles in the indexed db database and display them in the layer. If the tile can't be found in the local database it will show up blank (even if there is actual connectivity). The pair of methods `goOffline()` and `goOnline() `allows the developer to manually control the behaviour of the layer. Used in conjunction with the offline dectection library, you can put the layer in the appropriate mode when the offline condition changes.
 `goOnline(callback)` | `callback (boolean, errors)` | This method puts the layer in online mode. When in online mode, the layer will behave as regular layers, fetching all tiles from the remote server. If there is no internet connectivity the tiles may appear thanks to the browsers cache, but no attempt will be made to look up tiles in the local database.
 `deleteAllTiles(callback)` | `callback(boolean, errors)` | Clears the local cache of tiles.
