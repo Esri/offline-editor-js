@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>localStorage test</title>
+	<style>
+		* { font-family: Arial; }
+		.container { position:absolute;top:30%;width:100%;text-align:center }
+		.container > div { margin-top: 10px;}
+		[onclick] { cursor:pointer; }
+	</style>
+</head>
+<body>
+	<div class="container">
+		<div>use this tool to test localStorage capacity exhaustion</div>
+		<div><b>first</b>, use button below to fill up localStorage</div>
+		<div><b>then</b>, test your application to see how it behaves under localStorage full condition</div>
+		<div><b>and finally</b>, clear localStorage</div>
+		<div>show console (F12) to see progress</div>
+		<div id="used-space">-</div>
+		<div>
+			<button onclick="doFill();">Fill localStorage</button><button onclick="cleanUp();">Clear localStorage</button>		
+		</div>
+	</div>
+
+<script>
+	var KEY_PREFIX = "__LOCAL_STORAGE_TEST__";
+
+	function updateUsedSpace()
+	{
+		var usedSpace = formatSize(getUsedSpace());
+		document.getElementById('used-space').innerHTML = "localStorage used space: " + usedSpace;
+	}
+
+	function getUsedSpace()
+	{
+		var bytes = 0;
+		for( var key in window.localStorage )
+		{
+			var value = window.localStorage.getItem(key);
+			bytes += value.length + key.length;
+		}
+		return bytes;
+	}
+
+	function formatSize(bytes)
+	{
+		if( bytes < 1024 )
+			return bytes + " bytes";
+		else if( bytes < 1024 * 1024 )
+			return (Math.floor(bytes/1024*100)/100) + "KBs";
+		else
+			return (Math.floor( bytes / 1024 / 1024 * 100) / 100) + " MBs";
+	}
+
+	function writeToLocalStorage(key,value)
+	{
+		try
+		{
+			window.localStorage.setItem(key,value);
+			return true;
+		}
+		catch(err)
+		{
+			alert(err);
+			console.log(err);
+			console.log("space used:", formatSize(getUsedSpace()))
+			return false;
+		}
+	}
+
+	function cleanUp()
+	{
+		var count = 0;
+		for( var key in window.localStorage )
+		{			
+			if( key.indexOf(KEY_PREFIX) == 0)
+			{
+				window.localStorage.removeItem(key);
+				count += 1;
+			}
+		}
+		console.log("removed",count,"items");
+		updateUsedSpace();
+	}
+
+	function doFill()
+	{
+		console.log("init");
+		console.log("space used:", formatSize(getUsedSpace()))
+
+		var value = "012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789";
+		var index = 0;
+		while(true)
+		{
+			var key = KEY_PREFIX + index;
+			var result = writeToLocalStorage(key,value+value+value+value);
+
+			if( ! result)
+				break;
+
+			if( index % 1000 == 0)
+			{
+				console.log(index, formatSize(getUsedSpace()));
+			}
+
+			index +=1;
+		}
+		updateUsedSpace();
+	}
+
+	window.onload = function()
+	{
+		updateUsedSpace();
+	}
+
+</script>
+
+</body>
+</html>
