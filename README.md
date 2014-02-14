@@ -105,6 +105,27 @@ The `tiles` library allows a developer to extend a tiled layer with offline supp
 
 **Step 4** Use the new offline methods on the layer to prepare for offline mode while still online:
 
+####basemap.getLevelEstimation(extent,level)
+Returns an object that contains the number of tiles that would need to be downloaded for the specified extent and zoom level, and the estimated byte size of such tiles. This method is useful to give the user an indication of the required time and space before launching the actual download operation:
+
+	{
+		level: /* level number */
+		tileCount: /* count of tiles */
+		sizeBytes: /* total size of tiles */	
+	}
+	
+**NOTE**: The byte size estimation is very rough.
+
+####basemap.prepareForOffline(minLevel,maxLevel,reportProgress,finishedDownloading)
+
+* Integer	minLevel
+* Integer	maxLevel
+* Extent	extent
+* callback	reportProgress(Object progress)
+* callback	finishedDownloading(Boolean cancelled)
+
+This method starts the process of downloading and storing in local storage all tiles within the specified extent. 
+For e
 
 ####basemap.prepareForOffline(minLevel,maxLevel,reportProgress,finishedDownloading)
 
