@@ -23,13 +23,13 @@ RECONNECTING | "reconnecting"
 
 ###Methods
 Methods | Returns | Description
---- | ---
+--- | --- | ---
 `extend()`|nothing|Overrides a feature layer.
 
 ###FeatureLayer Overrides
 
 Methods | Returns | Description
---- | ---
+--- | --- | ---
 `applyEdits(adds,updates,deletes,callback,errback)` | `deferred`| `adds` creates a new edit entry. `updates` modifies an existing entry. `deletes` removes an existing entry. `callback` called when the edit operation is complete.
 `goOffline()` | nothing | Forces library into an offline state. Any edits applied during this condition will be stored locally.
 `goOnline(callback)` | `callback(boolean, errors)` | Forces library to return to an online state. If there are pending edits, an attempt will be made to sync them with the remote feature server. 
@@ -42,13 +42,13 @@ Methods | Returns | Description
 
 ###Methods
 Methods | Returns | Description
---- | ---
+--- | --- | ---
 `extend(layer,callback)`|`callback(boolean,string)` |Overrides an ArcGISTiledMapServiceLayer.
 
 ###ArcGISTiledMapServiceLayer Overrides
 
 Methods | Returns | Description
---- | ---
+--- | --- | ---
 `getTileUrl(level,row,col)` | Url | Retrieves tiles as requested by the ArcGIS API for JavaScript. If a tile is in cache it is returned. If it is not in cache then one is retrieved over the internet. 
 `getLevelEstimation(extent, level, tileSize)` | {level,tileCount,sizeBytes} | Returns an object that contains the number of tiles that would need to be downloaded for the specified extent and zoom level, and the estimated byte size of such tiles. This method is useful to give the user an indication of the required time and space before launching the actual download operation. The byte size estimation is very rough.
 `goOffline()` | nothing | This method puts the layer in offline mode. When in offline mode, the layer will not fetch any tile from the remote server. It will look up the tiles in the indexed db database and display them in the layer. If the tile can't be found in the local database it will show up blank (even if there is actual connectivity). The pair of methods `goOffline()` and `goOnline() `allows the developer to manually control the behaviour of the layer. Used in conjunction with the offline dectection library, you can put the layer in the appropriate mode when the offline condition changes.
@@ -91,7 +91,8 @@ The `tiles` library allows a developer to extend a tiled layer with offline supp
 		"tiles/offlineEnabler"], 
 		function(Map,offlineEnabler)
 	{
-		...	});
+		...
+	});
 
 **Step 3** Once your map is created (either using new Map() or using esriUtils.createMap(webmapid,...), you extend the basemap layer with the offline functionality
 
@@ -99,8 +100,10 @@ The `tiles` library allows a developer to extend a tiled layer with offline supp
 	offlineEnabler.extend(basemapLayer,function(success)
 	{
 		if(success)	{
-			/* now we can use offline functionality on this layer */		} else {
-			alert('indexed db is not supported in this browser);		}
+			/* now we can use offline functionality on this layer */
+		} else {
+			alert('indexed db is not supported in this browser);
+		}
 	});
 
 **Step 4** Use the new offline methods on the layer to prepare for offline mode while still online:
