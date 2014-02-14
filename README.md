@@ -120,7 +120,7 @@ The `tiles` library allows a developer to extend a tiled layer with offline supp
 	offlineEnabler.extend(basemapLayer,function(success)
 	{
 		if(success)	{
-			/* now we can use offline functionality on this layer */
+			// Now we can use offline functionality on this layer 
 		} else {
 			alert('indexed db is not supported in this browser);
 		}
@@ -259,7 +259,7 @@ The `edit` library allows a developer to extend a feature layer with offline edi
 			catch(err){
 			 	. . .
 			}		
-		}	
+		}			``
 **Step 5** Use the new offline methods on the layer to prepare for offline mode while still online. Here are a few examples that include code snippets of how to take advantage of some of the libraries methods. You can use a combination of methods from `editsStore` and `offlineFeaturesManager`.
 
 ####offlineFeaturesManager.goOffline()
@@ -300,7 +300,7 @@ Within your application you can manually check online status and then update you
 					domClass.add(node, "reconnecting");
 					break;
 			}
-		}
+		
 
 ####editsStore.hasPendingEdits()
 You can check if there are any edits pending. If there are then iterate `editsStore._retrieveEditsQueue()` and then convert the edits to a readable format via `offlineFeaturesManager.getReadableEdit(edit)`. 		
