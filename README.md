@@ -1,13 +1,27 @@
 offline-editor-js
 =================
 
-JavaScript library for working offline with editing and tiles. It contains two sets of libraries:
+JavaScript toolkit for using the ArcGIS API for JavaScript offline. It manages both editing and tiles in an offline mode. It's still a work-in-progress so if you have suggestions open an issue or if you want to make a pull request we welcome your proposed modifications. 
+
+This repo contains two sets of libraries:
 
 - `/edit`: handles vector features and stores adds, updates and deletes while offline. Resync's edits with server once connection is reestablished
    * `offlineFeaturesManager` - Extends and overrides a feature layer.
    * `editsStore` - Provides static helper methods for working with the offline data store.
 - `/tiles`: stores portions of tiled maps client-side and uses the cached tiles when device is offline
    * `offlineEnabler` Extends and overrides a tiled map service.
+
+##Workflows Supported (v1)
+The following workflow is currently supported for both both features and tiles:
+
+1) Load web application while online.
+ 
+2) Once all tiles and features are loaded then place application offline. This can be done manually within the code.
+
+3) Make edits while offline.
+
+4) Return online when you want to resync edits.
+
 
 
 ##offlineFeaturesManager
@@ -30,10 +44,10 @@ Methods | Returns | Description
 --- | --- | ---
 `extend()`|nothing|Overrides a feature layer.
 `goOffline()` | nothing | Forces library into an offline state. Any edits applied during this condition will be stored locally.
-`goOnline(callback)` | `callback(boolean, errors)` | Forces library to return to an online state. If there are pending edits, an attempt will be made to sync them with the remote feature server. 
+`goOnline(callback)` | `callback( boolean, errors )` | Forces library to return to an online state. If there are pending edits, an attempt will be made to sync them with the remote feature server. 
 `getOnlineStatus()` | `ONLINE` or `OFFLINE` | Determines if offline or online condition exists.
 `optimizeEditsQueue()` | nothing | Runs various checks on the edits queue to help ensure data integrity.
-`replayStoredEdits(callback)` | `callback(boolean,{}`) | Internal method called by `goOnline`. If there are pending edits this method attempts to sync them with the remote feature server.
+`replayStoredEdits(callback)` | `callback(boolean, {}`) | Internal method called by `goOnline`. If there are pending edits this method attempts to sync them with the remote feature server.
 `getReadableEdit()` | String | A string value representing human readable information on pending edits.
 
 ###Events
@@ -47,7 +61,7 @@ ALL_EDITS_SENT | 'all-edits-sent' | After going online and there are no pending 
 
 Methods | Returns | Description
 --- | --- | ---
-`applyEdits(adds,updates,deletes,callback,errback)` | `deferred`| `adds` creates a new edit entry. `updates` modifies an existing entry. `deletes` removes an existing entry. `callback` called when the edit operation is complete.
+`applyEdits(adds, updates, deletes, callback, errback)` | `deferred`| `adds` creates a new edit entry. `updates` modifies an existing entry. `deletes` removes an existing entry. `callback` called when the edit operation is complete.
 
 ##editsStore
 
@@ -69,23 +83,23 @@ Extends and overrides a tiled map service.
 ###Methods
 Methods | Returns | Description
 --- | --- | ---
-`extend(layer,callback)`|`callback(boolean,string)` |Overrides an ArcGISTiledMapServiceLayer.
+`extend(layer, callback)`|`callback(boolean, string)` |Overrides an ArcGISTiledMapServiceLayer.
 
 ###ArcGISTiledMapServiceLayer Overrides
 
 Methods | Returns | Description
 --- | --- | ---
-`getTileUrl(level,row,col)` | Url | Retrieves tiles as requested by the ArcGIS API for JavaScript. If a tile is in cache it is returned. If it is not in cache then one is retrieved over the internet. 
+`getTileUrl(level, row, col)` | Url | Retrieves tiles as requested by the ArcGIS API for JavaScript. If a tile is in cache it is returned. If it is not in cache then one is retrieved over the internet. 
 `getLevelEstimation(extent, level, tileSize)` | {level,tileCount,sizeBytes} | Returns an object that contains the number of tiles that would need to be downloaded for the specified extent and zoom level, and the estimated byte size of such tiles. This method is useful to give the user an indication of the required time and space before launching the actual download operation. The byte size estimation is very rough.
 `goOffline()` | nothing | This method puts the layer in offline mode. When in offline mode, the layer will not fetch any tile from the remote server. It will look up the tiles in the indexed db database and display them in the layer. If the tile can't be found in the local database it will show up blank (even if there is actual connectivity). The pair of methods `goOffline()` and `goOnline() `allows the developer to manually control the behaviour of the layer. Used in conjunction with the offline dectection library, you can put the layer in the appropriate mode when the offline condition changes.
-`goOnline(callback)` | `callback(boolean, errors)` | This method puts the layer in online mode. When in online mode, the layer will behave as regular layers, fetching all tiles from the remote server. If there is no internet connectivity the tiles may appear thanks to the browsers cache, but no attempt will be made to look up tiles in the local database.
+`goOnline(callback)` | `callback (boolean, errors)` | This method puts the layer in online mode. When in online mode, the layer will behave as regular layers, fetching all tiles from the remote server. If there is no internet connectivity the tiles may appear thanks to the browsers cache, but no attempt will be made to look up tiles in the local database.
 `deleteAllTiles(callback)` | `callback(boolean, errors)` | Clears the local cache of tiles.
 `getOfflineUsage(callback)` | `callback(size, error)` | Gets the size in bytes of the local tile cache.
 `getTilePolygons(callback)` | `callback(polygon, error)` | Gets polygons representing all cached cell ids within a particular zoom level and bounded by an extent.
-`saveToFile(filename,callback)` | `callback(boolean, error)` | Saves tile cache into a portable csv format.
-`loadFromFile(filename,callback)` | `callback(boolean, error)` | Reads a csv file into local tile cache.
+`saveToFile( filename, callback)` | `callback( boolean, error)` | Saves tile cache into a portable csv format.
+`loadFromFile( filename, callback)` | `callback( boolean, error)` | Reads a csv file into local tile cache.
 `estimateTileSize(callback)` | `callback(number)` | Retrieves one tile from a layer and then returns its size.
-`prepareForOffline(minLevel, maxLevel, extent, reportProgress)` | `callback(number)` | Retrieves tiles and stores them in the local cache.
+`prepareForOffline( minLevel, maxLevel, extent, reportProgress)` | `callback(number)` | Retrieves tiles and stores them in the local cache.
 
 
 ##`tiles` library
