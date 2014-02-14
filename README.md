@@ -1,64 +1,43 @@
-offline-editor-js
+offline-arcgis-js
 =================
 
-Experimental JavaScript library that auto-detects an offline condition and stores FeatureLayer edit activities until a connection is reestablished. Works with adds, updates and deletes.
+JavaScript library for working offline with editing and tiles:
 
-Includes several libraries (in the `lib` directory):
+- `edit`: handles vector features and stores adds, updates and deletes while offline. Resync's edits with server once connection is restablished
+- `tiles`: stores portions of tiled maps client-side and use the cached tiles when device is offline
 
-- `edit`: handles vector features, allows editing while offline and sending edits to server once connection is restablished
-- `tiles`: allows to store portions of tiled maps client-side and use the cached tiles when device is offline
 
-##How to use?
+##offlineFeaturesManager
 
-The easiest approach is to simply use the library to override applyEdits():
+###Constructor
+Constructor | Description
+--- | ---
+`new offlineFeaturesManager()` | Extends a feature layer and overrides `applyEdits()`.
 
-**Step 1.** The library provides a constructor that can simply be used in place of the traditional applyEdit() method. It does all the rest of the work for you:
+###ENUMs
+Property | Description
+--- | ---
+ONLINE | "online"
+OFFLINE | "offline"
+RECONNECTING | "reconnecting"
 
-	var offlineStore = new OfflineStore(map);
-	offlineStore.applyEdits(graphic,layer,"delete");
-	
-**Step 2.** Run your mapping app while online to download all the maps and feature layers to the browser.
+###Methods
+Methods | Returns | Description
+--- | ---
+`extend()`|nothing|Overrides a feature layer.
 
-**Step 3.** To operate the app offline, try using Firefox's built-in, offline functionality since it seems to work very well. Set offline mode as shown in this screenshot:
+###FeatureLayer Overrides
 
-![] (firefox_offline_mode.png)
-	
-While the library works in Chrome, Firefox and Safari with the internet turned off, at this time it has only been extensively tested truly offline with Firefox. With those other browsers it meets the use case of handling edits during intermittent internet scenarios. There are other third party applications for Chrome, for example, that supposedly allow full offline browsing but I haven't been tested them yet. 	
-		
-##Features
-
-* Override the applyEdits() method.
-* Automatic offline/online detection. Once an offline condition exists the library starts storing the edits. And, as soon as it reconnects it will submit the updates.
-* Can store dozens or hundreds of edits.
-* Currently works with Points, Polylines and Polygons.
-* Indexes edits for successful/unsuccessful update validation as well as for more advanced workflows.
-* Monitors available storage and is configured by default to stop edits at a maximum threshold and alert that the threshold has been reached. This is intended to help prevent data loss.
-* Can store base map tiles for offline pan and zoom.
-
-##`edit` Library
-
-####OfflineStore(/\* Map \*/ map)
-* Constructor. Requires a reference to an ArcGIS API for JavaScript Map.
-
-####applyEdits(/\* Graphic \*/ graphic,/\* FeatureLayer \*/ layer, /\* String \*/ enumValue)
-* Method. Overrides FeatureLayer.applyEdits().
-
-####getStore()
-* Returns an array of Graphics from localStorage.
-
-####getLocalStoreIndex()
-* Returns the index as an array of JSON objects. An internal index is used to keep track of adds, deletes and updates. The objects are constructed like this:
-	
-		{"id": object610,"type":"add","success":"true"}
-
-####getLocalStorageUsed()
-* Returns the total storage used for the applications domain in MBs.
-
-####enum()
-* Constant. Provides an immutable reference value for "add","update" and "delete". Example usage:
-
-		offlineStore.enum().UPDATE
-
+Methods | Returns | Description
+--- | ---
+`applyEdits(adds,updates,deletes,callback,errback)` | `deferred`| `adds` creates a new edit entry. `updates` modifies an existing entry. `deletes` removes an existing entry. `callback` called when the edit operation is complete.
+`goOffline` | nothing | Forces library into an offline state. Any edits applied during this condition will be stored locally.
+`goOnline(callback)` | `callback(boolean, errors)` | Forces library to return to an online state. If there are pending edits, an attempt will be made to sync them with the remote feature server. 
+`getOnlineStatus()` | `ONLINE` or `OFFLINE` | Determines if offline or online condition exists.
+`optimizeEditsQueue()` | nothing | Runs various checks on the edits queue to help ensure data integrity.
+`replayStoredEdits(callback)` | `callback(boolean,{}`) | Internal method called by `goOnline`. If there are pending edits this method attempts to sync them with the remote feature server.
+`getReadableEdit` | String | A string value representing human readable information on pending edits.
+ 
 
 
 ####verticesObject(/\* Graphic \*/ graphic, /\* FeatureLayer \*/ layer)
@@ -188,26 +167,24 @@ This method puts the layer in online mode. When in online mode, the layer will b
 
 **NOTE**: The pair of methods goOffline() and goOnline() allows the developer to manually control the behaviour of the layer. Used in conjunction with the offline dectection library, you can put the layer in the appropriate mode when the offline condition changes.
 
-##Testing
-Open Jasmine's `SpecRunner.edit.html` and `SpecRunner.tiles.html` in a browser. You can find them in the `/test` directory.
-
 ##Setup Instructions
-1. After cloning from github, `cd` into the `offline-editor-js` folder
-2. Run `git submodule init` and `git submodule update`
+
+1. [Fork and clone the repo.](https://help.github.com/articles/fork-a-repo)
+2. After cloning from github, `cd` into the `offline-editor-js` folder
+3. Run `git submodule init` and `git submodule update`
+4. Examples in the `/samples` folder should work now.
 
 ##Dependencies
-Online dependencies:
 
-* ArcGIS API for JavaScript (tested with v3.7)
+* ArcGIS API for JavaScript (v3.7+)
 
-Dependencies included in the `vendor` directory as git submodules
+* Sub-mobiles (see `/vendor` directory)
 
-* [offline.js](https://github.com/hubspot/offline) - it allows detection of the online/offline condition and provides events to hook callbacks on when this condition changes
-* [bootstrap-map](https://github.com/Esri/bootstrap-map-js.git) - UI creation using bootstrap and ArcGIS maps (used in samples)
-* [IndexedDBShim](https://github.com/axemclion/IndexedDBShim) - polyfill to simulate indexed db functionality in browsers/platforms where it is not supported (notably iOS Safari, PhoneGap, Android Chrome)
-* [jasmine.async](https://github.com/derickbailey/jasmine.async.git) - library to help implementing tests of async functionality (used in tests)
+   * [offline.js](https://github.com/hubspot/offline) - it allows detection of the online/offline condition and provides events to hook callbacks on when this condition changes
+   * [bootstrap-map](https://github.com/Esri/bootstrap-map-js.git) - UI creation using bootstrap and ArcGIS maps (used in samples)
+   * [IndexedDBShim](https://github.com/axemclion/IndexedDBShim) - polyfill to simulate indexed db functionality in browsers/platforms where it is not supported (notably iOS Safari, PhoneGap, Android Chrome)
+   * [jasmine.async](https://github.com/derickbailey/jasmine.async.git) - library to help implementing tests of async functionality (used in tests)
 
-__NOTE__: Once you clone the repo, you need to do "git submodule init" and "git submodule update" to get the exact same version of submodules that this project has been developed and tested against.
 
 ## Resources
 
@@ -225,7 +202,7 @@ Anyone and everyone is welcome to contribute. Please see our [guidelines for con
 
 
 ## Licensing
-Copyright 2013 Esri
+Copyright 2014 Esri
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
