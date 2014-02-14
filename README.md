@@ -1,10 +1,10 @@
 offline-arcgis-js
 =================
 
-JavaScript library for working offline with editing and tiles:
+JavaScript library for working offline with editing and tiles. There are currently two sets of libraries:
 
-- `edit`: handles vector features and stores adds, updates and deletes while offline. Resync's edits with server once connection is restablished
-- `tiles`: stores portions of tiled maps client-side and use the cached tiles when device is offline
+- `/edit`: handles vector features and stores adds, updates and deletes while offline. Resync's edits with server once connection is restablished
+- `/tiles`: stores portions of tiled maps client-side and use the cached tiles when device is offline
 
 
 ##offlineFeaturesManager
@@ -31,29 +31,36 @@ Methods | Returns | Description
 Methods | Returns | Description
 --- | ---
 `applyEdits(adds,updates,deletes,callback,errback)` | `deferred`| `adds` creates a new edit entry. `updates` modifies an existing entry. `deletes` removes an existing entry. `callback` called when the edit operation is complete.
-`goOffline` | nothing | Forces library into an offline state. Any edits applied during this condition will be stored locally.
+`goOffline()` | nothing | Forces library into an offline state. Any edits applied during this condition will be stored locally.
 `goOnline(callback)` | `callback(boolean, errors)` | Forces library to return to an online state. If there are pending edits, an attempt will be made to sync them with the remote feature server. 
 `getOnlineStatus()` | `ONLINE` or `OFFLINE` | Determines if offline or online condition exists.
 `optimizeEditsQueue()` | nothing | Runs various checks on the edits queue to help ensure data integrity.
 `replayStoredEdits(callback)` | `callback(boolean,{}`) | Internal method called by `goOnline`. If there are pending edits this method attempts to sync them with the remote feature server.
 `getReadableEdit` | String | A string value representing human readable information on pending edits.
  
+##offlineEnabler
 
+###Methods
+Methods | Returns | Description
+--- | ---
+`extend(layer,callback)`|`callback(boolean,string)` |Overrides an ArcGISTiledMapServiceLayer.
 
-####verticesObject(/\* Graphic \*/ graphic, /\* FeatureLayer \*/ layer)
-* Helper method for use with vertices editing. Example usage:
+###ArcGISTiledMapServiceLayer Overrides
 
-		editToolbar.on("deactivate", function(evt) {
-            if(updateFlag == true){
-                offlineStore.applyEdits(
-                   vertices.graphic,vertices.layer,offlineStore.enum().UPDATE);
-                updateFlag = false;
-            }
-            else{
-                offlineStore.applyEdits(
-                   evt.graphic,currentLayer,offlineStore.enum().UPDATE);
-            }
-        }
+Methods | Returns | Description
+--- | ---
+`getTileUrl(level,row,col)` | Url | Retrieves tiles as requested by the ArcGIS API for JavaScript. If a tile is in cache it is returned. If it is not in cache then one is retrieved over the internet. 
+`getLevelEstimation(extent, level, tileSize)` | {level,tileCount,sizeBytes} | Returns an object that contains the number of tiles that would need to be downloaded for the specified extent and zoom level, and the estimated byte size of such tiles. This method is useful to give the user an indication of the required time and space before launching the actual download operation. The byte size estimation is very rough.
+`goOffline()` | nothing | This method puts the layer in offline mode. When in offline mode, the layer will not fetch any tile from the remote server. It will look up the tiles in the indexed db database and display them in the layer. If the tile can't be found in the local database it will show up blank (even if there is actual connectivity). The pair of methods `goOffline()` and `goOnline() `allows the developer to manually control the behaviour of the layer. Used in conjunction with the offline dectection library, you can put the layer in the appropriate mode when the offline condition changes.
+`goOnline(callback)` | `callback(boolean, errors)` | This method puts the layer in online mode. When in online mode, the layer will behave as regular layers, fetching all tiles from the remote server. If there is no internet connectivity the tiles may appear thanks to the browsers cache, but no attempt will be made to look up tiles in the local database.
+`deleteAllTiles(callback)` | `callback(boolean, errors)` | Clears the local cache of tiles.
+`getOfflineUsage(callback)` | `callback(size, error)` | Gets the size in bytes of the local tile cache.
+`getTilePolygons(callback)` | `callback(polygon, error)` | Gets polygons representing all cached cell ids within a particular zoom level and bounded by an extent.
+`saveToFile(filename,callback)` | `callback(boolean, error)` | Saves tile cache into a portable csv format.
+`loadFromFile(filename,callback)` | `callback(boolean, error)` | Reads a csv file into local tile cache.
+`estimateTileSize(callback)` | `callback(number)` | Retrieves one tile from a layer and then returns its size.
+`prepareForOffline(minLevel, maxLevel, extent, reportProgress)` | `callback(number)` | Retrieves tiles and stores them in the local cache.
+
 
 
 ##`tiles` library
@@ -98,16 +105,6 @@ The `tiles` library allows a developer to extend a tiled layer with offline supp
 
 **Step 4** Use the new offline methods on the layer to prepare for offline mode while still online:
 
-####basemap.getLevelEstimation(extent,level)
-Returns an object that contains the number of tiles that would need to be downloaded for the specified extent and zoom level, and the estimated byte size of such tiles. This method is useful to give the user an indication of the required time and space before launching the actual download operation:
-
-	{
-		level: /* level number */
-		tileCount: /* count of tiles */
-		sizeBytes: /* total size of tiles */	
-	}
-	
-**NOTE**: The byte size estimation is very rough.
 
 ####basemap.prepareForOffline(minLevel,maxLevel,reportProgress,finishedDownloading)
 
@@ -158,14 +155,7 @@ It calculates the geographic boundary of each of the tiles stored in the indexed
 			console.log("showStoredTiles: ", err);
 		}
 	}
-	
-####basemap.goOffline()
-This method puts the layer in offline mode. When in offline mode, the layer will not fetch any tile from the remote server. It will look up the tiles in the indexed db database and display them in the layer. If the tile can't be found in the local database it will show up blank (even if there is actual connectivity)
 
-####basemap.goOnline()
-This method puts the layer in online mode. When in online mode, the layer will behave as regular layers, fetching all tiles from the remote server. If there is no internet connectivity the tiles may appear thanks to the browsers cache, but no attempt will be made to look up tiles in the local database.
-
-**NOTE**: The pair of methods goOffline() and goOnline() allows the developer to manually control the behaviour of the layer. Used in conjunction with the offline dectection library, you can put the layer in the appropriate mode when the offline condition changes.
 
 ##Setup Instructions
 
