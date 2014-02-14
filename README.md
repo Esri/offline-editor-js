@@ -1,10 +1,10 @@
-offline-arcgis-js
+offline-editor-js
 =================
 
-JavaScript library for working offline with editing and tiles. There are currently two sets of libraries:
+JavaScript library for working offline with editing and tiles. It contains two sets of libraries:
 
-- `/edit`: handles vector features and stores adds, updates and deletes while offline. Resync's edits with server once connection is restablished
-- `/tiles`: stores portions of tiled maps client-side and use the cached tiles when device is offline
+- `/edit`: handles vector features and stores adds, updates and deletes while offline. Resync's edits with server once connection is reestablished
+- `/tiles`: stores portions of tiled maps client-side and uses the cached tiles when device is offline
 
 
 ##offlineFeaturesManager
@@ -25,18 +25,25 @@ RECONNECTING | "reconnecting"
 Methods | Returns | Description
 --- | --- | ---
 `extend()`|nothing|Overrides a feature layer.
+`goOffline()` | nothing | Forces library into an offline state. Any edits applied during this condition will be stored locally.
+`goOnline(callback)` | `callback(boolean, errors)` | Forces library to return to an online state. If there are pending edits, an attempt will be made to sync them with the remote feature server. 
+`getOnlineStatus()` | `ONLINE` or `OFFLINE` | Determines if offline or online condition exists.
+`optimizeEditsQueue()` | nothing | Runs various checks on the edits queue to help ensure data integrity.
+`replayStoredEdits(callback)` | `callback(boolean,{}`) | Internal method called by `goOnline`. If there are pending edits this method attempts to sync them with the remote feature server.
+`getReadableEdit()` | String | A string value representing human readable information on pending edits.
+
+###Events
+Event | Value | Description
+--- | --- | ---
+EDITS_SENT |  'edits-sent' | When any edit is actually sent to the server.
+EDITS_ENQUEUED | 'edits-enqueued' | When an edit is enqueued and not sent to the server.
+ALL_EDITS_SENT | 'all-edits-sent' | After going online and there are no pending edits remaining in the queue.
 
 ###FeatureLayer Overrides
 
 Methods | Returns | Description
 --- | --- | ---
 `applyEdits(adds,updates,deletes,callback,errback)` | `deferred`| `adds` creates a new edit entry. `updates` modifies an existing entry. `deletes` removes an existing entry. `callback` called when the edit operation is complete.
-`goOffline()` | nothing | Forces library into an offline state. Any edits applied during this condition will be stored locally.
-`goOnline(callback)` | `callback(boolean, errors)` | Forces library to return to an online state. If there are pending edits, an attempt will be made to sync them with the remote feature server. 
-`getOnlineStatus()` | `ONLINE` or `OFFLINE` | Determines if offline or online condition exists.
-`optimizeEditsQueue()` | nothing | Runs various checks on the edits queue to help ensure data integrity.
-`replayStoredEdits(callback)` | `callback(boolean,{}`) | Internal method called by `goOnline`. If there are pending edits this method attempts to sync them with the remote feature server.
-`getReadableEdit` | String | A string value representing human readable information on pending edits.
  
 ##offlineEnabler
 
@@ -60,7 +67,6 @@ Methods | Returns | Description
 `loadFromFile(filename,callback)` | `callback(boolean, error)` | Reads a csv file into local tile cache.
 `estimateTileSize(callback)` | `callback(number)` | Retrieves one tile from a layer and then returns its size.
 `prepareForOffline(minLevel, maxLevel, extent, reportProgress)` | `callback(number)` | Retrieves tiles and stores them in the local cache.
-
 
 
 ##`tiles` library
@@ -180,6 +186,67 @@ It calculates the geographic boundary of each of the tiles stored in the indexed
 		}
 	}
 
+##`edit` library
+
+The `edit` library allows a developer to extend a feature layer with offline editing support.
+
+**Step 1** Include `offline.min.js` and `tiles/offlineEnabler` in your app.
+	
+	<script src="../vendor/offline/offline.min.js"></script>
+	<script>
+	require([
+		"esri/map", 
+		"edit/offlineFeaturesManager",
+	    "edit/editsStore", 
+		function(Map,offlineFeaturesManager,editsStore)
+	{
+		...
+	});
+
+**Step 2** Once your map is created (either using new Map() or using esriUtils.createMap(webmapid,...), you create a new OfflineFeaturesManager and starting assigning events listeners to tie the library into your user interface:
+
+		var offlineFeaturesManager = new OfflineFeaturesManager();
+		offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_ENQUEUED, updateStatus);
+		offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_SENT, updateStatus);
+		offlineFeaturesManager.on(offlineFeaturesManager.events.ALL_EDITS_SENT, updateStatus);
+		
+**Step 3** Listener for the `layers-add-result` event. Create an array of FeatureLayers and add them to the map.
+
+		map.on('layers-add-result', initEditor);
+
+		var fsUrl = "http://services2.arcgis.com/CQWCKwrSm5dkM28A/arcgis/rest/services/Military/FeatureServer/";
+		// var layersIds = [0,1,2,3,4,5,6];
+		var layersIds = [1,2,3];
+		var featureLayers = [];
+
+		layersIds.forEach(function(layerId)
+		{
+			var layer = new FeatureLayer(fsUrl + layerId, {
+				mode: FeatureLayer.MODE_SNAPSHOT,
+				outFields: ['*']
+			});
+			featureLayers.push(layer);			
+		})
+
+		map.addLayers(featureLayers);
+
+**Step 4** After the `layers-add-result` event fires, iterate thru each layer and extend it using the `extend()` method:
+
+		function initEditor(evt)
+		{
+			try {
+				/* extend layer with offline detection functionality */
+				evt.layers.forEach(function(result)
+				{
+					var layer = result.layer;
+					offlineFeaturesManager.extend(layer);
+					layer.on('update-end', logCurrentObjectIds);
+				});
+			catch(err){
+			 	. . .
+			}		
+		}	
+**Step 5** Use the new offline methods on the layer to prepare for offline mode while still online:		
 
 ##Setup Instructions
 
