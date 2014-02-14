@@ -4,10 +4,14 @@ offline-editor-js
 JavaScript library for working offline with editing and tiles. It contains two sets of libraries:
 
 - `/edit`: handles vector features and stores adds, updates and deletes while offline. Resync's edits with server once connection is reestablished
+   * `offlineFeaturesManager` - Extends and overrides a feature layer.
+   * `editsStore` - Provides static helper methods for working with the offline data store.
 - `/tiles`: stores portions of tiled maps client-side and uses the cached tiles when device is offline
+   * `offlineEnabler` Extends and overrides a tiled map service.
 
 
 ##offlineFeaturesManager
+Extends and overrides a feature layer.
 
 ###Constructor
 Constructor | Description
@@ -60,6 +64,7 @@ Methods | Returns | Description
 
  
 ##offlineEnabler
+Extends and overrides a tiled map service.
 
 ###Methods
 Methods | Returns | Description
