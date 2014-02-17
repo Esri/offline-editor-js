@@ -46,7 +46,7 @@ Methods | Returns | Description
 `goOffline()` | nothing | Forces library into an offline state. Any edits applied during this condition will be stored locally.
 `goOnline(callback)` | `callback( boolean, errors )` | Forces library to return to an online state. If there are pending edits, an attempt will be made to sync them with the remote feature server. 
 `getOnlineStatus()` | `ONLINE` or `OFFLINE` | Determines if offline or online condition exists.
-`optimizeEditsQueue()` | nothing | Runs various checks on the edits queue to help ensure data integrity.
+`optimizeEditsQueue()` | Array | Internal method that runs various checks on the edits queue to help ensure data integrity.
 `replayStoredEdits(callback)` | `callback(boolean, {}`) | Internal method called by `goOnline`. If there are pending edits this method attempts to sync them with the remote feature server.
 `getReadableEdit()` | String | A string value representing human readable information on pending edits.
 
