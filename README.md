@@ -9,7 +9,7 @@ This repo contains two sets of libraries:
    * `offlineFeaturesManager` - Extends and overrides a feature layer.
    * `editsStore` - Provides static helper methods for working with the offline data store.
 - `/tiles`: stores portions of tiled maps client-side and uses the cached tiles when device is offline
-   * `offlineEnabler` Extends and overrides a tiled map service.
+   * `offlineTilesEnabler` Extends and overrides a tiled map service.
 
 ##Workflows Supported (v1)
 The following workflow is currently supported for both both features and tiles:
@@ -77,7 +77,7 @@ Methods | Returns | Description
 `getLocalStorageSizeBytes()` | Number | Returns the total size of all items in bytes for local storage cached using the current domain name. 
 
  
-##offlineEnabler
+##offlineTilesEnabler
 Extends and overrides a tiled map service.
 
 ###Methods
@@ -123,12 +123,12 @@ The `tiles` library allows a developer to extend a tiled layer with offline supp
 
 ```
 
-**Step 2** Include the `tiles/offlineEnabler` library in your app.
+**Step 2** Include the `tiles/offlineTilesEnabler` library in your app.
 ```js
 	require([
 		"esri/map", 
-		"tiles/offlineEnabler"], 
-		function(Map,offlineEnabler)
+		"tiles/offlineTilesEnabler"], 
+		function(Map,offlineTilesEnabler)
 	{
 		...
 	});
@@ -136,7 +136,7 @@ The `tiles` library allows a developer to extend a tiled layer with offline supp
 **Step 3** Once your map is created (either using new Map() or using esriUtils.createMap(webmapid,...), you extend the basemap layer with the offline functionality
 ```js
 	var basemapLayer = map.getLayer( map.layerIds[0] );
-	offlineEnabler.extend(basemapLayer,function(success)
+	offlineTilesEnabler.extend(basemapLayer,function(success)
 	{
 		if(success)	{
 			// Now we can use offline functionality on this layer 
@@ -223,7 +223,7 @@ It calculates the geographic boundary of each of the tiles stored in the indexed
 
 The `edit` library allows a developer to extend a feature layer with offline editing support.
 
-**Step 1** Include `offline.min.js` and `tiles/offlineEnabler` in your app.
+**Step 1** Include `offline.min.js` and `tiles/offlineTilesEnabler` in your app.
 ```html	
 	<script src="../vendor/offline/offline.min.js"></script>
 	<script>
