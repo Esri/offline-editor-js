@@ -21,27 +21,27 @@
     <script src="http://js.arcgis.com/3.6/"></script>
 
   <!-- include spec files here... -->
-  <script type="text/javascript" src="spec/offlineEnablerSpec.js"></script>
+  <script type="text/javascript" src="spec/offlineTilesEnablerSpec.js"></script>
 
   <script type="text/javascript">
 
   var g_map;
   var g_basemapLayer;
-  var g_offlineEnabler;
+  var g_offlineTilesEnabler;
 
   require(["esri/map", 
   	"esri/layers/GraphicsLayer", "esri/graphic", "esri/symbols/SimpleFillSymbol",
   	"esri/dijit/Scalebar", "esri/arcgis/utils", "esri/geometry",
   	"dojo/dom", "dojo/on", "dojo/query", 
   	"esri/urlUtils", "esri/geometry/webMercatorUtils",
-  	"tiles/offlineEnabler",
+  	"tiles/offlineTilesEnabler",
   	"dojo/dom-construct", "dojo/domReady!"], 
   	function(Map, 
   		GraphicsLayer, Graphic, SimpleFillSymbol, 
   		Scalebar, esriUtils, geometry, 
   		dom, on, query, 
   		urlUtils, webMercatorUtils, 
-  		offlineEnabler,
+  		offlineTilesEnabler,
   		domConstruct) 
   	{
         g_map = new Map("map", {
@@ -56,7 +56,7 @@
   		function test() 
   		{
   			g_basemapLayer = g_map.getLayer( g_map.layerIds[0] );
-  			g_offlineEnabler = offlineEnabler;
+  			g_offlineTilesEnabler = offlineTilesEnabler;
 
   			var jasmineEnv = jasmine.getEnv();
   			jasmineEnv.updateInterval = 1000;

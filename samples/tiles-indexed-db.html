@@ -294,7 +294,7 @@ require(["esri/map",
 	"dojo/dom", "dojo/on", "dojo/query",
 	"vendor/bootstrap-map-js/src/js/bootstrapmap",
 	"esri/urlUtils", "esri/geometry/webMercatorUtils",
-	"tiles/offlineEnabler","utils/debouncer",
+	"tiles/offlineTilesEnabler","utils/debouncer",
 	"dojo/dom-construct", "dojo/domReady!"],
 	function(Map,
 		GraphicsLayer, Graphic, SimpleFillSymbol,
@@ -302,7 +302,7 @@ require(["esri/map",
 		dom, on, query,
 		BootstrapMap,
 		urlUtils, webMercatorUtils,
-		offlineEnabler,debouncer,
+		offlineTilesEnabler,debouncer,
 		domConstruct)
 	{
 		var scalebar;
@@ -409,7 +409,7 @@ require(["esri/map",
 		{
 			console.log("extending");
 
-			offlineEnabler.extend(basemapLayer,function(success)
+			offlineTilesEnabler.extend(basemapLayer,function(success)
 			{
 				if(success)
 				{

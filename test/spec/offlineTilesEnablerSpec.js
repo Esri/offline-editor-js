@@ -21,7 +21,7 @@ describe("offline enabler library", function()
 	async.it("extends the tiled layer object", function(done)
 	{
 		expect(g_basemapLayer.goOffline).toBeUndefined();
-		g_offlineEnabler.extend(g_basemapLayer,function(success)
+		g_offlineTilesEnabler.extend(g_basemapLayer,function(success)
 		{
 			expect(success).toEqual(true);
 			expect(g_basemapLayer.goOffline).toEqual(jasmine.any(Function));
