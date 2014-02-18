@@ -29,7 +29,7 @@ describe("offline enabler library", function()
 			expect(g_basemapLayer.getTileUrl).toEqual(jasmine.any(Function));
 			expect(g_basemapLayer._getTileUrl).toEqual(jasmine.any(Function));
 			expect(g_basemapLayer.prepareForOffline).toEqual(jasmine.any(Function));
-			expect(g_basemapLayer.storeTile).toEqual(jasmine.any(Function));
+			expect(g_basemapLayer._storeTile).toEqual(jasmine.any(Function));
 			expect(g_basemapLayer.deleteAllTiles).toEqual(jasmine.any(Function));
 			expect(g_basemapLayer.offline).toEqual(jasmine.any(Object));
 			expect(g_basemapLayer.offline.store).toEqual(jasmine.any(Object));
@@ -78,7 +78,7 @@ describe("offline enabler library", function()
 		g_basemapLayer.getOfflineUsage(function(usage)
 		{
 			expect(usage.tileCount).toEqual(0);
-			g_basemapLayer.storeTile(14,6177,8023, function(success)
+			g_basemapLayer._storeTile(14,6177,8023, function(success)
 			{
 				expect(success).toEqual(true);
 				g_basemapLayer.getOfflineUsage(function(usage)
