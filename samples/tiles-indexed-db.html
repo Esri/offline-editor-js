@@ -466,14 +466,12 @@ require(["esri/map",
 			var zoomLevel = map.getLevel();
             dojo.byId('currentLevel').value = zoomLevel;
 
-//            var minLevel = parseInt(dojo.byId('minLevel').value);
-            var minLevel = zoomLevel;
-            dojo.byId('minLevel').value = zoomLevel;
+            var minLevel = parseInt(dojo.byId('minLevel').value);
             var maxLevel = parseInt(dojo.byId('maxLevel').value);
 
-            if( maxLevel > zoomLevel + 3 || maxLevel > basemapLayer.maxLevel)
+            if( maxLevel > zoomLevel + 4 || maxLevel > basemapLayer.maxLevel)
             {
-                maxLevel = Math.min(basemapLayer.maxLevel, zoomLevel + 3);
+                maxLevel = Math.min(basemapLayer.maxLevel, zoomLevel + 4);
                 dojo.byId('maxLevel').value = maxLevel;
             }
 
