@@ -94,18 +94,20 @@ describe("offline enabler library", function()
 	{
 		require(["esri/geometry/Extent"],function(Extent)
 		{			
-			var extent = new Extent({"xmin":-822542.2830377579,"ymin":4580841.761960262,"xmax":94702.05638410954,"ymax":5131188.365613382,"spatialReference":{"wkid":102100}});
-			var tileSize = g_basemapLayer.estimateTileSize();
-			var estimation = g_basemapLayer.getLevelEstimation(extent,10);
-			expect(estimation.tileCount).toEqual(375);
-			expect(estimation.sizeBytes).toEqual(estimation.tileCount * tileSize);
-			var estimation = g_basemapLayer.getLevelEstimation(extent,8);
-			expect(estimation.tileCount).toEqual(28);
-			expect(estimation.sizeBytes).toEqual(estimation.tileCount * tileSize);
-			var estimation = g_basemapLayer.getLevelEstimation(extent,2);
-			expect(estimation.tileCount).toEqual(2);
-			expect(estimation.sizeBytes).toEqual(estimation.tileCount * tileSize);				
-	        done();
+            var extent = new Extent({"xmin":-822542.2830377579,"ymin":4580841.761960262,"xmax":94702.05638410954,"ymax":5131188.365613382,"spatialReference":{"wkid":102100}});
+			g_basemapLayer.estimateTileSize(function(tileSize){
+                var estimation = g_basemapLayer.getLevelEstimation(extent,10,tileSize);
+                expect(estimation.tileCount).toEqual(375);
+                expect(estimation.sizeBytes).toEqual(estimation.tileCount * tileSize);
+
+                var estimation = g_basemapLayer.getLevelEstimation(extent,8,tileSize);
+                expect(estimation.tileCount).toEqual(28);
+                expect(estimation.sizeBytes).toEqual(estimation.tileCount * tileSize);
+                var estimation = g_basemapLayer.getLevelEstimation(extent,2,tileSize);
+                expect(estimation.tileCount).toEqual(2);
+                expect(estimation.sizeBytes).toEqual(estimation.tileCount * tileSize);
+                done();
+            }.bind(this));
 		});
 	});
 
