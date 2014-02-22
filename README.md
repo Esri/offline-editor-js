@@ -374,7 +374,7 @@ You can check if there are any edits pending. If there are then iterate `editsSt
 
 ##Dependencies
 
-* ArcGIS API for JavaScript (v3.7+)
+* ArcGIS API for JavaScript (v3.8+)
 * NOTE: browser limitations and technical dependencies. The offline capabilities in this toolkit depend on the following (psuedo-persistent ) HTML5 capabilities being present in the browser:
 	* localStorage. The limits vary by browser and is typically 5MBs per domain name. For additional information see W3C's webstorage specification, [Section 5](http://www.w3.org/TR/webstorage/).
 	* indexedDB. Storage limits for indexedDB are not necessarily consistent across browsers. It's generally understood to be 50MB. Here is a Mozilla [document](https://developer.mozilla.org/en-US/docs/IndexedDB#Storage_limits) discussing limits across different browsers. 

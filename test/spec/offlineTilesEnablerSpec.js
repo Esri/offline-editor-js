@@ -151,7 +151,11 @@ describe("offline enabler library", function()
 
 			g_basemapLayer.goOnline();
 			var onlineUrl = g_basemapLayer.getTileUrl(14,6178,8023);
-			expect(onlineUrl).toEqual('http://services.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/14/6178/8023');
+
+            //NOTE: We are getting new attributes at ArcGIS JS API v3.8 : blankTile=false&_ts=1393031666639 <last part is a random number>
+            // http://services.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/14/6178/8023?blankTile=false&_ts=1393031666639"
+            var tempUrl = onlineUrl.slice( 0, onlineUrl.indexOf('?'))
+			expect(tempUrl).toEqual('http://services.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/14/6178/8023');
 			
 			g_basemapLayer.goOffline();
 			var offlineUrl = fakeTile.src = g_basemapLayer.getTileUrl(14,6178,8023);

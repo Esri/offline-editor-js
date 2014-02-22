@@ -241,7 +241,7 @@
 </script>
 
 
-<script src="//js.arcgis.com/3.7compact"></script>
+<script src="//js.arcgis.com/3.8compact"></script>
 <script src="../vendor/offline/offline.min.js"></script>
 <script src="../vendor/IndexedDBShim/dist/IndexedDBShim.min.js"></script>
 <script>
@@ -272,7 +272,20 @@ require([
 			}, win.body(), "first");
 		console.log(stateNode);
 
-		Offline.options = { checkOnLoad: true, reconnect: true, requests: false };
+//      Deprecated functionality at v0.6
+//		Offline.options = { checkOnLoad: true, reconnect: true, requests: false };
+
+        Offline.options = {
+            checks: {
+                image: {
+                    url: function() {
+                        return 'http://web.local/offline-editor-js/tiny-image.png?_=' + (Math.floor(Math.random() * 1000000000));
+                    }
+                },
+                active: 'image'
+            }
+        }
+
 		Offline.check();
 		updateState();
 
@@ -352,9 +365,9 @@ require(["esri/map",
 					on(map,"load",function()
 					{
 						basemapLayer = map.getLayer( map.layerIds[0] );
-						initMapParts();
-						initEvents();
-						initOffline();
+//						initMapParts();
+//						initEvents();
+//						initOffline();
 					});
 				}
 
@@ -480,6 +493,7 @@ require(["esri/map",
 			domConstruct.empty('tile-count-table-body');
 
             basemapLayer.estimateTileSize(function(tileSize){
+
                 for(var level=minLevel; level<=maxLevel; level++)
                 {
                     var levelEstimation = basemapLayer.getLevelEstimation(map.extent,level,tileSize);
