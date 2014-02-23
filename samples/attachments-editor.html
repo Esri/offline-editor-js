@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <!--The viewport meta tag is used to improve the presentation and behavior of the samples 
+      on iOS devices-->
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no">
+    <title>SanFrancisco311 - Incidents</title>
+
+    <link rel="stylesheet" href="http://js.arcgis.com/3.8/js/esri/css/esri.css">
+    <style>
+        html, body { height: 100%; width: 100%; margin: 0; overflow: hidden; }
+        #map { height: 100%; padding: 0;}
+        #footer { height: 2em; text-align: center; font-size: 1.1em; padding: 0.5em; }
+        .dj_ie .infowindow .window .top .right .user .content { position: relative; }
+        .dj_ie .simpleInfoWindow .content {position: relative;}
+
+        #connectivityIndicator,#storageInfo
+        {
+            text-align: center;
+            border: 1px solid black;
+            padding: 4px;
+        }
+
+        #connectivityIndicator 				{ color: white; background-color: #aaa; font-size: 16px;  }
+        #connectivityIndicator.online 		{ background-color: #0C0; }
+        #connectivityIndicator.offline  	{ background-color: #E00; }
+        #connectivityIndicator.reconnecting { background-color: orange; }
+
+        #pendingEdits {
+            border: 1px solid black;
+            overflow: scroll;
+            height: 400px;
+            margin: 0px;
+            list-style: none;
+            padding: 4px;
+        }
+
+        #pendingEdits li {
+            border-bottom: 1px solid #ddd;
+        }
+    </style>
+
+    <script>
+        var locationPath = location.pathname.replace(/\/[^/]+$/, "");
+        var dojoConfig = {
+            paths: {
+                edit: locationPath  + "/../lib/edit",
+                vendor: locationPath + "/../vendor"
+            }
+        }
+        window.proxyPath = "../../lib/proxy.php";
+    </script>
+
+    <script src="http://js.arcgis.com/3.8/"></script>
+    <script src="../vendor/offline/offline.min.js"></script>
+    <script>
+        var map;
+
+        require([
+            "esri/map",
+            "esri/layers/FeatureLayer",
+            "esri/dijit/editing/AttachmentEditor",
+            "esri/config",
+
+            "dojo/parser", "dojo/dom", "dojo/dom-class",
+
+            "edit/offlineFeaturesManager",
+            "edit/editsStore",
+
+            "dijit/layout/BorderContainer", "dijit/layout/ContentPane", "dojo/domReady!"
+        ], function(
+                Map, FeatureLayer, AttachmentEditor, esriConfig,
+                parser, dom, domClass, OfflineFeaturesManager, editsStore
+                ) {
+            parser.parse();
+            // a proxy page is required to upload attachments
+            // refer to "Using the Proxy Page" for more information:  https://developers.arcgis.com/en/javascript/jshelp/ags_proxy.html
+            esriConfig.defaults.io.proxyUrl = "../lib/proxy.php";
+
+            var offlineFeaturesManager = new OfflineFeaturesManager();
+            offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_ENQUEUED, updateStatus);
+            offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_SENT, updateStatus);
+            offlineFeaturesManager.on(offlineFeaturesManager.events.ALL_EDITS_SENT, updateStatus);
+
+            updateConnectivityIndicator();
+            updateStorageInfo();
+
+            Offline.options = {
+                checks: {
+                    image: {
+                        url: function() {
+                            return 'http://web.local/offline-editor-js/tiny-image.png?_=' + (Math.floor(Math.random() * 1000000000));
+                        }
+                    },
+                    active: 'image'
+                }
+            }
+
+            Offline.on('up', goOnline );
+            Offline.on('down', goOffline );
+
+            map = new Map("map", {
+                basemap: "streets",
+                center: [-122.427, 37.769],
+                zoom: 17
+            });
+            map.on("load", mapLoaded);
+
+            function mapLoaded() {
+                var featureLayer = new FeatureLayer("http://sampleserver3.arcgisonline.com/ArcGIS/rest/services/SanFrancisco/311Incidents/FeatureServer/0",{
+                    mode: FeatureLayer.MODE_ONDEMAND
+                });
+
+                map.infoWindow.setContent("<div id='content' style='width:100%'></div>");
+                map.infoWindow.resize(350,200);
+                var attachmentEditor = new AttachmentEditor({}, dom.byId("content"));
+                attachmentEditor.startup();
+
+                featureLayer.on("click", function(evt) {
+                    var objectId = evt.graphic.attributes[featureLayer.objectIdField];
+                    map.infoWindow.setTitle(objectId);
+                    attachmentEditor.showAttachments(evt.graphic,featureLayer);
+                    map.infoWindow.show(evt.screenPoint, map.getInfoWindowAnchor(evt.screenPoint));
+                });
+                map.addLayer(featureLayer);
+            }
+
+            function updateStatus(){
+                //TODO
+            }
+
+            function goOnline(){
+                updateConnectivityIndicator();
+            }
+
+            function goOffline(){
+                offlineFeaturesManager.goOffline();
+                updateConnectivityIndicator();
+            }
+
+            function updateConnectivityIndicator()
+            {
+                var node = dom.byId('connectivityIndicator');
+                domClass.remove(node, "online offline reconnecting");
+                switch( offlineFeaturesManager.getOnlineStatus() )
+                {
+                    case offlineFeaturesManager.OFFLINE:
+                        node.innerHTML = "<i class='fa fa-chain-broken'></i> offline";
+                        domClass.add(node, "offline");
+                        break;
+                    case offlineFeaturesManager.ONLINE:
+                        node.innerHTML = "<i class='fa fa-link'></i> online";
+                        domClass.add(node, "online");
+                        break;
+                    case offlineFeaturesManager.RECONNECTING:
+                        node.innerHTML = "<i class='fa fa-cog fa-spin'></i> reconnecting";
+                        domClass.add(node, "reconnecting");
+                        break;
+                }
+            }
+
+            function updateStorageInfo()
+            {
+                var formatMb = function(bytes)
+                {
+                    return Math.floor(bytes / 1024 / 1024 * 100)/100 + " MBs";
+                }
+                var localStorageSizeBytes = editsStore.getLocalStorageSizeBytes();
+                var editsStoreSizeBytes = editsStore.getEditsStoreSizeBytes();
+
+                var info = "Used " + formatMb(localStorageSizeBytes) + " (" + formatMb(editsStoreSizeBytes) + ")";
+                dom.byId('storageInfo').innerHTML = info;
+            }
+        });
+    </script>
+</head>
+
+<body>
+<div data-dojo-type="dijit/layout/BorderContainer"
+     data-dojo-props="design:'headline'"
+     style="width:100%;height:100%;">
+
+    <div data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:'left'" style="width: 200px;overflow:hidden;">
+        <div id="connectivityPane" data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:'top'">
+            <div id="connectivityIndicator" >unknown</div>
+        </div>
+        <div id="storageInfoPane" data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:'top'">
+            <div id="storageInfo">Storage used: 0 MBs</div>
+        </div>
+        <div id="pendingEditsPane" data-dojo-type="dijit/layout/ContentPane" data-dojo-propos="region:'top'">
+            <button style="width:60%" id="clear-pending-edits-btn" class="btn1">Clear Local Edits</button>
+            <button style="width:38%" id="go-offline-btn" class="btn1">Go Offline</button>
+            <button style="width:60%" id="refresh-feature-layers-btn" class="btn1">Refresh Layers</button>
+            <button style="width:38%" id="go-online-btn" class="btn1">Go Online</button>
+            <ul id="pendingEdits"></ul>
+        </div>
+    </div>
+
+    <div id="map"
+         data-dojo-type="dijit/layout/ContentPane"
+         data-dojo-props="region:'center'"></div>
+
+    <div id="footer"
+         data-dojo-type="dijit/layout/ContentPane"
+         data-dojo-props="region:'bottom'">
+        Click point to view/create/delete attachments.
+    </div>
+</div>
+</body>
+</html>
