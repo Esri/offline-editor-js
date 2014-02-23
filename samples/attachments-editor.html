@@ -102,19 +102,24 @@
                     mode: FeatureLayer.MODE_ONDEMAND
                 });
 
-                map.infoWindow.setContent("<div id='content' style='width:100%'></div>");
-                map.infoWindow.resize(350,200);
-                var attachmentEditor = new AttachmentEditor({}, dom.byId("content"));
-                attachmentEditor.startup();
+//                map.infoWindow.setContent("<div id='content' style='width:100%'></div>");
+//                map.infoWindow.resize(350,200);
+//                var attachmentEditor = new AttachmentEditor({}, dom.byId("content"));
+//                attachmentEditor.startup();
 
                 featureLayer.on("click", function(evt) {
                     var objectId = evt.graphic.attributes[featureLayer.objectIdField];
                     map.infoWindow.setTitle(objectId);
-                    attachmentEditor.showAttachments(evt.graphic,featureLayer);
+                    featureLayer.queryAttachmentInfos(objectId,function(evt){
+                              console.log("AHAHAHA")
+                    },function(err){
+                        console.log("Problem querying attachments: " + err.toString())
+                    })
+                    //attachmentEditor.showAttachments(evt.graphic,featureLayer);
                     map.infoWindow.show(evt.screenPoint, map.getInfoWindowAnchor(evt.screenPoint));
                 });
 
-                map.on('layers-add-result', initEditor);
+                map.on('layer-add-result', initEditor);
 
                 map.addLayer(featureLayer);
             }
@@ -144,31 +149,38 @@
                 Offline.on('down', goOffline );
             }
 
-            function initEditor(){
-                try{
-                    offlineFeaturesManager.extend(featureLayer);
-                    featureLayer.on('update-end', logCurrentObjectIds);
+            function initEditor(evt){
 
-                    //handle errors that happen while storing offline edits
-                    offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_ENQUEUED, function(results)
-                    {
-                        var errors = Array.prototype.concat(
-                                results.addResults.filter(function(r){ return !r.success }),
-                                results.updateResults.filter(function(r){ return !r.success }),
-                                results.deleteResults.filter(function(r){ return !r.success })
-                        );
+                if(evt.layer.hasOwnProperty("type") && evt.layer.type == "Feature Layer"){
 
-                        if( errors.length )
+                    try{
+
+                        var test = featureLayer.allowGeometryUpdates;  console.log("type " + test)
+                        offlineFeaturesManager.extend(featureLayer);
+                        layer.on('update-end', logCurrentObjectIds);
+
+                        //handle errors that happen while storing offline edits
+                        offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_ENQUEUED, function(results)
                         {
-                            var messages = errors.map(function(e){ return e.error.message });
-                            alert("Error editing features: " + messages.join('\n'));
-                        }
-                    });
+                            var errors = Array.prototype.concat(
+                                    results.addResults.filter(function(r){ return !r.success }),
+                                    results.updateResults.filter(function(r){ return !r.success }),
+                                    results.deleteResults.filter(function(r){ return !r.success })
+                            );
 
-                    updatePendingEditsList();
-                }
-                catch(err){
-                    console.log("initEditor: " + err.toString());
+                            if( errors.length )
+                            {
+                                var messages = errors.map(function(e){ return e.error.message });
+                                alert("Error editing features: " + messages.join('\n'));
+                            }
+                        });
+
+                        updatePendingEditsList();
+
+                    }
+                    catch(err){
+                        console.log("initEditor: " + err.toString());
+                    }
                 }
             }
 
