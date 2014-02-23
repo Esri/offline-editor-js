@@ -102,20 +102,20 @@
                     mode: FeatureLayer.MODE_ONDEMAND
                 });
 
-//                map.infoWindow.setContent("<div id='content' style='width:100%'></div>");
-//                map.infoWindow.resize(350,200);
-//                var attachmentEditor = new AttachmentEditor({}, dom.byId("content"));
-//                attachmentEditor.startup();
+                map.infoWindow.setContent("<div id='content' style='width:100%'></div>");
+                map.infoWindow.resize(350,200);
+                var attachmentEditor = new AttachmentEditor({}, dom.byId("content"));
+                attachmentEditor.startup();
 
                 featureLayer.on("click", function(evt) {
                     var objectId = evt.graphic.attributes[featureLayer.objectIdField];
                     map.infoWindow.setTitle(objectId);
-                    featureLayer.queryAttachmentInfos(objectId,function(evt){
-                              console.log("AHAHAHA")
-                    },function(err){
-                        console.log("Problem querying attachments: " + err.toString())
-                    })
-                    //attachmentEditor.showAttachments(evt.graphic,featureLayer);
+//                    featureLayer.queryAttachmentInfos(objectId,function(evt){
+//                              console.log("AHAHAHA")
+//                    },function(err){
+//                        console.log("Problem querying attachments: " + err.toString())
+//                    })
+                    attachmentEditor.showAttachments(evt.graphic,featureLayer);
                     map.infoWindow.show(evt.screenPoint, map.getInfoWindowAnchor(evt.screenPoint));
                 });
 
@@ -133,7 +133,6 @@
 
                 updateConnectivityIndicator();
                 updateStorageInfo();
-
                 Offline.options = {
                     checks: {
                         image: {
@@ -156,7 +155,12 @@
                     try{
 
                         var test = featureLayer.allowGeometryUpdates;  console.log("type " + test)
-                        offlineFeaturesManager.extend(featureLayer);
+                        offlineFeaturesManager.extend(featureLayer,function(success){
+                            console.log("extend ");
+                            if(success){
+
+                            }
+                        });
                         layer.on('update-end', logCurrentObjectIds);
 
                         //handle errors that happen while storing offline edits
