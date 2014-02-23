@@ -64,16 +64,21 @@
             "esri/config",
 
             "dojo/parser", "dojo/dom", "dojo/dom-class",
+            "dojo/dom-construct",
 
             "edit/offlineFeaturesManager",
             "edit/editsStore",
+            "dojo/on",
 
             "dijit/layout/BorderContainer", "dijit/layout/ContentPane", "dojo/domReady!"
         ], function(
                 Map, FeatureLayer, AttachmentEditor, esriConfig,
-                parser, dom, domClass, OfflineFeaturesManager, editsStore
+                parser, dom, domClass, domConstruct, OfflineFeaturesManager, editsStore, on
                 ) {
             parser.parse();
+
+            var featureLayers = [], featureLayer;
+
             // a proxy page is required to upload attachments
             // refer to "Using the Proxy Page" for more information:  https://developers.arcgis.com/en/javascript/jshelp/ags_proxy.html
             esriConfig.defaults.io.proxyUrl = "../lib/proxy.php";
@@ -83,22 +88,7 @@
             offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_SENT, updateStatus);
             offlineFeaturesManager.on(offlineFeaturesManager.events.ALL_EDITS_SENT, updateStatus);
 
-            updateConnectivityIndicator();
-            updateStorageInfo();
-
-            Offline.options = {
-                checks: {
-                    image: {
-                        url: function() {
-                            return 'http://web.local/offline-editor-js/tiny-image.png?_=' + (Math.floor(Math.random() * 1000000000));
-                        }
-                    },
-                    active: 'image'
-                }
-            }
-
-            Offline.on('up', goOnline );
-            Offline.on('down', goOffline );
+            configUI();
 
             map = new Map("map", {
                 basemap: "streets",
@@ -108,7 +98,7 @@
             map.on("load", mapLoaded);
 
             function mapLoaded() {
-                var featureLayer = new FeatureLayer("http://sampleserver3.arcgisonline.com/ArcGIS/rest/services/SanFrancisco/311Incidents/FeatureServer/0",{
+                featureLayer = new FeatureLayer("http://sampleserver3.arcgisonline.com/ArcGIS/rest/services/SanFrancisco/311Incidents/FeatureServer/0",{
                     mode: FeatureLayer.MODE_ONDEMAND
                 });
 
@@ -123,7 +113,94 @@
                     attachmentEditor.showAttachments(evt.graphic,featureLayer);
                     map.infoWindow.show(evt.screenPoint, map.getInfoWindowAnchor(evt.screenPoint));
                 });
+
+                map.on('layers-add-result', initEditor);
+
                 map.addLayer(featureLayer);
+            }
+
+            function configUI(){
+                on(dom.byId('storageInfo'), 'click', updateStorageInfo);
+                on(dom.byId('clear-pending-edits-btn'),'click', clearPendingEdits);
+                on(dom.byId('go-offline-btn'),'click', goOffline);
+                on(dom.byId('go-online-btn'),'click', goOnline);
+                on(dom.byId('refresh-feature-layers-btn'),'click', refreshFeatureLayer);
+
+                updateConnectivityIndicator();
+                updateStorageInfo();
+
+                Offline.options = {
+                    checks: {
+                        image: {
+                            url: function() {
+                                return 'http://web.local/offline-editor-js/tiny-image.png?_=' + (Math.floor(Math.random() * 1000000000));
+                            }
+                        },
+                        active: 'image'
+                    }
+                }
+
+                Offline.on('up', goOnline );
+                Offline.on('down', goOffline );
+            }
+
+            function initEditor(){
+                try{
+                    offlineFeaturesManager.extend(featureLayer);
+                    featureLayer.on('update-end', logCurrentObjectIds);
+
+                    /* handle errors that happen while storing offline edits */
+                    offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_ENQUEUED, function(results)
+                    {
+                        var errors = Array.prototype.concat(
+                                results.addResults.filter(function(r){ return !r.success }),
+                                results.updateResults.filter(function(r){ return !r.success }),
+                                results.deleteResults.filter(function(r){ return !r.success })
+                        );
+
+                        if( errors.length )
+                        {
+                            var messages = errors.map(function(e){ return e.error.message });
+                            alert("Error editing features: " + messages.join('\n'));
+                        }
+                    });
+
+                    updatePendingEditsList();
+                }
+                catch(err){
+                    console.log("initEditor: " + err.toString());
+                }
+            }
+
+            function logCurrentObjectIds(evt)
+            {
+                var layers = ( evt && evt.target )? [evt.target] : featureLayers;
+                layers.forEach(function(layer)
+                {
+                    var objectIds = layer.graphics.map( function(g) { return g.attributes[ layer.objectIdField ];});
+                    console.log(layer.name, objectIds);
+                });
+            }
+
+            function updatePendingEditsList()
+            {
+                var li;
+                domConstruct.empty('pendingEdits');
+                if( editsStore.hasPendingEdits())
+                {
+                    var edits = editsStore._retrieveEditsQueue();
+                    edits.forEach(function(edit)
+                    {
+                        var readableEdit = offlineFeaturesManager.getReadableEdit(edit);
+                        li = "<li>" + readableEdit + "</li>";
+                        domConstruct.place(li, 'pendingEdits','last');
+                    },this);
+                }
+                else
+                {
+                    li = "<li>No edits pending</li>";
+                    domConstruct.place(li, 'pendingEdits','last');
+                }
             }
 
             function updateStatus(){
@@ -131,12 +208,26 @@
             }
 
             function goOnline(){
-                updateConnectivityIndicator();
+                offlineFeaturesManager.goOnline(function()
+                {
+                    updateConnectivityIndicator();
+                });
             }
 
             function goOffline(){
                 offlineFeaturesManager.goOffline();
                 updateConnectivityIndicator();
+            }
+
+            function clearPendingEdits()
+            {
+                editsStore.resetEditsQueue();
+                updateStatus();
+            }
+
+            function refreshFeatureLayer()
+            {
+                featureLayer.refresh();
             }
 
             function updateConnectivityIndicator()
