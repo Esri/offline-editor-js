@@ -49,8 +49,7 @@
                 vendor: locationPath + "/../vendor"
             }
         }
-        //window.proxyPath = "../../lib/proxy.php";
-        window.proxyPath = "http://localhost/proxy/proxy.php";
+        window.proxyPath = "../../lib/proxy.php";
     </script>
 
     <script src="http://js.arcgis.com/3.8/"></script>
@@ -82,8 +81,8 @@
 
             // a proxy page is required to upload attachments
             // refer to "Using the Proxy Page" for more information:  https://developers.arcgis.com/en/javascript/jshelp/ags_proxy.html
-            //esriConfig.defaults.io.proxyUrl = "../lib/proxy.php";
-            esriConfig.defaults.io.proxyUrl = "http://localhost/proxy/proxy.php";
+            esriConfig.defaults.io.proxyUrl = "../lib/proxy.php";
+            //esriConfig.defaults.io.proxyUrl = "http://localhost/proxy/proxy.php";
 
             var offlineFeaturesManager = new OfflineFeaturesManager();
             offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_ENQUEUED, updateStatus);
@@ -126,13 +125,16 @@
 //                        console.log("Problem querying attachments: " + err.toString())
 //                    })
 
-                    featureLayer.addAttachment(objectId,dom.byId("upload-test"),function(evt){
-                        console.log("TEST ADD callback: " + evt);
-                        attachmentEditor.showAttachments(event.graphic,featureLayer);
-                        map.infoWindow.show(evt.screenPoint, map.getInfoWindowAnchor(evt.screenPoint));
-                    },function(err){
-                        console.log("TEST ADD error: " + err)
-                    })
+//                    featureLayer.addAttachment(objectId,dom.byId("upload-test"),function(evt){
+//                        console.log("TEST ADD callback: " + evt);
+//                        attachmentEditor.showAttachments(event.graphic,featureLayer);
+//                        map.infoWindow.show(evt.screenPoint, map.getInfoWindowAnchor(evt.screenPoint));
+//                    },function(err){
+//                        console.log("TEST ADD error: " + err)
+//                    })
+
+                    attachmentEditor.showAttachments(event.graphic,featureLayer);
+                    map.infoWindow.show(evt.screenPoint, map.getInfoWindowAnchor(evt.screenPoint));
 
                 });
 
