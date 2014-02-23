@@ -49,7 +49,8 @@
                 vendor: locationPath + "/../vendor"
             }
         }
-        window.proxyPath = "../../lib/proxy.php";
+        //window.proxyPath = "../../lib/proxy.php";
+        window.proxyPath = "http://localhost/proxy/proxy.php";
     </script>
 
     <script src="http://js.arcgis.com/3.8/"></script>
@@ -81,7 +82,8 @@
 
             // a proxy page is required to upload attachments
             // refer to "Using the Proxy Page" for more information:  https://developers.arcgis.com/en/javascript/jshelp/ags_proxy.html
-            esriConfig.defaults.io.proxyUrl = "../lib/proxy.php";
+            //esriConfig.defaults.io.proxyUrl = "../lib/proxy.php";
+            esriConfig.defaults.io.proxyUrl = "http://localhost/proxy/proxy.php";
 
             var offlineFeaturesManager = new OfflineFeaturesManager();
             offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_ENQUEUED, updateStatus);
@@ -100,6 +102,9 @@
                 zoom: 17
             });
             map.on("load", mapLoaded);
+            map.on("add-attachment-complete",function(evt){
+                console.log("add attachment complete")
+            })
 
             function mapLoaded() {
                 featureLayer = new FeatureLayer("http://sampleserver3.arcgisonline.com/ArcGIS/rest/services/SanFrancisco/311Incidents/FeatureServer/0",{
@@ -112,6 +117,7 @@
                 attachmentEditor.startup();
 
                 featureLayer.on("click", function(evt) {
+                    var event = evt;
                     var objectId = evt.graphic.attributes[featureLayer.objectIdField];
                     map.infoWindow.setTitle(objectId);
 //                    featureLayer.queryAttachmentInfos(objectId,function(evt){
@@ -119,8 +125,15 @@
 //                    },function(err){
 //                        console.log("Problem querying attachments: " + err.toString())
 //                    })
-                    attachmentEditor.showAttachments(evt.graphic,featureLayer);
-                    map.infoWindow.show(evt.screenPoint, map.getInfoWindowAnchor(evt.screenPoint));
+
+                    featureLayer.addAttachment(objectId,dom.byId("upload-test"),function(evt){
+                        console.log("TEST ADD callback: " + evt);
+                        attachmentEditor.showAttachments(event.graphic,featureLayer);
+                        map.infoWindow.show(evt.screenPoint, map.getInfoWindowAnchor(evt.screenPoint));
+                    },function(err){
+                        console.log("TEST ADD error: " + err)
+                    })
+
                 });
 
                 map.on('layer-add-result', initEditor);
@@ -227,8 +240,8 @@
                 //TODO
             }
 
-            function updateStatusAttachments(){
-                //TODO
+            function updateStatusAttachments(evt){
+                console.log("updateStatusAttachmentsRcvd")
             }
 
             function goOnline(){
@@ -310,6 +323,10 @@
             <button style="width:38%" id="go-online-btn" class="btn1">Go Online</button>
             <ul id="pendingEdits"></ul>
         </div>
+        <form id="upload-test" action="/" method="post" name="upload">
+            <input type="file" name="attachment" />
+            <button type="submit" name="submit">Upload</button>
+        </form>
     </div>
 
     <div id="map"
