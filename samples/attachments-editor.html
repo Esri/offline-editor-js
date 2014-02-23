@@ -149,7 +149,7 @@
                     offlineFeaturesManager.extend(featureLayer);
                     featureLayer.on('update-end', logCurrentObjectIds);
 
-                    /* handle errors that happen while storing offline edits */
+                    //handle errors that happen while storing offline edits
                     offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_ENQUEUED, function(results)
                     {
                         var errors = Array.prototype.concat(
