@@ -87,6 +87,10 @@
             offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_ENQUEUED, updateStatus);
             offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_SENT, updateStatus);
             offlineFeaturesManager.on(offlineFeaturesManager.events.ALL_EDITS_SENT, updateStatus);
+            offlineFeaturesManager.on(offlineFeaturesManager.events.ATTACHMENTS_ADD, updateStatusAttachments);
+            offlineFeaturesManager.on(offlineFeaturesManager.events.ATTACHMENTS_INFO, updateStatusAttachments);
+            offlineFeaturesManager.on(offlineFeaturesManager.events.ATTACHMENTS_SENT, updateStatusAttachments);
+            offlineFeaturesManager.on(offlineFeaturesManager.events.ATTACHMENTS_DELETED, updateStatusAttachments);
 
             configUI();
 
@@ -220,6 +224,10 @@
             }
 
             function updateStatus(){
+                //TODO
+            }
+
+            function updateStatusAttachments(){
                 //TODO
             }
 
