@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Offline Editing with the ArcGIS API for JavaScript</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <style>
+        body {
+            font-family: "Helvetica Neue", Arial, Helvetica, sans-serif;
+        }
+        h1 {
+            background-color: #0078c5;
+            color: white;
+            padding: 1em;
+            margin-bottom:1em;
+            border-radius: 10px;
+        }
+        pre code {
+            padding: 10px 15px;
+            border: 1px solid #ccc;
+            background: white;
+            color: #444;
+            /* margin: 1em 0 0;*/
+            font-size: 12px;
+            font-family: "Consolas", "Menlo", "Lucida Console", "Courier New", monospace;
+            box-shadow: 0 0 15px #ddd;
+            -moz-box-shadow: 0 0 15px #ddd;
+            -webkit-box-shadow: 0 0 15px #ddd;
+
+            display: block;
+            border-radius: 5px;
+        }
+        .banner {
+            background-color: #0078c5;
+            color: white;
+            padding: 1em;
+            margin-bottom:1em;
+            border-radius: 10px;
+        }
+
+    </style>
+</head>
+<body>
+
+</body>
+<a href="https://github.com/ArcGIS/offline-editor-js"><img style="position: absolute; top: 0; right: 0; border: 0;"
+    src="https://s3.amazonaws.com/github/ribbons/forkme_right_orange_ff7600.png" alt="Fork me on GitHub"></a>
+<h1 class="title">ArcGIS Offline Editing Library for JavaScript</h1>
+<p>This is an experimental library for exploring offline editing use cases and workflows when using ArcGIS Feature Services. Use it in conjunction
+with the ArcGIS API for JavaScript.</p>
+<p><b>Why edit offline with JavaScript?</b></p>
+<p>Many "in the field" use cases for mapping apps require that workers go into areas with limited, intermittent or no cellular network connectivity.
+ Until now, offline has been limited to native SDKs on smartphones and tablets. This library will hopefully lead the way in changing
+that perception.</p>
+<p><b>What types of features will it work with?</b></p>
+<p>The library currently works with esri.geometry.Geometry.Point, Polygon and Polyline.</p>
+<p><b>How does it work?</b></p>
+<p>It takes the place of the existing esri.layers.FeatureLayer.applyEdit() function. When an edit is being submitted, the library automatically detects if the app is online or offline.
+If the app is online then edits are simply passed through. If an offline condition occurs, then the library will start storing changes.
+In the background it will re-check the internet connection on a regular basis. Once the internet is restored, the library will handle resubmitting
+any editing changes made offline.</p>
+<p>The library also contains a built-in indexing system that allows for tracking and validation of edits. The index keeps track of whether or not
+and edit was successfully transmitted and received by the Feature Service. </p>
+
+<pre><code>
+    //Instantiate the OfflineStore library and pass it a reference to the map.
+    offlineStore = new OfflineStore(map);
+
+    //To delete a feature listen for control-click event on the layer
+    pointFeatureLayer.on("click", function(evt) {
+        event.stop(evt);
+        if (evt.ctrlKey === true || evt.metaKey === true) {
+            try{
+                offlineStore.applyEdits(evt.graphic,pointFeatureLayer,offlineStore.enum().DELETE);
+            }
+            catch(err){
+                console.log("error " + err.stack);
+            }
+        }
+    });
+</code></pre>
+
+<p><b>What platforms will it work on?</b></p>
+<p>Currently it's only been thoroughly tested on Firefox v23. Firefox has a built-in offline capability that is extremely easy to use.
+However, there are other 3rd party offline plugins for Chrome, etc. that need to be tried out.</p>
+<p class="banner"><b>Get involved</b></p>
+We are always looking to make our projects the best they can possibly be. You can help immensely by providing any and all feedback related to the libraries functionality
+bugs, and documentation.
+<br>
+<br>
+</html>
