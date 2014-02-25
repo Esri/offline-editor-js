@@ -81,8 +81,8 @@
 
             // a proxy page is required to upload attachments
             // refer to "Using the Proxy Page" for more information:  https://developers.arcgis.com/en/javascript/jshelp/ags_proxy.html
-            esriConfig.defaults.io.proxyUrl = "../lib/proxy.php";
-            //esriConfig.defaults.io.proxyUrl = "http://localhost/proxy/proxy.php";
+            //esriConfig.defaults.io.proxyUrl = "../lib/proxy.php";
+            esriConfig.defaults.io.proxyUrl = "../lib/resource-proxy/proxy.php";
 
             var offlineFeaturesManager = new OfflineFeaturesManager();
             offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_ENQUEUED, updateStatus);
