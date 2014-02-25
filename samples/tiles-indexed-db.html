@@ -238,7 +238,7 @@
             utils: locationPath  + "/../utils"
 		}
 	}
-	window.proxyPath = "../lib/proxy.php";
+    window.proxyPath = "../lib/resource-proxy/proxy.php";
 </script>
 
 
@@ -427,7 +427,7 @@ require(["esri/map",
 			{
 				if(success)
 				{
-					basemapLayer.offline.proxyPath = window.proxyPath || "../lib/proxy.php";
+					basemapLayer.offline.proxyPath = window.proxyPath || "../lib/resource-proxy/proxy.php";
 					on(dojo.byId('prepare-for-offline-btn'),'click', prepareForOffline);
 					on(dojo.byId('cancel-btn'),'click', cancel);
 					on(dojo.byId('delete-all-tiles-btn'),'click', deleteAllTiles);
@@ -717,7 +717,7 @@ require(["esri/map",
 			if( basemapLayer.offline.proxyPath !== null )
 				basemapLayer.offline.proxyPath = null;
 			else
-				basemapLayer.offline.proxyPath = window.proxyPath || "../lib/proxy.php";
+				basemapLayer.offline.proxyPath = window.proxyPath || "../lib/resource-proxy/proxy.php";
 
 			dojo.byId('using-proxy').innerHTML = basemapLayer.offline.proxyPath? "Yes" : "No";
 		}	
