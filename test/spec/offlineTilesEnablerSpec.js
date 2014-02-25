@@ -159,7 +159,7 @@ describe("offline enabler library", function()
 			
 			g_basemapLayer.goOffline();
 			var offlineUrl = fakeTile.src = g_basemapLayer.getTileUrl(14,6178,8023);
-			expect(offlineUrl).toEqual('void:14-6178-8023');
+			expect(offlineUrl).toEqual('void:/14/6178/8023');
 			done();
 		})
 	});
