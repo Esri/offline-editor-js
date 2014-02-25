@@ -187,6 +187,7 @@
 				<button id="show-stored-tiles" type="button" class="btn btn-default"><i class="fa fa-th"></i> <span id="show-stored-tiles-caption">Show Stored Tiles</span></button>
 				<button id="save-file" type="button" class="btn btn-default"><i class="fa fa-download"></i> Save to File</button>
 				<span id="load-file" type="button" class="btn btn-default"><i class="fa fa-upload"></i> Load from File <input type="file" id="file-select" name="file-select"></span>
+				<button id="use-proxy" type="button" class="btn btn-default"> Using proxy: <span id="using-proxy">Yes</span></button>
 			</div>
 		</div>
 		<div id="downloading-ui">
@@ -436,6 +437,7 @@ require(["esri/map",
 					on(dojo.byId('show-stored-tiles'),'click', toggleShowStoredTiles);
 					on(dojo.byId('save-file'),'click', saveToFile);
 					on(dojo.byId('file-select'),'change', loadFromFile);
+					on(dojo.byId('use-proxy'),'click', toggleProxy);
 					dojo.byId('go-online-btn').style.display = "none";
 					esri.show(dojo.byId('ready-to-download-ui'));
 					esri.hide(dojo.byId('downloading-ui'));
@@ -451,6 +453,7 @@ require(["esri/map",
 					esri.hide(dojo.byId('go-online-btn'));
 					dojo.byId('update-offline-usage').disabled = true;
 					dojo.byId('show-stored-tiles').disabled = true;
+					dojo.byId('use-proxy').disabled = true;
 					esri.hide(dojo.byId('downloading-ui'));
 
 					showAlert("alert-danger","Failed initializing storage, probably your browser doesn't support <a href='http://caniuse.com/#feat=indexeddb'>IndexedDB</a> nor <a href='http://caniuse.com/#feat=sql-storage'>WebSQL</a>");
@@ -708,6 +711,16 @@ require(["esri/map",
 				showStoredTiles(showTiles);
 			});
 		}
+
+		function toggleProxy()
+		{
+			if( basemapLayer.offline.proxyPath !== null )
+				basemapLayer.offline.proxyPath = null;
+			else
+				basemapLayer.offline.proxyPath = window.proxyPath || "../lib/proxy.php";
+
+			dojo.byId('using-proxy').innerHTML = basemapLayer.offline.proxyPath? "Yes" : "No";
+		}	
 
 		function showAlert(type, msg)
 		{
