@@ -593,6 +593,8 @@ require(["esri/map",
 
 		function reportProgress(progress)
 		{
+			console.log(progress);
+			
 			if( progress.finishedDownloading )
 			{
 				if( progress.cancelRequested )
