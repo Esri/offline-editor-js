@@ -103,6 +103,11 @@ Methods | Returns | Description
 --- | --- | ---
 `extend(layer, callback)`|`callback(boolean, string)` |Overrides an ArcGISTiledMapServiceLayer. Callback is called after indexedDb store is initialized and informs the application whether it is indexedDb is supported or not.
 
+###Properties
+Property  | Description
+--- | ---
+`layer.offline.proxyPath`| For CORS enabled servers this can be set to `null`. The default is to use the internal resource-proxy path: `libs/offline-editor-js/resource-proxy/proxy.php.` Don't forget to check your proxy configuration to allow connections for all possible services that you might be using. More information on using proxies with ArcGIS can be found here: [https://developers.arcgis.com/javascript/jshelp/ags_proxy.html](https://developers.arcgis.com/javascript/jshelp/ags_proxy.html).
+
 ###ArcGISTiledMapServiceLayer Overrides
 
 Methods | Returns | Description
@@ -201,7 +206,20 @@ For each downloaded tile it will call the reportProgress() callback. It will pas
 		cancelRequested: /* boolean that informs if the operation has been cancelled at user's request */
 	} 
 ```
-**NOTE:** The reportProgress() callback function should return `true` if the download operation should be cancelled or `false` if it can go on.
+**NOTE:** The reportProgress() callback function should return `true` if the download operation can be cancelled or `false` if it doesn't need to be.
+
+You can also add a buffer around the view's extent:
+
+```js
+var minLevel = 0;
+var maxLevel = 16;
+var extent = someFeature.geometry.getExtent();
+var buffer = 1500; /* approx meters (webmercator units) */
+extent.xmin -= buffer; extent.ymin -= buffer; 
+extent.xmax += buffer; extent.ymax += buffer;
+basemapLayer.prepareForOffline(minLevel, maxLevel, extent,
+   lang.hitch(self,self.reportProgress));
+```
 
 ####basemap.deleteAllTiles(callback)
 Deletes all tiles stored in the indexed db database.
