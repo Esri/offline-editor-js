@@ -7,12 +7,12 @@
 	<meta name="description" content="">
 	<meta name="author" content="">
 
-	<link rel="shortcut icon" href="../vendor/bootstrap-map-js/bootstrap_v3/docs-assets/ico/favicon.png">
+	<link rel="shortcut icon" href="http://esri.github.io/bootstrap-map-js/doc/images/favicon.ico">
 
 	<link rel="stylesheet" href="//js.arcgis.com/3.7/js/esri/css/esri.css">
 
-	<link rel="stylesheet" href="../vendor/bootstrap-map-js/bootstrap_v3/dist/css/bootstrap.css" >
-	<link rel="stylesheet" href="../vendor/bootstrap-map-js/src/css/bootstrapmap.css">   
+	<link rel="stylesheet" href="http://esri.github.io/bootstrap-map-js/bootstrap_v3/dist/css/bootstrap.css" >
+	<link rel="stylesheet" href="http://esri.github.io/bootstrap-map-js/src/css/bootstrapmap.css">
 	<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" >
 	<style>
 		#state
@@ -101,8 +101,8 @@
 
 	<!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
 	<!--[if lt IE 9]>
-	  <script src="../vendor/bootstrap-map-js/bootstrap_v3/docs-assets/js/html5shiv.js"></script>
-	  <script src="../vendor/bootstrap-map-js/bootstrap_v3/docs-assets/js/respond.min.js"></script>
+	  <script src="http://esri.github.io/bootstrap-map-js/bootstrap_v3/docs-assets/js/html5shiv.js"></script>
+	  <script src="http://esri.github.io/bootstrap-map-js/bootstrap_v3/docs-assets/js/respond.min.js"></script>
 	  <![endif]-->
 
 	  <title>Offline</title>
@@ -228,20 +228,21 @@
 
 
 </div><!-- /.container -->
-
 <script>
 	var locationPath = location.pathname.replace(/\/[^/]+$/, "");
 	var dojoConfig = {
 		paths: { 
 			tiles: locationPath  + "/../lib/tiles",
 			vendor: locationPath + "/../vendor",
-            utils: locationPath  + "/../utils"
+            utils: locationPath  + "/../utils",
+            bootstrapmap: "//esri.github.io/bootstrap-map-js/src/js/bootstrapmap"
 		}
 	}
     window.proxyPath = "../lib/resource-proxy/proxy.php";
 </script>
 
-
+<script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
+<!--<script src="http://netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>-->
 <script src="//js.arcgis.com/3.8compact"></script>
 <script src="../vendor/offline/offline.min.js"></script>
 <script src="../vendor/IndexedDBShim/dist/IndexedDBShim.min.js"></script>
@@ -280,7 +281,7 @@ require([
             checks: {
                 image: {
                     url: function() {
-                        return '../tiny-image.png?_=' + (Math.floor(Math.random() * 1000000000));
+                        return 'http://esri.github.io/offline-editor-js/tiny-image.png?_=' + (Math.floor(Math.random() * 1000000000));
                     }
                 },
                 active: 'image'
@@ -302,22 +303,21 @@ var graphics;
 var cancelRequested, startTime, errorList;
 var showTiles = false;
 
-require(["esri/map",
+require(
+["esri/map",
 	"esri/layers/GraphicsLayer", "esri/graphic", "esri/symbols/SimpleFillSymbol",
 	"esri/dijit/Scalebar", "esri/arcgis/utils", "esri/geometry",
 	"dojo/dom", "dojo/on", "dojo/query",
-	"vendor/bootstrap-map-js/src/js/bootstrapmap",
 	"esri/urlUtils", "esri/geometry/webMercatorUtils",
 	"tiles/offlineTilesEnabler","utils/debouncer",
-	"dojo/dom-construct", "dojo/domReady!"],
+	"dojo/dom-construct","bootstrapmap", "dojo/domReady!"],
 	function(Map,
 		GraphicsLayer, Graphic, SimpleFillSymbol,
 		Scalebar, esriUtils, geometry,
 		dom, on, query,
-		BootstrapMap,
 		urlUtils, webMercatorUtils,
 		offlineTilesEnabler,debouncer,
-		domConstruct)
+		domConstruct,BootstrapMap)
 	{
 		var scalebar;
 		var symbol;
@@ -346,10 +346,13 @@ require(["esri/map",
 			mapDeferred.then(function(response)
 			{
 				map = response.map;
-
-				// Bind to map
-				BootstrapMap.bindTo(map);
-
+                try{
+				    // Bind to map
+				    BootstrapMap.bindTo(map);
+                }
+                catch(err){
+                    console.log("boot " + err.toString())
+                }
 				// Add title and description
 				dom.byId("mapTitle").innerHTML = response.itemInfo.item.title;
 				dom.byId("mapDescription").innerHTML = response.itemInfo.item.snippet;
