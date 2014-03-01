@@ -26,12 +26,13 @@ The following workflow is currently supported for both both features and tiles:
 #Classes documentation
 
 ##offlineFeaturesManager
-Extends and overrides a feature layer.
+Extends and overrides a feature layer. This manager allows you to extend FeatureLayer objects with offline capability and manage the resync process.
+
 
 ###Constructor
 Constructor | Description
 --- | ---
-`new OfflineFeaturesManager()` | creates an instance of the OfflineFeaturesManager class. This manager allows you to extend FeatureLayer objects with offline capability and manage the resync process.
+`OfflineFeaturesManager()` | creates an instance of the OfflineFeaturesManager class. This manager allows you to extend FeatureLayer objects with offline capability and manage the resync process.
 
 ###ENUMs
 The manager can be in one of these three states (see `getOnlineStatus()` method):
@@ -96,7 +97,7 @@ Methods | Returns | Description
 
  
 ##offlineTilesEnabler
-Extends and overrides a tiled map service.
+Extends and overrides a tiled map service. Provides the ability to customize the extent used to cut the tiles. See the detailed description of basemap.prepareForOffline() in the "How To Use" section below to learn different options.
 
 ###Methods
 Methods | Returns | Description
@@ -122,7 +123,7 @@ Methods | Returns | Description
 `saveToFile(filename, callback)` | `callback( boolean, error)` | Saves tile cache into a portable csv format.
 `loadFromFile(filename, callback)` | `callback( boolean, error)` | Reads a csv file into local tile cache.
 `estimateTileSize(callback)` | `callback(number)` | Retrieves one tile from a layer and then returns its size.
-`prepareForOffline(` `minLevel, maxLevel, extent,  ` `reportProgress)`  | `callback(number)` | Retrieves tiles and stores them in the local cache.
+`prepareForOffline(` `minLevel, maxLevel, extent,  ` `reportProgress)`  | `callback(number)` | Retrieves tiles and stores them in the local cache. See the "How To Use" section below to learn more about customizing the use of this method.
 
 #How to use
 
@@ -186,7 +187,7 @@ Returns an object that contains the number of tiles that would need to be downlo
 	
 **NOTE**: The byte size estimation is very rough.
 ```
-####basemap.prepareForOffline(minLevel,maxLevel,reportProgress)
+####basemap.prepareForOffline(minLevel,maxLevel,extent,reportProgress)
 
 * Integer	minLevel
 * Integer	maxLevel
