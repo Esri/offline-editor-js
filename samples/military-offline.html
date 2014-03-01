@@ -141,17 +141,18 @@
             checks: {
                 image: {
                     url: function() {
-                        return '../tiny-image.png?_=' + (Math.floor(Math.random() * 1000000000));
+                        return 'http://esri.github.io/offline-editor-js/tiny-image.png?_=' + (Math.floor(Math.random() * 1000000000));
                     }
                 },
                 active: 'image'
             }
         }
 
+        Offline.check();
 		Offline.on('up', goOnline );
 		Offline.on('down', goOffline );
 
-		esriConfig.defaults.io.proxyUrl = "../lib/proxy.php";
+		esriConfig.defaults.io.proxyUrl = "../resource-proxy/proxy.php";
 
 		map = new Map("map", {
 			basemap: "satellite",
