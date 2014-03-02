@@ -242,7 +242,6 @@
 </script>
 
 <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
-<!--<script src="http://netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>-->
 <script src="//js.arcgis.com/3.8compact"></script>
 <script src="../vendor/offline/offline.min.js"></script>
 <script src="../vendor/IndexedDBShim/dist/IndexedDBShim.min.js"></script>
@@ -385,7 +384,6 @@ require(
 			{
 				if(success)
 				{
-                    //initOfflineDetector();
                     basemapLayer.offline.proxyPath = window.proxyPath || "../lib/resource-proxy/proxy.php";
 					on(dojo.byId('prepare-for-offline-btn'),'click', prepareForOffline);
 					on(dojo.byId('cancel-btn'),'click', cancel);
@@ -458,7 +456,9 @@ require(
             stateNode.innerHTML = '<i class="fa '+icon+'"></i> ' + Offline.state;
         }
 
-        function updateTestState(){
+        function updateTestState()
+        {
+            //Use this pattern for testing application and forcing online/offline
             console.log('updateState', basemapLayer.isOnline());
             var updown = "up";
             basemapLayer.isOnline() === true ? updown = 'up' : updown = 'down';
