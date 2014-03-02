@@ -155,7 +155,7 @@ The `tiles` library allows a developer to extend a tiled layer with offline supp
 	require([
 		"esri/map", 
 		"tiles/offlineTilesEnabler"], 
-		function(Map,offlineTilesEnabler)
+		function(Map,OfflineTilesEnabler)
 	{
 		...
 	});
@@ -164,6 +164,7 @@ The `tiles` library allows a developer to extend a tiled layer with offline supp
 
 ```js
 	var basemapLayer = map.getLayer( map.layerIds[0] );
+	var offlineTilesEnabler = new OfflineTilesEnabler();
 	offlineTilesEnabler.extend(basemapLayer, function(success)
 	{
 		if(success)	{

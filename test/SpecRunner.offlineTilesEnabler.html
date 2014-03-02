@@ -41,7 +41,7 @@
   		Scalebar, esriUtils, geometry, 
   		dom, on, query, 
   		urlUtils, webMercatorUtils, 
-  		offlineTilesEnabler,
+  		OfflineTilesEnabler,
   		domConstruct) 
   	{
         g_map = new Map("map", {
@@ -56,7 +56,7 @@
   		function test() 
   		{
   			g_basemapLayer = g_map.getLayer( g_map.layerIds[0] );
-  			g_offlineTilesEnabler = offlineTilesEnabler;
+  			g_offlineTilesEnabler = new OfflineTilesEnabler();
 
   			var jasmineEnv = jasmine.getEnv();
   			jasmineEnv.updateInterval = 1000;
