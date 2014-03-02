@@ -316,12 +316,14 @@ require(
 		Scalebar, esriUtils, geometry,
 		dom, on, query,
 		urlUtils, webMercatorUtils,
-		offlineTilesEnabler,debouncer,
+		OfflineTilesEnabler,debouncer,
 		domConstruct,BootstrapMap)
 	{
 		var scalebar;
 		var symbol;
         var orientationChange = false;
+
+        var offlineTilesEnabler = new OfflineTilesEnabler();
 
 		// Load web map when page loads
 		var urlObject = urlUtils.urlToObject(window.location.href);
