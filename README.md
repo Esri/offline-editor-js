@@ -26,13 +26,13 @@ The following workflow is currently supported for both both features and tiles:
 #Classes documentation
 
 ##offlineFeaturesManager
-Extends and overrides a feature layer. This manager allows you to extend FeatureLayer objects with offline capability and manage the resync process.
+Extends and overrides a feature layer. This library allows you to extend esri.layers.FeatureLayer objects with offline capability and manage the resync process.
 
 
 ###Constructor
 Constructor | Description
 --- | ---
-`OfflineFeaturesManager()` | creates an instance of the OfflineFeaturesManager class. This manager allows you to extend FeatureLayer objects with offline capability and manage the resync process.
+`OfflineFeaturesManager()` | Creates an instance of the offlineFeaturesManager class. This library allows you to extend FeatureLayer objects with offline editing capabilities and manage the online/offline resynchronization process.
 
 ###ENUMs
 The manager can be in one of these three states (see `getOnlineStatus()` method):
@@ -52,11 +52,6 @@ Methods | Returns | Description
 `getOnlineStatus()` | `ONLINE`, `OFFLINE` or `RECONNECTING`| Determines the current state of the manager. Please, note that this library doesn't detect actual browser offline/online condition. You need to use the `offline.min.js` library included in `vendor\offline` directory to detect connection status and connect events to goOffline() and goOnline() methods. See `military-offline.html` sample.
 `getReadableEdit()` | String | A string value representing human readable information on pending edits.
 
-### Internal Methods
-Methods | Returns | Description
---- | --- | ---
-`_optimizeEditsQueue()` | Object | Internal method that collapses a queue of edits into a set of edits to send to each of the server layers. It detects edits that override or cancel themselves (for instance, if we have in the queue an add, followed by an update and a delete of the same feature, we remove all three edits, because the end result is that nothing should be stored in the layer)
-`_replayStoredEdits(callback)` | `callback(boolean, {}`) | Internal method called by `goOnline`. If there are pending edits this method attempts to sync them with the remote feature server.
 
 ###Events
 Application code can subscribe to offlineFeaturesManager events to be notified of different conditions. 
@@ -98,6 +93,12 @@ Methods | Returns | Description
  
 ##offlineTilesEnabler
 Extends and overrides a tiled map service. Provides the ability to customize the extent used to cut the tiles. See the detailed description of basemap.prepareForOffline() in the "How To Use" section below to learn different options.
+
+###Constructor
+Constructor | Description
+--- | ---
+`OfflineTilesEnabler()` | Creates an instance of the offlineTilesEnabler class. This library allows you to extend an ArcGISTiledMapServiceLayer with offline capability as well as manage the online/offline resynchronization process.
+
 
 ###Methods
 Methods | Returns | Description
@@ -405,7 +406,6 @@ You can check if there are any edits pending. If there are then iterate `editsSt
 * Sub-mobiles (see `/vendor` directory)
 
    * [offline.js](https://github.com/hubspot/offline) - it allows detection of the online/offline condition and provides events to hook callbacks on when this condition changes
-   * [bootstrap-map](https://github.com/Esri/bootstrap-map-js.git) - UI creation using bootstrap and ArcGIS maps (used in samples)
    * [IndexedDBShim](https://github.com/axemclion/IndexedDBShim) - polyfill to simulate indexed db functionality in browsers/platforms where it is not supported (notably iOS Safari, PhoneGap, Android Chrome)
    * [jasmine.async](https://github.com/derickbailey/jasmine.async.git) - library to help implementing tests of async functionality (used in tests)
 
