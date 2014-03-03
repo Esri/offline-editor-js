@@ -26,7 +26,7 @@ The following workflow is currently supported for both both features and tiles:
 #Classes documentation
 
 ##offlineFeaturesManager
-Extends and overrides a feature layer. This manager allows you to extend FeatureLayer objects with offline capability and manage the resync process.
+Extends and overrides a feature layer. This library allows you to extend esri.layers.FeatureLayer objects with offline capability and manage the resync process.
 
 
 ###Constructor
