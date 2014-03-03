@@ -94,6 +94,12 @@ Methods | Returns | Description
 ##offlineTilesEnabler
 Extends and overrides a tiled map service. Provides the ability to customize the extent used to cut the tiles. See the detailed description of basemap.prepareForOffline() in the "How To Use" section below to learn different options.
 
+###Constructor
+Constructor | Description
+--- | ---
+`offlineTilesEnabler()` | Creates an instance of the offlineTilesEnabler class. This library allows you to extend an ArcGISTiledMapServiceLayer with offline capability as well as manage the online/offline resynchronization process.
+
+
 ###Methods
 Methods | Returns | Description
 --- | --- | ---
