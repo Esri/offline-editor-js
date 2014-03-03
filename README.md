@@ -406,7 +406,6 @@ You can check if there are any edits pending. If there are then iterate `editsSt
 * Sub-mobiles (see `/vendor` directory)
 
    * [offline.js](https://github.com/hubspot/offline) - it allows detection of the online/offline condition and provides events to hook callbacks on when this condition changes
-   * [bootstrap-map](https://github.com/Esri/bootstrap-map-js.git) - UI creation using bootstrap and ArcGIS maps (used in samples)
    * [IndexedDBShim](https://github.com/axemclion/IndexedDBShim) - polyfill to simulate indexed db functionality in browsers/platforms where it is not supported (notably iOS Safari, PhoneGap, Android Chrome)
    * [jasmine.async](https://github.com/derickbailey/jasmine.async.git) - library to help implementing tests of async functionality (used in tests)
 
