@@ -52,11 +52,6 @@ Methods | Returns | Description
 `getOnlineStatus()` | `ONLINE`, `OFFLINE` or `RECONNECTING`| Determines the current state of the manager. Please, note that this library doesn't detect actual browser offline/online condition. You need to use the `offline.min.js` library included in `vendor\offline` directory to detect connection status and connect events to goOffline() and goOnline() methods. See `military-offline.html` sample.
 `getReadableEdit()` | String | A string value representing human readable information on pending edits.
 
-### Internal Methods
-Methods | Returns | Description
---- | --- | ---
-`_optimizeEditsQueue()` | Object | Internal method that collapses a queue of edits into a set of edits to send to each of the server layers. It detects edits that override or cancel themselves (for instance, if we have in the queue an add, followed by an update and a delete of the same feature, we remove all three edits, because the end result is that nothing should be stored in the layer)
-`_replayStoredEdits(callback)` | `callback(boolean, {}`) | Internal method called by `goOnline`. If there are pending edits this method attempts to sync them with the remote feature server.
 
 ###Events
 Application code can subscribe to offlineFeaturesManager events to be notified of different conditions. 
