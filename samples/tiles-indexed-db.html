@@ -242,58 +242,9 @@
 </script>
 
 <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
-<!--<script src="http://netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>-->
 <script src="//js.arcgis.com/3.8compact"></script>
 <script src="../vendor/offline/offline.min.js"></script>
 <script src="../vendor/IndexedDBShim/dist/IndexedDBShim.min.js"></script>
-<script>
-"use strict";
-
-require([
-	"dojo/dom-construct",
-	"dojo/dom-class",
-	"dojo/_base/window",
-	"dojo/domReady!"],
-	function(domConstruct,domClass,win)
-	{
-		var stateNode;
-
-		function updateState()
-		{
-			console.log('updateState', Offline.state);
-			var icon = Offline.state === 'up' ?  "fa-link" : "fa-chain-broken";
-			domClass.remove(stateNode, "up down");
-			domClass.add(stateNode, Offline.state);
-			stateNode.innerHTML = '<i class="fa '+icon+'"></i> ' + Offline.state;
-		}
-
-		stateNode = domConstruct.create("div", 
-			{
-				id: "state", 
-				innerHTML: "? unknown"
-			}, win.body(), "first");
-		console.log(stateNode);
-
-//      Deprecated functionality at v0.6
-//		Offline.options = { checkOnLoad: true, reconnect: true, requests: false };
-
-        Offline.options = {
-            checks: {
-                image: {
-                    url: function() {
-                        return 'http://esri.github.io/offline-editor-js/tiny-image.png?_=' + (Math.floor(Math.random() * 1000000000));
-                    }
-                },
-                active: 'image'
-            }
-        }
-
-		Offline.check();
-		updateState();
-
-		Offline.on('up down', updateState );
-	});	
-</script>
 <script>
 "use strict"
 
@@ -307,23 +258,29 @@ require(
 ["esri/map",
 	"esri/layers/GraphicsLayer", "esri/graphic", "esri/symbols/SimpleFillSymbol",
 	"esri/dijit/Scalebar", "esri/arcgis/utils", "esri/geometry",
-	"dojo/dom", "dojo/on", "dojo/query",
 	"esri/urlUtils", "esri/geometry/webMercatorUtils",
 	"tiles/offlineTilesEnabler","utils/debouncer",
-	"dojo/dom-construct","bootstrapmap", "dojo/domReady!"],
+    "dojo/on", "dojo/query",
+    "dojo/dom","dojo/dom-construct","dojo/dom-class","dojo/dom-style",
+    "dojo/_base/window",
+    "bootstrapmap", "dojo/domReady!"],
 	function(Map,
 		GraphicsLayer, Graphic, SimpleFillSymbol,
 		Scalebar, esriUtils, geometry,
-		dom, on, query,
 		urlUtils, webMercatorUtils,
 		OfflineTilesEnabler,debouncer,
-		domConstruct,BootstrapMap)
+        on, query,
+        dom,domConstruct,domClass,domStyle,
+        win,
+        BootstrapMap)
 	{
 		var scalebar;
 		var symbol;
         var orientationChange = false;
+        var stateNode;
 
         var offlineTilesEnabler = new OfflineTilesEnabler();
+        initOfflineDetector();
 
 		// Load web map when page loads
 		var urlObject = urlUtils.urlToObject(window.location.href);
@@ -371,9 +328,6 @@ require(
 					on(map,"load",function()
 					{
 						basemapLayer = map.getLayer( map.layerIds[0] );
-//						initMapParts();
-//						initEvents();
-//						initOffline();
 					});
 				}
 
@@ -432,7 +386,7 @@ require(
 			{
 				if(success)
 				{
-					basemapLayer.offline.proxyPath = window.proxyPath || "../lib/resource-proxy/proxy.php";
+                    basemapLayer.offline.proxyPath = window.proxyPath || "../lib/resource-proxy/proxy.php";
 					on(dojo.byId('prepare-for-offline-btn'),'click', prepareForOffline);
 					on(dojo.byId('cancel-btn'),'click', cancel);
 					on(dojo.byId('delete-all-tiles-btn'),'click', deleteAllTiles);
@@ -468,6 +422,54 @@ require(
 			Offline.on('up', goOnline );
 			Offline.on('down', goOffline );
 		}
+
+        function initOfflineDetector(){
+            stateNode = domConstruct.create("div",
+                    {
+                        id: "state",
+                        innerHTML: "? unknown"
+                    }, win.body(), "first");
+            console.log(stateNode);
+            domStyle.set(stateNode, "border-radius","10px");
+
+            Offline.options = {
+                checks: {
+                    image: {
+                        url: function() {
+                            return 'http://esri.github.io/offline-editor-js/tiny-image.png?_=' + (Math.floor(Math.random() * 1000000000));
+                        }
+                    },
+                    active: 'image'
+                }
+            }
+
+            Offline.check();
+            updateState();
+
+            Offline.on('up down', updateState );
+        }
+
+        function updateState()
+        {
+            //Use this pattern when not running application in testing mode
+            console.log('updateState', Offline.state);
+            var icon = Offline.state === 'up' ?  "fa-link" : "fa-chain-broken";
+            domClass.remove(stateNode, "up down");
+            domClass.add(stateNode, Offline.state);
+            stateNode.innerHTML = '<i class="fa '+icon+'"></i> ' + Offline.state;
+        }
+
+        function updateTestState()
+        {
+            //Use this pattern for testing application and forcing online/offline
+            console.log('updateState', basemapLayer.isOnline());
+            var updown = "up";
+            basemapLayer.isOnline() === true ? updown = 'up' : updown = 'down';
+            var icon = basemapLayer.isOnline() === true ?  "fa-link" : "fa-chain-broken";
+            domClass.remove(stateNode, "up down");
+            domClass.add(stateNode, updown);
+            stateNode.innerHTML = '<i class="fa '+icon+'"></i> ' + updown;
+        }
 
 		function updateOfflineUsage()
 		{
@@ -540,6 +542,8 @@ require(
 			dojo.byId('go-online-btn').style.display = "";
 
 			basemapLayer.goOffline();
+
+            updateTestState();
 		}
 
 		function goOnline()
@@ -550,6 +554,8 @@ require(
 			dojo.byId('go-online-btn').style.display = "none";
 
 			basemapLayer.goOnline();
+
+            updateTestState();
 		}
 
 		function deleteAllTiles()
