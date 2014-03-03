@@ -32,7 +32,7 @@ Extends and overrides a feature layer. This manager allows you to extend Feature
 ###Constructor
 Constructor | Description
 --- | ---
-`OfflineFeaturesManager()` | creates an instance of the OfflineFeaturesManager class. This manager allows you to extend FeatureLayer objects with offline capability and manage the resync process.
+`OfflineFeaturesManager()` | Creates an instance of the offlineFeaturesManager class. This library allows you to extend FeatureLayer objects with offline editing capabilities and manage the online/offline resynchronization process.
 
 ###ENUMs
 The manager can be in one of these three states (see `getOnlineStatus()` method):
@@ -97,7 +97,7 @@ Extends and overrides a tiled map service. Provides the ability to customize the
 ###Constructor
 Constructor | Description
 --- | ---
-`offlineTilesEnabler()` | Creates an instance of the offlineTilesEnabler class. This library allows you to extend an ArcGISTiledMapServiceLayer with offline capability as well as manage the online/offline resynchronization process.
+`OfflineTilesEnabler()` | Creates an instance of the offlineTilesEnabler class. This library allows you to extend an ArcGISTiledMapServiceLayer with offline capability as well as manage the online/offline resynchronization process.
 
 
 ###Methods
