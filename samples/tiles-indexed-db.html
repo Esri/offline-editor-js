@@ -243,8 +243,21 @@
 
 <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
 <script src="//js.arcgis.com/3.8compact"></script>
-<script src="../vendor/offline/offline.min.js"></script>
 <script src="../vendor/IndexedDBShim/dist/IndexedDBShim.min.js"></script>
+<script src="../vendor/offline/offline.min.js"></script>
+<script>
+    Offline.options = {
+        checks: {
+            image: {
+                url: function() {
+                    return 'http://esri.github.io/offline-editor-js/tiny-image.png?_=' + (Math.floor(Math.random() * 1000000000));
+                }
+            },
+            active: 'image'
+        }
+    }
+</script>
+
 <script>
 "use strict"
 
@@ -431,17 +444,6 @@ require(
                     }, win.body(), "first");
             console.log(stateNode);
             domStyle.set(stateNode, "border-radius","10px");
-
-            Offline.options = {
-                checks: {
-                    image: {
-                        url: function() {
-                            return 'http://esri.github.io/offline-editor-js/tiny-image.png?_=' + (Math.floor(Math.random() * 1000000000));
-                        }
-                    },
-                    active: 'image'
-                }
-            }
 
             Offline.check();
             updateState();
