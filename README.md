@@ -403,7 +403,7 @@ You can check if there are any edits pending. If there are then iterate `editsSt
 	* If a user completely flushes their browser cache all queued edits and tiles will most likely be lost.
 	* The data should persist if the browser is shutdown and restarted.
 
-* Sub-mobiles (see `/vendor` directory)
+* Sub-modules (see `/vendor` directory)
 
    * [offline.js](https://github.com/hubspot/offline) - it allows detection of the online/offline condition and provides events to hook callbacks on when this condition changes
    * [IndexedDBShim](https://github.com/axemclion/IndexedDBShim) - polyfill to simulate indexed db functionality in browsers/platforms where it is not supported (notably iOS Safari, PhoneGap, Android Chrome)
