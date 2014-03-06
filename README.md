@@ -171,7 +171,7 @@ The `tiles` library allows a developer to extend a tiled layer with offline supp
 		if(success)	{
 			// Now we can use offline functionality on this layer 
 		} else {
-			alert('indexed db is not supported in this browser);
+			alert('indexed db is not supported in this browser');
 		}
 	});
 ```
