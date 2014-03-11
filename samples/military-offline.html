@@ -69,6 +69,7 @@
 		var dojoConfig = {
 			paths: { 
 				edit: locationPath  + "/../lib/edit",
+				tiles: locationPath  + "/../lib/tiles",
 				vendor: locationPath + "/../vendor"
 			}
 		}
@@ -104,6 +105,7 @@
 		
 	    "edit/offlineFeaturesManager",
 	    "edit/editsStore",
+	    "tiles/offlineTilesEnabler",
 
 	    "esri/symbols/SimpleMarkerSymbol",
 	    "esri/symbols/SimpleLineSymbol",
@@ -122,7 +124,7 @@
 	], function(
 	    Map, GeometryService, Edit, 
 	    ArcGISTiledMapServiceLayer, FeatureLayer, 
-		OfflineFeaturesManager, editsStore,
+		OfflineFeaturesManager, editsStore, OfflineTilesEnabler,
 	    SimpleMarkerSymbol, SimpleLineSymbol, 
 	    Editor, TemplatePicker,
 	    esriConfig, jsapiBundle,
@@ -130,6 +132,7 @@
 		dom, on, domConstruct, domClass, domUtils
 	) {
 		var editor;
+		var basemapLayer;
 
 		parser.parse();
 		dojo.fadeOut({node:'loader-cloak', onEnd: function(n){n.style.display="none"}}).play();
@@ -183,6 +186,10 @@
 		function initEditor(evt)
 		{
 			try {
+				var offlineTilesEnabler = new OfflineTilesEnabler();
+				basemapLayer = map.getLayer( map.layerIds[0] );
+				offlineTilesEnabler.extend(basemapLayer);
+
 				/* extend layer with offline detection functionality */
 				evt.layers.forEach(function(result)
 				{
@@ -330,7 +337,8 @@
 		}
 
 		function goOnline()
-		{			
+		{
+			basemapLayer.goOnline();			
 			domUtils.show(editor.progressBar.domNode);
 			offlineFeaturesManager.goOnline(function()
 			{
@@ -343,6 +351,7 @@
 		function goOffline()
 		{
 			offlineFeaturesManager.goOffline();
+			basemapLayer.goOffline();
 			updateConnectivityIndicator();
 		}
 
