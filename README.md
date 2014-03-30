@@ -119,7 +119,7 @@ Methods | Returns | Description
 `goOnline()` | nothing | This method puts the layer in online mode. When in online mode, the layer will behave as regular layers, fetching all tiles from the remote server. If there is no internet connectivity the tiles may appear thanks to the browsers cache, but no attempt will be made to look up tiles in the local database.
 `getLevelEstimation(extent,` `level, tileSize)` | {level, tileCount, sizeBytes} | Returns an object that contains the number of tiles that would need to be downloaded for the specified extent and zoom level, and the estimated byte size of such tiles. This method is useful to give the user an indication of the required time and space before launching the actual download operation. The byte size estimation is very rough.
 `getExtentBuffer(buffer,extent)`| Extent | Returns a new extent buffered by a given measurement that's based on map units. For example, if you are using mercator map projection then the buffer property would be in meters and the new extent would be returned in mercactor.
-`getTileUrls(extent, level)` | Array | Returns an array of tile urls within a given map extent and zoom level.
+`getTileUrlsByExtent(extent, level)` | Array | Returns an array of tile urls within a given map extent and zoom level.
 `deleteAllTiles(callback)` | `callback(boolean, errors)` | Clears the local cache of tiles.
 `getOfflineUsage(callback)` | `callback(size, error)` | Gets the size in bytes of the local tile cache.
 `getTilePolygons(callback)` | `callback(polygon, error)` | Gets polygons representing all cached tiles. This is helpful to give users a visual feedback of the current content of the tile cache.
