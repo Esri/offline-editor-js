@@ -143,6 +143,26 @@ describe("offline enabler library", function()
 		});
 	});
 
+    async.it("get tile urls",function(done)
+    {
+        require(["esri/geometry/Extent"],function(Extent){
+            var extent = new Extent({"xmin":-822542.2830377579,"ymin":4580841.761960262,"xmax":94702.05638410954,"ymax":5131188.365613382,"spatialReference":{"wkid":102100}});
+            var cells = g_basemapLayer.getTileUrlsByExtent(extent,3);
+            expect(cells.length).toBeGreaterThan(0);
+            done();
+        });
+    });
+
+    async.it("get extent buffer",function(done)
+    {
+        require(["esri/geometry/Extent"],function(Extent){
+            var extent = new Extent({"xmin":-822542.2830377579,"ymin":4580841.761960262,"xmax":94702.05638410954,"ymax":5131188.365613382,"spatialReference":{"wkid":102100}});
+            var newExtent = g_basemapLayer.getExtentBuffer(1000,extent);
+            expect(newExtent.xmin).toBe(-823542.2830377579);
+            done();
+        });
+    });
+
 	async.it("returns placeholder urls when offline", function(done)
 	{
 		require(["dojo/dom"], function(dom)
