@@ -148,6 +148,11 @@ describe("offline enabler library", function()
         require(["esri/geometry/Extent"],function(Extent){
             var extent = new Extent({"xmin":-822542.2830377579,"ymin":4580841.761960262,"xmax":94702.05638410954,"ymax":5131188.365613382,"spatialReference":{"wkid":102100}});
             var cells = g_basemapLayer.getTileUrlsByExtent(extent,3);
+            var regexp = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/;
+            for(var i = 0; i < cells.length; i++){
+                var isUrl = regexp.test(cells[i]);
+                expect(isUrl).toBe(true);
+            }
             expect(cells.length).toBeGreaterThan(0);
             done();
         });
