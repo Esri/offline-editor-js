@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html manifest="manifest.appcache">
+<html manifest="../manifest.appcache">
 <!--<html>-->
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -78,10 +78,12 @@
         var minZoomAdjust = -1, maxZoomAdjust = 1, mMinZoom, mMaxZoom;
         var imgOfflineIndicator,btnGetTiles,btnOnlineOffline,btnZoom;
         var tiles,appCacheManager,tileInfo;
+        var redPinPath = "../samples/images/red-pin.png";
+        var bluePinPath = "../samples/images/blue-pin.png"
         var EXTEND_LAYER_COMPLETE_EVENT = "extendLayerComplete";
         var EXTENT_BUFFER = 0; //buffers the map extent in meters
 
-        require(["esri/map","utils/appCacheManager","tiles/offlineTileEnabler","dojo/on","dojo/domReady!"],
+        require(["esri/map","utils/appCacheManager","tiles/offlineTilesEnabler","dojo/on","dojo/domReady!"],
                 function(Map,AppCacheManager,OfflineTileEnabler,on) {
                     map = new Map("map", {
                         basemap: "topo",
@@ -157,11 +159,11 @@
 
                     function updateState(){
                         if(Offline.state === 'up'){
-                            imgOfflineIndicator.src = "images/blue-pin.png";
+                            imgOfflineIndicator.src = bluePinPath;
                             tiles.goOnline();
                         }
                         else{
-                            imgOfflineIndicator.src = "images/red-pin.png";
+                            imgOfflineIndicator.src = redPinPath;
                             tiles.goOffline();
                         }
                     }
@@ -205,7 +207,7 @@
                             console.log("Size estimate: " + totalEstimation.sizeBytes + ", tile count: " + totalEstimation.tileCount)
                             callback(totalEstimation);
                         }.bind(this))
-                    },
+                    }
                 }
         );
 
@@ -255,7 +257,7 @@
                 btnGetTiles.innerHTML = '1. Download Tiles';
             }
             return _wantToCancel; //determines if a cancel request has been issued
-        },
+        }
 
         function downloadTiles(){
             baseMapLayer.deleteAllTiles(function(success,err){
@@ -272,13 +274,13 @@
         function goOnlineOffline(){
             if(imgOfflineIndicator.offlineColor == "blue"){
                 btnOnlineOffline.innerHTML = "2. Go Online";
-                imgOfflineIndicator.src = "images/red-pin.png";
+                imgOfflineIndicator.src = redPinPath;
                 imgOfflineIndicator.offlineColor = "red";
                 goOffline();
             }
             else{
                 btnOnlineOffline.innerHTML = "2. Go Offline";
-                imgOfflineIndicator.src = "images/blue-pin.png";
+                imgOfflineIndicator.src = bluePinPath;
                 imgOfflineIndicator.offlineColor = "blue";
                 goOnline();
             }
@@ -302,7 +304,7 @@
 
 <body>
 <div id="button-div1">
-    <img id="img-offline-indicator" onclick="goOnlineOffline()" src="images/blue-pin.png"/>
+    <img id="img-offline-indicator" onclick="goOnlineOffline()" src="../samples/images/blue-pin.png"/>
     <textarea contenteditable="false" id="tile-info"></textarea>
     <button class="basic-btn" id="btn-get-tiles" onclick="downloadTiles()">1. Download Tiles</button>
     <button class="basic-btn" onclick="goOnlineOffline()" id="btn-online-offline">2. Go Offline</button>
