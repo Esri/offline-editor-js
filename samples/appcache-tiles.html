@@ -160,20 +160,24 @@
                     function updateState(){
                         if(Offline.state === 'up'){
                             imgOfflineIndicator.src = bluePinPath;
-                            tiles.goOnline();
+                            baseMapLayer.goOnline();
                         }
                         else{
                             imgOfflineIndicator.src = redPinPath;
-                            tiles.goOffline();
+                            baseMapLayer.goOffline();
                         }
                     }
 
-
                     function updateOfflineUsage()
                     {
-                        var count = getEstimateTileCount(function(info){
-                            console.log("COUNT " + info)
-                            tileInfo.innerHTML = "Tile count: " + info.tileCount + "\r\nBytes: " + info.sizeBytes;
+                        var count = getEstimateTileCount(function(info,err){
+                            if(info != null){
+                                console.log("COUNT " + info)
+                                tileInfo.innerHTML = "Tile count: " + info.tileCount + "\r\nBytes: " + info.sizeBytes;
+                            }
+                            else{
+                                console.log("ERROR updateOfflineUsage(): " + JSON.stringify(err));
+                            }
                         });
                     }
 
@@ -187,25 +191,31 @@
                         var level = map.getLevel();
                         var url = baseMapLayer.getTileUrlsByExtent(extent,level)[0];
                         baseMapLayer._lastTileUrl = url;
-                        baseMapLayer.estimateTileSize(function(tileSize){
+                        baseMapLayer.estimateTileSize(function(tileSize,err){
 
-                            var totalEstimation = {tileCount:0,sizeBytes:0};
+                            if(tileSize != null){
+                                var totalEstimation = {tileCount:0,sizeBytes:0};
 
-                            var min = map.getLevel() + minZoomAdjust;
-                            var max = map.getLevel() + maxZoomAdjust;
-                            var maxZoom = Math.min(mMaxZoom, max);  //prevent errors by setting the tile layer floor
-                            var minZoom = Math.max(mMinZoom, min);   //prevent errors by setting the tile layer ceiling
+                                var min = map.getLevel() + minZoomAdjust;
+                                var max = map.getLevel() + maxZoomAdjust;
+                                var maxZoom = Math.min(mMaxZoom, max);  //prevent errors by setting the tile layer floor
+                                var minZoom = Math.max(mMinZoom, min);   //prevent errors by setting the tile layer ceiling
 
-                            for(var level = minZoom; level<= maxZoom; level++)
-                            {
-                                var levelEstimation = baseMapLayer.getLevelEstimation(this.getExtentBuffer(EXTENT_BUFFER,map.extent),level,tileSize);
+                                for(var level = minZoom; level<= maxZoom; level++)
+                                {
+                                    var levelEstimation = baseMapLayer.getLevelEstimation(baseMapLayer.getExtentBuffer(EXTENT_BUFFER,map.extent),level,tileSize);
 
-                                totalEstimation.tileCount += levelEstimation.tileCount;
-                                totalEstimation.sizeBytes += levelEstimation.sizeBytes;
+                                    totalEstimation.tileCount += levelEstimation.tileCount;
+                                    totalEstimation.sizeBytes += levelEstimation.sizeBytes;
+                                }
+
+                                console.log("Size estimate: " + totalEstimation.sizeBytes + ", tile count: " + totalEstimation.tileCount)
+                                callback(totalEstimation,null);
+                            }
+                            else{
+                                callback(null,err);
                             }
 
-                            console.log("Size estimate: " + totalEstimation.sizeBytes + ", tile count: " + totalEstimation.tileCount)
-                            callback(totalEstimation);
                         }.bind(this))
                     }
                 }
@@ -276,24 +286,14 @@
                 btnOnlineOffline.innerHTML = "2. Go Online";
                 imgOfflineIndicator.src = redPinPath;
                 imgOfflineIndicator.offlineColor = "red";
-                goOffline();
+                baseMapLayer.goOffline();
             }
             else{
                 btnOnlineOffline.innerHTML = "2. Go Offline";
                 imgOfflineIndicator.src = bluePinPath;
                 imgOfflineIndicator.offlineColor = "blue";
-                goOnline();
+                baseMapLayer.goOnline();
             }
-        }
-
-        function goOnline()
-        {
-            baseMapLayer.goOnline();
-        }
-
-        function goOffline()
-        {
-            baseMapLayer.goOffline();
         }
 
         function panLeft(){
