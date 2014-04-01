@@ -90,7 +90,7 @@ ask if you want to reload the application.
         }
     </script>
     <script>
-        var map,offlineTileEnabler,baseMapLayer;
+        var map,offlineTileEnabler,baseMapLayer,zoom = 18;
         var globalState = {};
         var _wantToCancel;
         var minZoomAdjust = -1, maxZoomAdjust = 1, mMinZoom, mMaxZoom;
@@ -98,20 +98,26 @@ ask if you want to reload the application.
         var tiles,appCacheManager,tileInfo;
         var redPinPath = "../samples/images/red-pin.png";
         var bluePinPath = "../samples/images/blue-pin.png"
-        var EXTEND_LAYER_COMPLETE_EVENT = "extendLayerComplete";
         var EXTENT_BUFFER = 0; //buffers the map extent in meters
 
-        require(["esri/map","utils/appCacheManager","tiles/offlineTilesEnabler","dojo/on","dojo/domReady!"],
-                function(Map,AppCacheManager,OfflineTileEnabler,on) {
+        require(["esri/map","utils/appCacheManager","tiles/offlineTilesEnabler","esri/geometry/Extent","dojo/on","dojo/domReady!"],
+                function(Map,AppCacheManager,OfflineTileEnabler,Extent,on) {
+
+                    Offline.check();
+                    Offline.on('up down', updateState );
+
+                    //Make sure map shows up after a browser refresh
+                    Offline.state === 'up' ? zoom = 18 : zoom = 17;
+
                     map = new Map("map", {
                         basemap: "topo",
                         center: [-122.45,37.75], // long, lat
-                        zoom: 18,
+                        zoom: zoom,
                         sliderStyle: "small"
                     });
 
                     map.on("load",function(evt){
-                        init();
+                        init();    console.log("extent " + JSON.stringify(map.extent))
                         initOfflineTileEnabler();
                         console.log("level: " + map.getLevel() + ", maxZoom: " + map.getMaxZoom());
                     })
@@ -133,9 +139,6 @@ ask if you want to reload the application.
 
                         tileInfo = document.getElementById("tile-info")
                         tileInfo.innerHTML = "Tile count: 0\r\nBytes: 0";
-
-                        Offline.check();
-                        Offline.on('up down', updateState );
 
                         map.reposition();
                         map.resize();
