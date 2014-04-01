@@ -221,26 +221,6 @@
                 }
         );
 
-        function saveTilesLocally(evt,offlineTileEnabler){
-            var self = evt.data;
-
-            if( globalState.downloadState == 'downloading')
-            {
-                console.log("cancel!");
-                _wantToCancel = true;
-                btnGetTiles.innerHTML = "cancelling..";
-            }
-            else
-            {
-                var minLevel = map.getLevel() + minZoomAdjust;
-                var maxLevel = map.getLevel() + maxZoomAdjust;
-                var extent = offlineTileEnabler.getExtentBuffer(EXTENT_BUFFER,map.extent);
-                _wantToCancel = false;
-                baseMapLayer.prepareForOffline(minLevel, maxLevel, extent, lang.hitch(this,reportProgress));
-                globalState.downloadState = 'downloading';
-            }
-        }
-
         function reportProgress(progress)
         {
             console.log("downloading tiles...");
