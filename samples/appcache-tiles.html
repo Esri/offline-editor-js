@@ -103,6 +103,9 @@ ask if you want to reload the application.
         require(["esri/map","utils/appCacheManager","tiles/offlineTilesEnabler","esri/geometry/Extent","dojo/on","dojo/domReady!"],
                 function(Map,AppCacheManager,OfflineTileEnabler,Extent,on) {
 
+                    imgOfflineIndicator = document.getElementById("img-offline-indicator");
+                    imgOfflineIndicator.offlineColor = "blue";
+
                     Offline.check();
                     Offline.on('up down', updateState );
 
@@ -131,8 +134,6 @@ ask if you want to reload the application.
                         appCacheManager.on(appCacheManager.CACHE_EVENT,cacheEventHandler);
                         appCacheManager.on(appCacheManager.CACHE_ERROR,cacheErrorHandler);
 
-                        imgOfflineIndicator = document.getElementById("img-offline-indicator");
-                        imgOfflineIndicator.offlineColor = "blue";
                         btnGetTiles = document.getElementById("btn-get-tiles");
                         btnOnlineOffline = document.getElementById("btn-online-offline");
                         btnZoom = document.getElementById("btn-zoom-out");
