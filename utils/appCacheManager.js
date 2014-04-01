@@ -1,6 +1,6 @@
 /**
  * Helper Class for working with the application cache.
- * For more informatoin on application cache:
+ * For more information on application cache:
  * https://developer.mozilla.org/en-US/docs/HTML/Using_the_application_cache
  * Many thanks and all kudos go to the following blog posts:
  * http://www.html5rocks.com/en/tutorials/this.appCache/beginner/
@@ -19,12 +19,12 @@ define([
 
             constructor: function(/* boolean */autoUpdate, /* boolean */ setListeners)
             {
-                if(autoUpdate)this.setUdpateCache();
+                if(autoUpdate)this.setUpdateCache();
                 if(setListeners)this.setCacheListeners();
                 console.log("appCacheManager.js enabled");
             },
 
-            setUdpateCache:function(){
+            setUpdateCache:function(){
                 // Check if a new cache is available on page load.
                 window.addEventListener('load', function(evt) {
 
