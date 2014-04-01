@@ -30,13 +30,12 @@ module.exports = function(grunt) {
 						"<%= pkg.baseURL %>/js/esri/dijit/images/popup.png",
 						"http://services.arcgisonline.com/ArcGIS/rest/info?f=json",
 						"http://services.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer?f=json&callback=dojo.io.script.jsonp_dojoIoScript1._jsonpCallback",
-						"# required custom libs", 
-						"modules/tiles.js",
+						"# required custom libs",
 						"js/app.js", 
 						"css/style.css"],
 		        network: ["http://*", "https://*"],
 		        /*fallback: ["/ /offline.html"],*/
-		        exclude: ["js/jquery.min.js", "libs/**.sass", "libs/**/src"],
+		        exclude: ["js/jquery.min.js", "vendor/**.sass", "vendor/**/src"],
 		        /*preferOnline: true,*/
 		        verbose: true,
 		        timestamp: true
@@ -44,10 +43,12 @@ module.exports = function(grunt) {
 		      src: [
 		            "*.html",
 		          /*"js/*.min.js",*/
-				  "libs/IndexedDBShim/dist/*.min.js",
-				  "libs/offline-editor-js/tiles/*.js",
+				  "vendor/IndexedDBShim/dist/*.min.js",
+				  "lib/tiles/*.js",
+                  /*
 				  "images/*",
 		          "css/*.css"
+		          */
 		      ],
 		      dest: "manifest.appcache"
 		    }
