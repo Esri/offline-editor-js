@@ -117,7 +117,7 @@ ask if you want to reload the application.
                     });
 
                     map.on("load",function(evt){
-                        init();    console.log("extent " + JSON.stringify(map.extent))
+                        init();
                         initOfflineTileEnabler();
                         console.log("level: " + map.getLevel() + ", maxZoom: " + map.getMaxZoom());
                     })
@@ -180,6 +180,7 @@ ask if you want to reload the application.
 
                     function updateState(){
                         if(Offline.state === 'up'){
+                            updateOfflineUsage();
                             imgOfflineIndicator.src = bluePinPath;
                             baseMapLayer.goOnline();
                         }
