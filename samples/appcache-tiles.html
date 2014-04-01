@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html manifest="manifest.appcache">
+<!--<html>-->
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no"/>
+    <title>Simple Map</title>
+    <link rel="stylesheet" href="http://js.arcgis.com/3.8/js/esri/css/esri.css">
+    <style>
+        html, body, #map {
+            height: 100%;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            background-color: #FFF;
+            overflow: hidden;
+            font-family: "Trebuchet MS";
+        }
+        #button-div1{
+            position: relative;
+            background: #000000;
+            color: #ffffff;
+            width: 100%;
+            height: 50px;
+        }
+        .basic-btn{
+            background-color: #000000;
+            border-color: #ffffff 1px;
+            color: #ffffff;
+            padding: 8px;
+            position: relative; float: left;
+        }
+        #img-offline-indicator{
+            padding: 8px;
+            position: relative; float: right;
+        }
+        #tile-info{
+            background-color: #000000;
+            color: white;
+            padding: 8px;
+            position: relative; float: right;
+        }
+    </style>
+    <script>
+        var locationPath = location.pathname.replace(/\/[^/]+$/, "");
+        var dojoConfig = {
+            paths: {
+                tiles: locationPath  + "/../lib/tiles",
+                vendor: locationPath + "/../vendor",
+                utils: locationPath  + "/../utils"
+            }
+        }
+    </script>
+    <!-- This is a custom build of the ArcGIS API for JavaScript using the new Web Optimizer Tool -->
+    <script src="http://jsdev.arcgis.com/o/andygup/appcache1/dojo/dojo.js" data-dojo-config="async: true"></script>
+    <!-- Use this tag below if you are hosting your ArcGIS API for JavaScript files locally -->
+    <!--<script src="libs/dojo/dojo/dojo.js" data-dojo-config="async: true"></script>-->
+    <script src="../vendor/IndexedDBShim/dist/IndexedDBShim.min.js"></script>
+    <script src="../vendor/offline/offline.min.js"></script>
+    <script>
+        Offline.options = {
+            checks: {
+                image: {
+                    url: function() {
+                        return 'http://esri.github.io/offline-editor-js/tiny-image.png?_=' + (Math.floor(Math.random() * 1000000000));
+                    }
+                },
+                active: 'image'
+            }
+        }
+    </script>
+    <script>
+        var map,offlineTileEnabler,baseMapLayer;
+        var globalState;
+        var _wantToCancel;
+        var minZoomAdjust = -1, maxZoomAdjust = 1, mMinZoom, mMaxZoom;
+        var imgOfflineIndicator,btnGetTiles,btnOnlineOffline,btnZoom;
+        var tiles,appCacheManager,tileInfo;
+        var EXTEND_LAYER_COMPLETE_EVENT = "extendLayerComplete";
+        var EXTENT_BUFFER = 0; //buffers the map extent in meters
+
+        require(["esri/map","utils/appCacheManager","tiles/offlineTileEnabler","dojo/on","dojo/domReady!"],
+                function(Map,AppCacheManager,OfflineTileEnabler,on) {
+                    map = new Map("map", {
+                        basemap: "topo",
+                        center: [-122.45,37.75], // long, lat
+                        zoom: 18,
+                        sliderStyle: "small"
+                    });
+
+                    map.on("load",function(evt){
+                        init();
+                        initOfflineTileEnabler();
+                        console.log("level: " + map.getLevel() + ", maxZoom: " + map.getMaxZoom());
+                    })
+
+                    function init(){
+                        map.on("extent-change",function(evt){
+                            updateOfflineUsage();
+                            console.log("Zoom level = " + map.getLevel())
+                        })
+                        appCacheManager = new AppCacheManager(true,true);
+                        appCacheManager.on(appCacheManager.CACHE_EVENT,cacheEventHandler);
+                        appCacheManager.on(appCacheManager.CACHE_ERROR,cacheErrorHandler);
+
+                        imgOfflineIndicator = document.getElementById("img-offline-indicator");
+                        imgOfflineIndicator.offlineColor = "blue";
+                        btnGetTiles = document.getElementById("btn-get-tiles");
+                        btnOnlineOffline = document.getElementById("btn-online-offline");
+                        btnZoom = document.getElementById("btn-zoom-out");
+
+                        tileInfo = document.getElementById("tile-info")
+                        tileInfo.innerHTML = "Tile count: 0\r\nBytes: 0";
+
+                        Offline.check();
+                        Offline.on('up down', updateState );
+
+                        map.reposition();
+                        map.resize();
+                    }
+
+                    function initOfflineTileEnabler(){
+
+                        mMaxZoom = map.getMaxZoom();
+                        mMinZoom = map.getMinZoom();
+
+                        offlineTileEnabler = new OfflineTileEnabler();
+                        baseMapLayer = offlineTileEnabler.getBasemapLayer(map);
+
+                        offlineTileEnabler.extend(baseMapLayer,function(success)
+                        {
+                            if( success )
+                            {
+                                console.log("Offline tile lib is enabled");
+
+                                //using null sets this for CORS
+                                baseMapLayer.offline.proxyPath = null;
+
+                                updateOfflineUsage();
+                            }
+                            else
+                            {
+                                alert("error initializing storage - browser doesn't support indexeddb or websql")
+                            }
+                        }.bind(this));
+                    }
+
+                    function cacheEventHandler(evt){
+                        console.log("CACHE EVENT: " + JSON.stringify(evt));
+                    }
+
+                    function cacheErrorHandler(evt){
+                        console.log("CACHE ERROR: " + JSON.stringify(evt));
+                    }
+
+                    function updateState(){
+                        if(Offline.state === 'up'){
+                            imgOfflineIndicator.src = "images/blue-pin.png";
+                            tiles.goOnline();
+                        }
+                        else{
+                            imgOfflineIndicator.src = "images/red-pin.png";
+                            tiles.goOffline();
+                        }
+                    }
+
+
+                    function updateOfflineUsage()
+                    {
+                        var count = getEstimateTileCount(function(info){
+                            console.log("COUNT " + info)
+                            tileInfo.innerHTML = "Tile count: " + info.tileCount + "\r\nBytes: " + info.sizeBytes;
+                        });
+                    }
+
+                    /**
+                     * Gets tile count and size estimates. Not perfect.
+                     * @param callback
+                     */
+                    function getEstimateTileCount(callback)
+                    {
+                        var extent = baseMapLayer.getExtentBuffer(EXTENT_BUFFER,map.extent);
+                        var level = map.getLevel();
+                        var url = baseMapLayer.getTileUrlsByExtent(extent,level)[0];
+                        baseMapLayer._lastTileUrl = url;
+                        baseMapLayer.estimateTileSize(function(tileSize){
+
+                            var totalEstimation = {tileCount:0,sizeBytes:0};
+
+                            var min = map.getLevel() + minZoomAdjust;
+                            var max = map.getLevel() + maxZoomAdjust;
+                            var maxZoom = Math.min(mMaxZoom, max);  //prevent errors by setting the tile layer floor
+                            var minZoom = Math.max(mMinZoom, min);   //prevent errors by setting the tile layer ceiling
+
+                            for(var level = minZoom; level<= maxZoom; level++)
+                            {
+                                var levelEstimation = baseMapLayer.getLevelEstimation(this.getExtentBuffer(EXTENT_BUFFER,map.extent),level,tileSize);
+
+                                totalEstimation.tileCount += levelEstimation.tileCount;
+                                totalEstimation.sizeBytes += levelEstimation.sizeBytes;
+                            }
+
+                            console.log("Size estimate: " + totalEstimation.sizeBytes + ", tile count: " + totalEstimation.tileCount)
+                            callback(totalEstimation);
+                        }.bind(this))
+                    },
+                }
+        );
+
+        function saveTilesLocally(evt){
+            var self = evt.data;
+
+            if( globalState.downloadState == 'downloading')
+            {
+                console.log("cancel!");
+                _wantToCancel = true;
+                btnGetTiles.innerHTML = "cancelling..";
+            }
+            else
+            {
+                var minLevel = map.getLevel() + minZoomAdjust;
+                var maxLevel = map.getLevel() + maxZoomAdjust;
+                var extent = offlineTileEnabler.getExtentBuffer(this.EXTENT_BUFFER);
+                _wantToCancel = false;
+                baseMapLayer.prepareForOffline(minLevel, maxLevel, extent, lang.hitch(this,reportProgress));
+                globalState.downloadState = 'downloading';
+            }
+        }
+
+        function reportProgress(progress)
+        {
+            console.log("downloading tiles...");
+            if(progress.hasOwnProperty("countNow")){
+                var percent = Math.floor(progress.countNow / progress.countMax * 100);
+                btnGetTiles.innerHTML = 'Saving to phone ' + percent + "% - Tap to Cancel";
+            }
+
+            if( progress.finishedDownloading )
+            {
+                btnGetTiles.innerHTML = "Saving to phone 100% - Tap to Cancel";
+
+                if( progress.cancelRequested )
+                {
+                    globalState.downloadState = 'cancelled';
+                    alert("Tile download was cancelled");
+                }
+                else
+                {
+                    globalState.downloadState = 'downloaded';
+                    alert("Tile download complete");
+                }
+
+                btnGetTiles.innerHTML = '1. Download Tiles';
+            }
+            return _wantToCancel; //determines if a cancel request has been issued
+        },
+
+        function downloadTiles(){
+            baseMapLayer.deleteAllTiles(function(success,err){
+                if(success == false){
+                    alert("There was a problem deleting the tile cache");
+                }
+                else{
+                    console.log("success deleting tile cache");
+                    saveTilesLocally(this);
+                }
+            }.bind(this))
+        }
+
+        function goOnlineOffline(){
+            if(imgOfflineIndicator.offlineColor == "blue"){
+                btnOnlineOffline.innerHTML = "2. Go Online";
+                imgOfflineIndicator.src = "images/red-pin.png";
+                imgOfflineIndicator.offlineColor = "red";
+                goOffline();
+            }
+            else{
+                btnOnlineOffline.innerHTML = "2. Go Offline";
+                imgOfflineIndicator.src = "images/blue-pin.png";
+                imgOfflineIndicator.offlineColor = "blue";
+                goOnline();
+            }
+        }
+
+        function goOnline()
+        {
+            baseMapLayer.goOnline();
+        }
+
+        function goOffline()
+        {
+            baseMapLayer.goOffline();
+        }
+
+        function panLeft(){
+            map.panLeft();
+        }
+    </script>
+</head>
+
+<body>
+<div id="button-div1">
+    <img id="img-offline-indicator" onclick="goOnlineOffline()" src="images/blue-pin.png"/>
+    <textarea contenteditable="false" id="tile-info"></textarea>
+    <button class="basic-btn" id="btn-get-tiles" onclick="downloadTiles()">1. Download Tiles</button>
+    <button class="basic-btn" onclick="goOnlineOffline()" id="btn-online-offline">2. Go Offline</button>
+    <button class="basic-btn" id="btn-zoom-out" onclick="panLeft()">3. Pan left</button>
+</div>
+<div id="map"></div>
+</body>
+</html>
