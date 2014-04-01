@@ -3,24 +3,28 @@ offline-editor-js
 
 JavaScript toolkit for using the ArcGIS API for JavaScript offline. It manages both editing and tiles in an offline mode. It's still a work-in-progress so if you have suggestions open an issue or if you want to make a pull request we welcome your proposed modifications. 
 
-This repo contains two libraries:
+This repo contains the following libraries:
 
 - `/edit`: handles vector features and stores adds, updates and deletes while offline. Resync's edits with server once connection is reestablished
    * `offlineFeaturesManager` - Extends and overrides a feature layer.
    * `editsStore` - Provides static helper methods for working with the offline data store.
 - `/tiles`: stores portions of tiled maps client-side and uses the cached tiles when device is offline
    * `offlineTilesEnabler` Extends and overrides a tiled map service.
+- `/utils`: contains various helper libraries.
+- `/samples`: sample apps to show how to use different aspects of the offline library capabilities.
 
 #Workflows Supported (v1)
 The following workflow is currently supported for both both features and tiles:
 
 1) Load web application while online.
  
-2) Once all tiles and features are loaded then place application offline. This can be done manually within the code.
+2) Once all tiles and features are loaded then programmatically take application offline. 
 
 3) Make edits while offline.
 
 4) Return online when you want to resync edits.
+
+Using an [application manifest](https://developer.mozilla.org/en-US/docs/HTML/Using_the_application_cache) allows you to reload and restart the application while offline. The application manifest let's you store .html, .js, .css and image files locally.
 
 
 #Classes documentation
