@@ -218,12 +218,9 @@ ask if you want to reload the application.
                             if(tileSize != null){
                                 var totalEstimation = {tileCount:0,sizeBytes:0};
 
-                                var min = map.getLevel() + minZoomAdjust;
-                                var max = map.getLevel() + maxZoomAdjust;
-                                var maxZoom = Math.min(mMaxZoom, max);  //prevent errors by setting the tile layer floor
-                                var minZoom = Math.max(mMinZoom, min);   //prevent errors by setting the tile layer ceiling
+                                var zoom = getMinMaxZoom();
 
-                                for(var level = minZoom; level<= maxZoom; level++)
+                                for(var level = zoom.min; level<= zoom.max; level++)
                                 {
                                     var levelEstimation = baseMapLayer.getLevelEstimation(baseMapLayer.getExtentBuffer(EXTENT_BUFFER,map.extent),level,tileSize);
 
@@ -242,6 +239,17 @@ ask if you want to reload the application.
                     }
                 }
         );
+
+        function getMinMaxZoom(){
+
+            var zoom = {};
+            var min = map.getLevel() + minZoomAdjust;
+            var max = map.getLevel() + maxZoomAdjust;
+            zoom.max = Math.min(mMaxZoom, max);  //prevent errors by setting the tile layer floor
+            zoom.min = Math.max(mMinZoom, min);   //prevent errors by setting the tile layer ceiling
+
+            return zoom;
+        }
 
         function reportProgress(progress)
         {
@@ -288,11 +296,11 @@ ask if you want to reload the application.
                     }
                     else
                     {
-                        var minLevel = map.getLevel() + minZoomAdjust;
-                        var maxLevel = map.getLevel() + maxZoomAdjust;
+                        var zoom = getMinMaxZoom();
+
                         var extent = baseMapLayer.getExtentBuffer(EXTENT_BUFFER,map.extent);
                         _wantToCancel = false;
-                        baseMapLayer.prepareForOffline(minLevel, maxLevel, extent, reportProgress.bind(this));
+                        baseMapLayer.prepareForOffline(zoom.min, zoom.max, extent, reportProgress.bind(this));
                         globalState.downloadState = 'downloading';
                     }
                 }
