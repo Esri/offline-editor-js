@@ -224,7 +224,7 @@ var minLevel = 0;
 var maxLevel = 16;
 var extent = someFeature.geometry.getExtent();
 var buffer = 1500; /* approx meters (webmercator units) */
-var newExtent = basmapLayer.getExtentBuffer(buffer);
+var newExtent = basmapLayer.getExtentBuffer(buffer,extent);
 basemapLayer.prepareForOffline(minLevel, maxLevel, newExtent,
    lang.hitch(self,self.reportProgress));
 ```
