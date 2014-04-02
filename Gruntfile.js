@@ -71,6 +71,8 @@ module.exports = function(grunt) {
 				  "vendor/IndexedDBShim/dist/*.min.js",
                   "vendor/offline/offline.min.js",
 				  "lib/tiles/*.js",
+                  "lib/tiles/*.png",
+                  "lib/tiles/*.psd",
                   "utils/*.js"
                   /*
 				  "images/*",
