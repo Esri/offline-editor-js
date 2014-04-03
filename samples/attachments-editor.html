@@ -7,9 +7,10 @@
     <meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no">
     <title>SanFrancisco311 - Incidents</title>
 
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" >
     <link rel="stylesheet" href="http://js.arcgis.com/3.8/js/esri/css/esri.css">
     <style>
-        html, body { height: 100%; width: 100%; margin: 0; overflow: hidden; }
+        html, body { height: 100%; width: 100%; margin: 0; overflow: hidden; font-family: Arial; }
         #map { height: 100%; padding: 0;}
         #footer { height: 2em; text-align: center; font-size: 1.1em; padding: 0.5em; }
         .dj_ie .infowindow .window .top .right .user .content { position: relative; }
@@ -117,7 +118,8 @@
                 console.log("add attachment complete")
             })
 
-            function mapLoaded() {
+            function mapLoaded() 
+            {
                 featureLayer = new FeatureLayer("http://sampleserver3.arcgisonline.com/ArcGIS/rest/services/SanFrancisco/311Incidents/FeatureServer/0",{
                     mode: FeatureLayer.MODE_ONDEMAND
                     //mode: FeatureLayer.MODE_SNAPSHOT
@@ -128,35 +130,21 @@
                 var attachmentEditor = new AttachmentEditor({}, dom.byId("content"));
                 attachmentEditor.startup();
 
-                featureLayer.on("click", function(evt) {
+                featureLayer.on("click", function(evt) 
+                {
                     var event = evt;
                     var objectId = evt.graphic.attributes[featureLayer.objectIdField];
                     map.infoWindow.setTitle(objectId);
-//                    featureLayer.queryAttachmentInfos(objectId,function(evt){
-//                              console.log("TEST TEST")
-//                    },function(err){
-//                        console.log("Problem querying attachments: " + err.toString())
-//                    })
-
-//                    featureLayer.addAttachment(objectId,dom.byId("upload-test"),function(evt){
-//                        console.log("TEST ADD callback: " + evt);
-//                        attachmentEditor.showAttachments(event.graphic,featureLayer);
-//                        map.infoWindow.show(evt.screenPoint, map.getInfoWindowAnchor(evt.screenPoint));
-//                    },function(err){
-//                        console.log("TEST ADD error: " + err)
-//                    })
-
                     attachmentEditor.showAttachments(event.graphic,featureLayer);
                     map.infoWindow.show(evt.screenPoint, map.getInfoWindowAnchor(evt.screenPoint));
-
                 });
 
                 map.on('layer-add-result', initEditor);
-
                 map.addLayer(featureLayer);
             }
 
-            function configUI(){
+            function configUI()
+            {
                 on(dom.byId('storageInfo'), 'click', updateStorageInfo);
                 on(dom.byId('clear-pending-edits-btn'),'click', clearPendingEdits);
                 on(dom.byId('go-offline-btn'),'click', goOffline);
@@ -171,11 +159,12 @@
                 Offline.on('down', goOffline );
             }
 
-            function initEditor(evt){
-
-                if(evt.layer.hasOwnProperty("type") && evt.layer.type == "Feature Layer"){
-
-                    try{
+            function initEditor(evt)
+            {
+                if(evt.layer.hasOwnProperty("type") && evt.layer.type == "Feature Layer")
+                {
+                    try
+                    {
                         var layer = evt.layer;
                         var test = featureLayer.allowGeometryUpdates;  console.log("type " + test)
                         offlineFeaturesManager.extend(featureLayer,function(success){
@@ -203,9 +192,9 @@
                         });
 
                         updatePendingEditsList();
-
                     }
-                    catch(err){
+                    catch(err)
+                    {
                         console.log("initEditor: " + err.toString());
                     }
                 }
@@ -242,22 +231,26 @@
                 }
             }
 
-            function updateStatus(){
+            function updateStatus()
+            {
                 //TODO
             }
 
-            function updateStatusAttachments(evt){
+            function updateStatusAttachments(evt)
+            {
                 console.log("updateStatusAttachmentsRcvd")
             }
 
-            function goOnline(){
+            function goOnline()
+            {
                 offlineFeaturesManager.goOnline(function()
                 {
-                updateConnectivityIndicator();
+                    updateConnectivityIndicator();
                 });
             }
 
-            function goOffline(){
+            function goOffline()
+            {
                 offlineFeaturesManager.goOffline();
                 updateConnectivityIndicator();
             }
@@ -329,10 +322,6 @@
             <button style="width:38%" id="go-online-btn" class="btn1">Go Online</button>
             <ul id="pendingEdits"></ul>
         </div>
-        <form id="upload-test" action="/" method="post" name="upload">
-            <input type="file" name="attachment" />
-            <button type="submit" name="submit">Upload</button>
-        </form>
     </div>
 
     <div id="map"
