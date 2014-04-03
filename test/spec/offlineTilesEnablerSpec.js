@@ -90,6 +90,23 @@ describe("offline enabler library", function()
 		});
 	});
 
+	async.it("stores one tile again", function(done)
+	{
+		g_basemapLayer.getOfflineUsage(function(usage)
+		{
+			expect(usage.tileCount).toEqual(1);
+			g_basemapLayer._storeTile(14,6177,8023, function(success)
+			{
+				expect(success).toEqual(true);
+				g_basemapLayer.getOfflineUsage(function(usage)
+				{
+					expect(usage.tileCount).toEqual(1);
+			        done();
+				});
+			});
+		});
+	});
+
 	async.it("gets level estimation", function(done)
 	{
 		require(["esri/geometry/Extent"],function(Extent)
