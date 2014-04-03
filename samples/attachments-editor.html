@@ -49,11 +49,23 @@
                 vendor: locationPath + "/../vendor"
             }
         }
-        window.proxyPath = "../../lib/proxy.php";
+        window.proxyPath = "../lib/resource-proxy/proxy.php";
     </script>
 
     <script src="http://js.arcgis.com/3.8/"></script>
     <script src="../vendor/offline/offline.min.js"></script>
+    <script>
+        Offline.options = {
+            checks: {
+                image: {
+                    url: function() {
+                        return 'http://esri.github.io/offline-editor-js/tiny-image.png?_=' + (Math.floor(Math.random() * 1000000000));
+                    }
+                },
+                active: 'image'
+            }
+        }
+    </script>
     <script>
     "use strict";
 
@@ -84,23 +96,21 @@
             // a proxy page is required to upload attachments
             // refer to "Using the Proxy Page" for more information:  https://developers.arcgis.com/en/javascript/jshelp/ags_proxy.html
             //esriConfig.defaults.io.proxyUrl = "../lib/proxy.php";
-            esriConfig.defaults.io.proxyUrl = "../lib/resource-proxy/proxy.php";
+            esriConfig.defaults.io.proxyUrl = window.proxyPath;
 
             var offlineFeaturesManager = new OfflineFeaturesManager();
             offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_ENQUEUED, updateStatus);
             offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_SENT, updateStatus);
             offlineFeaturesManager.on(offlineFeaturesManager.events.ALL_EDITS_SENT, updateStatus);
-            offlineFeaturesManager.on(offlineFeaturesManager.events.ATTACHMENTS_ADD, updateStatusAttachments);
-            offlineFeaturesManager.on(offlineFeaturesManager.events.ATTACHMENTS_INFO, updateStatusAttachments);
+            offlineFeaturesManager.on(offlineFeaturesManager.events.ATTACHMENT_ENQUEUED, updateStatusAttachments);
             offlineFeaturesManager.on(offlineFeaturesManager.events.ATTACHMENTS_SENT, updateStatusAttachments);
-            offlineFeaturesManager.on(offlineFeaturesManager.events.ATTACHMENTS_DELETED, updateStatusAttachments);
 
             configUI();
 
             map = new Map("map", {
                 basemap: "streets",
                 center: [-122.427, 37.769],
-                zoom: 17
+                zoom: 15
             });
             map.on("load", mapLoaded);
             map.on("add-attachment-complete",function(evt){
@@ -110,6 +120,7 @@
             function mapLoaded() {
                 featureLayer = new FeatureLayer("http://sampleserver3.arcgisonline.com/ArcGIS/rest/services/SanFrancisco/311Incidents/FeatureServer/0",{
                     mode: FeatureLayer.MODE_ONDEMAND
+                    //mode: FeatureLayer.MODE_SNAPSHOT
                 });
 
                 map.infoWindow.setContent("<div id='content' style='width:100%'></div>");
@@ -154,17 +165,8 @@
 
                 updateConnectivityIndicator();
                 updateStorageInfo();
-                Offline.options = {
-                    checks: {
-                        image: {
-                            url: function() {
-                                return '../tiny-image.png?_=' + (Math.floor(Math.random() * 1000000000));
-                            }
-                        },
-                        active: 'image'
-                    }
-                }
 
+                Offline.check();
                 Offline.on('up', goOnline );
                 Offline.on('down', goOffline );
             }
@@ -174,7 +176,7 @@
                 if(evt.layer.hasOwnProperty("type") && evt.layer.type == "Feature Layer"){
 
                     try{
-
+                        var layer = evt.layer;
                         var test = featureLayer.allowGeometryUpdates;  console.log("type " + test)
                         offlineFeaturesManager.extend(featureLayer,function(success){
                             console.log("extend ");
@@ -215,7 +217,7 @@
                 layers.forEach(function(layer)
                 {
                     var objectIds = layer.graphics.map( function(g) { return g.attributes[ layer.objectIdField ];});
-                    console.log(layer.name, objectIds);
+                    console.log("update-end",layer.name, objectIds.length,"features");
                 });
             }
 
