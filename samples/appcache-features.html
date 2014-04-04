@@ -20,10 +20,21 @@
     </style>
     <script src="http://js.arcgis.com/3.8/"></script>
     <script>
-        var map,featureLayer;
+        var map,busStopsFeatureLayer,updateFeature;
 
-        require(["esri/map","esri/layers/FeatureLayer", "dojo/domReady!"],
-            function(Map,FeatureLayer) {
+        require([
+            "esri/map",
+            "esri/layers/FeatureLayer",
+            "esri/dijit/AttributeInspector",
+            "dojo/dom-construct",
+            "dijit/form/Button",
+            "esri/symbols/SimpleLineSymbol",
+            "esri/symbols/SimpleFillSymbol",
+            "dojo/_base/Color",
+            "dojo/parser",
+            "dojo/domReady!"],
+            function(Map,FeatureLayer,AttributeInspector,domConstruct,Button,SimpleLineSymbol,SimpleFillSymbol,Color,parser) {
+                parser.parse();
                 map = new Map("map", {
                     basemap: "topo",
                     center: [-104.98,39.74], // long, lat
@@ -31,13 +42,81 @@
                     sliderStyle: "small"
                 });
 
-                featureLayer = new FeatureLayer("http://services.arcgis.com/IZtlGBUe4KTzLOl4/arcgis/rest/services/BPX_RTD_BusStops2/FeatureServer/0",{
-                    mode: FeatureLayer.MODE_SNAPSHOT
+                busStopsFeatureLayer = new FeatureLayer("http://services.arcgis.com/IZtlGBUe4KTzLOl4/arcgis/rest/services/BPX_RTD_BusStops2/FeatureServer/0",{
+                    mode: FeatureLayer.MODE_SNAPSHOT,
+                    outFields: ["OBJECTID","BSID","ROUTES","STOPNAME"]
                 })
 
-                map.addLayer(featureLayer);
+                var selectionSymbol = new SimpleFillSymbol(
+                        SimpleFillSymbol.STYLE_NULL,
+                        new SimpleLineSymbol(
+                                "solid",
+                                new Color("yellow"),
+                                2
+                        ),
+                        null
+                );
 
+                busStopsFeatureLayer.setSelectionSymbol(selectionSymbol);
 
+                map.on("layers-add-result",initEditing);
+
+                map.addLayers([busStopsFeatureLayer]);
+
+                function initEditing(){
+                    busStopsFeatureLayer.on("click", function(evt) {
+                        updateFeature = evt.graphic;
+                        map.infoWindow.setTitle(evt.graphic.attributes.STOPNAME);
+                        map.infoWindow.show(evt.screenPoint,map.getInfoWindowAnchor(evt.screenPoint));
+                    });
+
+                    map.infoWindow.on("hide", function() {
+                        busStopsFeatureLayer.clearSelection();
+                    });
+
+                    var layerInfos = [{
+                        'featureLayer': busStopsFeatureLayer,
+                        'showAttachments': false,
+                        'isEditable': true,
+                        'fieldInfos': [
+                            {'fieldName': 'OBJECTID', 'isEditable':false, 'label':'ID:'},
+                            {'fieldName': 'BSID', 'isEditable':false, 'label':'Bus stop ID:'},
+                            {'fieldName': 'ROUTES', 'isEditable':false,'label':'Routes:'},
+                            {'fieldName': 'STOPNAME', 'isEditable':true, 'label':'Stop name:'}
+                        ]
+                    }];
+
+                    var attInspector = new AttributeInspector({
+                        layerInfos:layerInfos
+                    }, domConstruct.create("div"));
+
+                    //add a save button next to the delete button
+                    var saveButton = new Button({ label: "Save", "class": "saveButton"});
+                    domConstruct.place(saveButton.domNode, attInspector.deleteBtn.domNode, "after");
+
+                    saveButton.on("click", function(){
+                        updateFeature.getLayer().applyEdits(null, [updateFeature], null);
+                    });
+
+                    attInspector.on("attribute-change", function(evt) {
+                        //store the updates to apply when the save button is clicked
+                        updateFeature.attributes[evt.fieldName] = evt.fieldValue;
+                    });
+
+                    attInspector.on("next", function(evt) {
+                        updateFeature = evt.feature;
+                        console.log("Next " + updateFeature.attributes.objectid);
+                    });
+
+                    attInspector.on("delete", function(evt){
+                        evt.feature.getLayer().applyEdits(null,null,[feature]);
+                        map.infoWindow.hide();
+                    });
+
+                    map.infoWindow.setContent(attInspector.domNode);
+                    map.infoWindow.resize(350, 240);
+
+                }
         });
     </script>
 </head>
