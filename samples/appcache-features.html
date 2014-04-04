@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no"/>
+    <title>Simple Map</title>
+    <link rel="stylesheet" href="http://js.arcgis.com/3.8/js/esri/css/esri.css">
+    <style>
+        html, body, #map {
+            height: 100%;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            background-color: #FFF;
+            overflow: hidden;
+            font-family: "Trebuchet MS";
+        }
+    </style>
+    <script src="http://js.arcgis.com/3.8/"></script>
+    <script>
+        var map,featureLayer;
+
+        require(["esri/map","esri/layers/FeatureLayer", "dojo/domReady!"],
+            function(Map,FeatureLayer) {
+                map = new Map("map", {
+                    basemap: "topo",
+                    center: [-104.98,39.74], // long, lat
+                    zoom: 10,
+                    sliderStyle: "small"
+                });
+
+                featureLayer = new FeatureLayer("http://services.arcgis.com/IZtlGBUe4KTzLOl4/arcgis/rest/services/BPX_RTD_BusStops2/FeatureServer/0",{
+                    mode: FeatureLayer.MODE_SNAPSHOT
+                })
+
+                map.addLayer(featureLayer);
+
+
+        });
+    </script>
+</head>
+
+<body>
+<div id="map"></div>
+</body>
+</html>
