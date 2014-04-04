@@ -167,11 +167,8 @@
                     {
                         var layer = evt.layer;
                         var test = featureLayer.allowGeometryUpdates;  console.log("type " + test)
-                        offlineFeaturesManager.extend(featureLayer,function(success){
-                            console.log("extend ");
-                            if(success){
-
-                            }
+                        offlineFeaturesManager.extend(featureLayer, function(success){
+                            console.log("layer extended", success? "successfully" : "without success");
                         });
                         layer.on('update-end', logCurrentObjectIds);
 
