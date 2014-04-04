@@ -98,4 +98,22 @@ describe("attachments store module", function()
 		});
 	});
 
+	async.it("delete all attachments", function(done)
+	{
+		g_attachmentsStore.deleteAll(function(success)
+		{
+			expect(success).toBeTruthy();
+			setTimeout(function()
+			{
+				g_attachmentsStore.getUsage(function(usage)
+				{
+					expect(usage).not.toBeNull();
+					expect(usage.sizeBytes).toBe(0);
+					expect(usage.attachmentCount).toBe(0);
+					done();
+				})
+			},1);
+		});
+	});
+
 });
