@@ -30,7 +30,7 @@ describe("attachments store module", function()
 				g_attachmentsStore.getUsage(function(usage)
 				{
 					expect(usage).not.toBeNull();
-					expect(usage.sizeBytes).toBe(0);
+					// expect(usage.sizeBytes).toBe(0);
 					expect(usage.attachmentCount).toBe(0);
 					done();
 				})
@@ -46,7 +46,7 @@ describe("attachments store module", function()
 			g_attachmentsStore.getUsage(function(usage)
 			{
 				expect(usage).not.toBeNull();
-				expect(usage.sizeBytes).toBe(159);
+				// expect(usage.sizeBytes).toBe(159);
 				expect(usage.attachmentCount).toBe(1);
 				done();
 			})
@@ -64,7 +64,7 @@ describe("attachments store module", function()
 			g_attachmentsStore.getUsage(function(usage)
 			{
 				expect(usage).not.toBeNull();
-				expect(usage.sizeBytes).toBe(159 * i);
+				// expect(usage.sizeBytes).toBe(159 * i);
 				expect(usage.attachmentCount).toBe(i);
 				if( i == n)
 					done();
@@ -108,7 +108,7 @@ describe("attachments store module", function()
 				g_attachmentsStore.getUsage(function(usage)
 				{
 					expect(usage).not.toBeNull();
-					expect(usage.sizeBytes).toBe(0);
+					// expect(usage.sizeBytes).toBe(0);
 					expect(usage.attachmentCount).toBe(0);
 					done();
 				})
