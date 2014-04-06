@@ -29,6 +29,17 @@
         .popup-table-textarea{
             height: 17px;
         }
+        #button-div1{
+            position: relative;
+            background: #000000;
+            color: #ffffff;
+            width: 100%;
+            height: 50px;
+        }
+        #img-offline-indicator{
+            padding: 8px;
+            position: relative; float: right;
+        }
     </style>
     <script src="../vendor/offline/offline.min.js"></script>
     <script>
@@ -42,10 +53,21 @@
                 active: 'image'
             }
         }
+
+        var locationPath = location.pathname.replace(/\/[^/]+$/, "");
+        var dojoConfig = {
+            paths: {
+                edit: locationPath  + "/../lib/edit",
+                vendor: locationPath + "/../vendor"
+            }
+        }
     </script>
     <script src="http://js.arcgis.com/3.8/"></script>
     <script>
         var map,busStopsFeatureLayer;
+        var imgOfflineIndicator,btnOnlineOffline;
+        var redPinPath = "../samples/images/red-pin.png";
+        var bluePinPath = "../samples/images/blue-pin.png"
 
         require([
             "esri/map",
@@ -58,6 +80,9 @@
                 offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_ENQUEUED, updateStatus);
                 offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_SENT, updateStatus);
                 offlineFeaturesManager.on(offlineFeaturesManager.events.ALL_EDITS_SENT, updateStatus);
+
+                imgOfflineIndicator = document.getElementById("img-offline-indicator");
+                imgOfflineIndicator.offlineColor = "blue";
 
                 Offline.check();
                 Offline.on('up', goOnline );
@@ -86,6 +111,8 @@
                     map.infoWindow.on("hide", function() {
                         busStopsFeatureLayer.clearSelection();
                     });
+
+                    btnOnlineOffline = document.getElementById("btn-online-offline");
 
 //                    var layerInfos = [{
 //                        'featureLayer': busStopsFeatureLayer,
@@ -157,18 +184,38 @@
 
                 }
 
-                function goOnline(){
+            }
+        );
 
-                }
+        function goOnlineOffline(){
+            if(imgOfflineIndicator.offlineColor == "blue"){
+                btnOnlineOffline.innerHTML = "2. Go Online";
+                imgOfflineIndicator.src = redPinPath;
+                imgOfflineIndicator.offlineColor = "red";
+                goOffline()
+            }
+            else{
+                btnOnlineOffline.innerHTML = "2. Go Offline";
+                imgOfflineIndicator.src = bluePinPath;
+                imgOfflineIndicator.offlineColor = "blue";
+                goOnline();
+            }
+        }
 
-                function goOffline(){
+        function goOnline(){
+            busStopsFeatureLayer.goOnline();
+        }
 
-                }
-        });
+        function goOffline(){
+            busStopsFeatureLayer.goOffline();
+        }
     </script>
 </head>
 
 <body>
+<div id="button-div1">
+    <img id="img-offline-indicator" onclick="goOnlineOffline()" src="../samples/images/blue-pin.png"/>
+</div>
 <div id="map"></div>
 </body>
 </html>
