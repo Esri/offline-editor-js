@@ -50,8 +50,18 @@
         require([
             "esri/map",
             "esri/layers/FeatureLayer",
+            "edit/offlineFeaturesManager",
             "dojo/domReady!"],
-            function(Map,FeatureLayer) {
+            function(Map,FeatureLayer,OfflineFeaturesManager) {
+
+                var offlineFeaturesManager = new OfflineFeaturesManager();
+                offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_ENQUEUED, updateStatus);
+                offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_SENT, updateStatus);
+                offlineFeaturesManager.on(offlineFeaturesManager.events.ALL_EDITS_SENT, updateStatus);
+
+                Offline.check();
+                Offline.on('up', goOnline );
+                Offline.on('down', goOffline );
 
                 map = new Map("map", {
                     basemap: "topo",
@@ -70,6 +80,9 @@
                 map.addLayers([busStopsFeatureLayer]);
 
                 function initEditing(evt){
+
+                    offlineFeaturesManager.extend(busStopsFeatureLayer);
+
                     map.infoWindow.on("hide", function() {
                         busStopsFeatureLayer.clearSelection();
                     });
@@ -132,11 +145,23 @@
 
                 }
 
-                function updateFeature(){
+                function updateFeature(feature){
+                    busStopsFeatureLayer.applyEdits(null,[feature],null);
+                }
+
+                function deleteFeature(feature){
+                    busStopsFeatureLayer.applyEdits(null,null,[feature]);
+                }
+
+                function updateStatus(){
 
                 }
 
-                function deleteFeature(){
+                function goOnline(){
+
+                }
+
+                function goOffline(){
 
                 }
         });
