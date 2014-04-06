@@ -45,7 +45,7 @@
     </script>
     <script src="http://js.arcgis.com/3.8/"></script>
     <script>
-        var map,busStopsFeatureLayer,updateFeature;
+        var map,busStopsFeatureLayer;
 
         require([
             "esri/map",
@@ -115,13 +115,13 @@
 
 
                     busStopsFeatureLayer.on("click", function(evt) {
-                        updateFeature = evt.graphic;
-                        map.infoWindow.setTitle(evt.graphic.attributes.STOPNAME);
+                        var feature = evt.graphic
+                        map.infoWindow.setTitle(feature.attributes.STOPNAME);
                         map.infoWindow.setContent(
                                 "<table class='popup-table'>" +
-                                "<tr class='popup-table-row'><td>ID:</td><td> " + updateFeature.attributes.OBJECTID + "</td></tr>" +
-                                "<tr class='popup-table-row'><td>Routes:</td><td> " + updateFeature.attributes.ROUTES + "</td></tr>" +
-                                "<tr class='popup-table-row'><td>Stops:</td><td><textarea class='popup-table-textarea'> " + updateFeature.attributes.STOPNAME  + "</textarea></td></tr>" +
+                                "<tr class='popup-table-row'><td>ID:</td><td> " + feature.attributes.OBJECTID + "</td></tr>" +
+                                "<tr class='popup-table-row'><td>Routes:</td><td> " + feature.attributes.ROUTES + "</td></tr>" +
+                                "<tr class='popup-table-row'><td>Stops:</td><td><textarea class='popup-table-textarea'> " + feature.attributes.STOPNAME  + "</textarea></td></tr>" +
                                 "<tr class='popup-table-row'><td><button>Save</button></td><td><button>Delete</button></td></tr>" +
                                 "</table>"
                         )
@@ -129,6 +129,14 @@
                     }.bind(this));
 
                     map.infoWindow.resize(350, 240);
+
+                }
+
+                function updateFeature(){
+
+                }
+
+                function deleteFeature(){
 
                 }
         });
