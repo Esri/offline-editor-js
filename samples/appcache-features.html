@@ -64,7 +64,7 @@
     </script>
     <script src="http://js.arcgis.com/3.8/"></script>
     <script>
-        var map,busStopsFeatureLayer;
+        var map,busStopsFeatureLayer,currentFeature;
         var imgOfflineIndicator,btnOnlineOffline;
         var redPinPath = "../samples/images/red-pin.png";
         var bluePinPath = "../samples/images/blue-pin.png"
@@ -155,14 +155,14 @@
 
 
                     busStopsFeatureLayer.on("click", function(evt) {
-                        var feature = evt.graphic
+                        currentFeature = evt.graphic
                         map.infoWindow.setTitle(feature.attributes.STOPNAME);
                         map.infoWindow.setContent(
                                 "<table class='popup-table'>" +
                                 "<tr class='popup-table-row'><td>ID:</td><td> " + feature.attributes.OBJECTID + "</td></tr>" +
                                 "<tr class='popup-table-row'><td>Routes:</td><td> " + feature.attributes.ROUTES + "</td></tr>" +
                                 "<tr class='popup-table-row'><td>Stops:</td><td><textarea class='popup-table-textarea'> " + feature.attributes.STOPNAME  + "</textarea></td></tr>" +
-                                "<tr class='popup-table-row'><td><button>Save</button></td><td><button>Delete</button></td></tr>" +
+                                "<tr class='popup-table-row'><td><button onclick='updateFeature()'>Save</button></td><td><button onclick='deleteFeature()'>Delete</button></td></tr>" +
                                 "</table>"
                         )
                         map.infoWindow.show(evt.screenPoint,map.getInfoWindowAnchor(evt.screenPoint));
@@ -172,20 +172,20 @@
 
                 }
 
-                function updateFeature(feature){
-                    busStopsFeatureLayer.applyEdits(null,[feature],null);
-                }
-
-                function deleteFeature(feature){
-                    busStopsFeatureLayer.applyEdits(null,null,[feature]);
-                }
-
                 function updateStatus(){
 
                 }
 
             }
         );
+
+        function updateFeature(){
+            busStopsFeatureLayer.applyEdits(null,[currentFeature],null);
+        }
+
+        function deleteFeature(){
+            busStopsFeatureLayer.applyEdits(null,null,[currentFeature]);
+        }
 
         function goOnlineOffline(){
             if(imgOfflineIndicator.offlineColor == "blue"){
