@@ -29,6 +29,13 @@
         .popup-table-textarea{
             height: 17px;
         }
+        .basic-btn{
+            background-color: #000000;
+            border-color: #ffffff 1px;
+            color: #ffffff;
+            padding: 8px;
+            position: relative; float: left;
+        }
         #button-div1{
             position: relative;
             background: #000000;
@@ -64,6 +71,7 @@
     </script>
     <script src="http://js.arcgis.com/3.8/"></script>
     <script>
+        var offlineFeaturesManager;
         var map,busStopsFeatureLayer,currentFeature;
         var imgOfflineIndicator,btnOnlineOffline;
         var redPinPath = "../samples/images/red-pin.png";
@@ -71,12 +79,16 @@
 
         require([
             "esri/map",
+            "esri/tasks/query",
             "esri/layers/FeatureLayer",
             "edit/offlineFeaturesManager",
+            "esri/dijit/AttributeInspector",
+            "dojo/dom-construct",
+            "dijit/form/Button",
             "dojo/domReady!"],
-            function(Map,FeatureLayer,OfflineFeaturesManager) {
+            function(Map,Query,FeatureLayer,OfflineFeaturesManager,AttributeInspector,domConstruct,Button) {
 
-                var offlineFeaturesManager = new OfflineFeaturesManager();
+                offlineFeaturesManager = new OfflineFeaturesManager();
                 offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_ENQUEUED, updateStatus);
                 offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_SENT, updateStatus);
                 offlineFeaturesManager.on(offlineFeaturesManager.events.ALL_EDITS_SENT, updateStatus);
@@ -114,60 +126,70 @@
 
                     btnOnlineOffline = document.getElementById("btn-online-offline");
 
-//                    var layerInfos = [{
-//                        'featureLayer': busStopsFeatureLayer,
-//                        'showAttachments': false,
-//                        'isEditable': true,
-//                        'fieldInfos': [
-//                            {'fieldName': 'OBJECTID', 'isEditable':false, 'label':'ID:'},
-//                            {'fieldName': 'BSID', 'isEditable':false, 'label':'Bus stop ID:'},
-//                            {'fieldName': 'ROUTES', 'isEditable':false,'label':'Routes:'},
-//                            {'fieldName': 'STOPNAME', 'isEditable':true, 'label':'Stop name:'}
-//                        ]
-//                    }];
-//
-//                    var attInspector = new AttributeInspector({
-//                        layerInfos:layerInfos
-//                    }, domConstruct.create("div"));
-//
-//                    //add a save button next to the delete button
-//                    var saveButton = new Button({ label: "Save", "class": "saveButton"});
-//                    domConstruct.place(saveButton.domNode, attInspector.deleteBtn.domNode, "after");
-//
-//                    saveButton.on("click", function(){
-//                        busStopsFeatureLayer.applyEdits(null, [updateFeature], null);
-//                    });
-//
-//                    attInspector.on("attribute-change", function(evt) {
-//                        //store the updates to apply when the save button is clicked
-//                        updateFeature.attributes[evt.fieldName] = evt.fieldValue;
-//                    });
-//
-//                    attInspector.on("next", function(evt) {
-//                        updateFeature = evt.feature;
-//                        console.log("Next " + updateFeature.attributes.objectid);
-//                    });
-//
-//                    attInspector.on("delete", function(evt){
-//                        evt.feature.getLayer().applyEdits(null,null,[updateFeature]);
-//                        map.infoWindow.hide();
-//                    });
+                    var layerInfos = [{
+                        'featureLayer': busStopsFeatureLayer,
+                        'showAttachments': false,
+                        'isEditable': true,
+                        'fieldInfos': [
+                            {'fieldName': 'OBJECTID', 'isEditable':false, 'label':'ID:'},
+                            {'fieldName': 'BSID', 'isEditable':false, 'label':'Bus stop ID:'},
+                            {'fieldName': 'ROUTES', 'isEditable':false,'label':'Routes:'},
+                            {'fieldName': 'STOPNAME', 'isEditable':true, 'label':'Stop name:'}
+                        ]
+                    }];
+
+                    var attInspector = new AttributeInspector({
+                        layerInfos:layerInfos
+                    }, "test");
+
+                    //add a save button next to the delete button
+                    var saveButton = new Button({ label: "Save", "class": "saveButton"});
+                    domConstruct.place(saveButton.domNode, attInspector.deleteBtn.domNode, "after");
+
+                    saveButton.on("click", function(){
+                        busStopsFeatureLayer.applyEdits(null, [currentFeature], null);
+                    });
+
+                    attInspector.on("attribute-change", function(evt) {
+                        //store the updates to apply when the save button is clicked
+                        currentFeature.attributes[evt.fieldName] = evt.fieldValue;
+                    });
+
+                    attInspector.on("next", function(evt) {
+                        currentFeature = evt.feature;
+                        console.log("Next " + currentFeature.attributes.objectid);
+                    });
+
+                    attInspector.on("delete", function(evt){
+                        evt.feature.getLayer().applyEdits(null,null,[currentFeature]);
+                        map.infoWindow.hide();
+                    });
 
 
                     busStopsFeatureLayer.on("click", function(evt) {
                         currentFeature = evt.graphic
-                        map.infoWindow.setTitle(feature.attributes.STOPNAME);
-                        map.infoWindow.setContent(
-                                "<table class='popup-table'>" +
-                                "<tr class='popup-table-row'><td>ID:</td><td> " + feature.attributes.OBJECTID + "</td></tr>" +
-                                "<tr class='popup-table-row'><td>Routes:</td><td> " + feature.attributes.ROUTES + "</td></tr>" +
-                                "<tr class='popup-table-row'><td>Stops:</td><td><textarea class='popup-table-textarea'> " + feature.attributes.STOPNAME  + "</textarea></td></tr>" +
-                                "<tr class='popup-table-row'><td><button onclick='updateFeature()'>Save</button></td><td><button onclick='deleteFeature()'>Delete</button></td></tr>" +
-                                "</table>"
-                        )
+
+                        var query = new Query();
+                        query.geometry =  evt.mapPoint;
+                        busStopsFeatureLayer.selectFeatures(query,FeatureLayer.SELECTION_NEW,function(evt){
+                            console.log("YES " + JSON.stringify(evt))
+                        },function(err){
+                            console.log("ERROR " + JSON.stringify(err));
+                        });
+
+                        map.infoWindow.setTitle(currentFeature.attributes.STOPNAME);
+//                        map.infoWindow.setContent(
+//                                "<table class='popup-table'>" +
+//                                "<tr class='popup-table-row'><td>ID:</td><td> " + currentFeature.attributes.OBJECTID + "</td></tr>" +
+//                                "<tr class='popup-table-row'><td>Routes:</td><td> " + currentFeature.attributes.ROUTES + "</td></tr>" +
+//                                "<tr class='popup-table-row'><td>Stops:</td><td><textarea id='textArea1' class='popup-table-textarea'> " + currentFeature.attributes.STOPNAME  + "</textarea></td></tr>" +
+//                                "<tr class='popup-table-row'><td><button onclick='updateFeature()'>Save</button></td><td><button disabled onclick='deleteFeature()'>Delete</button></td></tr>" +
+//                                "</table>"
+//                        )
                         map.infoWindow.show(evt.screenPoint,map.getInfoWindowAnchor(evt.screenPoint));
                     }.bind(this));
 
+                    map.infoWindow.setContent(attInspector.domNode);
                     map.infoWindow.resize(350, 240);
 
                 }
@@ -180,7 +202,10 @@
         );
 
         function updateFeature(){
-            busStopsFeatureLayer.applyEdits(null,[currentFeature],null);
+            var stops = document.getElementById("textArea1").innerHTML;
+            currentFeature.attributes.STOPS = stops;
+            console.log("STOPS " + stops)
+            //busStopsFeatureLayer.applyEdits(null,[currentFeature],null);
         }
 
         function deleteFeature(){
@@ -189,13 +214,13 @@
 
         function goOnlineOffline(){
             if(imgOfflineIndicator.offlineColor == "blue"){
-                btnOnlineOffline.innerHTML = "2. Go Online";
+                btnOnlineOffline.innerHTML = "Go Online";
                 imgOfflineIndicator.src = redPinPath;
                 imgOfflineIndicator.offlineColor = "red";
                 goOffline()
             }
             else{
-                btnOnlineOffline.innerHTML = "2. Go Offline";
+                btnOnlineOffline.innerHTML = "Go Offline";
                 imgOfflineIndicator.src = bluePinPath;
                 imgOfflineIndicator.offlineColor = "blue";
                 goOnline();
@@ -203,19 +228,28 @@
         }
 
         function goOnline(){
-            busStopsFeatureLayer.goOnline();
+            offlineFeaturesManager.goOnline(function(success,error){
+                if(success == true){
+                    alert("Offline edits successfully synced");
+                }
+                else{
+                    alert("There was a problem syncing offline edits: " + JSON.stringify(error));
+                }
+            });
         }
 
         function goOffline(){
-            busStopsFeatureLayer.goOffline();
+            offlineFeaturesManager.goOffline();
         }
     </script>
 </head>
 
 <body>
 <div id="button-div1">
+    <button class="basic-btn" onclick="goOnlineOffline()" id="btn-online-offline">Go Offline</button>
     <img id="img-offline-indicator" onclick="goOnlineOffline()" src="../samples/images/blue-pin.png"/>
 </div>
+<div id="test"></div>
 <div id="map"></div>
 </body>
 </html>
