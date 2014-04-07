@@ -164,12 +164,6 @@
                         console.log("Next " + currentFeature.attributes.objectid);
                     });
 
-                    attInspector.on("delete", function(evt){
-                        evt.feature.getLayer().applyEdits(null,null,[currentFeature]);
-                        map.infoWindow.hide();
-                    });
-
-
                     busStopsFeatureLayer.on("click", function(evt) {
                         currentFeature = evt.graphic
 
