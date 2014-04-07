@@ -502,9 +502,9 @@ require(
 
 			var totalEstimation = { tileCount:0, sizeBytes:0 }
 
-			domConstruct.empty('tile-count-table-body');
-
-            basemapLayer.estimateTileSize(function(tileSize){
+            basemapLayer.estimateTileSize(function(tileSize)
+            {
+				domConstruct.empty('tile-count-table-body');
 
                 for(var level=minLevel; level<=maxLevel; level++)
                 {
