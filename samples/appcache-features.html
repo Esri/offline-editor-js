@@ -20,14 +20,16 @@
         .dj_ie .infowindow .window .top .right .user .content { position: relative; }
         .dj_ie .simpleInfoWindow .content {position: relative;}
 
-        .popup-table{
-            font-size: 12px;
+        .esriPopup .contentPane {
+            color: white;
+            background-color: black;
         }
-        .popup-table-row{
-            height: 24px;
-        }
-        .popup-table-textarea{
-            height: 17px;
+        .dijitTextBox{ color: #000000;}
+        .esriAttributeInspector {height:100px;}
+        .esriAttributeInspector .atiLayerName {display:none;}
+        .saveButton {
+            padding-left:45px;
+            margin:0px;width:16px; height:16px;
         }
         .basic-btn{
             background-color: #000000;
@@ -130,6 +132,7 @@
                         'featureLayer': busStopsFeatureLayer,
                         'showAttachments': false,
                         'isEditable': true,
+                        'showDeleteButton': false,
                         'fieldInfos': [
                             {'fieldName': 'OBJECTID', 'isEditable':false, 'label':'ID:'},
                             {'fieldName': 'BSID', 'isEditable':false, 'label':'Bus stop ID:'},
@@ -153,6 +156,7 @@
                     attInspector.on("attribute-change", function(evt) {
                         //store the updates to apply when the save button is clicked
                         currentFeature.attributes[evt.fieldName] = evt.fieldValue;
+                        console.log("CHANGE " + evt.fieldValue)
                     });
 
                     attInspector.on("next", function(evt) {
@@ -170,22 +174,15 @@
                         currentFeature = evt.graphic
 
                         var query = new Query();
-                        query.geometry =  evt.mapPoint;
-                        busStopsFeatureLayer.selectFeatures(query,FeatureLayer.SELECTION_NEW,function(evt){
-                            console.log("YES " + JSON.stringify(evt))
-                        },function(err){
-                            console.log("ERROR " + JSON.stringify(err));
+                        query.geometry =  evt.graphic.geometry;
+                        busStopsFeatureLayer.selectFeatures(query,FeatureLayer.SELECTION_NEW,
+                            function(evt){
+                                console.log("Success: " + JSON.stringify(evt[0].attributes))
+                            },function(err){
+                                console.log("ERROR " + JSON.stringify(err));
                         });
 
                         map.infoWindow.setTitle(currentFeature.attributes.STOPNAME);
-//                        map.infoWindow.setContent(
-//                                "<table class='popup-table'>" +
-//                                "<tr class='popup-table-row'><td>ID:</td><td> " + currentFeature.attributes.OBJECTID + "</td></tr>" +
-//                                "<tr class='popup-table-row'><td>Routes:</td><td> " + currentFeature.attributes.ROUTES + "</td></tr>" +
-//                                "<tr class='popup-table-row'><td>Stops:</td><td><textarea id='textArea1' class='popup-table-textarea'> " + currentFeature.attributes.STOPNAME  + "</textarea></td></tr>" +
-//                                "<tr class='popup-table-row'><td><button onclick='updateFeature()'>Save</button></td><td><button disabled onclick='deleteFeature()'>Delete</button></td></tr>" +
-//                                "</table>"
-//                        )
                         map.infoWindow.show(evt.screenPoint,map.getInfoWindowAnchor(evt.screenPoint));
                     }.bind(this));
 
