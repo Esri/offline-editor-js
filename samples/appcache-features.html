@@ -25,18 +25,34 @@
             color: white;
             background-color: black;
         }
-        .dijitTextBox{ color: #000000;}
+        .dijitTextBox{ color: #000000; background-color: white;}
+        /* This is an editable text field */
         .dijitSelect input, .dijitTextBox input {
-            color: white;
+            color: black;
+            /*background-color: #ffffff !important;*/
+        }
+        .dijitTextBoxDisabled{
+           background-color: lightgray;
         }
         .esriAttributeInspector {height:100px;}
-        .esriAttributeInspector .dijitTextBoxDisabled input {
-            color: #ffffff;
+        /* this is a non-editable text field */
+         .esriAttributeInspector .dijitTextBoxDisabled input {
+            color: #000000;
+            background-color: lightgray;
         }
+
+        .dijitButtonNode{
+            width: 60px;
+            padding: 2px;
+            border-radius: 3px;
+            color: yellow;
+        }
+
         .esriAttributeInspector .atiLayerName {display:none;}
         .saveButton {
-            padding-left:6px;
-            margin:0px;width:16px; height:16px;
+            margin:0px;
+            width:16px;
+            height:16px;
         }
         .basic-btn{
             background-color: #000000;
