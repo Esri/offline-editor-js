@@ -18,7 +18,7 @@ module.exports = function(grunt) {
 		        basePath: "./",
 		        cache: ["# <%= pkg.name %>, version: <%= pkg.version %>",
                         "# Home Page",
-                        "samples/appcache-tiles.html",
+                        "<%= pkg.appHomePage %>",
 						"# ArcGIS API for JavaScript files",
 						"<%= pkg.optimizedApiURL %>/dojo/dojo.js",
                         "<%= pkg.optimizedApiURL %>/dojo/main.js",
@@ -79,7 +79,7 @@ module.exports = function(grunt) {
 		          "css/*.css"
 		          */
 		      ],
-		      dest: "manifest.appcache"
+		      dest: "<%= pkg.manifestName %>"
 		    }
 		  }
 	});
