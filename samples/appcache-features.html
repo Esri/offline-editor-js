@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html manifest="../manifest.appcache">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no"/>
@@ -96,11 +96,6 @@
     </script>
     <script src="http://js.arcgis.com/3.8/"></script>
     <script>
-        var offlineFeaturesManager;
-        var map,busStopsFeatureLayer,currentFeature;
-        var imgOfflineIndicator,btnOnlineOffline;
-        var redPinPath = "../samples/images/red-pin.png";
-        var bluePinPath = "../samples/images/blue-pin.png"
 
         require([
             "esri/map",
@@ -109,9 +104,18 @@
             "edit/offlineFeaturesManager",
             "esri/dijit/AttributeInspector",
             "dojo/dom-construct",
+            "dojo/on",
+            "dojo/dom",
             "dijit/form/Button",
             "dojo/domReady!"],
-            function(Map,Query,FeatureLayer,OfflineFeaturesManager,AttributeInspector,domConstruct,Button) {
+            function(Map,Query,FeatureLayer,OfflineFeaturesManager,AttributeInspector,domConstruct,on,dom,Button) {
+
+
+                var offlineFeaturesManager;
+                var map,busStopsFeatureLayer,currentFeature;
+                var imgOfflineIndicator,btnOnlineOffline;
+                var redPinPath = "../samples/images/red-pin.png";
+                var bluePinPath = "../samples/images/blue-pin.png"
 
                 offlineFeaturesManager = new OfflineFeaturesManager();
                 offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_ENQUEUED, updateStatus);
@@ -122,8 +126,10 @@
                 imgOfflineIndicator.offlineColor = "blue";
 
                 Offline.check();
-                Offline.on('up', goOnline );
-                Offline.on('down', goOffline );
+                Offline.on('up', goOnline);
+                Offline.on('down', goOffline);
+
+                on(dom.byId('btn-online-offline'), 'click', goOnlineOffline);
 
                 map = new Map("map", {
                     basemap: "topo",
@@ -211,59 +217,50 @@
                 }
 
                 function updateStatus(){
+                    console.log("Status update: ");
+                }
+
+                function goOnline(){
+
+                    offlineFeaturesManager.goOnline(function(success,error){
+                        if(success == true){
+                            btnOnlineOffline.innerHTML = "Go Offline";
+                            imgOfflineIndicator.src = bluePinPath;
+                            imgOfflineIndicator.offlineColor = "blue";
+                            console.log("Online.");
+                        }
+                        else{
+                            alert("There was a problem syncing offline edits: " + JSON.stringify(error));
+                        }
+                    });
+                }
+
+                function goOffline(){
+                    btnOnlineOffline.innerHTML = "Go Online";
+                    imgOfflineIndicator.src = redPinPath;
+                    imgOfflineIndicator.offlineColor = "red";
+                    offlineFeaturesManager.goOffline();
 
                 }
 
+                function goOnlineOffline(){
+                    if(offlineFeaturesManager.getOnlineStatus() == offlineFeaturesManager.ONLINE){
+                        goOffline();
+                    }
+                    else{
+                        goOnline();
+                    }
+                }
             }
         );
 
-        function updateFeature(){
-            var stops = document.getElementById("textArea1").innerHTML;
-            currentFeature.attributes.STOPS = stops;
-            console.log("STOPS " + stops)
-            //busStopsFeatureLayer.applyEdits(null,[currentFeature],null);
-        }
-
-        function deleteFeature(){
-            busStopsFeatureLayer.applyEdits(null,null,[currentFeature]);
-        }
-
-        function goOnlineOffline(){
-            if(imgOfflineIndicator.offlineColor == "blue"){
-                btnOnlineOffline.innerHTML = "Go Online";
-                imgOfflineIndicator.src = redPinPath;
-                imgOfflineIndicator.offlineColor = "red";
-                goOffline()
-            }
-            else{
-                btnOnlineOffline.innerHTML = "Go Offline";
-                imgOfflineIndicator.src = bluePinPath;
-                imgOfflineIndicator.offlineColor = "blue";
-                goOnline();
-            }
-        }
-
-        function goOnline(){
-            offlineFeaturesManager.goOnline(function(success,error){
-                if(success == true){
-                    alert("Offline edits successfully synced");
-                }
-                else{
-                    alert("There was a problem syncing offline edits: " + JSON.stringify(error));
-                }
-            });
-        }
-
-        function goOffline(){
-            offlineFeaturesManager.goOffline();
-        }
     </script>
 </head>
 
 <body>
 <div id="button-div1">
-    <button class="basic-btn" onclick="goOnlineOffline()" id="btn-online-offline">Go Offline</button>
-    <img id="img-offline-indicator" onclick="goOnlineOffline()" src="../samples/images/blue-pin.png"/>
+    <button class="basic-btn" data-dojo-type="dijit/form/ToggleButton" id="btn-online-offline">Go Offline</button>
+    <img id="img-offline-indicator" src="../samples/images/blue-pin.png"/>
 </div>
 <div id="test"></div>
 <div id="map"></div>
