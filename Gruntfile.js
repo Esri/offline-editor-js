@@ -79,7 +79,7 @@ module.exports = function(grunt) {
 		          "css/*.css"
 		          */
 		      ],
-		      dest: "samples/manifest.appcache"
+		      dest: "manifest.appcache"
 		    }
 		  }
 	});
