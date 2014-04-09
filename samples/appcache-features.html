@@ -192,6 +192,7 @@
 
                         var query = new Query();
                         query.geometry =  evt.graphic.geometry;
+                        query.objectIds = [evt.graphic.attributes.OBJECTID];
                         busStopsFeatureLayer.selectFeatures(query,FeatureLayer.SELECTION_NEW,
                             function(evt){
                                 console.log("Success: " + JSON.stringify(evt[0].attributes))
