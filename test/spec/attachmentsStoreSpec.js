@@ -101,6 +101,36 @@ describe("attachments store module", function()
 		});
 	});
 
+	async.it("delete attachments of a single feature", function(done)
+	{
+		g_attachmentsStore.deleteAttachmentsByFeatureId("layer1", 300, function(deletedCount)
+		{
+			expect(deletedCount).toBe(0);
+			setTimeout(function()
+			{
+				g_attachmentsStore.getUsage(function(usage)
+				{
+					expect(usage).not.toBeNull();
+					expect(usage.attachmentCount).toBe(testData.length);
+
+					g_attachmentsStore.deleteAttachmentsByFeatureId("layer1", 1, function(deletedCount)
+					{
+						expect(deletedCount).toBe(2);
+						setTimeout(function()
+						{
+							g_attachmentsStore.getUsage(function(usage)
+							{
+								expect(usage).not.toBeNull();
+								expect(usage.attachmentCount).toBe(testData.length -2);
+								done();
+							})					
+						});
+					});
+				});
+			});
+		});
+	});
+
 	async.it("delete all attachments", function(done)
 	{
 		g_attachmentsStore.deleteAll(function(success)
