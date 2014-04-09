@@ -191,7 +191,8 @@
                         currentFeature = evt.graphic
 
                         var query = new Query();
-                        query.geometry =  evt.graphic.geometry;
+                        //query.geometry =  evt.graphic.geometry; //only using geometry forces an external Query
+                        query.geometry = map.extent;
                         query.objectIds = [evt.graphic.attributes.OBJECTID];
                         busStopsFeatureLayer.selectFeatures(query,FeatureLayer.SELECTION_NEW,
                             function(evt){
