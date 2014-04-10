@@ -1,10 +1,28 @@
 <!DOCTYPE html>
-<!--<html manifest="../manifest.appcache">-->
-        <html>
+<html manifest="../manifest.appcache">
+<!--
+This sample demonstrates using an application manifest to store feature edits locally.
+Included in this sample is the ability to work directly with the AttributeInspector widget.
+Features are typically points, lines and polygons along with associated attributes.
+
+The use cases for using this sample are to ensure you can reload and restart you application
+one it is offline and any edits made by the user will still be available.
+
+Use the included Grunt task to help generate the manifest file. There is manual
+work involved in determining which files need to go into the manifest. The included manifest
+file should work with this sample to give you an idea of what goes into the manifest.
+
+A few things to know about manifest files:
+- You cannot load an online url that has a redirect.
+- If there is an error encountered, the manifest file will stop loading
+- The /utils/appCacheManager.js library will auto detect if the manifest changed and
+ask if you want to reload the application.
+
+-->
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no"/>
-    <title>Simple Map</title>
+    <title>Cache Features Sample</title>
     <link rel="stylesheet" href="http://js.arcgis.com/3.8/js/dojo/dijit/themes/claro/claro.css">
     <link rel="stylesheet" href="http://js.arcgis.com/3.8/js/esri/css/esri.css">
     <style>
@@ -140,19 +158,7 @@
                 var redPinPath = "../samples/images/red-pin.png";
                 var bluePinPath = "../samples/images/blue-pin.png"
 
-                offlineFeaturesManager = new OfflineFeaturesManager();
-                offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_ENQUEUED, updateStatus);
-                offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_SENT, updateStatus);
-                offlineFeaturesManager.on(offlineFeaturesManager.events.ALL_EDITS_SENT, updateStatus);
-
-                imgOfflineIndicator = document.getElementById("img-offline-indicator");
-                imgOfflineIndicator.offlineColor = "blue";
-
-                Offline.check();
-                Offline.on('up', goOnline);
-                Offline.on('down', goOffline);
-
-                on(dom.byId('btn-online-offline'), 'click', goOnlineOffline);
+                initOffline();
 
                 map = new Map("map", {
                     basemap: "topo",
@@ -169,6 +175,22 @@
                 map.on("layers-add-result",initEditing);
 
                 map.addLayers([busStopsFeatureLayer]);
+
+                function initOffline(){
+                    offlineFeaturesManager = new OfflineFeaturesManager();
+                    offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_ENQUEUED, updateStatus);
+                    offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_SENT, updateStatus);
+                    offlineFeaturesManager.on(offlineFeaturesManager.events.ALL_EDITS_SENT, updateStatus);
+
+                    imgOfflineIndicator = document.getElementById("img-offline-indicator");
+                    imgOfflineIndicator.offlineColor = "blue";
+
+                    Offline.check();
+                    Offline.on('up', goOnline);
+                    Offline.on('down', goOffline);
+
+                    on(dom.byId('btn-online-offline'), 'click', goOnlineOffline);
+                }
 
                 function initEditing(evt){
 
