@@ -138,6 +138,7 @@
             "dojo/domReady!"],
             function(Map,Query,FeatureLayer,OfflineFeaturesManager,editsStore,AttributeInspector,domConstruct,on,dom,Button,SimpleTextArea) {
 
+                var textTimer;
                 var offlineFeaturesManager;
                 var map,busStopsFeatureLayer,currentFeature;
                 var imgOfflineIndicator,btnOnlineOffline;
@@ -206,14 +207,15 @@
                     var saveButton = new Button({ label: "Save", "class": "saveButton"});
                     domConstruct.place(saveButton.domNode, attInspector.deleteBtn.domNode, "after");
 
-                    var textArea = new SimpleTextArea({name:"msgTextArea",rows:"1",cols:"1",class:"msgTextArea"})
+                    var textArea = new SimpleTextArea({name:"msgTextArea",rows:"1",class:"msgTextArea"})
                     domConstruct.place(textArea.domNode, saveButton.domNode, "after");
 
                     saveButton.on("click", function(){
+                        clearTimeout(textTimer);
                         busStopsFeatureLayer.applyEdits(null, [currentFeature], null,
                             function(response){
                                 textArea.set("value" , "Item successfully saved.");
-                                setTimeout(function(){
+                                textTimer = setTimeout(function(){
                                     textArea.set("value" , " ");
                                 },10000);
                             },function(err){
