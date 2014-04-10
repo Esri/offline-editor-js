@@ -1,12 +1,16 @@
 <!DOCTYPE html>
 <html manifest="../manifest.appcache">
 <!--
-This sample demonstrates using an application manifest to store feature edits locally.
+This sample demonstrates using an application manifest along with storing feature edits locally.
 Included in this sample is the ability to work directly with the AttributeInspector widget.
 Features are typically points, lines and polygons along with associated attributes.
 
-The use cases for using this sample are to ensure you can reload and restart you application
-one it is offline and any edits made by the user will still be available.
+The use cases for using this sample are to ensure you can reload your application
+offline as well as gracefully load after a browser restart. Any edits made by the user will still
+be available and any .js libraries stored in the application cache will also continue to work.
+
+It is recommended to also store map tiles locally. See the appache-tiles.html sample and the
+tiles-indexed-db.html sample for more hints on how to do that.
 
 Use the included Grunt task to help generate the manifest file. There is manual
 work involved in determining which files need to go into the manifest. The included manifest
