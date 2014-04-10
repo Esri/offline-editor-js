@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html manifest="../manifest.appcache">
+<!--<html manifest="../manifest.appcache">-->
+        <html>
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no"/>
@@ -24,6 +25,7 @@
         .esriPopup .contentPane {
             color: white;
             background-color: black;
+            height: 110px;
         }
         .dijitTextBox{ color: #000000; background-color: white;}
         /* This is an editable text field */
@@ -54,6 +56,21 @@
             width:16px;
             height:16px;
         }
+        .msgButton {
+            margin:0px;
+            width:16px;
+            height:16px;
+            padding-left: 60px;
+        }
+        .msgTextArea{
+            width:16px;
+            height:16px;
+            margin-left: 60px;
+            width: auto;
+            background-color: #000000;
+            border-color: #000000;
+            color: white;
+        }
         .basic-btn{
             background-color: #000000;
             border-color: #ffffff 1px;
@@ -68,7 +85,16 @@
             width: 100%;
             height: 50px;
         }
+        #right-div{
+            height: 50px;
+            position: relative; float: right;
+        }
         #img-offline-indicator{
+            padding: 8px;
+            position: relative; float: right;
+
+        }
+        #pending-edits{
             padding: 8px;
             position: relative; float: right;
         }
@@ -102,18 +128,20 @@
             "esri/tasks/query",
             "esri/layers/FeatureLayer",
             "edit/offlineFeaturesManager",
+            "edit/editsStore",
             "esri/dijit/AttributeInspector",
             "dojo/dom-construct",
             "dojo/on",
             "dojo/dom",
             "dijit/form/Button",
+            "dijit/form/SimpleTextarea",
             "dojo/domReady!"],
-            function(Map,Query,FeatureLayer,OfflineFeaturesManager,AttributeInspector,domConstruct,on,dom,Button) {
-
+            function(Map,Query,FeatureLayer,OfflineFeaturesManager,editsStore,AttributeInspector,domConstruct,on,dom,Button,SimpleTextArea) {
 
                 var offlineFeaturesManager;
                 var map,busStopsFeatureLayer,currentFeature;
                 var imgOfflineIndicator,btnOnlineOffline;
+                var pendingEdits = document.getElementById("pending-edits");
                 var redPinPath = "../samples/images/red-pin.png";
                 var bluePinPath = "../samples/images/blue-pin.png"
 
@@ -172,14 +200,26 @@
 
                     var attInspector = new AttributeInspector({
                         layerInfos:layerInfos
-                    }, "test");
+                    }, domConstruct.create("div"));
 
                     //add a save button next to the delete button
                     var saveButton = new Button({ label: "Save", "class": "saveButton"});
                     domConstruct.place(saveButton.domNode, attInspector.deleteBtn.domNode, "after");
 
+                    var textArea = new SimpleTextArea({name:"msgTextArea",rows:"1",cols:"1",class:"msgTextArea"})
+                    domConstruct.place(textArea.domNode, saveButton.domNode, "after");
+
                     saveButton.on("click", function(){
-                        busStopsFeatureLayer.applyEdits(null, [currentFeature], null);
+                        busStopsFeatureLayer.applyEdits(null, [currentFeature], null,
+                            function(response){
+                                textArea.set("value" , "Item successfully saved.");
+                                setTimeout(function(){
+                                    textArea.set("value" , " ");
+                                },10000);
+                            },function(err){
+                                alert("There was error applying an edit: " + JSON.stringify(err));
+                            }
+                        );
                     });
 
                     attInspector.on("attribute-change", function(evt) {
@@ -212,12 +252,20 @@
                     }.bind(this));
 
                     map.infoWindow.setContent(attInspector.domNode);
-                    map.infoWindow.resize(350, 240);
+                    map.infoWindow.resize(350, 270);
 
                 }
 
                 function updateStatus(){
-                    console.log("Status update: ");
+                    if( editsStore.hasPendingEdits())
+                    {
+                        var edits = editsStore._retrieveEditsQueue();
+                        pendingEdits.innerHTML = "Pending edits: " + edits.length;
+                    }
+                    else
+                    {
+                        pendingEdits.innerHTML = "Pending edits: 0";
+                    }
                 }
 
                 function goOnline(){
@@ -260,8 +308,11 @@
 <body>
 <div id="button-div1">
     <button class="basic-btn" data-dojo-type="dijit/form/ToggleButton" id="btn-online-offline">Go Offline</button>
-    <img id="img-offline-indicator" src="../samples/images/blue-pin.png"/>
-</div>
+    <div id="right-div">
+        <img id="img-offline-indicator" src="../samples/images/blue-pin.png"/>
+        <div id="pending-edits">Pending edits: 0</div>
+    </div>
+    </div>
 <div id="test"></div>
 <div id="map"></div>
 </body>
