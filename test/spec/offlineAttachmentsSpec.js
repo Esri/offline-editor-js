@@ -274,6 +274,22 @@ describe("Attachments", function()
 					done();
 				});
 		});
+
+		async.it("query attachment info - inexistent", function(done)
+		{
+			var inexistentId = g2_offline.attributes.objectid+1;
+			g_featureLayers[3].queryAttachmentInfos(inexistentId, 
+				function(attachmentsInfo)
+				{
+					expect(attachmentsInfo.length).toBe(0);
+					done();
+				},
+				function(err)
+				{
+					expect(true).toBeFalsy();
+					done();
+				});
+		});
 	});
 
 	describe("delete attachments", function()
@@ -338,7 +354,9 @@ describe("Attachments", function()
 				done();
 			});
 		});
+		*/
 
+		/**/
 		async.it("query attachments info - online - 1", function(done)
 		{
 			g_featureLayers[3].queryAttachmentInfos(g1_online.attributes.objectid, 
@@ -346,7 +364,7 @@ describe("Attachments", function()
 				{
 					expect(attachmentsInfo.length).toBe(1);
 					expect(attachmentsInfo[0].objectId).toBe(g1_online.attributes.objectid);
-					expect(attachmentsInfo[0].id).toBeLessThan(0);
+					expect(attachmentsInfo[0].id).toBeGreaterThan(0);
 					done();
 				},
 				function(err)
@@ -363,7 +381,7 @@ describe("Attachments", function()
 				{
 					expect(attachmentsInfo.length).toBe(1);
 					expect(attachmentsInfo[0].objectId).toBe(g2_offline.attributes.objectid);
-					expect(attachmentsInfo[0].id).toBeLessThan(0);
+					expect(attachmentsInfo[0].id).toBeGreaterThan(0);
 					done();
 				},
 				function(err)
