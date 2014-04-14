@@ -101,6 +101,27 @@ describe("attachments store module", function()
 		});
 	});
 
+	async.it("replace feature id", function(done)
+	{
+		g_attachmentsStore.replaceFeatureId("layer1",1,100, function(success)
+		{
+			expect(success).toBe(2);
+			g_attachmentsStore.getAttachmentsByFeatureId("layer1", 1, function(attachments)
+			{
+				expect(attachments.length).toBe(0);
+				g_attachmentsStore.getAttachmentsByFeatureId("layer1", 100, function(attachments)
+				{
+					expect(attachments.length).toBe(2);
+					expect(attachments[0].objectId).toBe(100);
+					expect(attachments[1].objectId).toBe(100);
+					expect(attachments[0].content).toContain("feature 1");
+					expect(attachments[1].content).toContain("feature 1");
+					done();
+				});
+			});
+		});
+	});
+
 	async.it("delete attachments of a single feature", function(done)
 	{
 		g_attachmentsStore.deleteAttachmentsByFeatureId("layer1", 300, function(deletedCount)
@@ -113,7 +134,7 @@ describe("attachments store module", function()
 					expect(usage).not.toBeNull();
 					expect(usage.attachmentCount).toBe(testData.length);
 
-					g_attachmentsStore.deleteAttachmentsByFeatureId("layer1", 1, function(deletedCount)
+					g_attachmentsStore.deleteAttachmentsByFeatureId("layer1", 100, function(deletedCount)
 					{
 						expect(deletedCount).toBe(2);
 						setTimeout(function()
