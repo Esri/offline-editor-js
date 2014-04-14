@@ -101,6 +101,30 @@ describe("attachments store module", function()
 		});
 	});
 
+	async.it("query attachments of a feature layer", function(done)
+	{
+		g_attachmentsStore.getAttachmentsByFeatureLayer("layer1", function(attachments)
+		{
+			expect(attachments.length).toBe(3);
+			expect(attachments[0].featureId).toContain("layer1/");
+			expect(attachments[1].featureId).toContain("layer1/");
+			expect(attachments[2].featureId).toContain("layer1/");
+			var attachmentIds = attachments.map(function(a){ return a.id; });
+			expect(attachmentIds.sort()).toEqual([1000,1001,1002]);
+			g_attachmentsStore.getAttachmentsByFeatureLayer("layer2", function(attachments)
+			{
+				expect(attachments.length).toBe(1);
+				expect(attachments[0].featureId).toContain("layer2/");
+				expect(attachments[0].id).toBe(1003);
+				g_attachmentsStore.getAttachmentsByFeatureLayer("layer3", function(attachments)
+				{
+					expect(attachments.length).toBe(0);
+					done();
+				});
+			});
+		});
+	});
+
 	async.it("replace feature id", function(done)
 	{
 		g_attachmentsStore.replaceFeatureId("layer1",1,100, function(success)
