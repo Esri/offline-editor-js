@@ -49,7 +49,7 @@ var async = new AsyncSpec(this);
 /* move into separate test suite, so that we can have an <input> to use during tests */
 describe("Attachments", function()
 {
-	var g1,g2;
+	var g1_online,g2_offline;
 
 	async.it("prepare layer - delete", function(done)
 	{
@@ -66,18 +66,18 @@ describe("Attachments", function()
 	{
 		expect(g_featureLayers[3].graphics.length).toBe(0);
 
-		g1 = new g_modules.Graphic({
+		g1_online = new g_modules.Graphic({
 			"geometry": {"rings": [[[-109922,5108923],[-94801,5119577],[-86348,5107580],[-101470,5096926],[-109922,5108923]]],"spatialReference":{"wkid":102100}},
 			"attributes":{"ruleid": 2, "name": "Zaragoza"}
 		});
 
-		var adds = [g1];
+		var adds = [g1_online];
 		g_featureLayers[3].applyEdits(adds,null,null,function(addResults,updateResults,deleteResults)
 		{
 			expect(addResults.length).toBe(1);
 			expect(addResults[0].success).toBeTruthy();
-			g1.attributes.objectid = addResults[0].objectId;
-			expect(getObjectIds(g_featureLayers[3].graphics)).toEqual(getObjectIds([g1]));
+			g1_online.attributes.objectid = addResults[0].objectId;
+			expect(getObjectIds(g_featureLayers[3].graphics)).toEqual(getObjectIds([g1_online]));
 			expect(g_featureLayers[3].graphics.length).toBe(1);
 			done();
 		},
@@ -100,7 +100,7 @@ describe("Attachments", function()
 	{
 		expect(g_featureLayers[3].graphics.length).toBe(1);
 
-		g2 = new g_modules.Graphic({
+		g2_offline = new g_modules.Graphic({
 			"geometry": {
 				"rings": [[[-518920,4967379],[-474892,4975940],[-439425,5015076],[-377053,5050543],[-290220,5049320],[-271876,5021191],[-417412,4975940],[-510359,4891554],[-670571,4862202],[-682801,4880547],[-665679,4916014],[-518920,4967379]]],
 				"spatialReference":{"wkid":102100}
@@ -108,13 +108,13 @@ describe("Attachments", function()
 			"attributes":{"ruleid": 3, "name": "Sistema Central"}
 		});
 
-		var adds = [g2];
-		g_featureLayers[3]._applyEdits(adds,null,null,function(addResults,updateResults,deleteResults)
+		var adds = [g2_offline];
+		g_featureLayers[3].applyEdits(adds,null,null,function(addResults,updateResults,deleteResults)
 		{
 			expect(addResults.length).toBe(1);
 			expect(addResults[0].success).toBeTruthy();
-			g2.attributes.objectid = addResults[0].objectId;
-			expect(getObjectIds(g_featureLayers[3].graphics)).toEqual(getObjectIds([g1,g2]));
+			g2_offline.attributes.objectid = addResults[0].objectId;
+			expect(getObjectIds(g_featureLayers[3].graphics)).toEqual(getObjectIds([g1_online,g2_offline]));
 			expect(g_featureLayers[3].graphics.length).toBe(2);
 			done();
 		},
@@ -126,13 +126,21 @@ describe("Attachments", function()
 	});
 
 
-	/*
+	async.it("add attachment to (online) feature", function(done)
+	{
+		expect(g_featureLayers[3].graphics.length).toBe(2);
 
-	async.it("add attachment to feature", function(done)
+		expect(false).toBeTruthy(); // not implemented
+		done();
+	});
+
+	async.it("add attachment to (offline) feature", function(done)
 	{
 		expect(false).toBeTruthy(); // not implemented
 		done();
 	});
+
+	/*
 
 	async.it("query attachment info", function(done)
 	{
@@ -165,7 +173,7 @@ describe("Attachments", function()
 			expect(Object.keys(responses).length).toBe(0);
 			expect(g_editsStore.pendingEditsCount()).toBe(0);
 			// how to get the final id of g4 and g6 ?
-			//expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2,g4,g6]));
+			//expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1_online,g2_offline,g4,g6]));
 			// all of them are positive
 			// expect(getObjectIds(g_featureLayers[0].graphics).filter(function(id){ return id<0; })).toEqual([]);
 			// expect(getObjectIds(g_featureLayers[1].graphics).filter(function(id){ return id<0; })).toEqual([]);
