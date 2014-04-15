@@ -53,7 +53,7 @@ describe("Attachments", function()
 
 	describe("Prepare Test", function()
 	{
-		async.it("prepare layer - delete all features", function(done)
+		async.it("delete all features", function(done)
 		{
 			clearFeatureLayer( g_featureLayers[3], function(success,response)
 			{
@@ -64,16 +64,16 @@ describe("Attachments", function()
 			});
 		});
 
-		async.it("prepare attachment store - delete all local attachments", function(done)
+		async.it("delete all local attachments", function(done)
 		{
-			expect(g_featureLayers[3].attachmentsStore).not.toBeUndefined();
+			expect(g_offlineFeaturesManager.attachmentsStore).not.toBeUndefined();
 
-			g_featureLayers[3].attachmentsStore.deleteAll(function(success)
+			g_offlineFeaturesManager.attachmentsStore.deleteAll(function(success)
 			{
 				expect(success).toBeTruthy();
 				setTimeout(function()
 				{
-					g_featureLayers[3].attachmentsStore.getUsage(function(usage)
+					g_offlineFeaturesManager.attachmentsStore.getUsage(function(usage)
 					{
 						expect(usage.attachmentCount).toBe(0);
 						done();
@@ -82,7 +82,7 @@ describe("Attachments", function()
 			});
 		});
 
-		async.it("prepare layer - add online feature", function(done)
+		async.it("add online feature", function(done)
 		{
 			expect(g_featureLayers[3].graphics.length).toBe(0);
 
@@ -108,7 +108,7 @@ describe("Attachments", function()
 			});
 		});
 
-		async.it("go Offline", function(done)
+		async.it("go offline", function(done)
 		{
 			expect(g_offlineFeaturesManager.getOnlineStatus()).toBe(g_offlineFeaturesManager.ONLINE);
 			g_offlineFeaturesManager.goOffline();
@@ -116,7 +116,7 @@ describe("Attachments", function()
 			done();
 		});
 
-		async.it("prepare layer - add offline feature", function(done)
+		async.it("add offline feature", function(done)
 		{
 			expect(g_featureLayers[3].graphics.length).toBe(1);
 
@@ -181,7 +181,7 @@ describe("Attachments", function()
 		async.it("add attachment to (online) feature", function(done)
 		{
 			expect(g_featureLayers[3].graphics.length).toBe(2);
-			expect(g_featureLayers[3].attachmentsStore).not.toBeUndefined();
+			expect(g_offlineFeaturesManager.attachmentsStore).not.toBeUndefined();
 
 			expect(g1_online.attributes.objectid).toBeGreaterThan(0);
 
@@ -191,10 +191,10 @@ describe("Attachments", function()
 					expect(result).not.toBeUndefined();
 					expect(result.attachmentId).toBeLessThan(0);
 					expect(result.objectId).toBe( g1_online.attributes.objectid );
-					g_featureLayers[3].attachmentsStore.getUsage(function(usage)
+					g_offlineFeaturesManager.attachmentsStore.getUsage(function(usage)
 					{
 						expect(usage.attachmentCount).toBe(1);
-						g_featureLayers[3].attachmentsStore.getAttachmentsByFeatureId(g_featureLayers[3].url, g1_online.attributes.objectid, function(attachments)
+						g_offlineFeaturesManager.attachmentsStore.getAttachmentsByFeatureId(g_featureLayers[3].url, g1_online.attributes.objectid, function(attachments)
 						{
 							expect(attachments.length).toBe(1);
 							console.log("attached file:", attachments[0]);
@@ -212,7 +212,7 @@ describe("Attachments", function()
 		async.it("add attachment to (offline) feature", function(done)
 		{
 			expect(g_featureLayers[3].graphics.length).toBe(2);
-			expect(g_featureLayers[3].attachmentsStore).not.toBeUndefined();
+			expect(g_offlineFeaturesManager.attachmentsStore).not.toBeUndefined();
 
 			expect(g2_offline.attributes.objectid).toBeLessThan(0);
 
@@ -223,10 +223,10 @@ describe("Attachments", function()
 					expect(result).not.toBeUndefined();
 					expect(result.attachmentId).toBeLessThan(0);
 					expect(result.objectId).toBe( g2_offline.attributes.objectid );
-					g_featureLayers[3].attachmentsStore.getUsage(function(usage)
+					g_offlineFeaturesManager.attachmentsStore.getUsage(function(usage)
 					{
 						expect(usage.attachmentCount).toBe(2);
-						g_featureLayers[3].attachmentsStore.getAttachmentsByFeatureId(g_featureLayers[3].url, g2_offline.attributes.objectid, function(attachments)
+						g_offlineFeaturesManager.attachmentsStore.getAttachmentsByFeatureId(g_featureLayers[3].url, g2_offline.attributes.objectid, function(attachments)
 						{
 							expect(attachments.length).toBe(1);
 							console.log("attached file:", attachments[0]);
@@ -243,11 +243,11 @@ describe("Attachments", function()
 
 		async.it("query offline attachments of layer", function(done)
 		{
-			g_featureLayers[3].attachmentsStore.getUsage(function(usage)
+			g_offlineFeaturesManager.attachmentsStore.getUsage(function(usage)
 			{
 				expect(usage.attachmentCount).toBe(2);
 
-				g_featureLayers[3].attachmentsStore.getAttachmentsByFeatureLayer(g_featureLayers[3].url, function(attachments)
+				g_offlineFeaturesManager.attachmentsStore.getAttachmentsByFeatureLayer(g_featureLayers[3].url, function(attachments)
 				{
 					expect(attachments.length).toBe(2);
 					var objectIds = attachments.map(function(a){ return a.objectId; }).sort();
@@ -323,7 +323,7 @@ describe("Attachments", function()
 	{
 		async.it("query offline attachments of layer", function(done)
 		{
-			g_featureLayers[3].attachmentsStore.getAttachmentsByFeatureLayer(g_featureLayers[3].url, function(attachments)
+			g_offlineFeaturesManager.attachmentsStore.getAttachmentsByFeatureLayer(g_featureLayers[3].url, function(attachments)
 			{
 				expect(attachments.length).toBe(2);
 				var objectIds = attachments.map(function(a){ return a.objectId; }).sort();
@@ -339,20 +339,22 @@ describe("Attachments", function()
 			var listener = jasmine.createSpy('event listener');
 			g_offlineFeaturesManager.on(g_offlineFeaturesManager.events.ALL_EDITS_SENT, listener);
 
-			g_offlineFeaturesManager.goOnline(function(success,responses)
+			g_offlineFeaturesManager.goOnline(function(result)
 			{
 				console.log("went online");
 				expect(g_offlineFeaturesManager.getOnlineStatus()).toBe(g_offlineFeaturesManager.ONLINE);
 				expect(listener).toHaveBeenCalled();
-				expect(success).toBeTruthy();
-				expect(Object.keys(responses).length).toBe(1);
-				expect(responses[g_featureLayers[3].url]).not.toBeUndefined();
-				var results = responses[g_featureLayers[3].url];
-				expect(results.addResults.length).toBe(1);
-				expect(results.updateResults.length).toBe(0);
-				expect(results.deleteResults.length).toBe(0);
-				expect(results.addResults[0].success).toBeTruthy();
-				g2_offline.attributes.objectid = results.addResults[0].objectId;
+				expect(result.features.success).toBeTruthy();
+				expect(result.attachments.success).toBeTruthy();
+				expect(Object.keys(result.features.responses).length).toBe(1);
+				expect(Object.keys(result.attachments.responses).length).toBe(2);
+				expect(result.features.responses[g_featureLayers[3].url]).not.toBeUndefined();
+				var featureResults = result.features.responses[g_featureLayers[3].url];
+				expect(featureResults.addResults.length).toBe(1);
+				expect(featureResults.updateResults.length).toBe(0);
+				expect(featureResults.deleteResults.length).toBe(0);
+				expect(featureResults.addResults[0].success).toBeTruthy();
+				g2_offline.attributes.objectid = featureResults.addResults[0].objectId;
 
 				expect(getObjectIds(g_featureLayers[3].graphics)).toEqual(getObjectIds([g1_online,g2_offline]));			
 				expect(getObjectIds(g_featureLayers[3].graphics).filter(function(id){ return id<0; })).toEqual([]); //all of them are positive
@@ -375,7 +377,7 @@ describe("Attachments", function()
 
 		async.it("no attachments pending", function(done)
 		{
-			g_featureLayers[3].attachmentsStore.getUsage(function(usage)
+			g_offlineFeaturesManager.attachmentsStore.getUsage(function(usage)
 			{
 				expect(usage.attachmentCount).toBe(0);
 				done();

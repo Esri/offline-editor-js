@@ -53,6 +53,11 @@
 			g_offlineFeaturesManager = new OfflineFeaturesManager();
 			g_editsStore = editsStore;
 
+			g_offlineFeaturesManager.initAttachments(function(success)
+			{
+				console.log("attachments inited", success);
+			});
+
 			g_formNode = dom.byId('theForm');
 
 			g_map = new Map("map", {

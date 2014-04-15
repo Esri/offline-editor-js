@@ -607,19 +607,19 @@ describe("Offline Editing", function()
 		var listener = jasmine.createSpy('event listener');
 		g_offlineFeaturesManager.on(g_offlineFeaturesManager.events.ALL_EDITS_SENT, listener);
 		
-		g_offlineFeaturesManager.goOnline(function(success,responses)
+		g_offlineFeaturesManager.goOnline(function(results)
 		{
 			console.log("went online");
 			expect(g_offlineFeaturesManager.getOnlineStatus()).toBe(g_offlineFeaturesManager.ONLINE);
 			expect(listener).toHaveBeenCalled();
-			expect(success).toBeTruthy();
-			expect(Object.keys(responses).length).toBe(2);
-			for(var layerUrl in responses)
+			expect(results.features.success).toBeTruthy();
+			expect(Object.keys(results.features.responses).length).toBe(2);
+			for(var layerUrl in results.features.responses)
 			{
-				if( !responses.hasOwnProperty(layerUrl))
+				if( !results.features.responses.hasOwnProperty(layerUrl))
 					continue;
 				
-				var layerResponses = responses[layerUrl];
+				var layerResponses = results.features.responses[layerUrl];
 				var layerId = layerUrl.substring(layerUrl.lastIndexOf('/')+1);
 				console.log(layerId, layerResponses);
 				if( layerId == "1")
@@ -741,13 +741,13 @@ describe("Offline edits optimized in zero edits", function()
 		var listener = jasmine.createSpy('event listener');
 		g_offlineFeaturesManager.on(g_offlineFeaturesManager.events.ALL_EDITS_SENT, listener);
 
-		g_offlineFeaturesManager.goOnline(function(success,responses)
+		g_offlineFeaturesManager.goOnline(function(results)
 		{
 			console.log("went online");
 			expect(g_offlineFeaturesManager.getOnlineStatus()).toBe(g_offlineFeaturesManager.ONLINE);
 			expect(listener).toHaveBeenCalled();
-			expect(success).toBeTruthy();
-			expect(Object.keys(responses).length).toBe(0);
+			expect(results.features.success).toBeTruthy();
+			expect(Object.keys(results.features.responses).length).toBe(0);
 			expect(g_editsStore.pendingEditsCount()).toBe(0);
 			// how to get the final id of g4 and g6 ?
 			//expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2,g4,g6]));
