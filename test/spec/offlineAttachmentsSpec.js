@@ -372,7 +372,7 @@ describe("Attachments", function()
 			expect(g_editsStore.pendingEditsCount()).toBe(0);
 			done();
 		});
-		/*
+
 		async.it("no attachments pending", function(done)
 		{
 			g_featureLayers[3].attachmentsStore.getUsage(function(usage)
@@ -381,9 +381,7 @@ describe("Attachments", function()
 				done();
 			});
 		});
-		*/
-
-		/**/
+		
 		async.it("query attachments info - online - 1", function(done)
 		{
 			g_featureLayers[3].queryAttachmentInfos(g1_online.attributes.objectid, 
@@ -417,7 +415,6 @@ describe("Attachments", function()
 					done();
 				});
 		});
-		//*/
-	})
+	});
 });
 
