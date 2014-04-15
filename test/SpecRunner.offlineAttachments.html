@@ -24,7 +24,7 @@
 		<script src="http://js.arcgis.com/3.8/"></script>
 
 	<!-- include spec files here... -->
-	<script type="text/javascript" src="spec/offlineFeaturesManagerSpec.js"></script>
+	<script type="text/javascript" src="spec/offlineAttachmentsSpec.js"></script>
 
 	<script type="text/javascript">
 
@@ -33,6 +33,7 @@
 	var g_offlineFeaturesManager;
 	var g_modules = {};
 	var g_editsStore;
+	var g_formNode;
 
 	require(["esri/map", 
 		"esri/layers/GraphicsLayer", "esri/graphic",
@@ -52,10 +53,17 @@
 			g_offlineFeaturesManager = new OfflineFeaturesManager();
 			g_editsStore = editsStore;
 
+			g_offlineFeaturesManager.initAttachments(function(success)
+			{
+				console.log("attachments inited", success);
+			});
+
+			g_formNode = dom.byId('theForm');
+
 			g_map = new Map("map", {
-				basemap: "satellite",
-				center: [-0.958, 41.846],
-				zoom: 10,
+				basemap: "topo",
+				center: [-0.90, 41.64],
+				zoom: 5,//9
 				sliderStyle: "small"
 			});
 
@@ -92,32 +100,33 @@
 
 				try
 				{					
-				var jasmineEnv = jasmine.getEnv();
-				jasmineEnv.updateInterval = 1000;
-				jasmineEnv.defaultTimeoutInterval = 10000; // 10 sec
-				var htmlReporter = new jasmine.HtmlReporter();
+					var jasmineEnv = jasmine.getEnv();
+					jasmineEnv.updateInterval = 1000;
+					jasmineEnv.defaultTimeoutInterval = 10000; // 10 sec
+					var htmlReporter = new jasmine.HtmlReporter();
 
-				jasmineEnv.addReporter(htmlReporter);
+					jasmineEnv.addReporter(htmlReporter);
 
-				jasmineEnv.specFilter = function(spec) {
-					return htmlReporter.specFilter(spec);
-				};
+					jasmineEnv.specFilter = function(spec) {
+						return htmlReporter.specFilter(spec);
+					};
 
-				/*
-				var currentWindowOnload = window.onload;
+					/*
+					var currentWindowOnload = window.onload;
 
-				window.onload = function() {
-					if (currentWindowOnload) {
-						currentWindowOnload();
+					window.onload = function() {
+						if (currentWindowOnload) {
+							currentWindowOnload();
+						}
+						execJasmine();
+					};
+					*/
+					function execJasmine() {
+						jasmineEnv.execute();
 					}
-					execJasmine();
-				};
-				*/
-				function execJasmine() {
-					jasmineEnv.execute();
-				}
 
-					execJasmine();
+					// execJasmine();
+					on(dom.byId('theFile'),'change',execJasmine);
 				}
 				catch(err)
 				{
@@ -132,6 +141,10 @@
 </head>
 
 <body>
+	<form id="theForm">
+	<input type="file" id="theFile"><br/>
+	<span>Select any file (.png, .jpg,...) to launch unit testing</span>
+	</form>
 	<div id="map" style="position: absolute; bottom: 0; right: 0; height:200px; width: 200px;"></div>
 	<img src="" alt="" id="fakeTile" style="display:none;">
 </body>
