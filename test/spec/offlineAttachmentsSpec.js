@@ -241,6 +241,22 @@ describe("Attachments", function()
 				});
 		});
 
+		async.it("query offline attachments of layer", function(done)
+		{
+			g_featureLayers[3].attachmentsStore.getUsage(function(usage)
+			{
+				expect(usage.attachmentCount).toBe(2);
+
+				g_featureLayers[3].attachmentsStore.getAttachmentsByFeatureLayer(g_featureLayers[3].url, function(attachments)
+				{
+					expect(attachments.length).toBe(2);
+					var objectIds = attachments.map(function(a){ return a.objectId; }).sort();
+					expect(objectIds).toEqual([g1_online.attributes.objectid, g2_offline.attributes.objectid].sort());
+					done();
+				});
+			});
+		});
+
 		async.it("query attachment info - 1", function(done)
 		{
 			g_featureLayers[3].queryAttachmentInfos(g1_online.attributes.objectid, 
@@ -305,6 +321,17 @@ describe("Attachments", function()
 
 	describe("go Online and finish all", function()
 	{
+		async.it("query offline attachments of layer", function(done)
+		{
+			g_featureLayers[3].attachmentsStore.getAttachmentsByFeatureLayer(g_featureLayers[3].url, function(attachments)
+			{
+				expect(attachments.length).toBe(2);
+				var objectIds = attachments.map(function(a){ return a.objectId; }).sort();
+				expect(objectIds).toEqual([g1_online.attributes.objectid, g2_offline.attributes.objectid].sort());
+				done();
+			});
+		});
+
 		async.it("go Online", function(done)
 		{
 			expect(g_featureLayers[3].graphics.length).toBe(2);
