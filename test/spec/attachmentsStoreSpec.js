@@ -1,10 +1,10 @@
 "use strict";
 
 var testData = [
-	[ "layer1", 1000, 1, { name: "attachment1000.txt", type: "text", size: "43", content: "content of the file of attachment 1000 for feature 1 of layer1", url:""}],
-	[ "layer1", 1001, 1, { name: "attachment1001.txt", type: "text", size: "43", content: "content of the file of attachment 1001 for feature 1 of layer1", url:""}],
-	[ "layer1", 1002, 2, { name: "attachment1002.txt", type: "text", size: "43", content: "content of the file of attachment 1002 for feature 2 of layer1", url:""}],
-	[ "layer2", 1003, 1, { name: "attachment1003.txt", type: "text", size: "43", content: "content of the file of attachment 1003 for feature 1 of layer2", url:""}]
+	[ "layer1", 1000, -1, { name: "attachment1000.txt", type: "text", size: "43", content: "content of the file of attachment 1000 for feature 1 of layer1", url:""}],
+	[ "layer1", 1001, -1, { name: "attachment1001.txt", type: "text", size: "43", content: "content of the file of attachment 1001 for feature 1 of layer1", url:""}],
+	[ "layer1", 1002, -2, { name: "attachment1002.txt", type: "text", size: "43", content: "content of the file of attachment 1002 for feature 2 of layer1", url:""}],
+	[ "layer2", 1003,  1, { name: "attachment1003.txt", type: "text", size: "43", content: "content of the file of attachment 1003 for feature 1 of layer2", url:""}]
 ];
 
 describe("attachments store module", function()
@@ -77,17 +77,17 @@ describe("attachments store module", function()
 		g_attachmentsStore.getAttachmentsByFeatureId("layer1", 300, function(attachments)
 		{
 			expect(attachments.length).toBe(0);
-			g_attachmentsStore.getAttachmentsByFeatureId("layer1", 1, function(attachments)
+			g_attachmentsStore.getAttachmentsByFeatureId("layer1", -1, function(attachments)
 			{
 				expect(attachments.length).toBe(2);
-				expect(attachments[0].objectId).toBe(1);
-				expect(attachments[1].objectId).toBe(1);
+				expect(attachments[0].objectId).toBe(-1);
+				expect(attachments[1].objectId).toBe(-1);
 				expect(attachments[0].content).toContain("feature 1");
 				expect(attachments[1].content).toContain("feature 1");
-				g_attachmentsStore.getAttachmentsByFeatureId("layer1", 2, function(attachments)
+				g_attachmentsStore.getAttachmentsByFeatureId("layer1", -2, function(attachments)
 				{
 					expect(attachments.length).toBe(1);
-					expect(attachments[0].objectId).toBe(2);
+					expect(attachments[0].objectId).toBe(-2);
 					expect(attachments[0].content).toContain("feature 2");
 					g_attachmentsStore.getAttachmentsByFeatureId("layer2", 1, function(attachments)
 					{
@@ -127,12 +127,12 @@ describe("attachments store module", function()
 
 	async.it("replace feature id", function(done)
 	{
-		g_attachmentsStore.replaceFeatureId("layer1",1,100, function(success)
+		g_attachmentsStore.replaceFeatureId("layer1",-1,100, function(success)
 		{
 			expect(success).toBe(2);
 			setTimeout(function()
 			{				
-				g_attachmentsStore.getAttachmentsByFeatureId("layer1", 1, function(attachments)
+				g_attachmentsStore.getAttachmentsByFeatureId("layer1", -1, function(attachments)
 				{
 					expect(attachments.length).toBe(0);
 					g_attachmentsStore.getAttachmentsByFeatureId("layer1", 100, function(attachments)
