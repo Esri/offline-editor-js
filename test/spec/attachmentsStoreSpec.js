@@ -4,7 +4,8 @@ var testData = [
 	[ "layer1", 1000, -1, { name: "attachment1000.txt", type: "text", size: "43", content: "content of the file of attachment 1000 for feature 1 of layer1", url:""}],
 	[ "layer1", 1001, -1, { name: "attachment1001.txt", type: "text", size: "43", content: "content of the file of attachment 1001 for feature 1 of layer1", url:""}],
 	[ "layer1", 1002, -2, { name: "attachment1002.txt", type: "text", size: "43", content: "content of the file of attachment 1002 for feature 2 of layer1", url:""}],
-	[ "layer2", 1003,  1, { name: "attachment1003.txt", type: "text", size: "43", content: "content of the file of attachment 1003 for feature 1 of layer2", url:""}]
+	[ "layer2", 1003,  1, { name: "attachment1003.txt", type: "text", size: "43", content: "content of the file of attachment 1003 for feature 1 of layer2", url:""}],
+	[ "layer2", 1004,  1, { name: "attachment1004.txt", type: "text", size: "43", content: "content of the file of attachment 1004 for feature 1 of layer2", url:""}]
 ];
 
 describe("attachments store module", function()
@@ -91,9 +92,11 @@ describe("attachments store module", function()
 					expect(attachments[0].content).toContain("feature 2");
 					g_attachmentsStore.getAttachmentsByFeatureId("layer2", 1, function(attachments)
 					{
-						expect(attachments.length).toBe(1);
+						expect(attachments.length).toBe(2);
 						expect(attachments[0].objectId).toBe(1);
+						expect(attachments[1].objectId).toBe(1);
 						expect(attachments[0].content).toContain("feature 1");
+						expect(attachments[1].content).toContain("feature 1");
 						done();
 					});
 				});
@@ -113,9 +116,11 @@ describe("attachments store module", function()
 			expect(attachmentIds.sort()).toEqual([1000,1001,1002]);
 			g_attachmentsStore.getAttachmentsByFeatureLayer("layer2", function(attachments)
 			{
-				expect(attachments.length).toBe(1);
+				expect(attachments.length).toBe(2);
 				expect(attachments[0].featureId).toContain("layer2/");
+				expect(attachments[1].featureId).toContain("layer2/");
 				expect(attachments[0].id).toBe(1003);
+				expect(attachments[1].id).toBe(1004);
 				g_attachmentsStore.getAttachmentsByFeatureLayer("layer3", function(attachments)
 				{
 					expect(attachments.length).toBe(0);
@@ -149,6 +154,28 @@ describe("attachments store module", function()
 		});
 	});
 
+	async.it("delete one attachment", function(done)
+	{
+		g_attachmentsStore.getUsage(function(usage)
+		{
+			expect(usage).not.toBeNull();
+			expect(usage.attachmentCount).toBe(testData.length);
+			g_attachmentsStore.delete(1004, function(success)
+			{
+				expect(success).toBeTruthy();
+				setTimeout(function()
+				{
+					g_attachmentsStore.getUsage(function(usage)
+					{
+						expect(usage).not.toBeNull();
+						expect(usage.attachmentCount).toBe(testData.length-1);
+						done();
+					});
+				});
+			});
+		});
+	});
+
 	async.it("delete attachments of a single feature", function(done)
 	{
 		g_attachmentsStore.deleteAttachmentsByFeatureId("layer1", 300, function(deletedCount)
@@ -159,7 +186,7 @@ describe("attachments store module", function()
 				g_attachmentsStore.getUsage(function(usage)
 				{
 					expect(usage).not.toBeNull();
-					expect(usage.attachmentCount).toBe(testData.length);
+					expect(usage.attachmentCount).toBe(testData.length-1);
 
 					g_attachmentsStore.deleteAttachmentsByFeatureId("layer1", 100, function(deletedCount)
 					{
@@ -169,7 +196,7 @@ describe("attachments store module", function()
 							g_attachmentsStore.getUsage(function(usage)
 							{
 								expect(usage).not.toBeNull();
-								expect(usage.attachmentCount).toBe(testData.length -2);
+								expect(usage.attachmentCount).toBe(testData.length-3);
 								done();
 							})					
 						});
