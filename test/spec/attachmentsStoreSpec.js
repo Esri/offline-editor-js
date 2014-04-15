@@ -130,6 +130,17 @@ describe("attachments store module", function()
 		});
 	});
 
+	async.it("query all attachments", function(done)
+	{
+		g_attachmentsStore.getAllAttachments(function(attachments)
+		{
+			expect(attachments.length).toBe(5);
+			var attachmentIds = attachments.map(function(a){ return a.id; }).sort();
+			expect(attachmentIds.sort()).toEqual([1000,1001,1002,1003,1004]);
+			done();
+		});
+	});
+
 	async.it("replace feature id", function(done)
 	{
 		g_attachmentsStore.replaceFeatureId("layer1",-1,100, function(success)
