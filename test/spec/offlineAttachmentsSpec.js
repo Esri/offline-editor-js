@@ -49,7 +49,7 @@ var async = new AsyncSpec(this);
 /* move into separate test suite, so that we can have an <input> to use during tests */
 describe("Attachments", function()
 {
-	var g1_online,g2_offline;
+	var g1_online,g2_offline,g3_offline;
 
 	describe("Prepare Test", function()
 	{
@@ -77,7 +77,7 @@ describe("Attachments", function()
 					{
 						expect(usage.attachmentCount).toBe(0);
 						done();
-					})
+					});
 				},1);
 			});
 		});
@@ -116,7 +116,7 @@ describe("Attachments", function()
 			done();
 		});
 
-		async.it("add offline feature", function(done)
+		async.it("add offline features", function(done)
 		{
 			expect(g_featureLayers[3].graphics.length).toBe(1);
 
@@ -128,14 +128,24 @@ describe("Attachments", function()
 				"attributes":{"ruleid": 3, "name": "Sistema Central"}
 			});
 
-			var adds = [g2_offline];
+			g3_offline = new g_modules.Graphic({
+				"geometry":{
+					"rings":[[[-275852.307236338,5103437.42576518],[-131539.197833964,5103437.42576518],[-131539.197833964,5003152.04465505],[-275852.307236338,5003152.04465505],[-275852.307236338,5103437.42576518]]],
+					"spatialReference":{"wkid":102100}
+				},
+				"attributes":{"ruleid":2,"name":"to delete"}
+			});
+
+			var adds = [g2_offline, g3_offline];
 			g_featureLayers[3].applyEdits(adds,null,null,function(addResults,updateResults,deleteResults)
 			{
-				expect(addResults.length).toBe(1);
+				expect(addResults.length).toBe(2);
 				expect(addResults[0].success).toBeTruthy();
+				expect(addResults[1].success).toBeTruthy();
 				g2_offline.attributes.objectid = addResults[0].objectId;
-				expect(getObjectIds(g_featureLayers[3].graphics)).toEqual(getObjectIds([g1_online,g2_offline]));
-				expect(g_featureLayers[3].graphics.length).toBe(2);
+				g3_offline.attributes.objectid = addResults[1].objectId;
+				expect(getObjectIds(g_featureLayers[3].graphics)).toEqual(getObjectIds([g1_online,g2_offline,g3_offline]));
+				expect(g_featureLayers[3].graphics.length).toBe(3);
 				done();
 			},
 			function(error)
@@ -180,7 +190,7 @@ describe("Attachments", function()
 
 		async.it("add attachment to (online) feature", function(done)
 		{
-			expect(g_featureLayers[3].graphics.length).toBe(2);
+			expect(g_featureLayers[3].graphics.length).toBe(3);
 			expect(g_offlineFeaturesManager.attachmentsStore).not.toBeUndefined();
 
 			expect(g1_online.attributes.objectid).toBeGreaterThan(0);
@@ -211,7 +221,7 @@ describe("Attachments", function()
 
 		async.it("add attachment to (offline) feature", function(done)
 		{
-			expect(g_featureLayers[3].graphics.length).toBe(2);
+			expect(g_featureLayers[3].graphics.length).toBe(3);
 			expect(g_offlineFeaturesManager.attachmentsStore).not.toBeUndefined();
 
 			expect(g2_offline.attributes.objectid).toBeLessThan(0);
@@ -241,17 +251,49 @@ describe("Attachments", function()
 				});
 		});
 
+		async.it("add attachment to (offline) feature (to be deleted)", function(done)
+		{
+			expect(g_featureLayers[3].graphics.length).toBe(3);
+			expect(g_offlineFeaturesManager.attachmentsStore).not.toBeUndefined();
+
+			expect(g3_offline.attributes.objectid).toBeLessThan(0);
+
+			g_featureLayers[3].addAttachment( g3_offline.attributes.objectid, g_formNode, 
+				function(result)
+				{
+					console.log(result);
+					expect(result).not.toBeUndefined();
+					expect(result.attachmentId).toBeLessThan(0);
+					expect(result.objectId).toBe( g3_offline.attributes.objectid );
+					g_offlineFeaturesManager.attachmentsStore.getUsage(function(usage)
+					{
+						expect(usage.attachmentCount).toBe(3);
+						g_offlineFeaturesManager.attachmentsStore.getAttachmentsByFeatureId(g_featureLayers[3].url, g3_offline.attributes.objectid, function(attachments)
+						{
+							expect(attachments.length).toBe(1);
+							console.log("attached file:", attachments[0]);
+							done();
+						});
+					});
+				},
+				function(err)
+				{
+					expect(true).toBeFalsy();
+					done();			
+				});
+		});
+
 		async.it("query offline attachments of layer", function(done)
 		{
 			g_offlineFeaturesManager.attachmentsStore.getUsage(function(usage)
 			{
-				expect(usage.attachmentCount).toBe(2);
+				expect(usage.attachmentCount).toBe(3);
 
 				g_offlineFeaturesManager.attachmentsStore.getAttachmentsByFeatureLayer(g_featureLayers[3].url, function(attachments)
 				{
-					expect(attachments.length).toBe(2);
+					expect(attachments.length).toBe(3);
 					var objectIds = attachments.map(function(a){ return a.objectId; }).sort();
-					expect(objectIds).toEqual([g1_online.attributes.objectid, g2_offline.attributes.objectid].sort());
+					expect(objectIds).toEqual([g1_online.attributes.objectid, g2_offline.attributes.objectid, g3_offline.attributes.objectid].sort());
 					done();
 				});
 			});
@@ -308,6 +350,27 @@ describe("Attachments", function()
 		});
 	});
 
+	describe("delete feature with attachments", function()
+	{
+		async.it("delete (offline) feature with attachments", function(done)
+		{
+			var deletes = [g3_offline];
+			g_featureLayers[3].applyEdits(null,null,deletes,function(addResults,updateResults,deleteResults)
+			{
+				expect(deleteResults.length).toBe(1);
+				expect(deleteResults[0].success).toBeTruthy();
+				expect(getObjectIds(g_featureLayers[3].graphics)).toEqual(getObjectIds([g1_online,g2_offline]));
+				expect(g_featureLayers[3].graphics.length).toBe(2);
+				done();
+			},
+			function(error)
+			{
+				expect(true).toBeFalsy();
+				done();			
+			});
+		});
+	});
+
 	describe("delete attachments", function()
 	{
 		/*
@@ -325,9 +388,9 @@ describe("Attachments", function()
 		{
 			g_offlineFeaturesManager.attachmentsStore.getAttachmentsByFeatureLayer(g_featureLayers[3].url, function(attachments)
 			{
-				expect(attachments.length).toBe(2);
+				expect(attachments.length).toBe(3);
 				var objectIds = attachments.map(function(a){ return a.objectId; }).sort();
-				expect(objectIds).toEqual([g1_online.attributes.objectid, g2_offline.attributes.objectid].sort());
+				expect(objectIds).toEqual([g1_online.attributes.objectid, g2_offline.attributes.objectid, g3_offline.attributes.objectid].sort());
 				done();
 			});
 		});
@@ -348,6 +411,15 @@ describe("Attachments", function()
 				expect(result.attachments.success).toBeTruthy();
 				expect(Object.keys(result.features.responses).length).toBe(1);
 				expect(Object.keys(result.attachments.responses).length).toBe(2);
+
+				var attachmentResults = result.attachments.responses;
+				expect(attachmentResults).not.toBeUndefined();
+				expect(attachmentResults.length).toBe(2);
+				expect(attachmentResults[0].addAttachmentResult).not.toBeUndefined();
+				expect(attachmentResults[0].addAttachmentResult.success).toBeTruthy();
+				expect(attachmentResults[1].addAttachmentResult).not.toBeUndefined();
+				expect(attachmentResults[1].addAttachmentResult.success).toBeTruthy();
+
 				expect(result.features.responses[g_featureLayers[3].url]).not.toBeUndefined();
 				var featureResults = result.features.responses[g_featureLayers[3].url];
 				expect(featureResults.addResults.length).toBe(1);
@@ -356,7 +428,7 @@ describe("Attachments", function()
 				expect(featureResults.addResults[0].success).toBeTruthy();
 				g2_offline.attributes.objectid = featureResults.addResults[0].objectId;
 
-				expect(getObjectIds(g_featureLayers[3].graphics)).toEqual(getObjectIds([g1_online,g2_offline]));			
+				expect(getObjectIds(g_featureLayers[3].graphics)).toEqual(getObjectIds([g1_online,g2_offline]));
 				expect(getObjectIds(g_featureLayers[3].graphics).filter(function(id){ return id<0; })).toEqual([]); //all of them are positive
 				expect(g_featureLayers[3].graphics.length).toBe(2);
 				countFeatures(g_featureLayers[3], function(success,result)
