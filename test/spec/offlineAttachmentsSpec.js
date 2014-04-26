@@ -373,13 +373,70 @@ describe("Attachments", function()
 
 	describe("delete attachments", function()
 	{
-		/*
+		var attachmentId;
+
+		async.it("add attachment", function(done)
+		{
+			expect(g_featureLayers[3].graphics.length).toBe(2);
+			expect(g_offlineFeaturesManager.attachmentsStore).not.toBeUndefined();
+
+			expect(g2_offline.attributes.objectid).toBeLessThan(0);
+
+			g_featureLayers[3].addAttachment( g2_offline.attributes.objectid, g_formNode, 
+				function(result)
+				{
+					attachmentId = result.attachmentId;
+
+					console.log(result);
+					expect(result).not.toBeUndefined();
+					expect(result.attachmentId).toBeLessThan(0);
+					expect(result.objectId).toBe( g2_offline.attributes.objectid );
+					g_offlineFeaturesManager.attachmentsStore.getUsage(function(usage)
+					{
+						expect(usage.attachmentCount).toBe(3);
+						g_offlineFeaturesManager.attachmentsStore.getAttachmentsByFeatureId(g_featureLayers[3].url, g2_offline.attributes.objectid, function(attachments)
+						{
+							expect(attachments.length).toBe(2);
+							done();
+						});
+					});
+				},
+				function(err)
+				{
+					expect(true).toBeFalsy();
+					done();			
+				}
+			);
+		});
+
 		async.it("delete attachment", function(done)
 		{
-			expect(false).toBeTruthy(); // not implemented
-			done();
+			expect(g_featureLayers[3].graphics.length).toBe(2);
+			expect(g_offlineFeaturesManager.attachmentsStore).not.toBeUndefined();
+
+			g_featureLayers[3].deleteAttachments( g2_offline.attributes.objectid, [attachmentId],
+				function(result)
+				{
+					console.log(result);
+					expect(result).not.toBeUndefined();
+
+					g_offlineFeaturesManager.attachmentsStore.getUsage(function(usage)
+					{
+						expect(usage.attachmentCount).toBe(2);
+						g_offlineFeaturesManager.attachmentsStore.getAttachmentsByFeatureId(g_featureLayers[3].url, g2_offline.attributes.objectid, function(attachments)
+						{
+							expect(attachments.length).toBe(1);
+							done();
+						});
+					});
+				},
+				function(err)
+				{
+					expect(true).toBeFalsy();
+					done();			
+				}
+			);
 		});
-		*/
 	});
 
 	describe("go Online and finish all", function()
@@ -388,9 +445,9 @@ describe("Attachments", function()
 		{
 			g_offlineFeaturesManager.attachmentsStore.getAttachmentsByFeatureLayer(g_featureLayers[3].url, function(attachments)
 			{
-				expect(attachments.length).toBe(3);
+				expect(attachments.length).toBe(2);
 				var objectIds = attachments.map(function(a){ return a.objectId; }).sort();
-				expect(objectIds).toEqual([g1_online.attributes.objectid, g2_offline.attributes.objectid, g3_offline.attributes.objectid].sort());
+				expect(objectIds).toEqual([g1_online.attributes.objectid, g2_offline.attributes.objectid].sort());
 				done();
 			});
 		});
