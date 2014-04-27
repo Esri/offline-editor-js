@@ -1,11 +1,11 @@
 "use strict";
 
 var testData = [
-	[ "layer1", 1000, -1, { name: "attachment1000.txt", type: "text", size: "43", content: "content of the file of attachment 1000 for feature 1 of layer1", url:""}],
-	[ "layer1", 1001, -1, { name: "attachment1001.txt", type: "text", size: "43", content: "content of the file of attachment 1001 for feature 1 of layer1", url:""}],
-	[ "layer1", 1002, -2, { name: "attachment1002.txt", type: "text", size: "43", content: "content of the file of attachment 1002 for feature 2 of layer1", url:""}],
-	[ "layer2", 1003,  1, { name: "attachment1003.txt", type: "text", size: "43", content: "content of the file of attachment 1003 for feature 1 of layer2", url:""}],
-	[ "layer2", 1004,  1, { name: "attachment1004.txt", type: "text", size: "43", content: "content of the file of attachment 1004 for feature 1 of layer2", url:""}]
+	[ "layer1", 1000, -1],
+	[ "layer1", 1001, -1],
+	[ "layer1", 1002, -2],
+	[ "layer2", 1003,  1],
+	[ "layer2", 1004,  1]
 ];
 
 describe("attachments store module", function()
@@ -36,6 +36,17 @@ describe("attachments store module", function()
 				})
 			},1);
 		});
+	});
+
+	async.it("prepare attachment file", function(done)
+	{
+		var file = g_inputNode.files[0];
+		testData.forEach(function(e)
+		{
+			e.push(file);
+		});
+		console.log(testData);
+		done();
 	});
 
 	async.it("store one attachment", function(done)
@@ -83,20 +94,15 @@ describe("attachments store module", function()
 				expect(attachments.length).toBe(2);
 				expect(attachments[0].objectId).toBe(-1);
 				expect(attachments[1].objectId).toBe(-1);
-				expect(attachments[0].content).toContain("feature 1");
-				expect(attachments[1].content).toContain("feature 1");
 				g_attachmentsStore.getAttachmentsByFeatureId("layer1", -2, function(attachments)
 				{
 					expect(attachments.length).toBe(1);
 					expect(attachments[0].objectId).toBe(-2);
-					expect(attachments[0].content).toContain("feature 2");
 					g_attachmentsStore.getAttachmentsByFeatureId("layer2", 1, function(attachments)
 					{
 						expect(attachments.length).toBe(2);
 						expect(attachments[0].objectId).toBe(1);
 						expect(attachments[1].objectId).toBe(1);
-						expect(attachments[0].content).toContain("feature 1");
-						expect(attachments[1].content).toContain("feature 1");
 						done();
 					});
 				});
@@ -156,8 +162,6 @@ describe("attachments store module", function()
 						expect(attachments.length).toBe(2);
 						expect(attachments[0].objectId).toBe(100);
 						expect(attachments[1].objectId).toBe(100);
-						expect(attachments[0].content).toContain("feature 1");
-						expect(attachments[1].content).toContain("feature 1");
 						done();
 					});
 				});
