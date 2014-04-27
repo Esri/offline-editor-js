@@ -28,6 +28,8 @@ The following workflow is currently supported for both both features and tiles:
 
 Using an [application manifest](https://developer.mozilla.org/en-US/docs/HTML/Using_the_application_cache) allows you to reload and restart the application while offline. The application manifest let's you store .html, .js, .css and image files locally.
 
+__Attachment Support__: Attachments are supported with some limitations. See documentation [here](./doc/attachments.md)
+
 
 #Classes documentation
 
