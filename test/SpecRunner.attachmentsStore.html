@@ -27,6 +27,7 @@
 	"use strict"
 
 	var g_attachmentsStore;
+	var g_inputNode;
 
 	require(["esri/map", 
 	"esri/layers/GraphicsLayer", "esri/graphic", "esri/symbols/SimpleFillSymbol", "esri/symbols/SimpleMarkerSymbol", "esri/symbols/SimpleLineSymbol",
@@ -42,6 +43,8 @@
 		domConstruct) 
 	{
 		g_attachmentsStore = new AttachmentsStore();
+		g_inputNode = dom.byId('theFile');
+
 		test();
 
 		function test() 
@@ -61,6 +64,7 @@
 					return htmlReporter.specFilter(spec);
 				};
 
+				/*
 				var currentWindowOnload = window.onload;
 
 				window.onload = function() {
@@ -69,6 +73,10 @@
 					}
 					execJasmine();
 				};
+				*/
+
+				// execJasmine();
+				on(dom.byId('theFile'),'change',execJasmine);
 			}
 			catch(err)	
 			{
@@ -84,5 +92,9 @@
 </head>
 
 <body>
+	<form id="theForm">
+	<input type="file" id="theFile"><br/>
+	<span>Select any file (.png, .jpg,...) to launch unit testing</span>
+	</form>
 </body>
 </html>
