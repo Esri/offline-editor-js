@@ -94,15 +94,20 @@ describe("attachments store module", function()
 				expect(attachments.length).toBe(2);
 				expect(attachments[0].objectId).toBe(-1);
 				expect(attachments[1].objectId).toBe(-1);
+				expect(attachments[0].url).toContain("blob:");
+				expect(attachments[1].url).toContain("blob:");
 				g_attachmentsStore.getAttachmentsByFeatureId("layer1", -2, function(attachments)
 				{
 					expect(attachments.length).toBe(1);
 					expect(attachments[0].objectId).toBe(-2);
+					expect(attachments[0].url).toContain("blob:");
 					g_attachmentsStore.getAttachmentsByFeatureId("layer2", 1, function(attachments)
 					{
 						expect(attachments.length).toBe(2);
 						expect(attachments[0].objectId).toBe(1);
 						expect(attachments[1].objectId).toBe(1);
+						expect(attachments[0].url).toContain("blob:");
+						expect(attachments[1].url).toContain("blob:");
 						done();
 					});
 				});
