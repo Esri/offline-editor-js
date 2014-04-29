@@ -421,6 +421,7 @@ You can check if there are any edits pending. If there are then iterate `editsSt
 
 * Non sub-module based library(s)
 	* [FileSaver.js](https://github.com/Esri/offline-editor-js/blob/master/lib/tiles/README.md) - library to assist with uploading and downloading of files containing tile information.
+	* [grunt-manifest](https://github.com/gunta/grunt-manifest) node.js library to assist with the creation of manifest files.
 
 ## Resources
 
