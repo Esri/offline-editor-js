@@ -5,10 +5,10 @@
     "https://www.npmjs.org/doc/cli/npm-init.html"
   ],
   "name": "manifest-generator",
-   "manifestName":"manifest2.appcache",
-  "appHomePage":"samples/appcache-tiles.html",
+  "manifestName": "appcache-tiles.appcache",
+  "appHomePage": "appcache-tiles.html",
   "optimizedApiURL": "http://jsdev.arcgis.com/o/andygup/appcache1",
-  "arcGISBaseURL":"http://js.arcgis.com/3.8",
+  "arcGISBaseURL": "http://js.arcgis.com/3.8",
   "version": "0.0.1",
   "private": true,
   "description": "manifest generator project",
@@ -24,6 +24,6 @@
   "dependencies": {},
   "devDependencies": {
     "grunt": "~0.4.4",
-    "grunt-manifest": "~0.4.0"
+    "grunt-manifest": "^0.4.0"
   }
 }

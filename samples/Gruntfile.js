@@ -1,4 +1,7 @@
 /* --------------------------------------------------------
+ * Use this Grunt file as a tool for creating manifest files
+ * the work with the ArcGIS API for JavaScript
+ *
  * http://gruntjs.com/getting-started
  * http://gruntjs.com/sample-gruntfile
  * 
