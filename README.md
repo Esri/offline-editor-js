@@ -31,110 +31,20 @@ Using an [application manifest](https://developer.mozilla.org/en-US/docs/HTML/Us
 __Attachment Support__: Attachments are supported with some limitations. See documentation [here](./doc/attachments.md)
 
 
-#Classes documentation
+#API Doc
+
+
 
 ##offlineFeaturesManager
 Extends and overrides a feature layer. This library allows you to extend esri.layers.FeatureLayer objects with offline capability and manage the resync process.
 
-
-###Constructor
-Constructor | Description
---- | ---
-`OfflineFeaturesManager()` | Creates an instance of the offlineFeaturesManager class. This library allows you to extend FeatureLayer objects with offline editing capabilities and manage the online/offline resynchronization process.
-
-###ENUMs
-The manager can be in one of these three states (see `getOnlineStatus()` method):
-
-Property | Description
---- | ---
-offlineFeaturesManager.ONLINE | all edits will directly go to the server
-offlineFeaturesManager.OFFLINE | edits will be enqueued
-offlineFeaturesManager.RECONNECTING | sending stored edits to the server
-
-###Methods
-Methods | Returns | Description
---- | --- | ---
-`extend(layer)`|nothing|Overrides a feature layer, by replacing the `applyEdits()` method of the layer. You can use the FeatureLayer as always, but it's behaviour will be different according to the online status of the manager.
-`goOffline()` | nothing | Forces library into an offline state. Any edits applied to extended FeatureLayers during this condition will be stored locally.
-`goOnline(callback)` | `callback( boolean, errors )` | Forces library to return to an online state. If there are pending edits, an attempt will be made to sync them with the remote feature server. Callback function will be called when resync process is done.
-`getOnlineStatus()` | `ONLINE`, `OFFLINE` or `RECONNECTING`| Determines the current state of the manager. Please, note that this library doesn't detect actual browser offline/online condition. You need to use the `offline.min.js` library included in `vendor\offline` directory to detect connection status and connect events to goOffline() and goOnline() methods. See `military-offline.html` sample.
-`getReadableEdit()` | String | A string value representing human readable information on pending edits.
-
-
-###Events
-Application code can subscribe to offlineFeaturesManager events to be notified of different conditions. 
-
-```js
-	offlineFeaturesManager.on(
-		offlineFeaturesManager.events.EDITS_SENT, 
-		function(edits) 
-		{
-			...
-		});
-```
-
-Event |  Description
---- | ---
-offlineFeaturesManager.events.EDITS_SENT | When any edit is actually sent to the server.
-offlineFeaturesManager.events.EDITS_ENQUEUED | When an edit is enqueued and not sent to the server.
-offlineFeaturesManager.events.ALL_EDITS_SENT |  After going online and there are no pending edits remaining in the queue.
-
-###FeatureLayer Overrides
-
-Methods | Returns | Description
---- | --- | ---
-`applyEdits(`  `adds, updates, deletes,`  `callback, errback)` | `deferred`| applyEdits() method is replaced by this library. It's behaviour depends upon online state of the manager. You need to pass the same arguments as to the original applyEdits() method and it returns a deferred object, that will be resolved in the same way as the original, as well as the callbacks will be called under the same conditions. This method looks the same as the original to calling code, the only difference is internal.
-
-##editsStore
-
-Provides a number of public static methods that are used by `offlineFeaturesManager` lib. They provide a low-level storage mechanism using indexedDb browser functions. These methods don't require a `new` statement or a constructor. After the module has been included in your application you can access these methods directly for example: `editsStore.getEditsStoreSizeBytes();`.
-
-###Public Methods
-Methods | Returns | Description
---- | --- | ---
-`isSupported()` | boolean | Determines if local storage is available. If it is not available then the storage cache will not work. It's a best practice to verify this before attempting to write to the local cache.
-`hasPendingEdits()` | boolean | Determines if there are any queued edits in the local cache.
-`pendingEditsCount()` | int | The total number of edits that are queued in the local cache.
-`getEditsStoreSizeBytes()` | Number | Returns the total size of all pending edits in bytes.
-`getLocalStorageSizeBytes()` | Number | Returns the total size in bytes of all items for local storage cached using the current domain name. 
+* __Click [here](doc/offlinefeaturesmanager.md) to see the full API doc for offlineFeaturesManager__
 
  
 ##offlineTilesEnabler
 Extends and overrides a tiled map service. Provides the ability to customize the extent used to cut the tiles. See the detailed description of basemap.prepareForOffline() in the "How To Use" section below to learn different options.
 
-###Constructor
-Constructor | Description
---- | ---
-`OfflineTilesEnabler()` | Creates an instance of the offlineTilesEnabler class. This library allows you to extend an ArcGISTiledMapServiceLayer with offline capability as well as manage the online/offline resynchronization process.
-
-
-###Methods
-Methods | Returns | Description
---- | --- | ---
-`extend(layer, callback)`|`callback(boolean, string)` |Overrides an ArcGISTiledMapServiceLayer. Callback is called after indexedDb store is initialized and informs the application whether it is indexedDb is supported or not.
-
-###Properties
-Property  | Description
---- | ---
-`layer.offline.proxyPath`| For CORS enabled servers this can be set to `null`. The default is to use the internal resource-proxy path: `libs/offline-editor-js/resource-proxy/proxy.php.` Don't forget to check your proxy configuration to allow connections for all possible services that you might be using. More information on using proxies with ArcGIS can be found here: [https://developers.arcgis.com/javascript/jshelp/ags_proxy.html](https://developers.arcgis.com/javascript/jshelp/ags_proxy.html).
-
-###ArcGISTiledMapServiceLayer Overrides
-
-Methods | Returns | Description
---- | --- | ---
-`getTileUrl(level, row, col)` | Url | Use the tile url's level, row and column. Retrieves tiles as requested by the ArcGIS API for JavaScript. If a tile is in cache it is returned. If it is not in cache then one is retrieved over the internet. 
-`goOffline()` | nothing | This method puts the layer in offline mode. When in offline mode, the layer will not fetch any tile from the remote server. It will look up the tiles in the indexed db database and display them in the layer. If the tile can't be found in the local database it will show up blank (even if there is actual connectivity). The pair of methods `goOffline()` and `goOnline() `allows the developer to manually control the behaviour of the layer. Used in conjunction with the offline dectection library, you can put the layer in the appropriate mode when the offline condition changes.
-`goOnline()` | nothing | This method puts the layer in online mode. When in online mode, the layer will behave as regular layers, fetching all tiles from the remote server. If there is no internet connectivity the tiles may appear thanks to the browsers cache, but no attempt will be made to look up tiles in the local database.
-`getLevelEstimation(extent,` `level, tileSize)` | {level, tileCount, sizeBytes} | Returns an object that contains the number of tiles that would need to be downloaded for the specified extent and zoom level, and the estimated byte size of such tiles. This method is useful to give the user an indication of the required time and space before launching the actual download operation. The byte size estimation is very rough.
-`getExtentBuffer(buffer,extent)`| Extent | Returns a new extent buffered by a given measurement that's based on map units. For example, if you are using mercator map projection then the buffer property would be in meters and the new extent would be returned in mercactor.
-`getTileUrlsByExtent(extent, level)` | Array | Returns an array of tile urls within a given map extent and zoom level.
-`deleteAllTiles(callback)` | `callback(boolean, errors)` | Clears the local cache of tiles.
-`getOfflineUsage(callback)` | `callback(size, error)` | Gets the size in bytes of the local tile cache.
-`getTilePolygons(callback)` | `callback(polygon, error)` | Gets polygons representing all cached tiles. This is helpful to give users a visual feedback of the current content of the tile cache.
-`saveToFile(filename, callback)` | `callback( boolean, error)` | Saves tile cache into a portable csv format.
-`loadFromFile(filename, callback)` | `callback( boolean, error)` | Reads a csv file into local tile cache.
-`estimateTileSize(callback)` | `callback(number)` | Retrieves one tile from a layer and then returns its size.
-`prepareForOffline(` `minLevel, maxLevel, extent,  ` `reportProgress)`  | `callback(number)` | Retrieves tiles and stores them in the local cache. See the "How To Use" section below to learn more about customizing the use of this method.
+* __Click [here](doc/offlinetilesenabler.md) to see the full API doc for offlineTilesEnabler__
 
 #How to use
 
