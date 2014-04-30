@@ -55,7 +55,7 @@ Extends and overrides a tiled map service. Provides the ability to customize the
 1. [Fork and clone the repo.](https://help.github.com/articles/fork-a-repo)
 2. After cloning from github, `cd` into the `offline-editor-js` folder
 3. Run `git submodule init` and `git submodule update`
-4. Examples in the `/samples` folder should work now.
+4. Try out the apps in the `/samples` folder.
 
 ##Dependencies
 
