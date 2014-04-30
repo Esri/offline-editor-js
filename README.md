@@ -405,8 +405,7 @@ You can check if there are any edits pending. If there are then iterate `editsSt
 ##Dependencies
 
 * ArcGIS API for JavaScript (v3.8+)
-* NOTE: browser limitations and technical dependencies. The offline capabilities in this toolkit depend on the following (psuedo-persistent ) HTML5 capabilities being present in the browser:
-	* You can go [here](doc/dependencies.md) for more information.
+* NOTE: browser limitations and technical dependencies. The offline capabilities in this toolkit depend on psuedo-persistent HTML5 capabilities being present in the browser. Go [here](doc/dependencies.md) for a detailed breakdown of the information.
 
 * Sub-modules (see `/vendor` directory)
 
