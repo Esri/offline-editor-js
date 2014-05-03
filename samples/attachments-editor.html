@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <!--The viewport meta tag is used to improve the presentation and behavior of the samples 
+      on iOS devices-->
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no">
+    <title>SanFrancisco311 - Incidents</title>
+
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" >
+    <link rel="stylesheet" href="http://js.arcgis.com/3.8/js/esri/css/esri.css">
+    <style>
+        html, body { height: 100%; width: 100%; margin: 0; overflow: hidden; font-family: Arial; }
+        #map { height: 100%; padding: 0;}
+        #footer { height: 2em; text-align: center; font-size: 1.1em; padding: 0.5em; }
+        .dj_ie .infowindow .window .top .right .user .content { position: relative; }
+        .dj_ie .simpleInfoWindow .content {position: relative;}
+
+        #connectivity-indicator,#storage-info
+        {
+            text-align: center;
+            border: 1px solid black;
+            padding: 4px;
+        }
+
+        #connectivity-indicator 	           { color: white; background-color: #aaa; font-size: 16px;  }
+        #connectivity-indicator.online         { background-color: #0C0; }
+        #connectivity-indicator.offline        { background-color: #E00; }
+        #connectivity-indicator.reconnecting   { background-color: orange; }
+
+        #local-attachments-list {
+            border: 1px solid black;
+            overflow: scroll;
+            height: 400px;
+            margin: 0px;
+            list-style: none;
+            padding: 4px;
+            font-size: 12px;
+        }
+
+        #local-attachments-list li {
+            border-bottom: 1px solid #ddd;
+        }
+    </style>
+
+    <script>
+        var locationPath = location.pathname.replace(/\/[^/]+$/, "");
+        var dojoConfig = {
+            paths: {
+                edit: locationPath  + "/../lib/edit",
+                vendor: locationPath + "/../vendor"
+            }
+        }
+        window.proxyPath = "../lib/resource-proxy/proxy.php";
+    </script>
+
+    <script src="http://js.arcgis.com/3.8/"></script>
+    <script src="../vendor/offline/offline.min.js"></script>
+    <script>
+        Offline.options = {
+            checks: {
+                image: {
+                    url: function() {
+                        return 'http://esri.github.io/offline-editor-js/tiny-image.png?_=' + (Math.floor(Math.random() * 1000000000));
+                    }
+                },
+                active: 'image'
+            }
+        }
+    </script>
+    <script>
+    "use strict";
+
+        var map;
+
+        require([
+            "esri/map",
+            "esri/layers/FeatureLayer",
+            "esri/dijit/editing/AttachmentEditor",
+            "esri/config",
+
+            "dojo/parser", "dojo/dom", "dojo/dom-class",
+            "dojo/dom-construct",
+
+            "edit/offlineFeaturesManager",
+            "edit/editsStore",
+            "dojo/on",
+
+            "dijit/layout/BorderContainer", "dijit/layout/ContentPane", "dojo/domReady!"
+        ], function(
+            Map,FeatureLayer,AttachmentEditor,esriConfig,
+            parser,dom,domClass,domConstruct,OfflineFeaturesManager,editsStore,on
+        ) 
+        {
+            parser.parse();
+
+            var featureLayers = [], 
+                featureLayer,
+                attachmentsInited = false;
+
+            // a proxy page is required to upload attachments
+            // refer to "Using the Proxy Page" for more information:  https://developers.arcgis.com/en/javascript/jshelp/ags_proxy.html
+            //esriConfig.defaults.io.proxyUrl = "../lib/proxy.php";
+            esriConfig.defaults.io.proxyUrl = window.proxyPath;
+
+            var offlineFeaturesManager = new OfflineFeaturesManager();
+            offlineFeaturesManager.initAttachments(function(success)
+            {
+                attachmentsInited = success;
+                updateStatus();
+            });
+
+            configUI();
+
+            map = new Map("map", {
+                basemap: "streets",
+                center: [-122.427, 37.769],
+                zoom: 15
+            });
+
+            map.on("load", mapLoaded);
+            map.on("add-attachment-complete", updateStatus);
+            map.on("delete-attachments-complete", updateStatus);
+            map.on("query-attachment-infos-complete", updateStatus);
+
+            offlineFeaturesManager.on(offlineFeaturesManager.events.ATTACHMENT_ENQUEUED, updateStatus);
+            offlineFeaturesManager.on(offlineFeaturesManager.events.ATTACHMENTS_SENT, updateStatus);
+
+            function mapLoaded() 
+            {
+                featureLayer = new FeatureLayer("http://sampleserver3.arcgisonline.com/ArcGIS/rest/services/SanFrancisco/311Incidents/FeatureServer/0",{
+                    mode: FeatureLayer.MODE_ONDEMAND
+                    //mode: FeatureLayer.MODE_SNAPSHOT
+                });
+
+                map.infoWindow.setContent("<div id='content' style='width:100%'></div>");
+                map.infoWindow.resize(350,200);
+                var attachmentEditor = new AttachmentEditor({}, dom.byId("content"));
+                attachmentEditor.startup();
+
+                featureLayer.on("click", function(evt) 
+                {
+                    var event = evt;
+                    var objectId = evt.graphic.attributes[featureLayer.objectIdField];
+                    map.infoWindow.setTitle(objectId);
+                    attachmentEditor.showAttachments(event.graphic,featureLayer);
+                    map.infoWindow.show(evt.screenPoint, map.getInfoWindowAnchor(evt.screenPoint));
+                });
+
+                map.on('layer-add-result', initEditor);
+                map.addLayer(featureLayer);
+            }
+
+            function configUI()
+            {
+                on(dom.byId('storage-info'), 'click', updateStorageInfo);
+                on(dom.byId('clear-local-attachments-btn'),'click', clearLocalAttachments);
+                on(dom.byId('go-offline-btn'),'click', goOffline);
+                on(dom.byId('go-online-btn'),'click', goOnline);
+                on(dom.byId('refresh-feature-layers-btn'),'click', refreshFeatureLayer);
+
+                updateConnectivityIndicator();
+                updateStatus();
+
+                Offline.check();
+                Offline.on('up', goOnline );
+                Offline.on('down', goOffline );
+            }
+
+            function initEditor(evt)
+            {
+                if(evt.layer.hasOwnProperty("type") && evt.layer.type == "Feature Layer")
+                {
+                    try
+                    {
+                        var layer = evt.layer;
+
+                        offlineFeaturesManager.extend(featureLayer);
+                    }
+                    catch(err)
+                    {
+                        console.log("initEditor: " + err.toString());
+                    }
+                }
+            }
+
+            function goOnline()
+            {
+                offlineFeaturesManager.goOnline(function()
+                {
+                    updateConnectivityIndicator();
+                    updateStatus();
+                });
+                updateConnectivityIndicator();
+            }
+
+            function goOffline()
+            {
+                offlineFeaturesManager.goOffline();
+                updateConnectivityIndicator();
+            }
+
+            function clearLocalAttachments()
+            {
+                offlineFeaturesManager.attachmentsStore.deleteAll(function(success)
+                {
+                    updateStatus();
+                });
+            }
+
+            function refreshFeatureLayer()
+            {
+                featureLayer.refresh();
+            }
+
+            function updateStatus()
+            {
+                updateLocalAttachmentsList();
+                updateStorageInfo();
+            }
+
+            function updateLocalAttachmentsList()
+            {
+                if(!attachmentsInited)
+                    return;
+
+                domConstruct.empty('local-attachments-list');
+                offlineFeaturesManager.attachmentsStore.getAllAttachments(function(attachments)
+                {
+                    var li;
+                    if( attachments.length )
+                    {
+                        attachments.forEach(function(attachment)
+                        {
+                            var readableAttachment = 
+                                "<a target='_blank' href='" + attachment.url + "'>" + attachment.name + "</a>, " +
+                                "feature: <a target='_blank' href='" + attachment.featureId + "'>" + attachment.objectId + "</a>";
+                                
+                            li = "<li>" + readableAttachment + "</li>";
+                            domConstruct.place(li, 'local-attachments-list','last');
+                        },this);
+                    }
+                    else
+                    {
+                        li = "<li>No local attachments</li>";
+                        domConstruct.place(li, 'local-attachments-list','last');
+                    }
+                });
+            }
+
+            function updateConnectivityIndicator()
+            {
+                var node = dom.byId('connectivity-indicator');
+                domClass.remove(node, "online offline reconnecting");
+                switch( offlineFeaturesManager.getOnlineStatus() )
+                {
+                    case offlineFeaturesManager.OFFLINE:
+                        node.innerHTML = "<i class='fa fa-chain-broken'></i> offline";
+                        domClass.add(node, "offline");
+                        break;
+                    case offlineFeaturesManager.ONLINE:
+                        node.innerHTML = "<i class='fa fa-link'></i> online";
+                        domClass.add(node, "online");
+                        break;
+                    case offlineFeaturesManager.RECONNECTING:
+                        node.innerHTML = "<i class='fa fa-cog fa-spin'></i> reconnecting";
+                        domClass.add(node, "reconnecting");
+                        break;
+                }
+            }
+
+            function formatSize(sizeInBytes)
+            {
+                if( sizeInBytes < 1024 )
+                {
+                    return sizeInBytes + " bytes";                    
+                }
+                else if( sizeInBytes < 1024 * 1024 )
+                {
+                    return (Math.floor(sizeInBytes / 1024 * 10) / 10) + " Kb";
+                }
+
+                return (Math.floor(sizeInBytes / 1024 / 1024 * 10) / 10) + " Mb";
+            }
+
+            function updateStorageInfo()
+            {
+                if(!attachmentsInited)
+                    return;
+
+                offlineFeaturesManager.attachmentsStore.getUsage(function(usage)
+                {
+                    var str = "attachment" + ((usage.attachmentCount === 1)? "" : "s");
+                    var info = usage.attachmentCount + " " + str + " (" + formatSize( usage.sizeBytes) + ")";
+                    dom.byId('storage-info').innerHTML = info;
+                });
+            }
+        });
+    </script>
+</head>
+
+<body>
+<div data-dojo-type="dijit/layout/BorderContainer"
+     data-dojo-props="design:'headline'"
+     style="width:100%;height:100%;">
+
+    <div data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:'left'" style="width: 200px;overflow:hidden;">
+        <div id='connectivity-pane' data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:'top'">
+            <div id='connectivity-indicator' >unknown</div>
+        </div>
+        <div id='storage-info-pane' data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:'top'">
+            <div id='storage-info'>Storage used: 0 MBs</div>
+        </div>
+        <div id='local-attachments-list-pane' data-dojo-type="dijit/layout/ContentPane" data-dojo-propos="region:'top'">
+            <button style="width:60%" id="clear-local-attachments-btn" class="btn1">Clear Attachments</button>
+            <button style="width:38%" id="go-offline-btn" class="btn1">Go Offline</button>
+            <button style="width:60%" id="refresh-feature-layers-btn" class="btn1">Refresh Layers</button>
+            <button style="width:38%" id="go-online-btn" class="btn1">Go Online</button>
+            <ul id='local-attachments-list'></ul>
+        </div>
+    </div>
+
+    <div id="map"
+         data-dojo-type="dijit/layout/ContentPane"
+         data-dojo-props="region:'center'"></div>
+
+    <div id="footer"
+         data-dojo-type="dijit/layout/ContentPane"
+         data-dojo-props="region:'bottom'">
+        Click point to view/create/delete attachments.
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Feature Service Inspector</title>
+    <link rel="stylesheet" href="http://js.arcgis.com/3.8/js/esri/css/esri.css">
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" >
+    <link rel="stylesheet" href="http://esri.github.io/bootstrap-map-js/src/css/bootstrapmap.css">
+	<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" >
+
+	<style>
+
+		body {
+		  padding-top: 50px;
+		}
+
+		body > .container {
+		  padding-bottom: 20px;
+		}
+
+		#service-summary-table i
+		{
+			cursor: pointer;
+		}
+
+	</style>
+</head>
+<body>
+	
+	<div class="navbar navbar-inverse navbar-fixed-top">
+		<div class="container">
+			<div class="navbar-header">
+				<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+				</button>
+				<a class="navbar-brand" href="http://github.com/Esri/offline-editor-js"><i class="fa fa-html5"></i> JS Offline Mapping</a>
+				<a class="navbar-brand" href="http://developers.arcgis.com"><i class="fa fa-globe"></i> esri</a>
+			</div>
+		</div>
+	</div>
+
+	<div class="container">
+		<div class="row">
+			<div class="col-sm-6">
+
+				<h3>Feature Service: <span id="service-name"></span></h3>
+				<small id="service-url"></small>
+				<table id="service-summary-table" class="table table-striped table-condensed table-hover">
+					<thead>
+						<tr>
+							<th>id</th>
+							<th>Layer</th>
+							<th>Count</th>
+							<th>Features</th>
+							<th></th>							
+						</tr>
+					</thead>
+					<tbody id="service-summary-table-body">
+					</tbody>
+				</table>
+				<button id="refresh-service-summary-btn" type="button" class="btn btn-primary"><i class="fa fa-refresh"></i> Refresh</button>				
+			</div>
+		</div>
+		<hr>
+		<div class="row">
+			<div class="col-sm-12">
+
+				<h3>Local Storage:</h3>
+				<table id="local-storage-summary-table" class="table table-striped table-condensed table-hover">
+					<thead>
+						<tr>
+							<th>Operation</th>
+							<th>Layer</th>
+							<th>Graphic</th>
+						</tr>
+					</thead>
+					<tbody id="local-storage-summary-table-body">
+					</tbody>
+				</table>
+				<button id="refresh-local-storage-summary-btn" type="button" class="btn btn-primary"><i class="fa fa-refresh"></i> Refresh</button>				
+			</div>
+
+		</div>
+	</div>
+
+
+
+<script>
+    var locationPath = location.pathname.replace(/\/[^/]+$/, "");
+
+	var dojoConfig = 
+	{
+		async: true,
+		packages: [
+			{ 
+				name: 'jquery', 
+				location: 'http://ajax.googleapis.com/ajax/libs/jquery/1.10.2', 
+				main: 'jquery' 
+			}
+		],
+        paths: { 
+            tiles: locationPath  + "/../lib/tiles",
+            edit: locationPath  + "/../lib/edit",
+            vendor: locationPath + "/../vendor"
+        }
+	}
+</script>
+<script src="http://js.arcgis.com/3.8/"></script>
+<script>
+	"use strict";
+
+	require([
+		"esri/request",
+		"edit/editsStore",
+		"dojo/dom", "dojo/on", "dojo/query", 
+		"dojo/dom-construct", "dojo/dom-attr",
+		'jquery','dojo/domReady!'],
+		function(
+			esriRequest,
+			editsStore,
+			dom, on, query, 
+			domConstruct, domAttr,
+			$)
+	{
+		var serverUrl = "http://services2.arcgis.com/CQWCKwrSm5dkM28A/arcgis/rest/services";
+		var serviceName = "Military";
+
+		on(dom.byId('refresh-service-summary-btn'), 'click', function(){ refreshSummaryTable(serverUrl, serviceName);});
+		on(dom.byId('refresh-local-storage-summary-btn'), 'click', refreshLocalStorageSummary);
+
+		refreshSummaryTable(serverUrl, serviceName);
+		refreshLocalStorageSummary();
+
+		function errorCb(error)
+		{
+			console.log('error:',error);
+		}
+
+		function refreshSummaryTable(serverUrl, serviceName)
+		{
+			var fsUrl = serverUrl + '/' + serviceName + '/' + 'FeatureServer';
+			dom.byId('service-url').innerHTML = fsUrl;
+			dom.byId('service-name').innerHTML = serviceName;
+
+			domConstruct.empty('service-summary-table-body');
+
+			var request = esriRequest({
+				url: fsUrl,
+				content: { f: 'json' },
+				handleAs: 'json'
+			});
+			request.then(
+				function(response)
+				{
+					console.log("success:",response);
+
+					response.layers.forEach(function(layer)
+					{					
+						var rowContent = 
+							"<td class='id'>" + layer.id + "</td>" +
+							"<td class='name'></td>" +
+							"<td class='count'></td>" + 
+							"<td class='features'></td>" + 
+							"<td id='remove-" + layer.id + "-btn'><i class='glyphicon glyphicon-remove'></i></td>";
+						var tr = domConstruct.place("<tr>", dom.byId('service-summary-table-body'),'last');
+						tr.id = "layer" + layer.id;
+						domConstruct.place(rowContent, tr,'last');
+						on(dom.byId('remove-' + layer.id + "-btn"),'click', function(evt)
+						{
+							var featureLayerUrl =  fsUrl + '/' + layer.id;
+							var layerDeleteAllRequest = esriRequest(
+							{
+								url: featureLayerUrl + '/deleteFeatures',
+								content: {f: 'json', where:'1=1'},
+								handleAs:'json'
+							},{usePost:true});
+							layerDeleteAllRequest.then(
+								function(response)
+								{
+									console.log(response);
+									refreshSummaryRow(fsUrl,layer.id);
+									alert("All (" + response.deleteResults.length + ") features deleted");
+								},
+								function(error)
+								{
+									alert(error);
+								})
+						});
+
+						refreshSummaryRow(fsUrl,layer.id);
+					});
+
+					console.log("ok!");
+				},
+				errorCb
+			);
+		}
+
+		function refreshSummaryRow(fsUrl,layerId)
+		{			
+			var layerFeatureCountRequest = esriRequest(
+			{
+				url: fsUrl + '/' + layerId + '/query',
+				content: { 
+					f: 'json',
+					where: '1=1',
+					returnIdsOnly: true
+					},
+				handleAs: 'json'
+			});
+			layerFeatureCountRequest.then(
+				function(response)
+				{
+					query('#layer' + layerId + ' .count')[0].innerHTML = response.objectIds.length;
+					query('#layer' + layerId + ' .features')[0].innerHTML = response.objectIds.join(', ');
+				},
+				errorCb
+			);
+
+			var layerFeatureNameRequest = esriRequest(
+			{
+				url: fsUrl + '/' + layerId,
+				content: { f: 'json' },
+				handleAs: 'json'
+			});
+			layerFeatureNameRequest.then(
+				function(response)
+				{
+					query('#layer' + layerId + ' .name')[0].innerHTML = response.name;
+				},
+				errorCb
+			);
+		}
+
+		function refreshLocalStorageSummary()
+		{
+			domConstruct.empty('local-storage-summary-table-body');
+			var edits = editsStore._retrieveEditsQueue();
+			edits.forEach(function(edit)
+			{
+				var components = edit.layer.split('/');
+				var layerId = components[components.length-3] + " [" + components[components.length-1] + "]"; 
+				var rowContent = [edit.operation, layerId, edit.graphic];
+				rowContent = '<td>' + rowContent.join('</td><td>') + '</td>';
+				var tr = domConstruct.place("<tr>", dom.byId('local-storage-summary-table-body'),'last');
+				domConstruct.place(rowContent,tr,'last');
+			});
+		}
+
+	});
+
+
+</script>
+
+</body>
+</html>
