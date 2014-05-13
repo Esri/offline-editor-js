@@ -56,6 +56,7 @@ Extends TileMapServiceLayer. You can display TPK files with this library.
 
 * [Learn more about using the `tile` library](doc/howtousetiles.md)
 * [Learn more about using the `edit` library](doc/howtouseeditlibrary.md)
+* [Learn more about using the `tpk` library](doc/howtousetpklibrary.md)
 
 
 ##Setup Instructions
