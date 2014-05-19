@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html manifest="appcache-tiles.appcache">
+<html  manifest="appcache-tiles.appcache">
 <!--<html>-->
 <!--
 
@@ -22,8 +22,8 @@ ask if you want to reload the application.
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no"/>
-    <title>Simple Map</title>
-    <link rel="stylesheet" href="http://js.arcgis.com/3.8/js/esri/css/esri.css">
+    <title>Cache Tiles</title>
+    <link rel="stylesheet" href="http://js.arcgis.com/3.9/js/esri/css/esri.css">
     <style>
         html, body, #map {
             height: 100%;
@@ -72,7 +72,7 @@ ask if you want to reload the application.
         }
     </script>
     <!-- This is a custom build of the ArcGIS API for JavaScript using the new Web Optimizer Tool -->
-    <script src="http://jsdev.arcgis.com/o/andygup/appcache1/dojo/dojo.js" data-dojo-config="async: true"></script>
+    <script src="http://js.arcgis.com/3.9/" data-dojo-config="async: true"></script>
     <!-- Use this tag below if you are hosting your ArcGIS API for JavaScript files locally -->
     <!--<script src="libs/dojo/dojo/dojo.js" data-dojo-config="async: true"></script>-->
     <script src="../vendor/IndexedDBShim/dist/IndexedDBShim.min.js"></script>
@@ -100,8 +100,8 @@ ask if you want to reload the application.
         var bluePinPath = "../samples/images/blue-pin.png"
         var EXTENT_BUFFER = 0; //buffers the map extent in meters
 
-        require(["esri/map","utils/appCacheManager","tiles/offlineTilesEnabler","esri/geometry/Extent","dojo/on","dojo/domReady!"],
-                function(Map,AppCacheManager,OfflineTileEnabler,Extent,on) {
+        require(["esri/map","utils/appCacheManager","tiles/offlineTilesEnabler","dojo/on","dojo/domReady!"],
+                function(Map,AppCacheManager,OfflineTileEnabler,on) {
 
                     imgOfflineIndicator = document.getElementById("img-offline-indicator");
                     imgOfflineIndicator.offlineColor = "blue";
