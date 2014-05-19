@@ -300,7 +300,7 @@
                 function goOnline(){
 
                     offlineFeaturesManager.goOnline(function(success,error){
-                        if(success == true){
+                        if(error === undefined){
                             btnOnlineOffline.innerHTML = "Go Offline";
                             imgOfflineIndicator.src = bluePinPath;
                             imgOfflineIndicator.offlineColor = "blue";
