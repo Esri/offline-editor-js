@@ -115,12 +115,12 @@
     var locationPath = location.pathname.replace(/\/[^/]+$/, "");
     var dojoConfig = {
         paths: {
-            tpk: locationPath  + "lib/tpk",
-            tiles: "//esri.github.io/offline-editor-js/lib/tiles"
+            tpk: locationPath  + "/../lib/tpk",
+            tiles: locationPath + "/../lib/tiles"
         }
     }
 </script>
-<script src="lib/shim/IndexedDBShim.min.js"></script>
+<script src="../vendor/IndexedDBShim/dist/IndexedDBShim.min.js"></script>
 <script src="http://js.arcgis.com/3.9/"></script>
 <script>
     require(["esri/map","tpk/TPKLayer","tpk/zip","dojo/on","dojo/_base/window","dojo/domReady!"],
