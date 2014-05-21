@@ -1,34 +1,31 @@
 <!DOCTYPE html>
 <html manifest="appcache-features.appcache">
-<!--
-This sample demonstrates using an application manifest along with storing feature edits locally.
-Included in this sample is the ability to work directly with the AttributeInspector widget.
-Features are typically points, lines and polygons along with associated attributes.
-
-The use cases for using this sample are to ensure you can reload your application
-offline as well as gracefully load after a browser restart. Any edits made by the user will still
-be available and any .js libraries stored in the application cache will also continue to work.
-
-It is recommended to also store map tiles locally. See the appache-tiles.html sample and the
-tiles-indexed-db.html sample for more hints on how to do that.
-
-Use the included Grunt task to help generate the manifest file. There is manual
-work involved in determining which files need to go into the manifest. The included manifest
-file should work with this sample to give you an idea of what goes into the manifest.
-
-A few things to know about manifest files:
-- You cannot load an online url that has a redirect.
-- If there is an error encountered, the manifest file will stop loading
-- The /utils/appCacheManager.js library will auto detect if the manifest changed and
-ask if you want to reload the application.
-
--->
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no"/>
     <title>Cache Features Sample</title>
-    <link rel="stylesheet" href="http://js.arcgis.com/3.8/js/dojo/dijit/themes/claro/claro.css">
-    <link rel="stylesheet" href="http://js.arcgis.com/3.8/js/esri/css/esri.css">
+
+    <!--
+
+    This sample demonstrates using an application manifest to store tiles locally.
+
+    The use cases for using this sample are to ensure you can reload and restart you application
+    one it is offline.
+
+    Use the included Grunt task to help generate the manifest file. There is manual
+    work involved in determining which files need to go into the manifest. The included manifest
+    file should work with this sample to give you an idea of what goes into the manifest.
+
+    A few things to know about manifest files:
+    - You cannot load an online url that has a redirect.
+    - If there is an error encountered, the manifest file will stop loading
+    - The /utils/appCacheManager.js library will auto detect if the manifest changed and
+    ask if you want to reload the application.
+
+    -->
+
+    <link rel="stylesheet" href="http://js.arcgis.com/3.9/js/dojo/dijit/themes/claro/claro.css">
+    <link rel="stylesheet" href="http://js.arcgis.com/3.9/js/esri/css/esri.css">
     <style>
         html, body, #map {
             height: 100%;
@@ -132,11 +129,12 @@ ask if you want to reload the application.
         var dojoConfig = {
             paths: {
                 edit: locationPath  + "/../lib/edit",
-                vendor: locationPath + "/../vendor"
+                vendor: locationPath + "/../vendor",
+                utils: locationPath + "/../utils"
             }
         }
     </script>
-    <script src="http://js.arcgis.com/3.8/"></script>
+    <script src="http://js.arcgis.com/3.9/"></script>
     <script>
 
         require([
@@ -145,6 +143,7 @@ ask if you want to reload the application.
             "esri/layers/FeatureLayer",
             "edit/offlineFeaturesManager",
             "edit/editsStore",
+            "utils/appCacheManager",
             "esri/dijit/AttributeInspector",
             "dojo/dom-construct",
             "dojo/on",
@@ -152,7 +151,7 @@ ask if you want to reload the application.
             "dijit/form/Button",
             "dijit/form/SimpleTextarea",
             "dojo/domReady!"],
-            function(Map,Query,FeatureLayer,OfflineFeaturesManager,editsStore,AttributeInspector,domConstruct,on,dom,Button,SimpleTextArea) {
+            function(Map,Query,FeatureLayer,OfflineFeaturesManager,editsStore,AppCacheManager,AttributeInspector,domConstruct,on,dom,Button,SimpleTextArea) {
 
                 var textTimer;
                 var offlineFeaturesManager;
@@ -176,9 +175,19 @@ ask if you want to reload the application.
                     outFields: ["OBJECTID","BSID","ROUTES","STOPNAME"]
                 })
 
+                map.on("load",function(evt){
+                    initAppCacheManager();
+                })
+
                 map.on("layers-add-result",initEditing);
 
                 map.addLayers([busStopsFeatureLayer]);
+
+                function initAppCacheManager(){
+                    appCacheManager = new AppCacheManager(true,true);
+                    appCacheManager.on(appCacheManager.CACHE_EVENT,cacheEventHandler);
+                    appCacheManager.on(appCacheManager.CACHE_ERROR,cacheErrorHandler);
+                }
 
                 function initOffline(){
                     offlineFeaturesManager = new OfflineFeaturesManager();
@@ -291,7 +300,7 @@ ask if you want to reload the application.
                 function goOnline(){
 
                     offlineFeaturesManager.goOnline(function(success,error){
-                        if(success == true){
+                        if(error === undefined){
                             btnOnlineOffline.innerHTML = "Go Offline";
                             imgOfflineIndicator.src = bluePinPath;
                             imgOfflineIndicator.offlineColor = "blue";
@@ -318,6 +327,14 @@ ask if you want to reload the application.
                     else{
                         goOnline();
                     }
+                }
+
+                function cacheEventHandler(evt){
+                    console.log("CACHE EVENT: " + JSON.stringify(evt));
+                }
+
+                function cacheErrorHandler(evt){
+                    console.log("CACHE ERROR: " + JSON.stringify(evt));
                 }
             }
         );
