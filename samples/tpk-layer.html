@@ -102,7 +102,7 @@
 <div id="header-div">
     <div id="input-container">
         <input type="file" id="file-input" name="files[]" accept="application/zip"/>
-        <input type="text" id="url-input" value="http://andygup.github.io/tpk-layer-js/Beirut.zip" />
+        <input type="text" id="url-input" value="tpks/Beirut.zip" />
         <button id="url-btn">Get file via url</button>
     </div>
     <div id="header-title">TPKLayer demo</div>
@@ -138,7 +138,9 @@
                  * Parse zipped TPK file and get the individual files.
                  */
                 function zipParser(blob){
-                    zip.workerScriptsPath = "lib/tpk/"; //tell zip.js where to find it's associated scripts
+
+                    //IMPORTANT!
+                    zip.workerScriptsPath = locationPath + "/../lib/tpk/"; //tell zip.js where to find it's associated scripts
 
                     zip.createReader(new zip.BlobReader(blob), function (zipReader) {
                         zipReader.getEntries(function (entries) {
@@ -186,7 +188,7 @@
                     urlInputBtn = document.getElementById("url-btn");
                     urlInputBtn.onclick = function(){
                         var xhrRequest = new XMLHttpRequest();
-                        xhrRequest.open("GET", "../lib/resource-proxy/proxy.php?" + url.value, true);
+                        xhrRequest.open("GET", url.value, true);
                         xhrRequest.responseType = "blob";
                         xhrRequest.onprogress = function(evt){
                             loading.style.visibility = "visible";
@@ -194,6 +196,8 @@
                             getFileBtn.innerHTML = "Get file via url " + percent + "%";
                             console.log("Begin downloading remote tpk file...")
                         }
+
+                        xhrRequest.error = function(err){console.log("ERRROR")}
 
                         xhrRequest.onload = function(oEvent) {
                             if(this.status == 200) {
