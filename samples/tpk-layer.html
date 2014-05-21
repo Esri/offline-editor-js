@@ -108,27 +108,28 @@
     <div id="header-title">TPKLayer demo</div>
 </div>
 <img id="loader-gif" src="images/loading.gif"/>
+
 <div id="map"></div>
 
 <script>
     var locationPath = location.pathname.replace(/\/[^/]+$/, "");
     var dojoConfig = {
         paths: {
-            tpk: locationPath  + "/../lib/tpk",
-            tiles: locationPath + "/../lib/tiles"
+            tpk: locationPath  + "lib/tpk",
+            tiles: "//esri.github.io/offline-editor-js/lib/tiles"
         }
     }
 </script>
-<script src="../vendor/IndexedDBShim/dist/IndexedDBShim.min.js"></script>
+<script src="lib/shim/IndexedDBShim.min.js"></script>
 <script src="http://js.arcgis.com/3.9/"></script>
 <script>
-    require(["esri/map","tpk/TPKLayer","tpk/zip","dojo/on","dojo/domReady!"],
-            function(Map,TPKLayer) {
+    require(["esri/map","tpk/TPKLayer","tpk/zip","dojo/on","dojo/_base/window","dojo/domReady!"],
+            function(Map,TPKLayer,zip,on,win) {
                 var map;
                 var fileInput,tpkLayer, urlInput;
-                var ZIP_SCRIPT_PATH = "../lib/tpk/";
 
                 var loading = dojo.byId("loader-gif");
+                var getFileBtn = dojo.byId("url-btn");
 
                 initChooseLocalFile();
                 initGetRemoteFile();
@@ -137,10 +138,13 @@
                  * Parse zipped TPK file and get the individual files.
                  */
                 function zipParser(blob){
-                    zip.workerScriptsPath = ZIP_SCRIPT_PATH; //tell zip.js where to find it's associated scripts
+                    zip.workerScriptsPath = "lib/tpk/"; //tell zip.js where to find it's associated scripts
                     zip.createReader(new zip.BlobReader(blob), function (zipReader) {
                         zipReader.getEntries(function (entries) {
                             initMap(entries);
+                            zipReader.close(function(evt){
+                                console.log("Done reading zip file.")
+                            })
                         }, function (err) {
                             alert("There was a problem reading the file!: " + err);
                         })
@@ -176,6 +180,7 @@
                  * Get a TPK file from a remote server via a URL
                  */
                 function initGetRemoteFile(){
+                    getFileBtn.innerHTML = "Get file via url";
                     urlInput = document.getElementById("url-btn");
                     urlInput.onclick = function(){
                         var xhrRequest = new XMLHttpRequest();
@@ -183,6 +188,8 @@
                         xhrRequest.responseType = "blob";
                         xhrRequest.onprogress = function(evt){
                             loading.style.visibility = "visible";
+                            var percent = (parseFloat(evt.loaded / evt.totalSize) * 100).toFixed(0);
+                            getFileBtn.innerHTML = "Get file via url " + percent + "%";
                             console.log("Begin downloading remote tpk file...")
                         }
 
