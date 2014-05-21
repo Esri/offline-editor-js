@@ -139,6 +139,7 @@
                  */
                 function zipParser(blob){
                     zip.workerScriptsPath = "lib/tpk/"; //tell zip.js where to find it's associated scripts
+
                     zip.createReader(new zip.BlobReader(blob), function (zipReader) {
                         zipReader.getEntries(function (entries) {
                             initMap(entries);
@@ -181,10 +182,11 @@
                  */
                 function initGetRemoteFile(){
                     getFileBtn.innerHTML = "Get file via url";
+                    var url = document.getElementById("url-input");
                     urlInputBtn = document.getElementById("url-btn");
                     urlInputBtn.onclick = function(){
                         var xhrRequest = new XMLHttpRequest();
-                        xhrRequest.open("GET", "Beirut.zip", true);
+                        xhrRequest.open("GET", "../lib/resource-proxy/proxy.php?" + url.value, true);
                         xhrRequest.responseType = "blob";
                         xhrRequest.onprogress = function(evt){
                             loading.style.visibility = "visible";
