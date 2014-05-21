@@ -199,6 +199,10 @@
                                 console.log("Remote tpk download finished.")
                                 zipParser(this.response)
                             }
+                            else{
+                                loading.style.visibility = "hidden";
+                                alert("There was a problem loading the file. " + this.status + ": " + this.statusText )
+                            }
                         };
 
                         xhrRequest.send();
