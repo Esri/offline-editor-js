@@ -82,7 +82,7 @@ Extends TileMapServiceLayer. You can display TPK files with this library.
 	* [FileSaver.js](https://github.com/Esri/offline-editor-js/blob/master/lib/tiles/README.md) - library to assist with uploading and downloading of files containing tile information.
 	* [grunt-manifest](https://github.com/gunta/grunt-manifest) node.js library to assist with the creation of manifest files.
 	* [zip](http://gildas-lormeau.github.io/zip.js/) A library for zipping and unzipping files.
-	* [DataStream](https://github.com/kig/DataStream.js) Library for working with binary data.
+	* [xml2json](https://code.google.com/p/x2js/) A library for converting XML to JSON. Seems to handle complex XML. 
 
 ## Resources
 
