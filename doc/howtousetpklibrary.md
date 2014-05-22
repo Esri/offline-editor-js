@@ -9,7 +9,7 @@ The `TPKLayer` Library allows you to display at TPK file as a map.
 
 ```js
 
-	//IMPORTANT: Tell zip.js where to find it's associated scripts
+	//IMPORTANT: Tell zip.js where to find its associated scripts
 	zip.workerScriptsPath = locationPath + "/../lib/tpk/"; 
 	zip.createReader(new zip.BlobReader(blob), function (zipReader) {
     	zipReader.getEntries(function (entries) {
@@ -50,16 +50,16 @@ It is a best practice to listen for the following events and handle them appropr
 ```js
 	
 	tpkLayer.on("validationError", function(evt){
-		//evt.msg is the error message
-		//evt.err is the error message
+		//evt.msg is the string message
+		//evt.err is the error 
 		if(evt.msg == tpkLayer.NO_SUPPORT_ERROR){
 			//Let the user know the library isn't supported.
 		}
 	})
 	
 	tpkLayer.on("databaseError", function(evt){
-		//evt.msg is the error message
-		//evt.err is the error message
+		//evt.msg is the string message
+		//evt.err is the error 
 		if(evt.msg == tpkLayer.DB_INIT_ERROR){
 			//Let the user know there was a db problem.
 		}
