@@ -12,8 +12,13 @@
     <script type="text/javascript" src="../vendor/jasmine.async/lib/jasmine.async.js"></script>
 
     <script>
+        var locationPath = location.pathname.replace(/\/[^/]+$/, "");
         var dojoConfig = {
-            paths: { edit: location.pathname.replace(/\/[^/]+$/, "") + "../../lib/edit" }
+            paths: {
+                edit: locationPath + "../../lib/edit",
+                tpk: locationPath  + "/../lib/tpk",
+                tiles: locationPath + "/../lib/tiles"
+            }
         }
     </script>
 
@@ -33,14 +38,14 @@
                     "esri/layers/GraphicsLayer", "esri/graphic", "esri/symbols/SimpleFillSymbol", "esri/symbols/SimpleMarkerSymbol", "esri/symbols/SimpleLineSymbol",
                     "esri/SpatialReference","esri/geometry",
                     "edit/attachmentsStore",
-                    "dojo/dom", "dojo/on", "dojo/query",
-                    "dojo/dom-construct", "dojo/domReady!"],
+                    "dojo/dom", "dojo/on",
+                    "tpk/TPKLayer","tpk/zip",
+                    "dojo/domReady!"],
                 function(Map,
                          GraphicsLayer, Graphic, SimpleFillSymbol, SimpleMarkerSymbol, SimpleLineSymbol,
                          SpatialReference, geometry,
                          AttachmentsStore,
-                         dom, on, query,
-                         domConstruct)
+                         dom, on, TPKLayer,zip)
                 {
                     g_attachmentsStore = new AttachmentsStore();
                     g_inputNode = dom.byId('theFile');
@@ -75,6 +80,27 @@
                             jasmineEnv.execute();
                         }
                     }; // test()
+
+
+                    /**
+                     * Parse zipped TPK file and get the individual files.
+                     */
+                    function zipParser(blob){
+
+                        //IMPORTANT!
+                        zip.workerScriptsPath = locationPath + "/../lib/tpk/"; //tell zip.js where to find it's associated scripts
+
+                        zip.createReader(new zip.BlobReader(blob), function (zipReader) {
+                            zipReader.getEntries(function (entries) {
+                                initMap(entries);
+                                zipReader.close(function(evt){
+                                    console.log("Done reading zip file.")
+                                })
+                            }, function (err) {
+                                alert("There was a problem reading the file!: " + err);
+                            })
+                        })
+                    }
 
                 }); // require()
     </script>
