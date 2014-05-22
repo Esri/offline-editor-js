@@ -10,6 +10,15 @@
     <script type="text/javascript" src="../vendor/jasmine-1.3.1/jasmine.js"></script>
     <script type="text/javascript" src="../vendor/jasmine-1.3.1/jasmine-html.js"></script>
     <script type="text/javascript" src="../vendor/jasmine.async/lib/jasmine.async.js"></script>
+    <style type="text/css">
+        #loader-gif{
+            display: block;
+            visibility: hidden;
+            position: relative;
+            float: left;
+            z-index: 10;
+        }
+    </style>
 
     <script>
         var locationPath = location.pathname.replace(/\/[^/]+$/, "");
@@ -31,8 +40,10 @@
     <script type="text/javascript">
         "use strict"
 
-        var g_attachmentsStore;
-        var g_inputNode;
+        var getFileBtn, fileInput, FILE;
+        var loading = dojo.byId("loader-gif");
+        var tilesEntries = null;
+        var tpkLayer = null;
 
         require(["esri/map",
                     "esri/layers/GraphicsLayer", "esri/graphic", "esri/symbols/SimpleFillSymbol", "esri/symbols/SimpleMarkerSymbol", "esri/symbols/SimpleLineSymbol",
@@ -47,59 +58,50 @@
                          AttachmentsStore,
                          dom, on, TPKLayer,zip)
                 {
-                    g_attachmentsStore = new AttachmentsStore();
-                    g_inputNode = dom.byId('theFile');
+                    var jasmineEnv;
+                    loading = dojo.byId("loader-gif");
+                    getFileBtn = dojo.byId("url-btn");
+                    //IMPORTANT!
+                    zip.workerScriptsPath = locationPath + "/../lib/tpk/"; //tell zip.js where to find it's associated scripts
 
-                    test();
+                    tpkLayer = new TPKLayer();
 
-                    function test()
-                    {
-                        try
-                        {
-                            console.log("everything ok!");
-
-                            var jasmineEnv = jasmine.getEnv();
-                            jasmineEnv.updateInterval = 1000;
-                            jasmineEnv.defaultTimeoutInterval = 1000; // 1 sec
-                            var htmlReporter = new jasmine.HtmlReporter();
-
-                            jasmineEnv.addReporter(htmlReporter);
-
-                            jasmineEnv.specFilter = function(spec) {
-                                return htmlReporter.specFilter(spec);
-                            };
-
-                            // execJasmine();
-                            on(dom.byId('theFile'),'change',execJasmine);
-                        }
-                        catch(err)
-                        {
-                            alert(err);
-                        }
-                        function execJasmine() {
-                            jasmineEnv.execute();
-                        }
-                    }; // test()
-
+                    initChooseLocalFile();
 
                     /**
-                     * Parse zipped TPK file and get the individual files.
+                     * Choose a TPK file from your local filesystem
                      */
-                    function zipParser(blob){
+                    function initChooseLocalFile(){
+                        fileInput = document.getElementById("file-input");
+                        fileInput.addEventListener('change', function() {
+                            console.log("File success");
+                            FILE = fileInput.files[0];
 
-                        //IMPORTANT!
-                        zip.workerScriptsPath = locationPath + "/../lib/tpk/"; //tell zip.js where to find it's associated scripts
 
-                        zip.createReader(new zip.BlobReader(blob), function (zipReader) {
-                            zipReader.getEntries(function (entries) {
-                                initMap(entries);
-                                zipReader.close(function(evt){
-                                    console.log("Done reading zip file.")
-                                })
-                            }, function (err) {
-                                alert("There was a problem reading the file!: " + err);
-                            })
-                        })
+                            try
+                            {
+                                console.log("everything ok!");
+
+                                jasmineEnv = jasmine.getEnv();
+                                jasmineEnv.updateInterval = 1000;
+                                jasmineEnv.defaultTimeoutInterval = 10000; // 1 sec
+                                var htmlReporter = new jasmine.HtmlReporter();
+
+                                jasmineEnv.addReporter(htmlReporter);
+
+                                jasmineEnv.specFilter = function(spec) {
+                                    return htmlReporter.specFilter(spec);
+                                };
+
+                                jasmineEnv.execute();
+
+                            }
+                            catch(err)
+                            {
+                                alert(err);
+                            }
+
+                        },false);
                     }
 
                 }); // require()
@@ -107,9 +109,14 @@
 </head>
 
 <body>
-<form id="theForm">
-    <input type="file" id="theFile"><br/><br>
-    <span>Select a tpk file to launch unit testing. You may have to change it to .zip</span>
-</form>
+
+<span>Select a tpk file to launch unit testing. You may have to change it to .zip</span>
+<br>
+<br>
+<div id="input-container">
+    <input type="file" id="file-input" name="files[]" accept="application/zip"/>
+</div>
+
+<img id="loader-gif" src="../samples/images/loading.gif"/>
 </body>
 </html>
