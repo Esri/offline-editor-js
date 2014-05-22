@@ -24,7 +24,7 @@ Property  | Description
 --- | ---
 `map` | Refers to the main applications Esri.Map object.
 `store` | Refers to the local database and hooks directly to its [functionality](offlinetilesenabler.md). 
-`RECENTER_DELAY` | Default is 350ms. Millisecond delay before attempting to recenter the map after orientation changes. Note: adjusting this too high will cause annoying delays. Adjusting this to short and it may not fire properly within the application life cycle.
+`RECENTER_DELAY` | Default is 350ms. Millisecond delay before attempting to recenter the map after orientation changes. Note: adjusting this too high will cause annoying delays. Adjusting this to short and it may not fire properly within the application life cycle.	
 
 ###Events
 Event | Value | Description
@@ -32,6 +32,8 @@ Event | Value | Description
 `VALIDATION_ERROR` | "validationError" | An error occured during initialization that could prevent proper operation of the library.
 `DATABASE_ERROR` | "databaseError" | An error occured while reading or writing to the local database.
 `PARSING_ERROR` | "parsingError" | An error occured while parsing the TPK file.
+`DB_INIT_ERROR` | "dbInitError"| An error occurred while initializing the database.
+`NO_SUPPORT_ERROR` | "libNotSupportedError"| The library won't work on this browser.
 `PROGRESS_EVENT` | "progress" | Event indicated progress status while parsing a TPK file. Parsing can take a while depending on how large the TPK is.
 `PROGRESS_START` | "start" | Parsing has begun. Important for control UX elements that provide user feedback during parsing.
 `PROGRESS_END` | "end" | Parsing has finished. Important for control UX elements that provide user feedback during parsing.
