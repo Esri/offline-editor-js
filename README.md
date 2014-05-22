@@ -66,6 +66,17 @@ Extends TileMapServiceLayer. You can display TPK files with this library.
 3. Run `git submodule init` and `git submodule update`
 4. Try out the apps in the `/samples` folder.
 
+
+##Samples
+* `appcache-features.html` - shows how to work with the application manifest and features.
+* `appcache-tiles.html` - shows how to work with the application manifest and map tiles.
+* `attachments-editor.html` - demonstrates how to work with this library and feature attachments.
+* `military-offline.html` - shows working with points, lines and polygons locally.
+* `tpklayer.html` - shows how to work with TPK files.
+* `tiles-indexed-db.html` - shows how to work with storing tiles locally.
+* `Gruntfile.js` - a node.js app and its associated `package.json` file to help with creating an application manifest file.
+
+
 ##Dependencies
 
 * ArcGIS API for JavaScript (v3.8+)
