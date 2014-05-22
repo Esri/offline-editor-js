@@ -1,0 +1,89 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Jasmine Spec Runner - TPKLayer</title>
+
+    <link rel="shortcut icon" type="image/png" href="../vendor/jasmine-1.3.1/jasmine_favicon.png">
+    <link rel="stylesheet" type="text/css" href="../vendor/jasmine-1.3.1/jasmine.css">
+    <script type="text/javascript" src="../vendor/jasmine-1.3.1/jasmine.js"></script>
+    <script type="text/javascript" src="../vendor/jasmine-1.3.1/jasmine-html.js"></script>
+    <script type="text/javascript" src="../vendor/jasmine.async/lib/jasmine.async.js"></script>
+
+    <script>
+        var dojoConfig = {
+            paths: { edit: location.pathname.replace(/\/[^/]+$/, "") + "../../lib/edit" }
+        }
+    </script>
+
+    <link rel="stylesheet" href="http://js.arcgis.com/3.9/js/dojo/dijit/themes/claro/claro.css">
+    <link rel="stylesheet" href="http://js.arcgis.com/3.9/js/esri/css/esri.css">
+    <script src="http://js.arcgis.com/3.9/"></script>
+
+    <!-- include spec files here... -->
+    <script type="text/javascript" src="spec/tpkLayerSpec.js"></script>
+    <script type="text/javascript">
+        "use strict"
+
+        var g_attachmentsStore;
+        var g_inputNode;
+
+        require(["esri/map",
+                    "esri/layers/GraphicsLayer", "esri/graphic", "esri/symbols/SimpleFillSymbol", "esri/symbols/SimpleMarkerSymbol", "esri/symbols/SimpleLineSymbol",
+                    "esri/SpatialReference","esri/geometry",
+                    "edit/attachmentsStore",
+                    "dojo/dom", "dojo/on", "dojo/query",
+                    "dojo/dom-construct", "dojo/domReady!"],
+                function(Map,
+                         GraphicsLayer, Graphic, SimpleFillSymbol, SimpleMarkerSymbol, SimpleLineSymbol,
+                         SpatialReference, geometry,
+                         AttachmentsStore,
+                         dom, on, query,
+                         domConstruct)
+                {
+                    g_attachmentsStore = new AttachmentsStore();
+                    g_inputNode = dom.byId('theFile');
+
+                    test();
+
+                    function test()
+                    {
+                        try
+                        {
+                            console.log("everything ok!");
+
+                            var jasmineEnv = jasmine.getEnv();
+                            jasmineEnv.updateInterval = 1000;
+                            jasmineEnv.defaultTimeoutInterval = 1000; // 1 sec
+                            var htmlReporter = new jasmine.HtmlReporter();
+
+                            jasmineEnv.addReporter(htmlReporter);
+
+                            jasmineEnv.specFilter = function(spec) {
+                                return htmlReporter.specFilter(spec);
+                            };
+
+                            // execJasmine();
+                            on(dom.byId('theFile'),'change',execJasmine);
+                        }
+                        catch(err)
+                        {
+                            alert(err);
+                        }
+                        function execJasmine() {
+                            jasmineEnv.execute();
+                        }
+                    }; // test()
+
+                }); // require()
+    </script>
+</head>
+
+<body>
+<form id="theForm">
+    <input type="file" id="theFile"><br/><br>
+    <span>Select a tpk file to launch unit testing. You may have to change it to .zip</span>
+</form>
+</body>
+</html>
