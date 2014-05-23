@@ -40,7 +40,7 @@ describe("TPKLayer module", function(){
         })
     })
 
-    async.it("Parse Bundle", function(done){
+    async.it("Parse all Bundles and BundleXs", function(done){
         var inMemTilesLength = tilesEntries.length;
         tpkLayer._zeroLengthFileCounter = 0;
         tpkLayer._fileEntriesLength = inMemTilesLength;
@@ -57,6 +57,34 @@ describe("TPKLayer module", function(){
                 tpkLayer._unzipTileFiles(tilesEntries,i,function(result){
                     expect(result).toEqual(jasmine.any(Object));
                     done();
+                },tpkLayer._self);
+            }
+        }
+    })
+
+    async.it("Retrieve initial extent from conf.cdi", function(done){
+        var inMemTilesLength = tilesEntries.length;
+        tpkLayer._zeroLengthFileCounter = 0;
+        tpkLayer._fileEntriesLength = inMemTilesLength;
+
+        for(var i=0;i < inMemTilesLength;i++){
+
+            var name = tilesEntries[i].filename.toLocaleUpperCase();
+            var index = name.indexOf("_ALLLAYERS",0);
+            if(index != -1){
+                tpkLayer.TILE_PATH = name.slice(0,index);
+            }
+
+            if(tilesEntries[i].compressedSize == 0) tpkLayer._zeroLengthFileCounter++;
+
+            var indexCDI = name.indexOf("CONF.CDI",0);
+            if(indexCDI != -1){
+                tpkLayer._unzipConfFiles(tilesEntries,i,function(result){
+                    expect(result).toEqual(jasmine.any(Object));
+                    tpkLayer._parseConfCdi(function(extent){
+                        expect(extent.type).toEqual("extent");
+                        done();
+                    })
                 },tpkLayer._self);
             }
         }
