@@ -165,4 +165,10 @@ describe("TPKLayer module", function(){
         expect(hex).toBe("0010");
         done();
     })
+
+    async.it("Validate getCacheFilePath", function(done){
+        var path = tpkLayer._getCacheFilePath("test",0,50,50);
+        expect(path).toBe( "test/L00/R0032C0032");
+        done();
+    })
 })
