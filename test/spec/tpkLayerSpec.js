@@ -161,6 +161,23 @@ describe("TPKLayer module", function(){
         done();
     })
 
+    async.it("Validate buffer2Base64 spy", function(done){
+        var arr = new Uint8Array([1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1])
+        spyOn(tpkLayer,"_base64ArrayBuffer");
+        tpkLayer._buffer2Base64(arr.buffer,2,function(result){
+            expect(tpkLayer._base64ArrayBuffer).toHaveBeenCalled();
+            done();
+        })
+    })
+
+    async.it("Validate buffer2Base64", function(done){
+        var arr = new Uint8Array([1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1])
+        tpkLayer._buffer2Base64(arr.buffer,2,function(result){
+            expect(result).toBe("AQEBAQEBAQEBAQEBAQE=");
+            done();
+        })
+    })
+
     async.it("Validate offset", function(done){
         var offset = tpkLayer._getOffset(0,255,255,1,1);
         expect(offset).toBe(163846);
