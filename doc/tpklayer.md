@@ -25,8 +25,8 @@ Property  | Value | Description
 `map` | Object | Refers to the main applications Esri.Map object.
 `store` | Object |  Refers to the local database and hooks directly to its [functionality](offlinetilesenabler.md). 
 `RECENTER_DELAY` | 350 | Default is 350ms. Millisecond delay before attempting to recenter the map after orientation changes. Note: adjusting this too high will cause annoying delays. Adjusting this to short and it may not fire properly within the application life cycle.	
-`PROGRESS_START` | "start" | Parsing has begun. Important for control UX elements that provide user feedback during parsing.
-`PROGRESS_END` | "end" | Parsing has finished. Important for control UX elements that provide user feedback during parsing.
+`PROGRESS_START` | "start" | Parsing has begun. Important for control of UX elements that provide user feedback during parsing.
+`PROGRESS_END` | "end" | Parsing has finished. Important for control of UX elements that provide user feedback during parsing.
 `WINDOW_VALIDATED` | "windowValidated" | All window related functionality has been checked. Example: Window.File and Window.FileReader.
 `DB_VALIDATED` | "dbValidated" | All database checks have passed.
 
