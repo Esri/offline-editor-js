@@ -12,6 +12,8 @@ This repo contains the following libraries:
    * `editsStore` - Provides static helper methods for working with the offline data store.
 - `/tiles`: stores portions of tiled maps client-side and uses the cached tiles when device is offline
    * `offlineTilesEnabler` Extends and overrides a tiled map service.
+- `/tpk`: lets you work with TPK files.
+   * `TPKLayer` - parses a TPK file and displays it as a tiled map layer.
 - `/utils`: contains various helper libraries.
 - `/samples`: sample apps to show how to use different aspects of the offline library capabilities.
 
@@ -44,10 +46,17 @@ Extends and overrides a tiled map service. Provides the ability to customize the
 
 * __Click [here](doc/offlinetilesenabler.md) to see the full API doc for `offlineTilesEnabler`__ 
 
+##TPKLayer
+
+Extends TileMapServiceLayer. You can display TPK files with this library.
+
+* __Click [here](doc/tpklayer.md) to see the full API doc for `TPKLayer`__ 
+
 #How to use
 
 * [Learn more about using the `tile` library](doc/howtousetiles.md)
 * [Learn more about using the `edit` library](doc/howtouseeditlibrary.md)
+* [Learn more about using the `tpk` library](doc/howtousetpklibrary.md)
 
 
 ##Setup Instructions
@@ -56,6 +65,17 @@ Extends and overrides a tiled map service. Provides the ability to customize the
 2. After cloning from github, `cd` into the `offline-editor-js` folder
 3. Run `git submodule init` and `git submodule update`
 4. Try out the apps in the `/samples` folder.
+
+
+##Samples
+* `appcache-features.html` - shows how to work with the application manifest and features.
+* `appcache-tiles.html` - shows how to work with the application manifest and map tiles.
+* `attachments-editor.html` - demonstrates how to work with this library and feature attachments.
+* `military-offline.html` - shows working with points, lines and polygons locally.
+* `tpklayer.html` - shows how to work with TPK files.
+* `tiles-indexed-db.html` - shows how to work with storing tiles locally.
+* `Gruntfile.js` - a node.js app and its associated `package.json` file to help with creating an application manifest file.
+
 
 ##Dependencies
 
@@ -69,9 +89,11 @@ Extends and overrides a tiled map service. Provides the ability to customize the
    		- IMPORTANT: There is a know [issue](https://github.com/axemclion/IndexedDBShim/issues/115) with IndexedDBShim on Safari. The workaround is to switch from using /dist/IndexedDBShim.min.js to just using IndexedDBShim.js and then modify line #1467 to a more appropriate size that will meet all your storage needs, for example: ```var DEFAULT_DB_SIZE = 24 * 1024 * 1024```
    * [jasmine.async](https://github.com/derickbailey/jasmine.async.git) - library to help implementing tests of async functionality (used in tests)
 
-* Non sub-module based library(s)
+* Non sub-module based libraries
 	* [FileSaver.js](https://github.com/Esri/offline-editor-js/blob/master/lib/tiles/README.md) - library to assist with uploading and downloading of files containing tile information.
 	* [grunt-manifest](https://github.com/gunta/grunt-manifest) node.js library to assist with the creation of manifest files.
+	* [zip](http://gildas-lormeau.github.io/zip.js/) A library for zipping and unzipping files.
+	* [xml2json](https://code.google.com/p/x2js/) A library for converting XML to JSON. Seems to handle complex XML. 
 
 ## Resources
 
