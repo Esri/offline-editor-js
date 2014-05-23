@@ -171,4 +171,10 @@ describe("TPKLayer module", function(){
         expect(path).toBe( "test/L00/R0032C0032");
         done();
     })
+
+    async.it("Validate bytesToMegabytes", function(done){
+        var mb = tpkLayer._bytes2MBs(1000);
+        expect(mb).toBe("0.1000");
+        done();
+    })
 })
