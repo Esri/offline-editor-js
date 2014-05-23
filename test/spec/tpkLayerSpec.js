@@ -247,4 +247,10 @@ describe("TPKLayer module", function(){
             })
         });
     })
+
+    it("Get ObjectSize", function(done){
+        var testObj = {a:"1",b:"2",c:"3"}
+        var size = tpkLayer.ObjectSize(testObj);
+        expect(size).toBe(3);
+    })
 })
