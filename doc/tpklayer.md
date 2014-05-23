@@ -25,18 +25,18 @@ Property  | Value | Description
 `map` | Object | Refers to the main applications Esri.Map object.
 `store` | Object |  Refers to the local database and hooks directly to its [functionality](offlinetilesenabler.md). 
 `RECENTER_DELAY` | 350 | Default is 350ms. Millisecond delay before attempting to recenter the map after orientation changes. Note: adjusting this too high will cause annoying delays. Adjusting this to short and it may not fire properly within the application life cycle.	
-`PROGRESS_START` | "start" | Parsing has begun. Important for control of UX elements that provide user feedback during parsing.
-`PROGRESS_END` | "end" | Parsing has finished. Important for control of UX elements that provide user feedback during parsing.
-`WINDOW_VALIDATED` | "windowValidated" | All window related functionality has been checked. Example: Window.File and Window.FileReader.
-`DB_VALIDATED` | "dbValidated" | All database checks have passed.
+`PROGRESS_START` | "start" | An event property indicated parsing has begun. Important for control of UX elements that provide user feedback during parsing.
+`PROGRESS_END` | "end" | An event property indicated parsing has finished. Important for control of UX elements that provide user feedback during parsing.
+`WINDOW_VALIDATED` | "windowValidated" | An event property indicated all window related functionality has been checked. Example: Window.File and Window.FileReader.
+`DB_VALIDATED` | "dbValidated" | An event property indicating all database checks have passed.
+`PARSING_ERROR` | "parsingError" | An event property indicating an error occured while parsing the TPK file.
+`DB_INIT_ERROR` | "dbInitError"| An event property indicating an error occurred while initializing the database.
+`NO_SUPPORT_ERROR` | "libNotSupportedError"| An event property indicating the library won't work on this browser.
 
 ###Events
 Event | Value | Description
 --- | --- | ---
-`DATABASE_ERROR` | "databaseError" | An error occured while reading or writing to the local database.
-`PARSING_ERROR` | "parsingError" | An error occured while parsing the TPK file.
-`DB_INIT_ERROR` | "dbInitError"| An error occurred while initializing the database.
-`NO_SUPPORT_ERROR` | "libNotSupportedError"| The library won't work on this browser.
+`DATABASE_ERROR_EVENT` | "databaseErrorEvent" | An error occured while reading or writing to the local database.
 `VALIDATION_EVENT` | "validationEvent" | An event related to various checks to insure library functionality is supported.
 `PROGRESS_EVENT` | "progress" | Event indicated progress status while parsing a TPK file. Parsing can take a while depending on how large the TPK is.
 
