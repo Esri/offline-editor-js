@@ -13,7 +13,7 @@ Constructor | Description
 
 ###Methods
 Methods | Returns | Description
---- | ---
+--- | --- | ---
 `extend(files)`| nothing | Overrides a TiledMapServiceLayer. Files is an array of Entry Objects derived from a zip (tpk) file parsed via zip.js. As soon as this method is called it will extract all the necessary information from the zip file and display the TPK as a map.
 `setMaxDBSize(size)`| nothing | (Optional) Let's you specify a maximum size in MBs for the local database. The default is 75MBs. Recommended maximum is 100MBs. Important: Making the database too large can result in browser crashes and slow application performance.
 `getDBSize(callback)`| `callback(size,err)` | Returns the size of local database in bytes or an error message. Calling this too often during parsing operations can affect application performance.
