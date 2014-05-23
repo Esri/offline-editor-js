@@ -43,6 +43,7 @@ describe("TPKLayer module", function(){
     async.it("Parse Bundle", function(done){
         var inMemTilesLength = tilesEntries.length;
         tpkLayer._zeroLengthFileCounter = 0;
+        tpkLayer._fileEntriesLength = inMemTilesLength;
 
         for(var i=0;i < inMemTilesLength;i++){
 
@@ -56,7 +57,7 @@ describe("TPKLayer module", function(){
                 tpkLayer._unzipTileFiles(tilesEntries,i,function(result){
                     expect(result).toEqual(jasmine.any(Object));
                     done();
-                });
+                },tpkLayer._self);
             }
         }
     })
