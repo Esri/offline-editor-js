@@ -20,11 +20,15 @@ Methods | Returns | Description
 `isDBWriteable(value)`| boolean | Default is true. Let's you programmatically allow or not allow the storing of tiles in the local database. This method can help you manage the size of the database. Use this in conjunction with `getDBSize()` on a map pan or zoom event listener. Tile retrieval times from images stored in the database are significantly faster than pulling images from the TPK.
 
 ###Properties
-Property  | Description
---- | ---
-`map` | Refers to the main applications Esri.Map object.
-`store` | Refers to the local database and hooks directly to its [functionality](offlinetilesenabler.md). 
-`RECENTER_DELAY` | Default is 350ms. Millisecond delay before attempting to recenter the map after orientation changes. Note: adjusting this too high will cause annoying delays. Adjusting this to short and it may not fire properly within the application life cycle.	
+Property  | Value | Description
+--- | --- | ---
+`map` | Object | Refers to the main applications Esri.Map object.
+`store` | Object |  Refers to the local database and hooks directly to its [functionality](offlinetilesenabler.md). 
+`RECENTER_DELAY` | 350 | Default is 350ms. Millisecond delay before attempting to recenter the map after orientation changes. Note: adjusting this too high will cause annoying delays. Adjusting this to short and it may not fire properly within the application life cycle.	
+`PROGRESS_START` | "start" | Parsing has begun. Important for control UX elements that provide user feedback during parsing.
+`PROGRESS_END` | "end" | Parsing has finished. Important for control UX elements that provide user feedback during parsing.
+`WINDOW_VALIDATED` | "windowValidated" | All window related functionality has been checked. Example: Window.File and Window.FileReader.
+`DB_VALIDATED` | "dbValidated" | All database checks have passed.
 
 ###Events
 Event | Value | Description
@@ -35,10 +39,6 @@ Event | Value | Description
 `NO_SUPPORT_ERROR` | "libNotSupportedError"| The library won't work on this browser.
 `VALIDATION_EVENT` | "validationEvent" | An event related to various checks to insure library functionality is supported.
 `PROGRESS_EVENT` | "progress" | Event indicated progress status while parsing a TPK file. Parsing can take a while depending on how large the TPK is.
-`PROGRESS_START` | "start" | Parsing has begun. Important for control UX elements that provide user feedback during parsing.
-`PROGRESS_END` | "end" | Parsing has finished. Important for control UX elements that provide user feedback during parsing.
-`WINDOW_VALIDATED` | "windowValidated" | All window related functionality has been checked. Example: Window.File and Window.FileReader.
-`DB_VALIDATED` | "dbValidated" | All database checks have passed.
 
 ###TiledMapServiceLayer Override
 
