@@ -5,7 +5,7 @@ How to use the TPKLayer library
 
 The `TPKLayer` Library allows you to display at TPK file as a map.
 
-**Step 1** Unzip the TPK file. This creates an array of Entry objects. Depending on your operating system you may have to rename the TPK file to .zip so that it becomes a recognized MIME type.
+**Step 1** Unzip the TPK file. This creates an array of Entry objects. Depending on your operating system you may have to rename the TPK file to .zip so that it becomes a recognized MIME type for the html input element.
 
 ```js
 
@@ -24,7 +24,7 @@ The `TPKLayer` Library allows you to display at TPK file as a map.
 
 
 ```
-**Step 2** Create a new instance of TPKLayer and pass the array of Entry objects from the zip file into the `extend()` method's constructor. Then add the layer to the map. As soon as you extend the layer it will start parsing the TPK file. 
+**Step 2** Create a new instance of TPKLayer and pass the array of Entry objects from the zipReader into the `extend()` method's constructor. Then add the layer to the map. As soon as this code executes the layer will start parsing the TPK file. 
 
 
 ```js
@@ -49,7 +49,7 @@ It is a best practice to listen for the following events and handle them appropr
 
 ```js
 	
-	tpkLayer.on("validationError", function(evt){
+	tpkLayer.on("validationEvent", function(evt){
 		//evt.msg is the string message
 		//evt.err is the error 
 		if(evt.msg == tpkLayer.NO_SUPPORT_ERROR){
@@ -57,7 +57,7 @@ It is a best practice to listen for the following events and handle them appropr
 		}
 	})
 	
-	tpkLayer.on("databaseError", function(evt){
+	tpkLayer.on("databaseErrorEvent", function(evt){
 		//evt.msg is the string message
 		//evt.err is the error 
 		if(evt.msg == tpkLayer.DB_INIT_ERROR){
@@ -94,7 +94,7 @@ The following three properties will affect the size of the TPK file. Minimizing 
 * Size of the extent
 * Minimum and maximum zoom level 
 
-It's a general recommended to keep the size of the local database (IndexedDB) below 75MBs, with a maximum of 100MBs for best performance. Allowing the database to grow to large can result in browser crashes and slow app performance. 
+It's a general recommended to keep the size of the local database below 75MBs, with a maximum of 100MBs for best performance. Allowing the database to grow to large can result in browser crashes and slow app performance. 
 
 The amount of memory allowed to the browser is dependant on many variables including the available device memory, other applications already running and the number of open browser tabs.
 
