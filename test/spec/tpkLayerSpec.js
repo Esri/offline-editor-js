@@ -30,4 +30,34 @@ describe("TPKLayer module", function(){
             })
         }.bind(this))
     })
+
+    async.it("Parse file entry", function(done){
+        tpkLayer._fileEntriesLength = 2;
+        tpkLayer._unzipConfFiles(tilesEntries,1,function(evt){
+            var objectSize = tpkLayer.ObjectSize(evt);
+            expect(objectSize).toEqual(1);
+            done();
+        })
+    })
+
+    async.it("Parse Bundle", function(done){
+        var inMemTilesLength = tilesEntries.length;
+        tpkLayer._zeroLengthFileCounter = 0;
+
+        for(var i=0;i < inMemTilesLength;i++){
+
+            var name = tilesEntries[i].filename.toLocaleUpperCase();
+
+            if(tilesEntries[i].compressedSize == 0) tpkLayer._zeroLengthFileCounter++;
+
+            var indexCDI = name.indexOf("CONF.CDI",0);
+            var indexXML = name.indexOf("CONF.XML",0);
+            if(indexCDI == -1 || indexXML == -1){
+                tpkLayer._unzipTileFiles(tilesEntries,i,function(result){
+                    expect(result).toEqual(jasmine.any(Object));
+                    done();
+                });
+            }
+        }
+    })
 })
