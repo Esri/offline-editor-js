@@ -6,6 +6,17 @@ describe("TPKLayer module", function(){
 
     console.log("Init tests...")
 
+    it("Run library validation tests", function(done){
+        tpkLayer.on("validationEvent",function(evt){
+            expect(evt.err).toBeNull();
+            if(evt.msg == tpkLayer.WINDOW_VALIDATED)expect(evt.msg).toBe(tpkLayer.WINDOW_VALIDATED);
+            if(evt.msg == tpkLayer.DB_VALIDATED) expect(evt.msg).toBe(tpkLayer.DB_VALIDATED);
+        })
+
+        tpkLayer._validate();
+    })
+
+
     async.it("Validate TPKLayer init", function(done)
     {
         expect(tpkLayer).toEqual(jasmine.any(Object));
