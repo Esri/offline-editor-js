@@ -255,13 +255,13 @@ describe("TPKLayer module", function(){
 
         db.deleteAll(function(success,err){
             expect(success).toBeTruthy();
-        })
 
-        tpkLayer._getInMemTiles("testInMem","test",256,1000,1000,"tileId",function(img,id,url){
-            expect(img).toBeNull()
-            expect(id).toBe("tileId")
-            expect(url).toBe("testInMem");
-            done();
+            tpkLayer._getInMemTiles("test","test",256,1000,1000,"tileId",function(img,id,url){
+                expect(img).toBeNull()
+                expect(id).toBe("tileId")
+                expect(url).toBe("test");
+                done();
+            })
         })
     })
 
