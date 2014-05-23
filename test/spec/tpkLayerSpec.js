@@ -154,6 +154,13 @@ describe("TPKLayer module", function(){
         done();
     })
 
+    async.it("Validate ArrayBuffer to Base64 conversion", function(done){
+        var arr = new Uint8Array([1,0,0,0,0,0])
+        var string = tpkLayer._base64ArrayBuffer(arr.buffer);
+        expect(string).toBe("AQAAAAAA");
+        done();
+    })
+
     async.it("Validate offset", function(done){
         var offset = tpkLayer._getOffset(0,255,255,1,1);
         expect(offset).toBe(163846);
