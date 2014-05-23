@@ -248,6 +248,23 @@ describe("TPKLayer module", function(){
         });
     })
 
+    async.it("Get tiles - do not store", function(done){
+        var url = "test";
+        var db = tpkLayer.store;
+        tpkLayer.isDBWriteable(false);
+
+        db.deleteAll(function(success,err){
+            expect(success).toBeTruthy();
+        })
+
+        tpkLayer._getInMemTiles("testInMem","test",256,1000,1000,"tileId",function(img,id,url){
+            expect(img).toBeNull()
+            expect(id).toBe("tileId")
+            expect(url).toBe("testInMem");
+            done();
+        })
+    })
+
     it("Get ObjectSize", function(done){
         var testObj = {a:"1",b:"2",c:"3"}
         var size = tpkLayer.ObjectSize(testObj);
