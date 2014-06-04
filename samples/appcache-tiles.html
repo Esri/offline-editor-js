@@ -73,11 +73,11 @@
         }
     </script>
     <!-- This is a custom build of the ArcGIS API for JavaScript using the new Web Optimizer Tool -->
-    <script src="http://js.arcgis.com/3.9/" data-dojo-config="async: true"></script>
+    <script src="http://js.arcgis.com/o/agup_hack4co/appcache2/dojo/dojo.js" data-dojo-config="async: true"></script>
     <!-- Use this tag below if you are hosting your ArcGIS API for JavaScript files locally -->
     <!--<script src="libs/dojo/dojo/dojo.js" data-dojo-config="async: true"></script>-->
     <script src="../vendor/IndexedDBShim/dist/IndexedDBShim.min.js"></script>
-    <script src="../vendor/offline/offline.min.js"></script>
+    <script src="http://github.hubspot.com/offline/js/offline.js"></script>
     <script>
         Offline.options = {
             checks: {
@@ -91,6 +91,11 @@
         }
     </script>
     <script>
+
+        testOffline(function(result){
+            console.log("OFFLINE TEST " + result);
+        })
+
         var map,offlineTileEnabler,baseMapLayer,zoom = 18;
         var globalState = {};
         var _wantToCancel;
@@ -112,7 +117,7 @@
 
                     //Make sure map shows up after a browser refresh
                     Offline.state === 'up' ? zoom = 18 : zoom = 17;
-
+console.log("STATE OFFLINE: " + Offline.state)
                     map = new Map("map", {
                         basemap: "topo",
                         center: [-122.45,37.75], // long, lat
@@ -159,6 +164,7 @@
                             if( success )
                             {
                                 console.log("Offline tile lib is enabled");
+                                baseMapLayer.offline.online = Offline.state;
 
                                 //using null sets this for CORS
                                 baseMapLayer.offline.proxyPath = null;
@@ -180,7 +186,7 @@
                         console.log("CACHE ERROR: " + JSON.stringify(evt));
                     }
 
-                    function updateState(){
+                    function updateState(){ console.log("OFFLINE STATUS : " + Offline.state)
                         if(Offline.state === 'up'){
                             updateOfflineUsage();
                             imgOfflineIndicator.src = bluePinPath;
@@ -322,6 +328,32 @@
                 imgOfflineIndicator.offlineColor = "blue";
                 baseMapLayer.goOnline();
             }
+        }
+
+        function testOffline(callback){
+            var req = new XMLHttpRequest();
+            var url = 'http://esri.github.io/offline-editor-js/tiny-image.png?_=' + (Math.floor(Math.random() * 1000000000));
+            req.overrideMimeType("text/plain; charset=x-user-defined");
+            req.open("GET", "../lib/resource-proxy/proxy.php?" + url, true);
+
+            req.onload = function()
+            {
+                if( req.status === 200 && req.responseText !== "")
+                {
+                    callback(true);
+                }
+                else
+                {
+                    console.log("Offline test failed!");
+                    callback(false);
+                }
+            };
+            req.onerror = function(e)
+            {
+                console.log("Offline test failed!");
+                callback(false);
+            };
+            req.send(null);
         }
 
         function panLeft(){
