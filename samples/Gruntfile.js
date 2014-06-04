@@ -26,6 +26,8 @@ module.exports = function(grunt) {
                         "#",
 						"# ArcGIS API for JavaScript files",
 						"<%= pkg.optimizedApiURL %>/dojo/dojo.js",
+                        "<%= pkg.optimizedApiURL %>/dojo/nls/dojo_en-us.js",
+                        "<%= pkg.optimizedApiURL %>/dojo/selector/acme.js",
                         "#",
 						"<%= pkg.arcGISBaseURL %>/js/dojo/dojox/gfx/svg.js",
 						"<%= pkg.arcGISBaseURL %>/js/dojo/dojo/resources/blank.gif",
@@ -42,7 +44,7 @@ module.exports = function(grunt) {
                         "# required for web maps",
                         "<%= pkg.arcGISBaseURL %>/js/esri/dijit/images/ajax-loader.gif",
                         "#",
-						"# required custom libs",
+						"# required local html",
 						"# /xyz/style.css",
 						"# /img/1.png"],
 		        network: [
@@ -56,18 +58,17 @@ module.exports = function(grunt) {
 		      },
 		      src: [
 		            "*.html",
-		          /*"js/*.min.js",*/
-                  "samples/images/*.png",
-				  "vendor/IndexedDBShim/dist/*.min.js",
-                  "vendor/offline/offline.min.js",
-				  "lib/tiles/*.js",
-                  "lib/tiles/*.png",
-                  "lib/tiles/*.psd",
-                  "utils/*.js"
-                  /*
-				  "images/*",
-		          "css/*.css"
-		          */
+                    "../samples/images/*.png",
+                    "../vendor/IndexedDBShim/dist/*.min.js",
+                    "../vendor/offline/offline.min.js",
+                    "../lib/tiles/*.js",
+                    "../lib/tiles/*.png",
+                    "../lib/tiles/*.psd",
+                    "../utils/*.js"
+                    /*
+                    "images/*",
+                    "css/*.css"
+                    */
 		      ],
 		      dest: "<%= pkg.manifestName %>"
 		    }
