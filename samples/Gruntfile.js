@@ -29,6 +29,7 @@ module.exports = function(grunt) {
                         "<%= pkg.optimizedApiURL %>/dojo/nls/dojo_en-us.js",
                         "<%= pkg.optimizedApiURL %>/dojo/selector/acme.js",
                         "#",
+                        "<%= pkg.arcGISBaseURL %>/js/esri/dijit/images/popup-sprite.png",
 						"<%= pkg.arcGISBaseURL %>/js/dojo/dojox/gfx/svg.js",
 						"<%= pkg.arcGISBaseURL %>/js/dojo/dojo/resources/blank.gif",
 						"<%= pkg.arcGISBaseURL %>/js/esri/dijit/images/ajax-loader.gif",
