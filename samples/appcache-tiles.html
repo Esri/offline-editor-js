@@ -194,11 +194,11 @@ console.log("LIBRARY STATUS IS: " + Offline.state);
                 if(Offline.state === 'up'){
 //                    updateOfflineUsage();
                     imgOfflineIndicator.src = bluePinPath;
-                    baseMapLayer.goOnline();
+                    if(typeof baseMapLayer != "undefined") baseMapLayer.goOnline();
                 }
                 else{
                     imgOfflineIndicator.src = redPinPath;
-                    baseMapLayer.goOffline();
+                    if(typeof baseMapLayer != "undefined") baseMapLayer.goOffline();
                 }
             }
 
