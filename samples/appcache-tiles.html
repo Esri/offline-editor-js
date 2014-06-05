@@ -94,6 +94,7 @@ ask if you want to reload the application.
 var map,offlineTileEnabler,baseMapLayer,zoom = 18;
 var globalState = {};
 var _wantToCancel;
+var _isOnline = true;
 var minZoomAdjust = -1, maxZoomAdjust = 1, mMinZoom, mMaxZoom;
 var imgOfflineIndicator,btnGetTiles,btnOnlineOffline,btnZoom;
 var tiles,appCacheManager,tileInfo;
@@ -108,22 +109,31 @@ require(["esri/map","utils/appCacheManager","tiles/offlineTilesEnabler","dojo/on
             imgOfflineIndicator.offlineColor = "blue";
 
             Offline.check();
+            Offline.on('up down', updateState );
 
-            //Make sure map shows up after a browser refresh
-            Offline.state === 'up' ? zoom = 18 : zoom = 17;
+            verifyOnline(function(result){ console.log("VERIFY ONLINE " + result)
+                result == true ? _isOnline = true : _isOnline = false;
+                startMap();
 
-            map = new Map("map", {
-                basemap: "topo",
-                center: [-122.45,37.75], // long, lat
-                zoom: zoom,
-                sliderStyle: "small"
-            });
-
-            map.on("load",function(evt){
-                init();
-                initOfflineTileEnabler();
-                console.log("level: " + map.getLevel() + ", maxZoom: " + map.getMaxZoom());
             })
+
+            function startMap(){
+                //Make sure map shows up after a browser refresh
+                Offline.state === 'up' ? zoom = 18 : zoom = 17;
+
+                map = new Map("map", {
+                    basemap: "topo",
+                    center: [-122.45,37.75], // long, lat
+                    zoom: zoom,
+                    sliderStyle: "small"
+                });
+
+                map.on("load",function(evt){
+                    init();
+                    initOfflineTileEnabler();
+                    console.log("level: " + map.getLevel() + ", maxZoom: " + map.getMaxZoom());
+                })
+            }
 
             function init(){
                 map.on("extent-change",function(evt){
@@ -151,8 +161,7 @@ require(["esri/map","utils/appCacheManager","tiles/offlineTilesEnabler","dojo/on
                 mMinZoom = map.getMinZoom();
 
                 offlineTileEnabler = new OfflineTileEnabler();
-                baseMapLayer = offlineTileEnabler.getBasemapLayer(map);
-                baseMapLayer.offline.online =
+                baseMapLayer = offlineTileEnabler.getBasemapLayer(map); console.log("Offline State: " + Offline.state)
 
                 offlineTileEnabler.extend(baseMapLayer,function(success)
                 {
@@ -160,7 +169,6 @@ require(["esri/map","utils/appCacheManager","tiles/offlineTilesEnabler","dojo/on
                     {
                         console.log("Offline tile lib is enabled");
                         Offline.check();
-                        Offline.on('up down', updateState );
 console.log("LIBRARY STATUS IS: " + Offline.state);
                         //using null sets this for CORS
                         baseMapLayer.offline.proxyPath = null;
@@ -171,7 +179,7 @@ console.log("LIBRARY STATUS IS: " + Offline.state);
                     {
                         alert("error initializing storage - browser doesn't support indexeddb or websql")
                     }
-                }.bind(this));
+                }.bind(this),_isOnline);
             }
 
             function cacheEventHandler(evt){
@@ -309,6 +317,29 @@ function downloadTiles(){
             }
         }
     }.bind(this))
+}
+
+function verifyOnline(callback){
+    var req = new XMLHttpRequest();
+    req.open("GET", "images/blue-pin.png?" + (Math.floor(Math.random() * 1000000000)), true);
+    req.onload = function()
+    {
+        if( req.status === 200 && req.responseText !== "")
+        {
+            callback(true);
+        }
+        else
+        {
+            console.log("verifyOffline failed");
+            callback(false);
+        }
+    };
+    req.onerror = function(e)
+    {
+        console.log("verifyOffline failed: " + e);
+        callback(false);
+    };
+    req.send(null);
 }
 
 function goOnlineOffline(){
