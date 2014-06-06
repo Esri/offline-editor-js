@@ -260,7 +260,9 @@ require([
                     initAppCacheManager();
                     initOfflineTileEnabler();
                     if(_isOnline == false){
-                        reconstituteGraphicsLayer(busStopsFeatureLayer,features);;
+                        var fLayer = JSON.parse(localStorage.offlineLayerDef);
+                        var fFeatures = JSON.parse(localStorage.offlineFeature);
+                        reconstituteGraphicsLayer(fLayer,fFeatures);;
                     }
                 })
 
@@ -405,12 +407,12 @@ require([
 
             function reconstituteGraphicsLayer(featureLayer,featuresArr){
 
-                if(layerDefinition == null){
+                if(featureLayer == null){
                     alert("No features available available locally.")
                 }
                 else{
                     var featureDefinition = {
-                        "layerDefinition":layerDefinition,
+                        "layerDefinition":featureLayer,
                         "featureSet":{
                             "features": featuresArr,
                             "geometryType": "esriGeometryPoint"
