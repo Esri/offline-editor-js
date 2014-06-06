@@ -190,28 +190,34 @@ require([
         function(Map,Query,FeatureLayer,Color,SimpleMarkerSymbol,SimpleRenderer,AttributeInspector,
                  OfflineFeaturesManager,OfflineTileEnabler,editsStore,AppCacheManager,domConstruct,on,dom,Button,SimpleTextArea) {
 
+            // Variables for edit handling
             var textTimer;
             var _isOnline = true;
-            var appCacheManager;
             var offlineFeaturesManager;
             var map,busStopsFeatureLayer,currentFeature;
             var imgOfflineIndicator,btnOnlineOffline;
             var pendingEdits = document.getElementById("pending-edits");
 
             // Variables for tile handling
+            var _wantToCancel;
             var globalState = {};
             var offlineTileEnabler, baseMapLayer;
             var btnGetTiles = document.getElementById("btn-get-tiles");
             var tileInfo = document.getElementById("tile-info")
             tileInfo.innerHTML = "Tile count: 0\r\nBytes: 0";
             var minZoomAdjust = -1, maxZoomAdjust = 1, mMinZoom, mMaxZoom, zoom = 18;
+            var EXTENT_BUFFER = 0; //buffers the map extent in meters
 
+            // Symbols and images
             var redPinPath = "../samples/images/red-pin.png";
             var bluePinPath = "../samples/images/blue-pin.png"
 
             var defaultSymbol = new SimpleMarkerSymbol().setStyle(
                     SimpleMarkerSymbol.STYLE_DIAMOND).setColor(
                     new Color([255,0,0,0.5]));
+
+            // Miscellaneous variables
+            var appCacheManager;
 
             initOffline();
 
