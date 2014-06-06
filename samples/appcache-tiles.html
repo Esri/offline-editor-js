@@ -99,7 +99,7 @@ ask if you want to reload the application.
 <div id="button-div1">
     <img id="img-offline-indicator"  src="../samples/images/blue-pin.png"/>
     <textarea contenteditable="false" id="tile-info"></textarea>
-    <button class="basic-btn" id="btn-get-tiles" onclick="downloadTiles()">1. Download Tiles</button>
+    <button class="basic-btn" id="btn-get-tiles">1. Download Tiles</button>
     <button class="basic-btn" id="btn-online-offline">2. Go Offline</button>
     <button class="basic-btn" id="btn-zoom-out" onclick="panLeft()">3. Pan left</button>
 </div>
@@ -190,6 +190,8 @@ require(["esri/map","utils/appCacheManager","tiles/offlineTilesEnabler","dojo/on
                         baseMapLayer.offline.proxyPath = null;
 
                         on(btnOnlineOffline,"click",goOnlineOffline);
+                        on(btnGetTiles,"click",downloadTiles);
+                        
                         updateOfflineUsage();
                     }
                     else
