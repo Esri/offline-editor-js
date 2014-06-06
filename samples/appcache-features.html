@@ -395,6 +395,26 @@ require([
             }
 
             /**
+             * ************************************
+             * TILE MANAGEMENT CODE GOES BELOW HERE
+             * ************************************
+             */
+
+            /**
+             * Utility function to validate min and max zoom settings of the map
+             */
+            function getMinMaxZoom(){
+
+                var zoom = {};
+                var min = map.getLevel() + minZoomAdjust;
+                var max = map.getLevel() + maxZoomAdjust;
+                zoom.max = Math.min(mMaxZoom, max);  //prevent errors by setting the tile layer floor
+                zoom.min = Math.max(mMinZoom, min);   //prevent errors by setting the tile layer ceiling
+
+                return zoom;
+            }
+
+            /**
              * Attempts an http request to verify if app is online or offline.
              * Use this in conjunction with the offline checker library: offline.min.js
              * @param callback
