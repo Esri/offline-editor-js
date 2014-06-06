@@ -190,7 +190,7 @@ require([
             var bluePinPath = "../samples/images/blue-pin.png"
 
             var defaultSymbol = new SimpleMarkerSymbol().setStyle(
-                    SimpleMarkerSymbol.STYLE_SQUARE).setColor(
+                    SimpleMarkerSymbol.STYLE_DIAMOND).setColor(
                     new Color([255,0,0,0.5]));
 
             initOffline();
@@ -207,6 +207,8 @@ require([
                 outFields: ["OBJECTID","BSID","ROUTES","STOPNAME"]
             });
 
+            // Set the graphics to red boxes to make it easy to click on them
+            // on a mobile device.
             busStopsFeatureLayer.setRenderer(new SimpleRenderer(defaultSymbol));
 
             map.on("load",function(evt){
@@ -311,6 +313,10 @@ require([
                                 console.log("ERROR " + JSON.stringify(err));
                             });
 
+                    // NOTE: To make the info window for mobile use you would need
+                    // to switch a mobile friendly 'view' containing all the attributes.
+                    // This pattern is for testing only. It's on the TO-DO list to make
+                    // this mobile friendly.
                     map.infoWindow.setTitle(currentFeature.attributes.STOPNAME);
                     map.infoWindow.show(evt.screenPoint,map.getInfoWindowAnchor(evt.screenPoint));
                 }.bind(this));
