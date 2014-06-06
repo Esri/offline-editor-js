@@ -209,18 +209,6 @@ require(["esri/map","utils/appCacheManager","tiles/offlineTilesEnabler","dojo/on
                 }.bind(this),_isOnline);
             }
 
-            function cacheLoaderHandler(evt){
-                if(evt == appCacheManager.CACHE_LOADED) console.log("Application cache successfully loaded!")
-            }
-
-            function cacheEventHandler(evt){
-                console.log("CACHE EVENT: " + JSON.stringify(evt));
-            }
-
-            function cacheErrorHandler(evt){
-                console.log("CACHE ERROR: " + JSON.stringify(evt));
-            }
-
             function updateState(){
                 if(Offline.state === 'up'){
                     updateOfflineUsage();
@@ -368,6 +356,18 @@ require(["esri/map","utils/appCacheManager","tiles/offlineTilesEnabler","dojo/on
                     callback(false);
                 };
                 req.send(null);
+            }
+
+            function cacheLoaderHandler(evt){
+                if(evt == appCacheManager.CACHE_LOADED) console.log("Application cache successfully loaded!")
+            }
+
+            function cacheEventHandler(evt){
+                console.log("CACHE EVENT: " + JSON.stringify(evt));
+            }
+
+            function cacheErrorHandler(evt){
+                console.log("CACHE ERROR: " + JSON.stringify(evt));
             }
         }
 );
