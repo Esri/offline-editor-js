@@ -386,7 +386,7 @@ require([
 
                 offlineFeaturesManager.goOnline(function(success,error){
                     if(error === undefined){
-                        btnOnlineOffline.innerHTML = "Go Offline";
+                        btnOnlineOffline.innerHTML = "1. Go Offline";
                         imgOfflineIndicator.src = bluePinPath;
                         imgOfflineIndicator.offlineColor = "blue";
                         console.log("Online.");
@@ -395,13 +395,17 @@ require([
                         alert("There was a problem syncing offline edits: " + JSON.stringify(error));
                     }
                 });
+
+                updateOfflineUsage();
+                if(typeof baseMapLayer != "undefined") baseMapLayer.goOnline();
             }
 
             function goOffline(){
-                btnOnlineOffline.innerHTML = "Go Online";
+                btnOnlineOffline.innerHTML = "1. Go Online";
                 imgOfflineIndicator.src = redPinPath;
                 imgOfflineIndicator.offlineColor = "red";
                 offlineFeaturesManager.goOffline();
+                if(typeof baseMapLayer != "undefined") baseMapLayer.goOffline();
 
             }
 
@@ -508,7 +512,7 @@ require([
                         alert("Tile download complete");
                     }
 
-                    btnGetTiles.innerHTML = '1. Download Tiles';
+                    btnGetTiles.innerHTML = '2. Download Tiles';
                 }
                 return _wantToCancel; //determines if a cancel request has been issued
             }
