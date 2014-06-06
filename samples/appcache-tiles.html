@@ -313,31 +313,31 @@ require(["esri/map","utils/appCacheManager","tiles/offlineTilesEnabler","dojo/on
                     }
                 }.bind(this))
             }
+
+            function verifyOnline(callback){
+                var req = new XMLHttpRequest();
+                req.open("GET", "images/blue-pin.png?" + (Math.floor(Math.random() * 1000000000)), true);
+                req.onload = function()
+                {
+                    if( req.status === 200 && req.responseText !== "")
+                    {
+                        callback(true);
+                    }
+                    else
+                    {
+                        console.log("verifyOffline failed");
+                        callback(false);
+                    }
+                };
+                req.onerror = function(e)
+                {
+                    console.log("verifyOffline failed: " + e);
+                    callback(false);
+                };
+                req.send(null);
+            }
         }
 );
-
-function verifyOnline(callback){
-    var req = new XMLHttpRequest();
-    req.open("GET", "images/blue-pin.png?" + (Math.floor(Math.random() * 1000000000)), true);
-    req.onload = function()
-    {
-        if( req.status === 200 && req.responseText !== "")
-        {
-            callback(true);
-        }
-        else
-        {
-            console.log("verifyOffline failed");
-            callback(false);
-        }
-    };
-    req.onerror = function(e)
-    {
-        console.log("verifyOffline failed: " + e);
-        callback(false);
-    };
-    req.send(null);
-}
 
 function panLeft(){
     map.panLeft();
