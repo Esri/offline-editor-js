@@ -137,7 +137,8 @@
             paths: {
                 edit: locationPath  + "/../lib/edit",
                 vendor: locationPath + "/../vendor",
-                utils: locationPath + "/../utils"
+                utils: locationPath + "/../utils",
+                tiles: locationPath  + "/../lib/tiles"
             }
         }
     </script>
@@ -168,18 +169,19 @@ require([
             "esri/Color",
             "esri/symbols/SimpleMarkerSymbol",
             "esri/renderers/SimpleRenderer",
+            "esri/dijit/AttributeInspector",
             "edit/offlineFeaturesManager",
+            "tiles/offlineTilesEnabler",
             "edit/editsStore",
             "utils/appCacheManager",
-            "esri/dijit/AttributeInspector",
             "dojo/dom-construct",
             "dojo/on",
             "dojo/dom",
             "dijit/form/Button",
             "dijit/form/SimpleTextarea",
             "dojo/domReady!"],
-        function(Map,Query,FeatureLayer,Color,SimpleMarkerSymbol,SimpleRenderer,
-                 OfflineFeaturesManager,editsStore,AppCacheManager,AttributeInspector,domConstruct,on,dom,Button,SimpleTextArea) {
+        function(Map,Query,FeatureLayer,Color,SimpleMarkerSymbol,SimpleRenderer,AttributeInspector,
+                 OfflineFeaturesManager,offlineTilesEnabler,editsStore,AppCacheManager,domConstruct,on,dom,Button,SimpleTextArea) {
 
             var textTimer;
             var appCacheManager;
