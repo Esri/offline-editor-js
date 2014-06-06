@@ -93,6 +93,18 @@ ask if you want to reload the application.
         }
     }
 </script>
+</head>
+
+<body>
+<div id="button-div1">
+    <img id="img-offline-indicator" onclick="goOnlineOffline()" src="../samples/images/blue-pin.png"/>
+    <textarea contenteditable="false" id="tile-info"></textarea>
+    <button class="basic-btn" id="btn-get-tiles" onclick="downloadTiles()">1. Download Tiles</button>
+    <button class="basic-btn" onclick="goOnlineOffline()" id="btn-online-offline">2. Go Offline</button>
+    <button class="basic-btn" id="btn-zoom-out" onclick="panLeft()">3. Pan left</button>
+</div>
+<div id="map"></div>
+
 <script>
 var map,offlineTileEnabler,baseMapLayer,zoom = 18;
 var globalState = {};
@@ -207,14 +219,12 @@ require(["esri/map","utils/appCacheManager","tiles/offlineTilesEnabler","dojo/on
 
             function updateOfflineUsage()
             {
-                var count = 0;
-                baseMapLayer.offline.store.getAllTiles(function(tiles){
-                    if(tiles != null) {
-                        count++;
+                baseMapLayer.offline.store.usedSpace(function(result,err){
+                    if(result != null){
+                        tileInfo.innerHTML = "DB Tile count: " + result.tileCount + "\r\nDB Bytes: " +  result.sizeBytes;
                     }
                     else{
-                        console.log("COUNT " + count)
-                        tileInfo.innerHTML = "Tile count: " + count + "\r\nBytes: " + count.sizeBytes;
+                        tileInfo.innerHTML = "DB Tile count: " + count + "\r\nDB Bytes: Error";
                     }
                 })
             }
@@ -330,15 +340,5 @@ function panLeft(){
     map.panLeft();
 }
 </script>
-</head>
 
-<body>
-<div id="button-div1">
-    <img id="img-offline-indicator" onclick="goOnlineOffline()" src="../samples/images/blue-pin.png"/>
-    <textarea contenteditable="false" id="tile-info"></textarea>
-    <button class="basic-btn" id="btn-get-tiles" onclick="downloadTiles()">1. Download Tiles</button>
-    <button class="basic-btn" onclick="goOnlineOffline()" id="btn-online-offline">2. Go Offline</button>
-    <button class="basic-btn" id="btn-zoom-out" onclick="panLeft()">3. Pan left</button>
-</div>
-<div id="map"></div>
 </body>
