@@ -249,6 +249,7 @@ require([
 
                 map.on("load",function(evt){
                     initAppCacheManager();
+                    initOfflineTileEnabler();
                 })
 
                 map.on("layers-add-result",initEditing);
