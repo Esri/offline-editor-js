@@ -170,13 +170,13 @@ require(["esri/map","utils/appCacheManager","tiles/offlineTilesEnabler","dojo/on
                 {
                     if( success )
                     {
-                        console.log("Offline tile lib is enabled");
+                        console.log("Offline tile lib is enabled. Application state is: " + Offline.state);
                         Offline.check();
-console.log("LIBRARY STATUS IS: " + Offline.state);
+
                         //using null sets this for CORS
                         baseMapLayer.offline.proxyPath = null;
 
-//                        updateOfflineUsage();
+                        updateOfflineUsage();
                     }
                     else
                     {
@@ -195,7 +195,7 @@ console.log("LIBRARY STATUS IS: " + Offline.state);
 
             function updateState(){
                 if(Offline.state === 'up'){
-//                    updateOfflineUsage();
+                    updateOfflineUsage();
                     imgOfflineIndicator.src = bluePinPath;
                     if(typeof baseMapLayer != "undefined") baseMapLayer.goOnline();
                 }
@@ -207,15 +207,23 @@ console.log("LIBRARY STATUS IS: " + Offline.state);
 
             function updateOfflineUsage()
             {
-                var count = getEstimateTileCount(function(info,err){
-                    if(info != null){
-                        console.log("COUNT " + info)
-                        tileInfo.innerHTML = "Tile count: " + info.tileCount + "\r\nBytes: " + info.sizeBytes;
+//                var count = getEstimateTileCount(function(count){
+//                    if(count != null){
+//                        console.log("COUNT " + count)
+//                        tileInfo.innerHTML = "Tile count: " + count + "\r\nBytes: " + count.sizeBytes;
+//                    }
+//                });
+
+                var count = 0;
+                baseMapLayer.offline.store.getAllTiles(function(tiles){
+                    if(tiles != null) {
+                        count++;
                     }
                     else{
-                        console.log("ERROR updateOfflineUsage(): " + JSON.stringify(err));
+                        console.log("COUNT " + count)
+                        tileInfo.innerHTML = "Tile count: " + count + "\r\nBytes: " + count.sizeBytes;
                     }
-                });
+                })
             }
 
             /**
@@ -224,33 +232,42 @@ console.log("LIBRARY STATUS IS: " + Offline.state);
              */
             function getEstimateTileCount(callback)
             {
-                var extent = baseMapLayer.getExtentBuffer(EXTENT_BUFFER,map.extent);
-                var level = map.getLevel();
-                var url = baseMapLayer.getTileUrlsByExtent(extent,level)[0];
-                baseMapLayer._lastTileUrl = url;
-                baseMapLayer.estimateTileSize(function(tileSize,err){
-
-                    if(tileSize != null){
-                        var totalEstimation = {tileCount:0,sizeBytes:0};
-
-                        var zoom = getMinMaxZoom();
-
-                        for(var level = zoom.min; level<= zoom.max; level++)
-                        {
-                            var levelEstimation = baseMapLayer.getLevelEstimation(baseMapLayer.getExtentBuffer(EXTENT_BUFFER,map.extent),level,tileSize);
-
-                            totalEstimation.tileCount += levelEstimation.tileCount;
-                            totalEstimation.sizeBytes += levelEstimation.sizeBytes;
-                        }
-
-                        console.log("Size estimate: " + totalEstimation.sizeBytes + ", tile count: " + totalEstimation.tileCount)
-                        callback(totalEstimation,null);
+                var count = 0;
+                baseMapLayer.offline.store.getAllTiles(function(tiles){
+                    if(tiles != null) {
+                        count++;
                     }
                     else{
-                        callback(null,err);
+                        callback(count);
                     }
-
-                }.bind(this))
+                })
+//                var extent = baseMapLayer.getExtentBuffer(EXTENT_BUFFER,map.extent);
+//                var level = map.getLevel();
+//                var url = baseMapLayer.getTileUrlsByExtent(extent,level)[0];
+//                baseMapLayer._lastTileUrl = url;
+//                baseMapLayer.estimateTileSize(function(tileSize,err){
+//
+//                    if(tileSize != null){
+//                        var totalEstimation = {tileCount:0,sizeBytes:0};
+//
+//                        var zoom = getMinMaxZoom();
+//
+//                        for(var level = zoom.min; level<= zoom.max; level++)
+//                        {
+//                            var levelEstimation = baseMapLayer.getLevelEstimation(baseMapLayer.getExtentBuffer(EXTENT_BUFFER,map.extent),level,tileSize);
+//
+//                            totalEstimation.tileCount += levelEstimation.tileCount;
+//                            totalEstimation.sizeBytes += levelEstimation.sizeBytes;
+//                        }
+//
+//                        console.log("Size estimate: " + totalEstimation.sizeBytes + ", tile count: " + totalEstimation.tileCount)
+//                        callback(totalEstimation,null);
+//                    }
+//                    else{
+//                        callback(null,err);
+//                    }
+//
+//                }.bind(this))
             }
         }
 );
