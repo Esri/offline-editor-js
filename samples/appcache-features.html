@@ -1,6 +1,6 @@
 <!DOCTYPE html>
-<html>
-<!--<html manifest="appcache-features.appcache">-->
+<!--<html>-->
+<html manifest="appcache-features.appcache">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no"/>
@@ -194,8 +194,9 @@ require([
             var textTimer;
             var _isOnline = true;
             var offlineFeaturesManager;
+            var layerDefinition = {};
             var map,busStopsFeatureLayer,currentFeature;
-            var imgOfflineIndicator,btnOnlineOffline;
+            var imgOfflineIndicator;
             var pendingEdits = document.getElementById("pending-edits");
 
             // Variables for tile handling
@@ -218,6 +219,7 @@ require([
 
             // Miscellaneous variables
             var appCacheManager;
+            var btnOnlineOffline = document.getElementById("btn-online-offline");
 
             initOffline();
 
@@ -259,6 +261,14 @@ require([
                 })
 
                 map.on("layers-add-result",initEditing);
+                busStopsFeatureLayer.on("update-end",function(evt){
+                    layerDefinition.objectIdFieldName = evt.target.objectIdField;
+                    layerDefinition.globalIdFieldName = evt.target.globalIdField;
+                    layerDefinition.geometryType = evt.target.geometryType;
+                    layerDefinition.spatialReference = evt.target.spatialReference;
+                    layerDefinition.fields = evt.target.fields;
+                    console.log("BOOOYAH")
+                })
 
                 map.addLayers([busStopsFeatureLayer]);
             }
@@ -293,8 +303,6 @@ require([
                 map.infoWindow.on("hide", function() {
                     busStopsFeatureLayer.clearSelection();
                 });
-
-                btnOnlineOffline = document.getElementById("btn-online-offline");
 
                 var layerInfos = [{
                     'featureLayer': busStopsFeatureLayer,
@@ -368,6 +376,26 @@ require([
                 map.infoWindow.setContent(attInspector.domNode);
                 map.infoWindow.resize(350, 270);
 
+            }
+
+            function reconstituteGraphicsLayer(featureLayer,/* array */featuresArr){
+
+                if(layerDefinition == null){
+                    alert("No features available available locally.")
+                }
+                else{
+                    var featureDefinition = {
+                        "layerDefinition":layerDefinition,
+                        "featureSet":{
+                            "features": featuresArr,
+                            "geometryType": "esriGeometryPoint"
+                        }
+
+                    }
+
+                    featureLayer = new FeatureLayer(featureDefinition);
+                    map.addLayer(featureLayer);
+                }
             }
 
             function updateStatus(){
