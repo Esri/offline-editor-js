@@ -12,7 +12,8 @@ The use cases for using this sample are to ensure you can reload and restart you
 one it is offline.
 
 It is strongly recommended that you use your own optimized build of the ArcGIS API for JavaScript
-using the Web Optimizer: http://jso.arcgis.com/
+using the Web Optimizer: http://jso.arcgis.com/. You can reference the CDN or host it on your
+own web server.
 
 Use the included Grunt task to help generate the manifest file. There is manual
 work involved in determining which files need to go into the manifest. The included manifest
@@ -191,7 +192,7 @@ require(["esri/map","utils/appCacheManager","tiles/offlineTilesEnabler","dojo/on
 
                         on(btnOnlineOffline,"click",goOnlineOffline);
                         on(btnGetTiles,"click",downloadTiles);
-                        
+
                         updateOfflineUsage();
                     }
                     else
