@@ -97,10 +97,10 @@ ask if you want to reload the application.
 
 <body>
 <div id="button-div1">
-    <img id="img-offline-indicator" onclick="goOnlineOffline()" src="../samples/images/blue-pin.png"/>
+    <img id="img-offline-indicator"  src="../samples/images/blue-pin.png"/>
     <textarea contenteditable="false" id="tile-info"></textarea>
     <button class="basic-btn" id="btn-get-tiles" onclick="downloadTiles()">1. Download Tiles</button>
-    <button class="basic-btn" onclick="goOnlineOffline()" id="btn-online-offline">2. Go Offline</button>
+    <button class="basic-btn" id="btn-online-offline">2. Go Offline</button>
     <button class="basic-btn" id="btn-zoom-out" onclick="panLeft()">3. Pan left</button>
 </div>
 <div id="map"></div>
@@ -161,6 +161,7 @@ require(["esri/map","utils/appCacheManager","tiles/offlineTilesEnabler","dojo/on
 
                 btnGetTiles = document.getElementById("btn-get-tiles");
                 btnOnlineOffline = document.getElementById("btn-online-offline");
+
                 btnZoom = document.getElementById("btn-zoom-out");
 
                 tileInfo = document.getElementById("tile-info")
@@ -188,6 +189,7 @@ require(["esri/map","utils/appCacheManager","tiles/offlineTilesEnabler","dojo/on
                         //using null sets this for CORS
                         baseMapLayer.offline.proxyPath = null;
 
+                        on(btnOnlineOffline,"click",goOnlineOffline);
                         updateOfflineUsage();
                     }
                     else
@@ -228,75 +230,91 @@ require(["esri/map","utils/appCacheManager","tiles/offlineTilesEnabler","dojo/on
                     }
                 })
             }
+
+            function getMinMaxZoom(){
+
+                var zoom = {};
+                var min = map.getLevel() + minZoomAdjust;
+                var max = map.getLevel() + maxZoomAdjust;
+                zoom.max = Math.min(mMaxZoom, max);  //prevent errors by setting the tile layer floor
+                zoom.min = Math.max(mMinZoom, min);   //prevent errors by setting the tile layer ceiling
+
+                return zoom;
+            }
+
+            function reportProgress(progress)
+            {
+                console.log("downloading tiles...");
+                if(progress.hasOwnProperty("countNow")){
+                    var percent = Math.floor(progress.countNow / progress.countMax * 100);
+                    btnGetTiles.innerHTML = 'Saving to phone ' + percent + "% - Tap to Cancel";
+                }
+
+                if( progress.finishedDownloading )
+                {
+                    btnGetTiles.innerHTML = "Saving to phone 100% - Tap to Cancel";
+                    updateOfflineUsage();
+
+                    if( progress.cancelRequested )
+                    {
+                        globalState.downloadState = 'cancelled';
+                        alert("Tile download was cancelled");
+                    }
+                    else
+                    {
+                        globalState.downloadState = 'downloaded';
+                        alert("Tile download complete");
+                    }
+
+                    btnGetTiles.innerHTML = '1. Download Tiles';
+                }
+                return _wantToCancel; //determines if a cancel request has been issued
+            }
+
+            function goOnlineOffline(){
+                if(imgOfflineIndicator.offlineColor == "blue"){
+                    btnOnlineOffline.innerHTML = "2. Go Online";
+                    imgOfflineIndicator.src = redPinPath;
+                    imgOfflineIndicator.offlineColor = "red";
+                    baseMapLayer.goOffline();
+                }
+                else{
+                    btnOnlineOffline.innerHTML = "2. Go Offline";
+                    imgOfflineIndicator.src = bluePinPath;
+                    imgOfflineIndicator.offlineColor = "blue";
+                    baseMapLayer.goOnline();
+                }
+            }
+
+            function downloadTiles(){
+                baseMapLayer.deleteAllTiles(function(success,err){
+                    if(success == false){
+                        alert("There was a problem deleting the tile cache");
+                    }
+                    else{
+                        console.log("success deleting tile cache");
+                        var self = this.data;
+
+                        if( globalState.downloadState == 'downloading')
+                        {
+                            console.log("cancel!");
+                            _wantToCancel = true;
+                            btnGetTiles.innerHTML = "cancelling..";
+                        }
+                        else
+                        {
+                            var zoom = getMinMaxZoom();
+
+                            var extent = baseMapLayer.getExtentBuffer(EXTENT_BUFFER,map.extent);
+                            _wantToCancel = false;
+                            baseMapLayer.prepareForOffline(zoom.min, zoom.max, extent, reportProgress.bind(this));
+                            globalState.downloadState = 'downloading';
+                        }
+                    }
+                }.bind(this))
+            }
         }
 );
-
-function getMinMaxZoom(){
-
-    var zoom = {};
-    var min = map.getLevel() + minZoomAdjust;
-    var max = map.getLevel() + maxZoomAdjust;
-    zoom.max = Math.min(mMaxZoom, max);  //prevent errors by setting the tile layer floor
-    zoom.min = Math.max(mMinZoom, min);   //prevent errors by setting the tile layer ceiling
-
-    return zoom;
-}
-
-function reportProgress(progress)
-{
-    console.log("downloading tiles...");
-    if(progress.hasOwnProperty("countNow")){
-        var percent = Math.floor(progress.countNow / progress.countMax * 100);
-        btnGetTiles.innerHTML = 'Saving to phone ' + percent + "% - Tap to Cancel";
-    }
-
-    if( progress.finishedDownloading )
-    {
-        btnGetTiles.innerHTML = "Saving to phone 100% - Tap to Cancel";
-
-        if( progress.cancelRequested )
-        {
-            globalState.downloadState = 'cancelled';
-            alert("Tile download was cancelled");
-        }
-        else
-        {
-            globalState.downloadState = 'downloaded';
-            alert("Tile download complete");
-        }
-
-        btnGetTiles.innerHTML = '1. Download Tiles';
-    }
-    return _wantToCancel; //determines if a cancel request has been issued
-}
-
-function downloadTiles(){
-    baseMapLayer.deleteAllTiles(function(success,err){
-        if(success == false){
-            alert("There was a problem deleting the tile cache");
-        }
-        else{
-            console.log("success deleting tile cache");
-            var self = this.data;
-
-            if( globalState.downloadState == 'downloading')
-            {
-                console.log("cancel!");
-                _wantToCancel = true;
-                btnGetTiles.innerHTML = "cancelling..";
-            }
-            else
-            {
-                var zoom = getMinMaxZoom();
-
-                var extent = baseMapLayer.getExtentBuffer(EXTENT_BUFFER,map.extent);
-                _wantToCancel = false;
-                baseMapLayer.prepareForOffline(zoom.min, zoom.max, extent, reportProgress.bind(this));
-                globalState.downloadState = 'downloading';
-            }
-        }
-    }.bind(this))
-}
 
 function verifyOnline(callback){
     var req = new XMLHttpRequest();
@@ -319,21 +337,6 @@ function verifyOnline(callback){
         callback(false);
     };
     req.send(null);
-}
-
-function goOnlineOffline(){
-    if(imgOfflineIndicator.offlineColor == "blue"){
-        btnOnlineOffline.innerHTML = "2. Go Online";
-        imgOfflineIndicator.src = redPinPath;
-        imgOfflineIndicator.offlineColor = "red";
-        baseMapLayer.goOffline();
-    }
-    else{
-        btnOnlineOffline.innerHTML = "2. Go Offline";
-        imgOfflineIndicator.src = bluePinPath;
-        imgOfflineIndicator.offlineColor = "blue";
-        baseMapLayer.goOnline();
-    }
 }
 
 function panLeft(){
