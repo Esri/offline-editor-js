@@ -200,6 +200,8 @@ require([
                     SimpleMarkerSymbol.STYLE_DIAMOND).setColor(
                     new Color([255,0,0,0.5]));
 
+            initOffline();
+
             /**
              * There have been a few bugs in the offline detection library (offline.min.js)
              * This is a utility check to 100% validate if the application is online or
@@ -211,36 +213,34 @@ require([
 
             })
 
-
-            initOffline();
-
-            map = new Map("map", {
-                basemap: "topo",
-                center: [-104.98,39.74], // long, lat
-                zoom: 10,
-                sliderStyle: "small"
-            });
-
-            busStopsFeatureLayer = new FeatureLayer("http://services.arcgis.com/IZtlGBUe4KTzLOl4/arcgis/rest/services/BPX_RTD_BusStops2/FeatureServer/0",{
-                mode: FeatureLayer.MODE_SNAPSHOT,
-                outFields: ["OBJECTID","BSID","ROUTES","STOPNAME"]
-            });
-
-            // Set the graphics to red boxes to make it easy to click on them
-            // on a mobile device.
-            busStopsFeatureLayer.setRenderer(new SimpleRenderer(defaultSymbol));
-
-            map.on("load",function(evt){
-                initAppCacheManager();
-            })
-
-            map.on("layers-add-result",initEditing);
-
-            map.addLayers([busStopsFeatureLayer]);
-
             function startMap(){
                 //Make sure map shows up after a browser refresh
-//                Offline.state === 'up' ? zoom = 18 : zoom = 17;
+                Offline.check();
+                Offline.state === 'up' ? zoom = 18 : zoom = 17;
+
+                map = new Map("map", {
+                    basemap: "topo",
+                    center: [-104.98,39.74], // long, lat
+                    zoom: 10,
+                    sliderStyle: "small"
+                });
+
+                busStopsFeatureLayer = new FeatureLayer("http://services.arcgis.com/IZtlGBUe4KTzLOl4/arcgis/rest/services/BPX_RTD_BusStops2/FeatureServer/0",{
+                    mode: FeatureLayer.MODE_SNAPSHOT,
+                    outFields: ["OBJECTID","BSID","ROUTES","STOPNAME"]
+                });
+
+                // Set the graphics to red boxes to make it easy to click on them
+                // on a mobile device.
+                busStopsFeatureLayer.setRenderer(new SimpleRenderer(defaultSymbol));
+
+                map.on("load",function(evt){
+                    initAppCacheManager();
+                })
+
+                map.on("layers-add-result",initEditing);
+
+                map.addLayers([busStopsFeatureLayer]);
             }
 
             function initOffline(){
