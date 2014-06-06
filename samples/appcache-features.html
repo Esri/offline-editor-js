@@ -481,6 +481,38 @@ require([
                 }.bind(this))
             }
 
+            /**
+             * Reports the process while downloading tiles.
+             */
+            function reportProgress(progress)
+            {
+                console.log("downloading tiles...");
+                if(progress.hasOwnProperty("countNow")){
+                    var percent = Math.floor(progress.countNow / progress.countMax * 100);
+                    btnGetTiles.innerHTML = 'Saving to phone ' + percent + "% - Tap to Cancel";
+                }
+
+                if( progress.finishedDownloading )
+                {
+                    btnGetTiles.innerHTML = "Saving to phone 100% - Tap to Cancel";
+                    updateOfflineUsage();
+
+                    if( progress.cancelRequested )
+                    {
+                        globalState.downloadState = 'cancelled';
+                        alert("Tile download was cancelled");
+                    }
+                    else
+                    {
+                        globalState.downloadState = 'downloaded';
+                        alert("Tile download complete");
+                    }
+
+                    btnGetTiles.innerHTML = '1. Download Tiles';
+                }
+                return _wantToCancel; //determines if a cancel request has been issued
+            }
+
             function updateOfflineUsage()
             {
                 baseMapLayer.offline.store.usedSpace(function(result,err){
