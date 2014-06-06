@@ -196,15 +196,15 @@ require([
             var offlineFeaturesManager;
             var map,busStopsFeatureLayer,currentFeature;
             var imgOfflineIndicator,btnOnlineOffline;
-
-            var offlineTileEnabler, baseMapLayer;
-
-            var minZoomAdjust = -1, maxZoomAdjust = 1, mMinZoom, mMaxZoom, zoom = 18;
-
             var pendingEdits = document.getElementById("pending-edits");
+
+            // Variables for tile handling
+            var globalState = {};
+            var offlineTileEnabler, baseMapLayer;
             var btnGetTiles = document.getElementById("btn-get-tiles");
             var tileInfo = document.getElementById("tile-info")
             tileInfo.innerHTML = "Tile count: 0\r\nBytes: 0";
+            var minZoomAdjust = -1, maxZoomAdjust = 1, mMinZoom, mMaxZoom, zoom = 18;
 
             var redPinPath = "../samples/images/red-pin.png";
             var bluePinPath = "../samples/images/blue-pin.png"
@@ -441,6 +441,38 @@ require([
                         alert("error initializing storage - browser doesn't support indexeddb or websql")
                     }
                 }.bind(this),_isOnline);
+            }
+
+            /**
+             * Manually starts the process to download and store tiles
+             * in the local database
+             */
+            function downloadTiles(){
+                baseMapLayer.deleteAllTiles(function(success,err){
+                    if(success == false){
+                        alert("There was a problem deleting the tile cache");
+                    }
+                    else{
+                        console.log("success deleting tile cache");
+                        var self = this.data;
+
+                        if( globalState.downloadState == 'downloading')
+                        {
+                            console.log("cancel!");
+                            _wantToCancel = true;
+                            btnGetTiles.innerHTML = "cancelling..";
+                        }
+                        else
+                        {
+                            var zoom = getMinMaxZoom();
+
+                            var extent = baseMapLayer.getExtentBuffer(EXTENT_BUFFER,map.extent);
+                            _wantToCancel = false;
+                            baseMapLayer.prepareForOffline(zoom.min, zoom.max, extent, reportProgress.bind(this));
+                            globalState.downloadState = 'downloading';
+                        }
+                    }
+                }.bind(this))
             }
 
             function updateOfflineUsage()
