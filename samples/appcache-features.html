@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html manifest="appcache-features.appcache">
+<html>
+<!--<html manifest="appcache-features.appcache">-->
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no"/>
@@ -163,6 +164,9 @@ require([
             "esri/map",
             "esri/tasks/query",
             "esri/layers/FeatureLayer",
+            "esri/Color",
+            "esri/symbols/SimpleMarkerSymbol",
+            "esri/renderers/SimpleRenderer",
             "edit/offlineFeaturesManager",
             "edit/editsStore",
             "utils/appCacheManager",
@@ -173,7 +177,8 @@ require([
             "dijit/form/Button",
             "dijit/form/SimpleTextarea",
             "dojo/domReady!"],
-        function(Map,Query,FeatureLayer,OfflineFeaturesManager,editsStore,AppCacheManager,AttributeInspector,domConstruct,on,dom,Button,SimpleTextArea) {
+        function(Map,Query,FeatureLayer,Color,SimpleMarkerSymbol,SimpleRenderer,
+                 OfflineFeaturesManager,editsStore,AppCacheManager,AttributeInspector,domConstruct,on,dom,Button,SimpleTextArea) {
 
             var textTimer;
             var appCacheManager;
@@ -183,6 +188,10 @@ require([
             var pendingEdits = document.getElementById("pending-edits");
             var redPinPath = "../samples/images/red-pin.png";
             var bluePinPath = "../samples/images/blue-pin.png"
+
+            var defaultSymbol = new SimpleMarkerSymbol().setStyle(
+                    SimpleMarkerSymbol.STYLE_SQUARE).setColor(
+                    new Color([255,0,0,0.5]));
 
             initOffline();
 
@@ -196,7 +205,9 @@ require([
             busStopsFeatureLayer = new FeatureLayer("http://services.arcgis.com/IZtlGBUe4KTzLOl4/arcgis/rest/services/BPX_RTD_BusStops2/FeatureServer/0",{
                 mode: FeatureLayer.MODE_SNAPSHOT,
                 outFields: ["OBJECTID","BSID","ROUTES","STOPNAME"]
-            })
+            });
+
+            busStopsFeatureLayer.setRenderer(new SimpleRenderer(defaultSymbol));
 
             map.on("load",function(evt){
                 initAppCacheManager();
