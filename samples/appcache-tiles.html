@@ -207,13 +207,6 @@ require(["esri/map","utils/appCacheManager","tiles/offlineTilesEnabler","dojo/on
 
             function updateOfflineUsage()
             {
-//                var count = getEstimateTileCount(function(count){
-//                    if(count != null){
-//                        console.log("COUNT " + count)
-//                        tileInfo.innerHTML = "Tile count: " + count + "\r\nBytes: " + count.sizeBytes;
-//                    }
-//                });
-
                 var count = 0;
                 baseMapLayer.offline.store.getAllTiles(function(tiles){
                     if(tiles != null) {
@@ -224,50 +217,6 @@ require(["esri/map","utils/appCacheManager","tiles/offlineTilesEnabler","dojo/on
                         tileInfo.innerHTML = "Tile count: " + count + "\r\nBytes: " + count.sizeBytes;
                     }
                 })
-            }
-
-            /**
-             * Gets tile count and size estimates. Not perfect.
-             * @param callback
-             */
-            function getEstimateTileCount(callback)
-            {
-                var count = 0;
-                baseMapLayer.offline.store.getAllTiles(function(tiles){
-                    if(tiles != null) {
-                        count++;
-                    }
-                    else{
-                        callback(count);
-                    }
-                })
-//                var extent = baseMapLayer.getExtentBuffer(EXTENT_BUFFER,map.extent);
-//                var level = map.getLevel();
-//                var url = baseMapLayer.getTileUrlsByExtent(extent,level)[0];
-//                baseMapLayer._lastTileUrl = url;
-//                baseMapLayer.estimateTileSize(function(tileSize,err){
-//
-//                    if(tileSize != null){
-//                        var totalEstimation = {tileCount:0,sizeBytes:0};
-//
-//                        var zoom = getMinMaxZoom();
-//
-//                        for(var level = zoom.min; level<= zoom.max; level++)
-//                        {
-//                            var levelEstimation = baseMapLayer.getLevelEstimation(baseMapLayer.getExtentBuffer(EXTENT_BUFFER,map.extent),level,tileSize);
-//
-//                            totalEstimation.tileCount += levelEstimation.tileCount;
-//                            totalEstimation.sizeBytes += levelEstimation.sizeBytes;
-//                        }
-//
-//                        console.log("Size estimate: " + totalEstimation.sizeBytes + ", tile count: " + totalEstimation.tileCount)
-//                        callback(totalEstimation,null);
-//                    }
-//                    else{
-//                        callback(null,err);
-//                    }
-//
-//                }.bind(this))
             }
         }
 );
