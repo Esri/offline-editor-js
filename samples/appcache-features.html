@@ -1,6 +1,6 @@
 <!DOCTYPE html>
-<html>
-<!--<html manifest="appcache-features.appcache">-->
+<!--<html>-->
+<html manifest="appcache-features.appcache">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no"/>
@@ -368,6 +368,34 @@ require([
                 else{
                     goOnline();
                 }
+            }
+
+            /**
+             * Attempts an http request to verify if app is online or offline.
+             * Use this in conjunction with the offline checker library: offline.min.js
+             * @param callback
+             */
+            function verifyOnline(callback){
+                var req = new XMLHttpRequest();
+                req.open("GET", "images/blue-pin.png?" + (Math.floor(Math.random() * 1000000000)), true);
+                req.onload = function()
+                {
+                    if( req.status === 200 && req.responseText !== "")
+                    {
+                        callback(true);
+                    }
+                    else
+                    {
+                        console.log("verifyOffline failed");
+                        callback(false);
+                    }
+                };
+                req.onerror = function(e)
+                {
+                    console.log("verifyOffline failed: " + e);
+                    callback(false);
+                };
+                req.send(null);
             }
 
             function cacheLoadedHandler(evt){
