@@ -14,6 +14,7 @@ define([
             UPDATE_READY: "update-ready",
             UPDATE_NONE: "no-update",
             CACHE_EVENT: "cache-event",
+            CACHE_LOADED: "cache-loaded",
             CACHE_ERROR: "cache-error",
             appCache: window.applicationCache,
 
@@ -101,6 +102,12 @@ define([
             },
 
             _handleCacheEvents:function(evt){
+                if(evt.hasOwnProperty("total") && evt.hasOwnProperty("loaded")){
+                    if(evt.total == evt.loaded){
+                        console.log("appCacheManager: cache has finished loading.")
+                        this.emit(this.CACHE_LOADED,"cache-loaded");
+                    }
+                }
                 this.emit(this.CACHE_EVENT,evt);
             },
 
