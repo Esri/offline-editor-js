@@ -135,9 +135,22 @@
         }
     </script>
     <script src="http://js.arcgis.com/3.9/"></script>
-    <script>
+</head>
 
-        require([
+<body>
+<div id="button-div1">
+    <button class="basic-btn" data-dojo-type="dijit/form/ToggleButton" id="btn-online-offline">Go Offline</button>
+    <div id="right-div">
+        <img id="img-offline-indicator" src="../samples/images/blue-pin.png"/>
+        <div id="pending-edits">Pending edits: 0</div>
+    </div>
+    </div>
+<div id="test"></div>
+<div id="map"></div>
+
+<script>
+
+require([
             "esri/map",
             "esri/tasks/query",
             "esri/layers/FeatureLayer",
@@ -151,97 +164,97 @@
             "dijit/form/Button",
             "dijit/form/SimpleTextarea",
             "dojo/domReady!"],
-            function(Map,Query,FeatureLayer,OfflineFeaturesManager,editsStore,AppCacheManager,AttributeInspector,domConstruct,on,dom,Button,SimpleTextArea) {
+        function(Map,Query,FeatureLayer,OfflineFeaturesManager,editsStore,AppCacheManager,AttributeInspector,domConstruct,on,dom,Button,SimpleTextArea) {
 
-                var textTimer;
-                var offlineFeaturesManager;
-                var map,busStopsFeatureLayer,currentFeature;
-                var imgOfflineIndicator,btnOnlineOffline;
-                var pendingEdits = document.getElementById("pending-edits");
-                var redPinPath = "../samples/images/red-pin.png";
-                var bluePinPath = "../samples/images/blue-pin.png"
+            var textTimer;
+            var offlineFeaturesManager;
+            var map,busStopsFeatureLayer,currentFeature;
+            var imgOfflineIndicator,btnOnlineOffline;
+            var pendingEdits = document.getElementById("pending-edits");
+            var redPinPath = "../samples/images/red-pin.png";
+            var bluePinPath = "../samples/images/blue-pin.png"
 
-                initOffline();
+            initOffline();
 
-                map = new Map("map", {
-                    basemap: "topo",
-                    center: [-104.98,39.74], // long, lat
-                    zoom: 10,
-                    sliderStyle: "small"
+            map = new Map("map", {
+                basemap: "topo",
+                center: [-104.98,39.74], // long, lat
+                zoom: 10,
+                sliderStyle: "small"
+            });
+
+            busStopsFeatureLayer = new FeatureLayer("http://services.arcgis.com/IZtlGBUe4KTzLOl4/arcgis/rest/services/BPX_RTD_BusStops2/FeatureServer/0",{
+                mode: FeatureLayer.MODE_SNAPSHOT,
+                outFields: ["OBJECTID","BSID","ROUTES","STOPNAME"]
+            })
+
+            map.on("load",function(evt){
+                initAppCacheManager();
+            })
+
+            map.on("layers-add-result",initEditing);
+
+            map.addLayers([busStopsFeatureLayer]);
+
+            function initAppCacheManager(){
+                appCacheManager = new AppCacheManager(true,true);
+                appCacheManager.on(appCacheManager.CACHE_EVENT,cacheEventHandler);
+                appCacheManager.on(appCacheManager.CACHE_ERROR,cacheErrorHandler);
+            }
+
+            function initOffline(){
+                offlineFeaturesManager = new OfflineFeaturesManager();
+                offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_ENQUEUED, updateStatus);
+                offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_SENT, updateStatus);
+                offlineFeaturesManager.on(offlineFeaturesManager.events.ALL_EDITS_SENT, updateStatus);
+
+                imgOfflineIndicator = document.getElementById("img-offline-indicator");
+                imgOfflineIndicator.offlineColor = "blue";
+
+                Offline.check();
+                Offline.on('up', goOnline);
+                Offline.on('down', goOffline);
+
+                on(dom.byId('btn-online-offline'), 'click', goOnlineOffline);
+            }
+
+            function initEditing(evt){
+
+                offlineFeaturesManager.extend(busStopsFeatureLayer);
+
+                map.infoWindow.on("hide", function() {
+                    busStopsFeatureLayer.clearSelection();
                 });
 
-                busStopsFeatureLayer = new FeatureLayer("http://services.arcgis.com/IZtlGBUe4KTzLOl4/arcgis/rest/services/BPX_RTD_BusStops2/FeatureServer/0",{
-                    mode: FeatureLayer.MODE_SNAPSHOT,
-                    outFields: ["OBJECTID","BSID","ROUTES","STOPNAME"]
-                })
+                btnOnlineOffline = document.getElementById("btn-online-offline");
 
-                map.on("load",function(evt){
-                    initAppCacheManager();
-                })
+                var layerInfos = [{
+                    'featureLayer': busStopsFeatureLayer,
+                    'showAttachments': false,
+                    'isEditable': true,
+                    'showDeleteButton': false,
+                    'fieldInfos': [
+                        {'fieldName': 'OBJECTID', 'isEditable':false, 'label':'ID:'},
+                        {'fieldName': 'BSID', 'isEditable':false, 'label':'Bus stop ID:'},
+                        {'fieldName': 'ROUTES', 'isEditable':false,'label':'Routes:'},
+                        {'fieldName': 'STOPNAME', 'isEditable':true, 'label':'Stop name:'}
+                    ]
+                }];
 
-                map.on("layers-add-result",initEditing);
+                var attInspector = new AttributeInspector({
+                    layerInfos:layerInfos
+                }, domConstruct.create("div"));
 
-                map.addLayers([busStopsFeatureLayer]);
+                //add a save button next to the delete button
+                var saveButton = new Button({ label: "Save", "class": "saveButton"});
+                domConstruct.place(saveButton.domNode, attInspector.deleteBtn.domNode, "after");
 
-                function initAppCacheManager(){
-                    appCacheManager = new AppCacheManager(true,true);
-                    appCacheManager.on(appCacheManager.CACHE_EVENT,cacheEventHandler);
-                    appCacheManager.on(appCacheManager.CACHE_ERROR,cacheErrorHandler);
-                }
+                var textArea = new SimpleTextArea({name:"msgTextArea",rows:"1",class:"msgTextArea"})
+                domConstruct.place(textArea.domNode, saveButton.domNode, "after");
 
-                function initOffline(){
-                    offlineFeaturesManager = new OfflineFeaturesManager();
-                    offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_ENQUEUED, updateStatus);
-                    offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_SENT, updateStatus);
-                    offlineFeaturesManager.on(offlineFeaturesManager.events.ALL_EDITS_SENT, updateStatus);
-
-                    imgOfflineIndicator = document.getElementById("img-offline-indicator");
-                    imgOfflineIndicator.offlineColor = "blue";
-
-                    Offline.check();
-                    Offline.on('up', goOnline);
-                    Offline.on('down', goOffline);
-
-                    on(dom.byId('btn-online-offline'), 'click', goOnlineOffline);
-                }
-
-                function initEditing(evt){
-
-                    offlineFeaturesManager.extend(busStopsFeatureLayer);
-
-                    map.infoWindow.on("hide", function() {
-                        busStopsFeatureLayer.clearSelection();
-                    });
-
-                    btnOnlineOffline = document.getElementById("btn-online-offline");
-
-                    var layerInfos = [{
-                        'featureLayer': busStopsFeatureLayer,
-                        'showAttachments': false,
-                        'isEditable': true,
-                        'showDeleteButton': false,
-                        'fieldInfos': [
-                            {'fieldName': 'OBJECTID', 'isEditable':false, 'label':'ID:'},
-                            {'fieldName': 'BSID', 'isEditable':false, 'label':'Bus stop ID:'},
-                            {'fieldName': 'ROUTES', 'isEditable':false,'label':'Routes:'},
-                            {'fieldName': 'STOPNAME', 'isEditable':true, 'label':'Stop name:'}
-                        ]
-                    }];
-
-                    var attInspector = new AttributeInspector({
-                        layerInfos:layerInfos
-                    }, domConstruct.create("div"));
-
-                    //add a save button next to the delete button
-                    var saveButton = new Button({ label: "Save", "class": "saveButton"});
-                    domConstruct.place(saveButton.domNode, attInspector.deleteBtn.domNode, "after");
-
-                    var textArea = new SimpleTextArea({name:"msgTextArea",rows:"1",class:"msgTextArea"})
-                    domConstruct.place(textArea.domNode, saveButton.domNode, "after");
-
-                    saveButton.on("click", function(){
-                        clearTimeout(textTimer);
-                        busStopsFeatureLayer.applyEdits(null, [currentFeature], null,
+                saveButton.on("click", function(){
+                    clearTimeout(textTimer);
+                    busStopsFeatureLayer.applyEdits(null, [currentFeature], null,
                             function(response){
                                 textArea.set("value" , "Item successfully saved.");
                                 textTimer = setTimeout(function(){
@@ -250,107 +263,95 @@
                             },function(err){
                                 alert("There was error applying an edit: " + JSON.stringify(err));
                             }
-                        );
-                    });
+                    );
+                });
 
-                    attInspector.on("attribute-change", function(evt) {
-                        //store the updates to apply when the save button is clicked
-                        currentFeature.attributes[evt.fieldName] = evt.fieldValue;
-                        console.log("CHANGE " + evt.fieldValue)
-                    });
+                attInspector.on("attribute-change", function(evt) {
+                    //store the updates to apply when the save button is clicked
+                    currentFeature.attributes[evt.fieldName] = evt.fieldValue;
+                    console.log("CHANGE " + evt.fieldValue)
+                });
 
-                    attInspector.on("next", function(evt) {
-                        currentFeature = evt.feature;
-                        console.log("Next " + currentFeature.attributes.objectid);
-                    });
+                attInspector.on("next", function(evt) {
+                    currentFeature = evt.feature;
+                    console.log("Next " + currentFeature.attributes.objectid);
+                });
 
-                    busStopsFeatureLayer.on("click", function(evt) {
-                        currentFeature = evt.graphic
+                busStopsFeatureLayer.on("click", function(evt) {
+                    currentFeature = evt.graphic
 
-                        var query = new Query();
-                        query.objectIds = [evt.graphic.attributes.OBJECTID];
-                        busStopsFeatureLayer.selectFeatures(query,FeatureLayer.SELECTION_NEW,
+                    var query = new Query();
+                    query.objectIds = [evt.graphic.attributes.OBJECTID];
+                    busStopsFeatureLayer.selectFeatures(query,FeatureLayer.SELECTION_NEW,
                             function(evt){
                                 console.log("Success: " + JSON.stringify(evt[0].attributes))
                             },function(err){
                                 console.log("ERROR " + JSON.stringify(err));
-                        });
+                            });
 
-                        map.infoWindow.setTitle(currentFeature.attributes.STOPNAME);
-                        map.infoWindow.show(evt.screenPoint,map.getInfoWindowAnchor(evt.screenPoint));
-                    }.bind(this));
+                    map.infoWindow.setTitle(currentFeature.attributes.STOPNAME);
+                    map.infoWindow.show(evt.screenPoint,map.getInfoWindowAnchor(evt.screenPoint));
+                }.bind(this));
 
-                    map.infoWindow.setContent(attInspector.domNode);
-                    map.infoWindow.resize(350, 270);
+                map.infoWindow.setContent(attInspector.domNode);
+                map.infoWindow.resize(350, 270);
 
+            }
+
+            function updateStatus(){
+                if( editsStore.hasPendingEdits())
+                {
+                    var edits = editsStore._retrieveEditsQueue();
+                    pendingEdits.innerHTML = "Pending edits: " + edits.length;
                 }
-
-                function updateStatus(){
-                    if( editsStore.hasPendingEdits())
-                    {
-                        var edits = editsStore._retrieveEditsQueue();
-                        pendingEdits.innerHTML = "Pending edits: " + edits.length;
-                    }
-                    else
-                    {
-                        pendingEdits.innerHTML = "Pending edits: 0";
-                    }
-                }
-
-                function goOnline(){
-
-                    offlineFeaturesManager.goOnline(function(success,error){
-                        if(error === undefined){
-                            btnOnlineOffline.innerHTML = "Go Offline";
-                            imgOfflineIndicator.src = bluePinPath;
-                            imgOfflineIndicator.offlineColor = "blue";
-                            console.log("Online.");
-                        }
-                        else{
-                            alert("There was a problem syncing offline edits: " + JSON.stringify(error));
-                        }
-                    });
-                }
-
-                function goOffline(){
-                    btnOnlineOffline.innerHTML = "Go Online";
-                    imgOfflineIndicator.src = redPinPath;
-                    imgOfflineIndicator.offlineColor = "red";
-                    offlineFeaturesManager.goOffline();
-
-                }
-
-                function goOnlineOffline(){
-                    if(offlineFeaturesManager.getOnlineStatus() == offlineFeaturesManager.ONLINE){
-                        goOffline();
-                    }
-                    else{
-                        goOnline();
-                    }
-                }
-
-                function cacheEventHandler(evt){
-                    console.log("CACHE EVENT: " + JSON.stringify(evt));
-                }
-
-                function cacheErrorHandler(evt){
-                    console.log("CACHE ERROR: " + JSON.stringify(evt));
+                else
+                {
+                    pendingEdits.innerHTML = "Pending edits: 0";
                 }
             }
-        );
 
-    </script>
-</head>
+            function goOnline(){
 
-<body>
-<div id="button-div1">
-    <button class="basic-btn" data-dojo-type="dijit/form/ToggleButton" id="btn-online-offline">Go Offline</button>
-    <div id="right-div">
-        <img id="img-offline-indicator" src="../samples/images/blue-pin.png"/>
-        <div id="pending-edits">Pending edits: 0</div>
-    </div>
-    </div>
-<div id="test"></div>
-<div id="map"></div>
+                offlineFeaturesManager.goOnline(function(success,error){
+                    if(error === undefined){
+                        btnOnlineOffline.innerHTML = "Go Offline";
+                        imgOfflineIndicator.src = bluePinPath;
+                        imgOfflineIndicator.offlineColor = "blue";
+                        console.log("Online.");
+                    }
+                    else{
+                        alert("There was a problem syncing offline edits: " + JSON.stringify(error));
+                    }
+                });
+            }
+
+            function goOffline(){
+                btnOnlineOffline.innerHTML = "Go Online";
+                imgOfflineIndicator.src = redPinPath;
+                imgOfflineIndicator.offlineColor = "red";
+                offlineFeaturesManager.goOffline();
+
+            }
+
+            function goOnlineOffline(){
+                if(offlineFeaturesManager.getOnlineStatus() == offlineFeaturesManager.ONLINE){
+                    goOffline();
+                }
+                else{
+                    goOnline();
+                }
+            }
+
+            function cacheEventHandler(evt){
+                console.log("CACHE EVENT: " + JSON.stringify(evt));
+            }
+
+            function cacheErrorHandler(evt){
+                console.log("CACHE ERROR: " + JSON.stringify(evt));
+            }
+        }
+);
+
+</script>
 </body>
 </html>
