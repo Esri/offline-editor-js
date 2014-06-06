@@ -7,7 +7,9 @@
 
     <!--
 
-    This sample demonstrates using an application manifest to store tiles locally.
+    This sample demonstrates using an application manifest to store features, html, css and js libraries locally.
+    No tiles are stored by this sample in order to keep the code as simple as possible. If you want to see
+    how tiles can be stored in the application cache, take a look at the appcache-tiles.html sample.
 
     The use cases for using this sample are to ensure you can reload and restart you application
     one it is offline.
@@ -138,7 +140,10 @@
             }
         }
     </script>
-    <script src="http://js.arcgis.com/3.9/"></script>
+    <!-- This is a custom build of the ArcGIS API for JavaScript using the new Web Optimizer Tool -->
+    <script src="http://js.arcgis.com/o/agup_hack4co/appcacheFeatures/dojo/dojo.js" data-dojo-config="async: true"></script>
+    <!-- Use this tag below if you are hosting your ArcGIS API for JavaScript files locally -->
+    <!--<script src="libs/dojo/dojo/dojo.js" data-dojo-config="async: true"></script>-->
 </head>
 
 <body>
