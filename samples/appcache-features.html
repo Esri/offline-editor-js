@@ -193,6 +193,7 @@ require([
             // Variables for edit handling
             var textTimer;
             var _isOnline = true;
+            var features = [];
             var offlineFeaturesManager;
             var layerDefinition = {};
             var map,busStopsFeatureLayer,currentFeature;
@@ -258,6 +259,9 @@ require([
                 map.on("load",function(evt){
                     initAppCacheManager();
                     initOfflineTileEnabler();
+                    if(_isOnline == false){
+                        reconstituteGraphicsLayer(busStopsFeatureLayer,features);;
+                    }
                 })
 
                 map.on("layers-add-result",initEditing);
@@ -267,10 +271,31 @@ require([
                     layerDefinition.geometryType = evt.target.geometryType;
                     layerDefinition.spatialReference = evt.target.spatialReference;
                     layerDefinition.fields = evt.target.fields;
-                    console.log("BOOOYAH")
+                    features = evt.target.graphics;
+
+                    convertGraphicLayerToJSON(features,function(result){
+                        var featureJSON = JSON.stringify(result);
+                        if(typeof(Storage) !== "undefined") {
+                            localStorage.offlineLayerDef = JSON.stringify(layerDefinition);
+                            localStorage.offlineFeature = featureJSON;
+                            console.log("Done pushing layerDef and features to localStorage.")
+                        } else {
+                            alert("The offline library is not supported on this browser.")
+                        }
+                    })
                 })
 
                 map.addLayers([busStopsFeatureLayer]);
+            }
+
+            function convertGraphicLayerToJSON(graphics,callback){
+                var length = graphics.length;
+                var array = [];
+                for(var i=0; i < length; i++){
+                    var jsonGraphic = graphics[i].toJson();
+                    array.push(jsonGraphic);
+                    if(i == (length - 1)) callback(array);
+                }
             }
 
             function initOffline(){
@@ -378,7 +403,7 @@ require([
 
             }
 
-            function reconstituteGraphicsLayer(featureLayer,/* array */featuresArr){
+            function reconstituteGraphicsLayer(featureLayer,featuresArr){
 
                 if(layerDefinition == null){
                     alert("No features available available locally.")
