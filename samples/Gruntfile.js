@@ -36,6 +36,7 @@ module.exports = function(grunt) {
                         "<%= pkg.arcGISBaseURL %>/js/esri/images/map/logo-sm.png",
                         "<%= pkg.arcGISBaseURL %>/js/esri/images/map/logo-med.png",
                         "<%= pkg.arcGISBaseURL %>/js/esri/css/esri.css",
+                        "<%= pkg.arcGISBaseURL %>/js/dojo/dijit/themes/claro/claro.css",
                         "<%= pkg.arcGISBaseURL %>/js/esri/nls/jsapi_en-us.js",
                         "#",
 						"//services.arcgisonline.com/ArcGIS/rest/info?f=json",
@@ -65,6 +66,7 @@ module.exports = function(grunt) {
                     "../lib/tiles/*.js",
                     "../lib/tiles/*.png",
                     "../lib/tiles/*.psd",
+                    "../lib/edit/*.js",
                     "../utils/*.js"
                     /*
                     "images/*",
