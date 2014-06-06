@@ -184,10 +184,14 @@ require([
                  OfflineFeaturesManager,offlineTilesEnabler,editsStore,AppCacheManager,domConstruct,on,dom,Button,SimpleTextArea) {
 
             var textTimer;
+            var _isOnline = true;
             var appCacheManager;
             var offlineFeaturesManager;
             var map,busStopsFeatureLayer,currentFeature;
             var imgOfflineIndicator,btnOnlineOffline;
+
+            var minZoomAdjust = -1, maxZoomAdjust = 1, mMinZoom, mMaxZoom, zoom = 18;
+
             var pendingEdits = document.getElementById("pending-edits");
             var redPinPath = "../samples/images/red-pin.png";
             var bluePinPath = "../samples/images/blue-pin.png"
@@ -195,6 +199,18 @@ require([
             var defaultSymbol = new SimpleMarkerSymbol().setStyle(
                     SimpleMarkerSymbol.STYLE_DIAMOND).setColor(
                     new Color([255,0,0,0.5]));
+
+            /**
+             * There have been a few bugs in the offline detection library (offline.min.js)
+             * This is a utility check to 100% validate if the application is online or
+             * offline prior to launching any map functionality.
+             */
+            verifyOnline(function(result){ console.log("VERIFY ONLINE " + result)
+                result == true ? _isOnline = true : _isOnline = false;
+                startMap();
+
+            })
+
 
             initOffline();
 
@@ -221,6 +237,11 @@ require([
             map.on("layers-add-result",initEditing);
 
             map.addLayers([busStopsFeatureLayer]);
+
+            function startMap(){
+                //Make sure map shows up after a browser refresh
+//                Offline.state === 'up' ? zoom = 18 : zoom = 17;
+            }
 
             function initOffline(){
                 offlineFeaturesManager = new OfflineFeaturesManager();
