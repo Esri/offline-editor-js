@@ -127,6 +127,11 @@ require(["esri/map","utils/appCacheManager","tiles/offlineTilesEnabler","dojo/on
             Offline.check();
             Offline.on('up down', updateState );
 
+            /**
+             * There have been a few bugs in the offline detection library (offline.min.js)
+             * This is a utility check to 100% validate if the application is online or
+             * offline prior to launching any map functionality.
+             */
             verifyOnline(function(result){ console.log("VERIFY ONLINE " + result)
                 result == true ? _isOnline = true : _isOnline = false;
                 startMap();
@@ -155,7 +160,8 @@ require(["esri/map","utils/appCacheManager","tiles/offlineTilesEnabler","dojo/on
                 map.on("extent-change",function(evt){
                     updateOfflineUsage();
                     console.log("Zoom level = " + map.getLevel())
-                })
+                });
+
                 appCacheManager = new AppCacheManager(true,true);
                 appCacheManager.on(appCacheManager.CACHE_EVENT,cacheEventHandler);
                 appCacheManager.on(appCacheManager.CACHE_ERROR,cacheErrorHandler);
@@ -239,6 +245,9 @@ require(["esri/map","utils/appCacheManager","tiles/offlineTilesEnabler","dojo/on
                 })
             }
 
+            /**
+             * Utility function to validate min and max zoom settings of the map
+             */
             function getMinMaxZoom(){
 
                 var zoom = {};
@@ -250,6 +259,9 @@ require(["esri/map","utils/appCacheManager","tiles/offlineTilesEnabler","dojo/on
                 return zoom;
             }
 
+            /**
+             * Reports the process while downloading tiles.
+             */
             function reportProgress(progress)
             {
                 console.log("downloading tiles...");
@@ -279,6 +291,10 @@ require(["esri/map","utils/appCacheManager","tiles/offlineTilesEnabler","dojo/on
                 return _wantToCancel; //determines if a cancel request has been issued
             }
 
+            /**
+             * Forces offlineTileEnabler to go online or offline.
+             * If it is offline it will try to find a tile in the local database.
+             */
             function goOnlineOffline(){
                 if(imgOfflineIndicator.offlineColor == "blue"){
                     btnOnlineOffline.innerHTML = "2. Go Online";
@@ -294,6 +310,10 @@ require(["esri/map","utils/appCacheManager","tiles/offlineTilesEnabler","dojo/on
                 }
             }
 
+            /**
+             * Manually starts the process to download and store tiles
+             * in the local database
+             */
             function downloadTiles(){
                 baseMapLayer.deleteAllTiles(function(success,err){
                     if(success == false){
@@ -322,6 +342,11 @@ require(["esri/map","utils/appCacheManager","tiles/offlineTilesEnabler","dojo/on
                 }.bind(this))
             }
 
+            /**
+             * Attempts an http request to verify if app is online or offline.
+             * Use this in conjunction with the offline checker library: offline.min.js
+             * @param callback
+             */
             function verifyOnline(callback){
                 var req = new XMLHttpRequest();
                 req.open("GET", "images/blue-pin.png?" + (Math.floor(Math.random() * 1000000000)), true);
