@@ -181,7 +181,7 @@ require([
             "dijit/form/SimpleTextarea",
             "dojo/domReady!"],
         function(Map,Query,FeatureLayer,Color,SimpleMarkerSymbol,SimpleRenderer,AttributeInspector,
-                 OfflineFeaturesManager,offlineTilesEnabler,editsStore,AppCacheManager,domConstruct,on,dom,Button,SimpleTextArea) {
+                 OfflineFeaturesManager,OfflineTileEnabler,editsStore,AppCacheManager,domConstruct,on,dom,Button,SimpleTextArea) {
 
             var textTimer;
             var _isOnline = true;
@@ -190,9 +190,13 @@ require([
             var map,busStopsFeatureLayer,currentFeature;
             var imgOfflineIndicator,btnOnlineOffline;
 
+            var offlineTileEnabler, baseMapLayer;
+
             var minZoomAdjust = -1, maxZoomAdjust = 1, mMinZoom, mMaxZoom, zoom = 18;
 
             var pendingEdits = document.getElementById("pending-edits");
+            var btnGetTiles = document.getElementById("btn-get-tiles");
+
             var redPinPath = "../samples/images/red-pin.png";
             var bluePinPath = "../samples/images/blue-pin.png"
 
@@ -399,6 +403,35 @@ require([
              * TILE MANAGEMENT CODE GOES BELOW HERE
              * ************************************
              */
+
+            function initOfflineTileEnabler(){
+
+                mMaxZoom = map.getMaxZoom();
+                mMinZoom = map.getMinZoom();
+
+                offlineTileEnabler = new OfflineTileEnabler();
+                baseMapLayer = offlineTileEnabler.getBasemapLayer(map); console.log("Offline State: " + Offline.state)
+
+                offlineTileEnabler.extend(baseMapLayer,function(success)
+                {
+                    if( success )
+                    {
+                        console.log("Offline tile lib is enabled. Application state is: " + Offline.state);
+                        Offline.check();
+
+                        //using null sets this for CORS
+                        baseMapLayer.offline.proxyPath = null;
+
+                        on(btnGetTiles,"click",downloadTiles);
+
+                        updateOfflineUsage();
+                    }
+                    else
+                    {
+                        alert("error initializing storage - browser doesn't support indexeddb or websql")
+                    }
+                }.bind(this),_isOnline);
+            }
 
             /**
              * Utility function to validate min and max zoom settings of the map
