@@ -153,12 +153,13 @@ require(["esri/map","utils/appCacheManager","tiles/offlineTilesEnabler","dojo/on
 
             function init(){
                 map.on("extent-change",function(evt){
-//                    updateOfflineUsage();
+                    updateOfflineUsage();
                     console.log("Zoom level = " + map.getLevel())
                 })
                 appCacheManager = new AppCacheManager(true,true);
                 appCacheManager.on(appCacheManager.CACHE_EVENT,cacheEventHandler);
                 appCacheManager.on(appCacheManager.CACHE_ERROR,cacheErrorHandler);
+                appCacheManager.on(appCacheManager.CACHE_LOADED,cacheLoaderHandler);
 
                 btnGetTiles = document.getElementById("btn-get-tiles");
                 btnOnlineOffline = document.getElementById("btn-online-offline");
@@ -200,6 +201,10 @@ require(["esri/map","utils/appCacheManager","tiles/offlineTilesEnabler","dojo/on
                         alert("error initializing storage - browser doesn't support indexeddb or websql")
                     }
                 }.bind(this),_isOnline);
+            }
+
+            function cacheLoaderHandler(evt){
+                if(evt == appCacheManager.CACHE_LOADED) console.log("Application cache successfully loaded!")
             }
 
             function cacheEventHandler(evt){
