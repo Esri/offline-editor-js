@@ -171,6 +171,7 @@ require([
         function(Map,Query,FeatureLayer,OfflineFeaturesManager,editsStore,AppCacheManager,AttributeInspector,domConstruct,on,dom,Button,SimpleTextArea) {
 
             var textTimer;
+            var appCacheManager;
             var offlineFeaturesManager;
             var map,busStopsFeatureLayer,currentFeature;
             var imgOfflineIndicator,btnOnlineOffline;
@@ -200,12 +201,6 @@ require([
 
             map.addLayers([busStopsFeatureLayer]);
 
-            function initAppCacheManager(){
-                appCacheManager = new AppCacheManager(true,true);
-                appCacheManager.on(appCacheManager.CACHE_EVENT,cacheEventHandler);
-                appCacheManager.on(appCacheManager.CACHE_ERROR,cacheErrorHandler);
-            }
-
             function initOffline(){
                 offlineFeaturesManager = new OfflineFeaturesManager();
                 offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_ENQUEUED, updateStatus);
@@ -220,6 +215,13 @@ require([
                 Offline.on('down', goOffline);
 
                 on(dom.byId('btn-online-offline'), 'click', goOnlineOffline);
+            }
+
+            function initAppCacheManager(){
+                appCacheManager = new AppCacheManager(true,true);
+                appCacheManager.on(appCacheManager.CACHE_EVENT,cacheEventHandler);
+                appCacheManager.on(appCacheManager.CACHE_ERROR,cacheErrorHandler);
+                appCacheManager.on(appCacheManager.CACHE_LOADED,cacheLoadedHandler);
             }
 
             function initEditing(evt){
@@ -344,6 +346,10 @@ require([
                 else{
                     goOnline();
                 }
+            }
+
+            function cacheLoadedHandler(evt){
+                if(evt == appCacheManager.CACHE_LOADED) console.log("Application cache successfully loaded!")
             }
 
             function cacheEventHandler(evt){
