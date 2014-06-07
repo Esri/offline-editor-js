@@ -45,6 +45,13 @@
             overflow: hidden;
             font-family: "Trebuchet MS";
         }
+
+        #map {
+            z-index: 1;
+            position: absolute;
+            top: 50px;
+            left: 0;
+        }
         .dj_ie .infowindow .window .top .right .user .content { position: relative; }
         .dj_ie .simpleInfoWindow .content {position: relative;}
 
@@ -100,6 +107,7 @@
         }
         #button-div1{
             position: relative;
+            z-index: 2;
             background: #000000;
             color: #ffffff;
             width: 100%;
@@ -117,6 +125,31 @@
         #pending-edits{
             padding: 8px;
             position: relative; float: right;
+        }
+        #popup{
+            z-index: 17;
+            height: 100%;
+            width: 100%;
+        }
+        #popup-body {
+            position: relative;
+            top: 12%;
+            left: 12%;;
+            z-index: 20;
+            height: 75%;
+            width: 75%;
+            border-radius: 10px;
+            background-color: black;
+        }
+        #modal-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 100%;
+            opacity: 0.75;
+            background-color: grey;
+            z-index: 18;
         }
     </style>
     <script src="../vendor/offline/offline.min.js"></script>
@@ -156,7 +189,12 @@
         <img id="img-offline-indicator" src="../samples/images/blue-pin.png"/>
         <div id="pending-edits">Pending edits: 0</div>
     </div>
-    </div>
+</div>
+
+<div id="popup">
+    <div id="popup-body"></div>
+    <div id="modal-background"></div>
+</div>
 <div id="map"></div>
 
 <script>
