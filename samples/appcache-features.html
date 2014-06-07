@@ -30,7 +30,7 @@
     ask if you want to reload the application.
 
     -->
-
+    <link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.2/jquery.mobile-1.4.2.min.css" />
     <link rel="stylesheet" href="http://js.arcgis.com/3.9/js/dojo/dijit/themes/claro/claro.css">
     <link rel="stylesheet" href="http://js.arcgis.com/3.9/js/esri/css/esri.css">
     <style>
@@ -118,12 +118,6 @@
             padding: 8px;
             position: relative; float: right;
         }
-        #tile-info{
-            background-color: #000000;
-            color: white;
-            padding: 8px;
-            position: relative; float: right;
-        }
     </style>
     <script src="../vendor/offline/offline.min.js"></script>
     <script>
@@ -158,13 +152,11 @@
 <div id="button-div1">
     <button class="basic-btn" data-dojo-type="dijit/form/ToggleButton" id="btn-online-offline">1. Go Offline</button>
     <button class="basic-btn" id="btn-get-tiles">2. Download Tiles</button>
-    <textarea contenteditable="false" id="tile-info"></textarea>
     <div id="right-div">
         <img id="img-offline-indicator" src="../samples/images/blue-pin.png"/>
         <div id="pending-edits">Pending edits: 0</div>
     </div>
     </div>
-<div id="test"></div>
 <div id="map"></div>
 
 <script>
@@ -205,8 +197,6 @@ require([
             var globalState = {};
             var offlineTileEnabler, baseMapLayer;
             var btnGetTiles = document.getElementById("btn-get-tiles");
-            var tileInfo = document.getElementById("tile-info")
-            tileInfo.innerHTML = "Tile count: 0\r\nBytes: 0";
             var minZoomAdjust = -1, maxZoomAdjust = 1, mMinZoom, mMaxZoom, zoom = 18;
             var EXTENT_BUFFER = 0; //buffers the map extent in meters
 
@@ -589,10 +579,10 @@ require([
             {
                 baseMapLayer.offline.store.usedSpace(function(result,err){
                     if(result != null){
-                        tileInfo.innerHTML = "DB Tile count: " + result.tileCount + "\r\nDB Bytes: " +  result.sizeBytes;
+                        console.log( "DB Tile count: " + result.tileCount + ", DB Bytes: " +  result.sizeBytes);
                     }
                     else{
-                        tileInfo.innerHTML = "DB Tile count: " + count + "\r\nDB Bytes: Error";
+                        console.log("DB Tile count: " + count + ", DB Bytes: Error");
                     }
                 })
             }
