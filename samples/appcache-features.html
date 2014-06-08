@@ -222,7 +222,7 @@
             </div>
             <div class="mod-popup-button-div">
                 <button id="mod-popup-save-btn" class="mod-popup-button" style="margin-right: 10px;">Save</button>
-                <button id="mod-popup-delete-btn" class="mod-popup-button">Delete</button>
+                <button id="mod-popup-delete-btn" disabled class="mod-popup-button" style="background-color: grey; text-decoration:line-through;">Delete</button>
             </div>
         </div>
     </div>
@@ -383,10 +383,26 @@ require([
 
                 saveBtn.onclick = function(evt){
 
+                    modPopup.graphic.attributes.ROUTES = stopRoutes.value;
+                    modPopup.graphic.attributes.STOPNAME = stopNames.value;
+
+                    busStopsFeatureLayer.applyEdits(null,[modPopup.graphic],null,function(result){
+                        console.log("Successfully saved changes to: " + modPopup.graphic.attributes.STOPNAME);
+                        hideModalPopup();
+                    },
+                    function(err){
+                        alert("There was a problem while trying to save: " + modPopup.graphic.attributes.STOPNAME);
+                    })
                 }
 
                 deleteBtn.onclick = function(evt){
-
+                    busStopsFeatureLayer.applyEdits(null,null,[modPopup.graphic],function(result){
+                                console.log("Successfully deleted: " + modPopup.graphic.attributes.STOPNAME);
+                                hideModalPopup();
+                            },
+                            function(err){
+                                alert("There was a problem while trying to delete: " + modPopup.graphic.attributes.STOPNAME);
+                            })
                 }
             }
 
@@ -439,7 +455,7 @@ require([
                             function(evt){
                                 console.log("Success: " + JSON.stringify(evt[0].attributes))
                                 var atts = evt[0].attributes;
-                                modPopup.style.position = "static";
+                                showModalPopup(evt[0]);
                                 stopID.value = atts.OBJECTID;
                                 stopMainID.value = atts.BSID;
                                 stopNames.value = atts.STOPNAME;
@@ -529,8 +545,9 @@ require([
                 }
             }
 
-            function showModalPopup(){
+            function showModalPopup(graphic){
                 modPopup.style.position = "static";
+                modPopup.graphic = graphic; // assign graphic to modPopup as a property.
             }
 
             function hideModalPopup(){
