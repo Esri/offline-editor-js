@@ -1,6 +1,6 @@
 <!DOCTYPE html>
-<html>
-<!--<html manifest="appcache-features.appcache">-->
+<!--<html>-->
+<html manifest="appcache-features.appcache">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no"/>
@@ -147,8 +147,8 @@
 
 <body>
 <div id="button-div1">
-    <button class="basic-btn" data-dojo-type="dijit/form/ToggleButton" id="btn-online-offline">1. Go Offline</button>
-    <button class="basic-btn" id="btn-get-tiles">2. Download Tiles</button>
+    <button class="basic-btn" id="btn-get-tiles">1. Download Tiles</button>
+    <button class="basic-btn" data-dojo-type="dijit/form/ToggleButton" id="btn-online-offline">2. Go Offline</button>
     <div id="right-div">
         <img id="img-offline-indicator" src="../samples/images/blue-pin.png"/>
         <div id="pending-edits">Pending edits: 0</div>
@@ -271,7 +271,7 @@ require([
             var btnOnlineOffline = document.getElementById("btn-online-offline");
 
             setClickListeners();
-            initOffline();
+            initOfflineFeatures();
 
             /**
              * There have been a few bugs in the offline detection library (offline.min.js)
@@ -381,7 +381,7 @@ require([
                 }
             }
 
-            function initOffline(){
+            function initOfflineFeatures(){
                 offlineFeaturesManager = new OfflineFeaturesManager();
                 offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_ENQUEUED, updateStatus);
                 offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_SENT, updateStatus);
@@ -478,7 +478,7 @@ require([
 
                 offlineFeaturesManager.goOnline(function(success,error){
                     if(error === undefined){
-                        btnOnlineOffline.innerHTML = "1. Go Offline";
+                        btnOnlineOffline.innerHTML = "2. Go Offline";
                         imgOfflineIndicator.src = bluePinPath;
                         imgOfflineIndicator.offlineColor = "blue";
                         console.log("Online.");
@@ -493,7 +493,7 @@ require([
             }
 
             function goOffline(){
-                btnOnlineOffline.innerHTML = "1. Go Online";
+                btnOnlineOffline.innerHTML = "2. Go Online";
                 imgOfflineIndicator.src = redPinPath;
                 imgOfflineIndicator.offlineColor = "red";
                 offlineFeaturesManager.goOffline();
@@ -613,7 +613,7 @@ require([
                         alert("Tile download complete");
                     }
 
-                    btnGetTiles.innerHTML = '2. Download Tiles';
+                    btnGetTiles.innerHTML = '1. Download Tiles';
                 }
                 return _wantToCancel; //determines if a cancel request has been issued
             }
@@ -677,7 +677,7 @@ require([
             }
 
             function cacheEventHandler(evt){
-                console.log("CACHE EVENT: " + JSON.stringify(evt));
+                if(evt.hasOwnProperty("total")) console.log("CACHE EVENT loaded #:" + evt.loaded + ", out of " + evt.total);
             }
 
             function cacheErrorHandler(evt){
