@@ -1,6 +1,6 @@
 <!DOCTYPE html>
-<html>
-<!--<html manifest="appcache-features.appcache">-->
+<!--<html>-->
+<html manifest="appcache-features.appcache">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no"/>
@@ -261,6 +261,7 @@ require([
             var map,busStopsFeatureLayer,currentFeature;
             var imgOfflineIndicator;
             var pendingEdits = document.getElementById("pending-edits");
+            var popup = document.getElementById("popup");
 
             // Variables for tile handling
             var _wantToCancel;
@@ -442,6 +443,14 @@ require([
 //                    console.log("Next " + currentFeature.attributes.objectid);
 //                });
 
+                  setFeatureLayerClickHandler()
+
+//                map.infoWindow.setContent(attInspector.domNode);
+//                map.infoWindow.resize(350, 270);
+
+            }
+
+            function setFeatureLayerClickHandler(){
                 busStopsFeatureLayer.on("click", function(evt) {
                     currentFeature = evt.graphic
 
@@ -453,18 +462,7 @@ require([
                             },function(err){
                                 console.log("ERROR " + JSON.stringify(err));
                             });
-
-//                    // NOTE: To make the info window for mobile use you would need
-//                    // to switch a mobile friendly 'view' containing all the attributes.
-//                    // This pattern is for testing only. It's on the TO-DO list to make
-//                    // this mobile friendly.
-//                    map.infoWindow.setTitle(currentFeature.attributes.STOPNAME);
-//                    map.infoWindow.show(evt.screenPoint,map.getInfoWindowAnchor(evt.screenPoint));
                 }.bind(this));
-
-//                map.infoWindow.setContent(attInspector.domNode);
-//                map.infoWindow.resize(350, 270);
-
             }
 
             function reconstituteGraphicsLayer(featureLayer,featuresArr,callback){
@@ -482,18 +480,18 @@ require([
 
                     }
 
-                    featureLayer = new FeatureLayer(featureDefinition,{
+                    busStopsFeatureLayer = new FeatureLayer(featureDefinition,{
                         mode: FeatureLayer.MODE_SNAPSHOT,
                         outFields: ["OBJECTID","BSID","ROUTES","STOPNAME"]
                     });
                     // Set the graphics to red boxes to make it easy to click on them
                     // on a mobile device.
-                    featureLayer.setRenderer(new SimpleRenderer(defaultSymbol));
+                    busStopsFeatureLayer.setRenderer(new SimpleRenderer(defaultSymbol));
                     var mapListen = map.on("update-end",function(evt){
                         console.log("Feature has been added back to the map while offline.")
                         mapListen.remove();
                     })
-                    map.addLayer(featureLayer);
+                    map.addLayer(busStopsFeatureLayer);
                     callback(true);
                 }
             }
