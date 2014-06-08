@@ -290,7 +290,7 @@ require([
 
             // Modify symbol size based on screen size.
             // Bigger screens get smaller symbols. Smaller screens get larger symbols.
-            if (document.documentElement.clientHeight > 768 || document.documentElement.clientWidth > 1024) { 
+            if (document.documentElement.clientHeight > 768 || document.documentElement.clientWidth > 1024) {
                 defaultSymbol= new SimpleMarkerSymbol().setStyle(
                         SimpleMarkerSymbol.STYLE_DIAMOND).setColor(
                         new Color([255,0,0,0.5])).setSize(20);    // scripts
@@ -426,65 +426,7 @@ require([
             function initEditing(evt){
 
                 offlineFeaturesManager.extend(busStopsFeatureLayer);
-
-//                map.infoWindow.on("hide", function() {
-//                    busStopsFeatureLayer.clearSelection();
-//                });
-//
-//                var layerInfos = [{
-//                    'featureLayer': busStopsFeatureLayer,
-//                    'showAttachments': false,
-//                    'isEditable': true,
-//                    'showDeleteButton': false,
-//                    'fieldInfos': [
-//                        {'fieldName': 'OBJECTID', 'isEditable':false, 'label':'ID:'},
-//                        {'fieldName': 'BSID', 'isEditable':false, 'label':'Bus stop ID:'},
-//                        {'fieldName': 'ROUTES', 'isEditable':false,'label':'Routes:'},
-//                        {'fieldName': 'STOPNAME', 'isEditable':true, 'label':'Stop name:'}
-//                    ]
-//                }];
-//
-//                var attInspector = new AttributeInspector({
-//                    layerInfos:layerInfos
-//                }, domConstruct.create("div"));
-//
-//                //add a save button next to the delete button
-//                var saveButton = new Button({ label: "Save", "class": "saveButton"});
-//                domConstruct.place(saveButton.domNode, attInspector.deleteBtn.domNode, "after");
-//
-//                var textArea = new SimpleTextArea({name:"msgTextArea",rows:"1",class:"msgTextArea"})
-//                domConstruct.place(textArea.domNode, saveButton.domNode, "after");
-//
-//                saveButton.on("click", function(){
-//                    clearTimeout(textTimer);
-//                    busStopsFeatureLayer.applyEdits(null, [currentFeature], null,
-//                            function(response){
-//                                textArea.set("value" , "Item successfully saved.");
-//                                textTimer = setTimeout(function(){
-//                                    textArea.set("value" , " ");
-//                                },10000);
-//                            },function(err){
-//                                alert("There was error applying an edit: " + JSON.stringify(err));
-//                            }
-//                    );
-//                });
-//
-//                attInspector.on("attribute-change", function(evt) {
-//                    //store the updates to apply when the save button is clicked
-//                    currentFeature.attributes[evt.fieldName] = evt.fieldValue;
-//                    console.log("CHANGE " + evt.fieldValue)
-//                });
-//
-//                attInspector.on("next", function(evt) {
-//                    currentFeature = evt.feature;
-//                    console.log("Next " + currentFeature.attributes.objectid);
-//                });
-
-                  setFeatureLayerClickHandler()
-
-//                map.infoWindow.setContent(attInspector.domNode);
-//                map.infoWindow.resize(350, 270);
-
+                setFeatureLayerClickHandler()
             }
 
             function setFeatureLayerClickHandler(){
