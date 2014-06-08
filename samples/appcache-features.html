@@ -1,6 +1,6 @@
 <!DOCTYPE html>
-<!--<html>-->
-<html manifest="appcache-features.appcache">
+<html>
+<!--<html manifest="appcache-features.appcache">-->
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no"/>
@@ -30,7 +30,6 @@
     ask if you want to reload the application.
 
     -->
-    <link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.2/jquery.mobile-1.4.2.min.css" />
     <link rel="stylesheet" href="http://js.arcgis.com/3.9/js/dojo/dijit/themes/claro/claro.css">
     <link rel="stylesheet" href="http://js.arcgis.com/3.9/js/esri/css/esri.css">
     <style>
@@ -126,31 +125,6 @@
             padding: 8px;
             position: relative; float: right;
         }
-        #popup{
-            z-index: 17;
-            height: 100%;
-            width: 100%;
-        }
-        #popup-body {
-            position: relative;
-            top: 12%;
-            left: 12%;;
-            z-index: 20;
-            height: 75%;
-            width: 75%;
-            border-radius: 10px;
-            background-color: black;
-        }
-        #modal-background {
-            position: absolute;
-            top: 0;
-            left: 0;
-            height: 100%;
-            width: 100%;
-            opacity: 0.75;
-            background-color: grey;
-            z-index: 18;
-        }
     </style>
     <script src="../vendor/offline/offline.min.js"></script>
     <script>
@@ -191,10 +165,6 @@
     </div>
 </div>
 
-<div id="popup">
-    <div id="popup-body"></div>
-    <div id="modal-background"></div>
-</div>
 <div id="map"></div>
 
 <script>
