@@ -1,6 +1,6 @@
 <!DOCTYPE html>
-<!--<html>-->
-<html manifest="appcache-features.appcache">
+<html>
+<!--<html manifest="appcache-features.appcache">-->
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no"/>
@@ -195,7 +195,7 @@
         <div id="row1" class="mod-popup-table-row">
             <div class="mod-popup-label-top-left">ID</div>
             <div class="mod-popup-input">
-                <input id="stop-main-id" disabled class="mod-popup-stop-input-disabled" value="test"/>
+                <input id="stop-main-id" type="text" disabled class="mod-popup-stop-input-disabled" value="test"/>
             </div>
         </div>
         <div id="row2" class="mod-popup-table-row">
@@ -269,6 +269,10 @@ require([
             var closeBtn = document.getElementById("mod-popup-close-btn");
             var saveBtn = document.getElementById("mod-popup-save-btn");
             var deleteBtn = document.getElementById("mod-popup-delete-btn");
+            var stopMainID = document.getElementById("stop-main-id");
+            var stopID = document.getElementById("stop-id");
+            var stopRoutes = document.getElementById("stop-routes");
+            var stopNames = document.getElementById("stop-names");
 
             // Variables for tile handling
             var _wantToCancel;
@@ -284,7 +288,7 @@ require([
 
             var defaultSymbol = new SimpleMarkerSymbol().setStyle(
                     SimpleMarkerSymbol.STYLE_DIAMOND).setColor(
-                    new Color([255,0,0,0.5]));
+                    new Color([255,0,0,0.5])).setSize(35);
 
             // Miscellaneous variables
             var appCacheManager;
@@ -369,7 +373,7 @@ require([
                 saveBtn.onclick = function(evt){
 
                 }
-                
+
                 deleteBtn.onclick = function(evt){
 
                 }
@@ -481,7 +485,12 @@ require([
                     busStopsFeatureLayer.selectFeatures(query,FeatureLayer.SELECTION_NEW,
                             function(evt){
                                 console.log("Success: " + JSON.stringify(evt[0].attributes))
+                                var atts = evt[0].attributes;
                                 modPopup.style.position = "static";
+                                stopID.value = atts.OBJECTID;
+                                stopMainID.value = atts.BSID;
+                                stopNames.value = atts.STOPNAME;
+                                stopRoutes.value = atts.ROUTES;
                             },function(err){
                                 console.log("ERROR " + JSON.stringify(err));
                             });
