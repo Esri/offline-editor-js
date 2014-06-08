@@ -44,10 +44,11 @@
     padding: 5px;
 }
 .mod-popup-stop-input-disabled {
-    color: black;
+    color: white;
     border-radius: 5px;
     font-size: x-large;
-    background-color: slategray;
+    background-color: dimgray;
+    opacity: 1.0; /* For safari display bug */
     padding: 5px;
     width: 90%;
     height: 75%;
