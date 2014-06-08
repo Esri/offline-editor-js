@@ -58,7 +58,9 @@
             width: 100%;
             z-index: 98;
             font-size: x-large;
-            display: none;
+            position: absolute;
+            top: -9999px !important;
+            left: -9999px !important;
         }
         #popup-body {
             position: relative;
@@ -216,11 +218,11 @@
         </div>
         <div id="row5" class="mod-popup-table-row">
             <div class="mod-popup-button-div-bottom-left">
-                <button class="mod-popup-button-cancel" >Close</button>
+                <button id="mod-popup-close-btn" class="mod-popup-button-cancel" >Close</button>
             </div>
             <div class="mod-popup-button-div">
-                <button class="mod-popup-button" style="margin-right: 10px;">Save</button>
-                <button class="mod-popup-button">Delete</button>
+                <button id="mod-popup-save-btn" class="mod-popup-button" style="margin-right: 10px;">Save</button>
+                <button id="mod-popup-delete-btn" class="mod-popup-button">Delete</button>
             </div>
         </div>
     </div>
@@ -261,7 +263,12 @@ require([
             var map,busStopsFeatureLayer,currentFeature;
             var imgOfflineIndicator;
             var pendingEdits = document.getElementById("pending-edits");
-            var popup = document.getElementById("popup");
+
+            // Variables for modal popup
+            var modPopup = document.getElementById("popup");
+            var closeBtn = document.getElementById("mod-popup-close-btn");
+            var saveBtn = document.getElementById("mod-popup-save-btn");
+            var deleteBtn = document.getElementById("mod-popup-delete-btn");
 
             // Variables for tile handling
             var _wantToCancel;
@@ -283,6 +290,7 @@ require([
             var appCacheManager;
             var btnOnlineOffline = document.getElementById("btn-online-offline");
 
+            setClickListeners();
             initOffline();
 
             /**
@@ -351,6 +359,12 @@ require([
                 })
 
                 map.addLayers([busStopsFeatureLayer]);
+            }
+
+            function setClickListeners(){
+                closeBtn.onclick = function(evt){
+                    hideModalPopup();
+                }
             }
 
             function convertGraphicLayerToJSON(graphics,callback){
@@ -459,6 +473,7 @@ require([
                     busStopsFeatureLayer.selectFeatures(query,FeatureLayer.SELECTION_NEW,
                             function(evt){
                                 console.log("Success: " + JSON.stringify(evt[0].attributes))
+                                modPopup.style.position = "static";
                             },function(err){
                                 console.log("ERROR " + JSON.stringify(err));
                             });
@@ -542,6 +557,14 @@ require([
                 else{
                     goOnline();
                 }
+            }
+
+            function showModalPopup(){
+                modPopup.style.position = "static";
+            }
+
+            function hideModalPopup(){
+                modPopup.style.position = "absolute";
             }
 
             /**
