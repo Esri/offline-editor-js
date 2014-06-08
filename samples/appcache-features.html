@@ -141,13 +141,24 @@
             position: relative; float: right;
         }
         #img-offline-indicator{
-            padding: 8px;
+            /*padding: 8px;*/
+            position: relative; float: right;
             position: relative; float: right;
 
         }
         #pending-edits{
             padding: 8px;
             position: relative; float: right;
+        }
+        @media (max-width: 500px) {
+            #pending-edits {
+                font-size: small;
+            }
+        }
+        @media (max-width: 450px) {
+            #pending-edits {
+                font-size: x-small;
+            }
         }
     </style>
     <script src="../vendor/offline/offline.min.js"></script>
