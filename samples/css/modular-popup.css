@@ -121,3 +121,17 @@
         font-size: small;
     }
 }
+@media (max-width: 450px) {
+    .mod-popup-button {
+        font-size: x-small;
+    }
+    .mod-popup-button:active{
+        font-size: x-small;
+    }
+    .mod-popup-button-cancel {
+        font-size: x-small;
+    }
+    .mod-popup-button-cancel:active {
+        font-size: x-small;
+    }
+}
