@@ -30,6 +30,7 @@
     ask if you want to reload the application.
 
     -->
+    <link rel="stylesheet" href="../samples/css/modular-popup.css">
     <link rel="stylesheet" href="http://js.arcgis.com/3.9/js/dojo/dijit/themes/claro/claro.css">
     <link rel="stylesheet" href="http://js.arcgis.com/3.9/js/esri/css/esri.css">
     <style>
@@ -51,6 +52,27 @@
             top: 50px;
             left: 0;
         }
+
+        #popup {
+            height: 100%;
+            width: 100%;
+            z-index: 98;
+            font-size: x-large;
+            display: none;
+        }
+        #popup-body {
+            position: relative;
+            top: 10%;
+            left: 10%;
+            z-index: 100;
+            height: 80%;
+            width: 80%;
+            border-radius: 10px;
+            background-color: black;
+            display: table;
+            opacity: 0.7;
+        }
+
         .dj_ie .infowindow .window .top .right .user .content { position: relative; }
         .dj_ie .simpleInfoWindow .content {position: relative;}
 
@@ -149,6 +171,7 @@
             }
         }
     </script>
+    <script src="../vendor/IndexedDBShim/dist/IndexedDBShim.min.js"></script>
     <!-- This is a custom build of the ArcGIS API for JavaScript using the new Web Optimizer Tool -->
     <script src="http://js.arcgis.com/o/agup_hack4co/appcacheFeatures/dojo/dojo.js" data-dojo-config="async: true"></script>
     <!-- Use this tag below if you are hosting your ArcGIS API for JavaScript files locally -->
@@ -163,6 +186,45 @@
         <img id="img-offline-indicator" src="../samples/images/blue-pin.png"/>
         <div id="pending-edits">Pending edits: 0</div>
     </div>
+</div>
+
+<div id="popup">
+    <div id="popup-body">
+        <div id="row1" class="mod-popup-table-row">
+            <div class="mod-popup-label-top-left">ID</div>
+            <div class="mod-popup-input">
+                <input id="stop-main-id" disabled class="mod-popup-stop-input-disabled" value="test"/>
+            </div>
+        </div>
+        <div id="row2" class="mod-popup-table-row">
+            <div class="mod-popup-label">Bustop ID</div>
+            <div class="mod-popup-input">
+                <input id="stop-id" disabled class="mod-popup-stop-input-disabled" value="test"/>
+            </div>
+        </div>
+        <div id="row3" class="mod-popup-table-row">
+            <div class="mod-popup-label">Routes</div>
+            <div class="mod-popup-input">
+                <input id="stop-routes" class="mod-popup-stop-input" value="test"/>
+            </div>
+        </div>
+        <div id="row4" class="mod-popup-table-row">
+            <div class="mod-popup-label">Stopnames</div>
+            <div class="mod-popup-input">
+                <input id="stop-names" class="mod-popup-stop-input" value="test"/>
+            </div>
+        </div>
+        <div id="row5" class="mod-popup-table-row">
+            <div class="mod-popup-button-div-bottom-left">
+                <button class="mod-popup-button-cancel" >Close</button>
+            </div>
+            <div class="mod-popup-button-div">
+                <button class="mod-popup-button" style="margin-right: 10px;">Save</button>
+                <button class="mod-popup-button">Delete</button>
+            </div>
+        </div>
+    </div>
+    <div id="modal-background" class="mod-popup-modal-background"></div>
 </div>
 
 <div id="map"></div>
@@ -327,58 +389,58 @@ require([
 
                 offlineFeaturesManager.extend(busStopsFeatureLayer);
 
-                map.infoWindow.on("hide", function() {
-                    busStopsFeatureLayer.clearSelection();
-                });
-
-                var layerInfos = [{
-                    'featureLayer': busStopsFeatureLayer,
-                    'showAttachments': false,
-                    'isEditable': true,
-                    'showDeleteButton': false,
-                    'fieldInfos': [
-                        {'fieldName': 'OBJECTID', 'isEditable':false, 'label':'ID:'},
-                        {'fieldName': 'BSID', 'isEditable':false, 'label':'Bus stop ID:'},
-                        {'fieldName': 'ROUTES', 'isEditable':false,'label':'Routes:'},
-                        {'fieldName': 'STOPNAME', 'isEditable':true, 'label':'Stop name:'}
-                    ]
-                }];
-
-                var attInspector = new AttributeInspector({
-                    layerInfos:layerInfos
-                }, domConstruct.create("div"));
-
-                //add a save button next to the delete button
-                var saveButton = new Button({ label: "Save", "class": "saveButton"});
-                domConstruct.place(saveButton.domNode, attInspector.deleteBtn.domNode, "after");
-
-                var textArea = new SimpleTextArea({name:"msgTextArea",rows:"1",class:"msgTextArea"})
-                domConstruct.place(textArea.domNode, saveButton.domNode, "after");
-
-                saveButton.on("click", function(){
-                    clearTimeout(textTimer);
-                    busStopsFeatureLayer.applyEdits(null, [currentFeature], null,
-                            function(response){
-                                textArea.set("value" , "Item successfully saved.");
-                                textTimer = setTimeout(function(){
-                                    textArea.set("value" , " ");
-                                },10000);
-                            },function(err){
-                                alert("There was error applying an edit: " + JSON.stringify(err));
-                            }
-                    );
-                });
-
-                attInspector.on("attribute-change", function(evt) {
-                    //store the updates to apply when the save button is clicked
-                    currentFeature.attributes[evt.fieldName] = evt.fieldValue;
-                    console.log("CHANGE " + evt.fieldValue)
-                });
-
-                attInspector.on("next", function(evt) {
-                    currentFeature = evt.feature;
-                    console.log("Next " + currentFeature.attributes.objectid);
-                });
+//                map.infoWindow.on("hide", function() {
+//                    busStopsFeatureLayer.clearSelection();
+//                });
+//
+//                var layerInfos = [{
+//                    'featureLayer': busStopsFeatureLayer,
+//                    'showAttachments': false,
+//                    'isEditable': true,
+//                    'showDeleteButton': false,
+//                    'fieldInfos': [
+//                        {'fieldName': 'OBJECTID', 'isEditable':false, 'label':'ID:'},
+//                        {'fieldName': 'BSID', 'isEditable':false, 'label':'Bus stop ID:'},
+//                        {'fieldName': 'ROUTES', 'isEditable':false,'label':'Routes:'},
+//                        {'fieldName': 'STOPNAME', 'isEditable':true, 'label':'Stop name:'}
+//                    ]
+//                }];
+//
+//                var attInspector = new AttributeInspector({
+//                    layerInfos:layerInfos
+//                }, domConstruct.create("div"));
+//
+//                //add a save button next to the delete button
+//                var saveButton = new Button({ label: "Save", "class": "saveButton"});
+//                domConstruct.place(saveButton.domNode, attInspector.deleteBtn.domNode, "after");
+//
+//                var textArea = new SimpleTextArea({name:"msgTextArea",rows:"1",class:"msgTextArea"})
+//                domConstruct.place(textArea.domNode, saveButton.domNode, "after");
+//
+//                saveButton.on("click", function(){
+//                    clearTimeout(textTimer);
+//                    busStopsFeatureLayer.applyEdits(null, [currentFeature], null,
+//                            function(response){
+//                                textArea.set("value" , "Item successfully saved.");
+//                                textTimer = setTimeout(function(){
+//                                    textArea.set("value" , " ");
+//                                },10000);
+//                            },function(err){
+//                                alert("There was error applying an edit: " + JSON.stringify(err));
+//                            }
+//                    );
+//                });
+//
+//                attInspector.on("attribute-change", function(evt) {
+//                    //store the updates to apply when the save button is clicked
+//                    currentFeature.attributes[evt.fieldName] = evt.fieldValue;
+//                    console.log("CHANGE " + evt.fieldValue)
+//                });
+//
+//                attInspector.on("next", function(evt) {
+//                    currentFeature = evt.feature;
+//                    console.log("Next " + currentFeature.attributes.objectid);
+//                });
 
                 busStopsFeatureLayer.on("click", function(evt) {
                     currentFeature = evt.graphic
@@ -392,16 +454,16 @@ require([
                                 console.log("ERROR " + JSON.stringify(err));
                             });
 
-                    // NOTE: To make the info window for mobile use you would need
-                    // to switch a mobile friendly 'view' containing all the attributes.
-                    // This pattern is for testing only. It's on the TO-DO list to make
-                    // this mobile friendly.
-                    map.infoWindow.setTitle(currentFeature.attributes.STOPNAME);
-                    map.infoWindow.show(evt.screenPoint,map.getInfoWindowAnchor(evt.screenPoint));
+//                    // NOTE: To make the info window for mobile use you would need
+//                    // to switch a mobile friendly 'view' containing all the attributes.
+//                    // This pattern is for testing only. It's on the TO-DO list to make
+//                    // this mobile friendly.
+//                    map.infoWindow.setTitle(currentFeature.attributes.STOPNAME);
+//                    map.infoWindow.show(evt.screenPoint,map.getInfoWindowAnchor(evt.screenPoint));
                 }.bind(this));
 
-                map.infoWindow.setContent(attInspector.domNode);
-                map.infoWindow.resize(350, 270);
+//                map.infoWindow.setContent(attInspector.domNode);
+//                map.infoWindow.resize(350, 270);
 
             }
 
