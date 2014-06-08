@@ -284,11 +284,22 @@ require([
 
             // Symbols and images
             var redPinPath = "../samples/images/red-pin.png";
-            var bluePinPath = "../samples/images/blue-pin.png"
+            var bluePinPath = "../samples/images/blue-pin.png";
 
-            var defaultSymbol = new SimpleMarkerSymbol().setStyle(
-                    SimpleMarkerSymbol.STYLE_DIAMOND).setColor(
-                    new Color([255,0,0,0.5])).setSize(35);
+            var defaultSymbol;
+
+            // Modify symbol size based on screen size.
+            // Bigger screens get smaller symbols. Smaller screens get larger symbols.
+            if (document.documentElement.clientHeight > 768 || document.documentElement.clientWidth > 1024) { 
+                defaultSymbol= new SimpleMarkerSymbol().setStyle(
+                        SimpleMarkerSymbol.STYLE_DIAMOND).setColor(
+                        new Color([255,0,0,0.5])).setSize(20);    // scripts
+            }
+            else{
+                defaultSymbol= new SimpleMarkerSymbol().setStyle(
+                        SimpleMarkerSymbol.STYLE_DIAMOND).setColor(
+                        new Color([255,0,0,0.5])).setSize(35);
+            }
 
             // Miscellaneous variables
             var appCacheManager;
