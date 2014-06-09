@@ -199,28 +199,25 @@
 <script>
 
 require([
-            "esri/map",
-            "esri/tasks/query",
-            "esri/layers/FeatureLayer",
-            "esri/Color",
-            "esri/symbols/SimpleMarkerSymbol",
-            "esri/renderers/SimpleRenderer",
-            "esri/dijit/AttributeInspector",
-            "edit/offlineFeaturesManager",
-            "tiles/offlineTilesEnabler2",
-            "edit/editsStore",
-            "utils/appCacheManager",
-            "dojo/dom-construct",
-            "dojo/on",
-            "dojo/dom",
-            "dijit/form/Button",
-            "dijit/form/SimpleTextarea",
-            "dojo/domReady!"],
+    "esri/map",
+    "esri/tasks/query",
+    "esri/layers/FeatureLayer",
+    "esri/Color",
+    "esri/symbols/SimpleMarkerSymbol",
+    "esri/renderers/SimpleRenderer",
+    "esri/dijit/AttributeInspector",
+    "edit/offlineFeaturesManager",
+    "tiles/offlineTilesEnabler2",
+    "edit/editsStore",
+    "utils/appCacheManager",
+    "dojo/dom-construct",
+    "dojo/on",
+    "dojo/dom",
+    "dojo/domReady!"],
         function(Map,Query,FeatureLayer,Color,SimpleMarkerSymbol,SimpleRenderer,AttributeInspector,
-                 OfflineFeaturesManager,OfflineTileEnabler,editsStore,AppCacheManager,domConstruct,on,dom,Button,SimpleTextArea) {
+                 OfflineFeaturesManager,OfflineTileEnabler,editsStore,AppCacheManager,domConstruct,on,dom) {
 
             // Variables for edit handling
-            var textTimer;
             var _isOnline = true;
             var features = [];
             var offlineFeaturesManager;
@@ -242,7 +239,7 @@ require([
             // Variables for tile handling
             var _wantToCancel;
             var globalState = {};
-            var offlineTileEnabler, baseMapLayer;
+            var baseMapLayer;
             var btnGetTiles = document.getElementById("btn-get-tiles");
             var minZoomAdjust = -1, maxZoomAdjust = 1, mMinZoom, mMaxZoom, zoom = 18;
             var EXTENT_BUFFER = 0; //buffers the map extent in meters
@@ -293,7 +290,7 @@ require([
                 });
 
                 baseMapLayer = new OfflineTileEnabler("http://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer",function(evt){
-                    console.log("TEST")
+                    console.log("Tile layer has been initialized")
                 },true);
 
                 map.addLayer(baseMapLayer);
@@ -334,7 +331,6 @@ require([
 
                     map.addLayers([busStopsFeatureLayer]);
 
-//                    initEditing();
                     initAppCacheManager();
                     if(_isOnline == false){
                         var fLayer = JSON.parse(localStorage.offlineLayerDef);
@@ -395,6 +391,8 @@ require([
                 offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_SENT, updateStatus);
                 offlineFeaturesManager.on(offlineFeaturesManager.events.ALL_EDITS_SENT, updateStatus);
 
+                offlineFeaturesManager.extend(busStopsFeatureLayer);
+
                 imgOfflineIndicator = document.getElementById("img-offline-indicator");
                 imgOfflineIndicator.offlineColor = "blue";
 
@@ -413,13 +411,14 @@ require([
             }
 
             function initEditing(evt){
-
                 setClickListeners();
                 initOfflineFeatures();
-                offlineFeaturesManager.extend(busStopsFeatureLayer);
                 setFeatureLayerClickHandler();
             }
 
+            /**
+             * Display modal popup when someone clicks on a feature
+             */
             function setFeatureLayerClickHandler(){
                 busStopsFeatureLayer.on("click", function(evt) {
                     currentFeature = evt.graphic
@@ -428,9 +427,9 @@ require([
                     query.objectIds = [evt.graphic.attributes.OBJECTID];
                     busStopsFeatureLayer.selectFeatures(query,FeatureLayer.SELECTION_NEW,
                             function(evt){
-                                console.log("Success: " + JSON.stringify(evt[0].attributes))
-                                var atts = evt[0].attributes;
+                                console.log("Success: " + JSON.stringify(evt[0].attributes));
                                 showModalPopup(evt[0]);
+                                var atts = evt[0].attributes
                                 stopID.value = atts.OBJECTID;
                                 stopMainID.value = atts.BSID;
                                 stopNames.value = atts.STOPNAME;
