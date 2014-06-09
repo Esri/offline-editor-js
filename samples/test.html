@@ -300,6 +300,9 @@ require([
 
                 baseMapLayer.on("load",function(evt){
 
+                    mMaxZoom = map.getMaxZoom();
+                    mMinZoom = map.getMinZoom();
+
                     busStopsFeatureLayer = new FeatureLayer("http://services.arcgis.com/IZtlGBUe4KTzLOl4/arcgis/rest/services/BPX_RTD_BusStops2/FeatureServer/0",{
                         mode: FeatureLayer.MODE_SNAPSHOT,
                         outFields: ["OBJECTID","BSID","ROUTES","STOPNAME"]
