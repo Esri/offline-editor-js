@@ -138,7 +138,7 @@
         }
     </script>
     <!-- Required when using the offline-editor-js library with Safari -->
-    <script src="../vendor/IndexedDBShim/dist/IndexedDBShim.min.js"></script>
+    <script src="../vendor/IndexedDBShim/dist/IndexedDBShim.js"></script>
     <!-- This is a custom build of the ArcGIS API for JavaScript using the new Web Optimizer Tool -->
     <script src="http://js.arcgis.com/o/agup_hack4co/appcacheFeatures/dojo/dojo.js" data-dojo-config="async: true"></script>
     <!-- Use this tag below if you are hosting your ArcGIS API for JavaScript files locally -->
@@ -291,57 +291,59 @@ require([
 
                 baseMapLayer = new OfflineTileEnabler("http://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer",function(evt){
                     console.log("Tile layer has been initialized")
+                    on(btnGetTiles,"click",downloadTiles);
+                    mMaxZoom = map.getMaxZoom();
+                    mMinZoom = map.getMinZoom();
                 },true);
 
                 map.addLayer(baseMapLayer);
 
-                baseMapLayer.on("load",function(evt){
+                busStopsFeatureLayer = new FeatureLayer("http://services.arcgis.com/IZtlGBUe4KTzLOl4/arcgis/rest/services/BPX_RTD_BusStops2/FeatureServer/0",{
+                    mode: FeatureLayer.MODE_SNAPSHOT,
+                    outFields: ["OBJECTID","BSID","ROUTES","STOPNAME"]
+                });
 
-                    mMaxZoom = map.getMaxZoom();
-                    mMinZoom = map.getMinZoom();
+                //Set the graphics to red boxes to make it easy to click on them
+                //on a mobile device.
+                busStopsFeatureLayer.setRenderer(new SimpleRenderer(defaultSymbol));
 
-                    busStopsFeatureLayer = new FeatureLayer("http://services.arcgis.com/IZtlGBUe4KTzLOl4/arcgis/rest/services/BPX_RTD_BusStops2/FeatureServer/0",{
-                        mode: FeatureLayer.MODE_SNAPSHOT,
-                        outFields: ["OBJECTID","BSID","ROUTES","STOPNAME"]
-                    });
+                busStopsFeatureLayer.on("update-end",function(evt){
+                    layerDefinition.objectIdFieldName = evt.target.objectIdField;
+                    layerDefinition.globalIdFieldName = evt.target.globalIdField;
+                    layerDefinition.geometryType = evt.target.geometryType;
+                    layerDefinition.spatialReference = evt.target.spatialReference;
+                    layerDefinition.fields = evt.target.fields;
+                    features = evt.target.graphics;
 
-                    // Set the graphics to red boxes to make it easy to click on them
-                    // on a mobile device.
-                    busStopsFeatureLayer.setRenderer(new SimpleRenderer(defaultSymbol));
-
-                    busStopsFeatureLayer.on("update-end",function(evt){
-                        layerDefinition.objectIdFieldName = evt.target.objectIdField;
-                        layerDefinition.globalIdFieldName = evt.target.globalIdField;
-                        layerDefinition.geometryType = evt.target.geometryType;
-                        layerDefinition.spatialReference = evt.target.spatialReference;
-                        layerDefinition.fields = evt.target.fields;
-                        features = evt.target.graphics;
-
-                        convertGraphicLayerToJSON(features,function(result){
-                            var featureJSON = JSON.stringify(result);
-                            if(typeof(Storage) !== "undefined") {
-                                localStorage.offlineLayerDef = JSON.stringify(layerDefinition);
-                                localStorage.offlineFeature = featureJSON;
-                                console.log("Done pushing layerDef and features to localStorage.")
-                            } else {
-                                alert("The offline library is not supported on this browser.")
-                            }
-                        })
+                    convertGraphicLayerToJSON(features,function(result){
+                        var featureJSON = JSON.stringify(result);
+                        if(typeof(Storage) !== "undefined") {
+                            localStorage.offlineLayerDef = JSON.stringify(layerDefinition);
+                            localStorage.offlineFeature = featureJSON;
+                            console.log("Done pushing layerDef and features to localStorage.")
+                        } else {
+                            alert("The offline library is not supported on this browser.")
+                        }
                     })
+                })
 
-                    map.addLayers([busStopsFeatureLayer]);
+                map.on("load",function(evt){
+
+                    updateOfflineUsage();
 
                     initAppCacheManager();
                     if(_isOnline == false){
                         var fLayer = JSON.parse(localStorage.offlineLayerDef);
                         var fFeatures = JSON.parse(localStorage.offlineFeature);
                         reconstituteGraphicsLayer(fLayer,fFeatures,function(result){
-                            initEditing(result);
+                            offlineFeaturesManager.extend(busStopsFeatureLayer);
+                            setFeatureLayerClickHandler()
                         });
                     }
                 })
 
                 map.on("layers-add-result",initEditing);
+                map.addLayer(busStopsFeatureLayer);
 
             }
 
