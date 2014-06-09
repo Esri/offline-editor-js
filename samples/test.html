@@ -270,9 +270,6 @@ require([
             var appCacheManager;
             var btnOnlineOffline = document.getElementById("btn-online-offline");
 
-            setClickListeners();
-            initOfflineFeatures();
-
             /**
              * There have been a few bugs in the offline detection library (offline.min.js)
              * This is a utility check to 100% validate if the application is online or
@@ -295,13 +292,13 @@ require([
                     sliderStyle: "small"
                 });
 
-                var tiledMapLayer = new OfflineTileEnabler("http://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer",function(evt){
+                baseMapLayer = new OfflineTileEnabler("http://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer",function(evt){
                     console.log("TEST")
                 },true);
 
-                map.addLayer(tiledMapLayer);
+                map.addLayer(baseMapLayer);
 
-                tiledMapLayer.on("load",function(evt){
+                baseMapLayer.on("load",function(evt){
 
                     busStopsFeatureLayer = new FeatureLayer("http://services.arcgis.com/IZtlGBUe4KTzLOl4/arcgis/rest/services/BPX_RTD_BusStops2/FeatureServer/0",{
                         mode: FeatureLayer.MODE_SNAPSHOT,
@@ -334,9 +331,8 @@ require([
 
                     map.addLayers([busStopsFeatureLayer]);
 
-                    initEditing();
+//                    initEditing();
                     initAppCacheManager();
-                    initOfflineTileEnabler();
                     if(_isOnline == false){
                         var fLayer = JSON.parse(localStorage.offlineLayerDef);
                         var fFeatures = JSON.parse(localStorage.offlineFeature);
@@ -346,7 +342,7 @@ require([
                     }
                 })
 
-//                map.on("layers-add-result",initEditing);
+                map.on("layers-add-result",initEditing);
 
             }
 
@@ -415,8 +411,10 @@ require([
 
             function initEditing(evt){
 
+                setClickListeners();
+                initOfflineFeatures();
                 offlineFeaturesManager.extend(busStopsFeatureLayer);
-                setFeatureLayerClickHandler()
+                setFeatureLayerClickHandler();
             }
 
             function setFeatureLayerClickHandler(){
@@ -534,34 +532,34 @@ require([
              * ************************************
              */
 
-            function initOfflineTileEnabler(){
-
-                mMaxZoom = map.getMaxZoom();
-                mMinZoom = map.getMinZoom();
-
-                offlineTileEnabler = new OfflineTileEnabler();
-                baseMapLayer = offlineTileEnabler.getBasemapLayer(map); console.log("Offline State: " + Offline.state)
-
-                offlineTileEnabler.extend(baseMapLayer,function(success)
-                {
-                    if( success )
-                    {
-                        console.log("Offline tile lib is enabled. Application state is: " + Offline.state);
-                        Offline.check();
-
-                        //using null sets this for CORS
-                        baseMapLayer.offline.proxyPath = null;
-
-                        on(btnGetTiles,"click",downloadTiles);
-
-                        updateOfflineUsage();
-                    }
-                    else
-                    {
-                        alert("error initializing storage - browser doesn't support indexeddb or websql")
-                    }
-                }.bind(this),_isOnline);
-            }
+//            function initOfflineTileEnabler(){
+//
+//                mMaxZoom = map.getMaxZoom();
+//                mMinZoom = map.getMinZoom();
+//
+//                offlineTileEnabler = new OfflineTileEnabler();
+//                baseMapLayer = offlineTileEnabler.getBasemapLayer(map); console.log("Offline State: " + Offline.state)
+//
+//                offlineTileEnabler.extend(baseMapLayer,function(success)
+//                {
+//                    if( success )
+//                    {
+//                        console.log("Offline tile lib is enabled. Application state is: " + Offline.state);
+//                        Offline.check();
+//
+//                        //using null sets this for CORS
+//                        baseMapLayer.offline.proxyPath = null;
+//
+//                        on(btnGetTiles,"click",downloadTiles);
+//
+//                        updateOfflineUsage();
+//                    }
+//                    else
+//                    {
+//                        alert("error initializing storage - browser doesn't support indexeddb or websql")
+//                    }
+//                }.bind(this),_isOnline);
+//            }
 
             /**
              * Manually starts the process to download and store tiles
