@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <!--The viewport meta tag is used to improve the presentation and behavior of the samples 
+      on iOS devices-->
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no">
+    <title>AppCache Tiles and Features</title>
+
+    <link rel="stylesheet" href="http://js.arcgis.com/3.9/js/dojo/dijit/themes/claro/claro.css">
+    <link rel="stylesheet" href="http://js.arcgis.com/3.9/js/esri/css/esri.css">
+
+    <style>
+        html, body, #map {
+            height: 100%;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            background-color: #FFF;
+            overflow: hidden;
+            font-family: "Trebuchet MS";
+        }
+        #map {
+            z-index: 1;
+            position: absolute;
+            top: 50px;
+            left: 0;
+        }
+        #button-div1{
+            position: relative;
+            z-index: 2;
+            background: #000000;
+            color: #ffffff;
+            width: 100%;
+            height: 50px;
+        }
+        #right-div{
+            height: 50px;
+            position: relative; float: right;
+        }
+        #img-offline-indicator{
+            /*padding: 8px;*/
+            position: relative; float: right;
+            position: relative; float: right;
+
+        }
+        #pending-edits{
+            padding: 8px;
+            position: relative; float: right;
+        }
+        .basic-btn{
+            background-color: #000000;
+            border-color: #ffffff 1px;
+            color: #ffffff;
+            padding: 8px;
+            position: relative; float: left;
+        }
+    </style>
+
+    <script>
+        var locationPath = location.pathname.replace(/\/[^/]+$/, "");
+        var dojoConfig = {
+            paths: {
+                tiles: locationPath  + "/../lib/tiles"
+            }
+        }
+    </script>
+    <script src="http://js.arcgis.com/o/agup_hack4co/appcacheFeatures/dojo/dojo.js" data-dojo-config="async: true"></script>
+    <!-- Use this tag below if you are hosting your ArcGIS API for JavaScript files locally -->
+    <!--<script src="libs/dojo/dojo/dojo.js" data-dojo-config="async: true"></script>-->
+</head>
+<body>
+<div id="button-div1">
+    <button class="basic-btn" id="btn-get-tiles">1. Download Tiles</button>
+    <button class="basic-btn" data-dojo-type="dijit/form/ToggleButton" id="btn-online-offline">2. Go Offline</button>
+    <div id="right-div">
+        <img id="img-offline-indicator" src="../samples/images/blue-pin.png"/>
+        <div id="pending-edits">Pending edits: 0</div>
+    </div>
+</div>
+<div id="map"></div>
+
+<script>
+    require(["esri/map","esri/layers/FeatureLayer","tiles/offlineTilesEnabler2",
+                "esri/renderers/SimpleRenderer","esri/symbols/SimpleMarkerSymbol","esri/Color",
+                "dojo/domReady!"],
+            function(Map,FeatureLayer,OfflineTilesEnabler,SimpleRenderer,SimpleMarkerSymbol,Color) {
+
+                var _isOnline = true;
+                var defaultSymbol;
+
+                // Modify symbol size based on screen size.
+                // Bigger screens get smaller symbols. Smaller screens get larger symbols.
+                if (document.documentElement.clientHeight > 768 || document.documentElement.clientWidth > 1024) {
+                    defaultSymbol= new SimpleMarkerSymbol().setStyle(
+                            SimpleMarkerSymbol.STYLE_DIAMOND).setColor(
+                            new Color([255,0,0,0.5])).setSize(20);    // scripts
+                }
+                else{
+                    defaultSymbol= new SimpleMarkerSymbol().setStyle(
+                            SimpleMarkerSymbol.STYLE_DIAMOND).setColor(
+                            new Color([255,0,0,0.5])).setSize(35);
+                }
+
+                /**
+                 * There have been a few bugs in the offline detection library (offline.min.js)
+                 * This is a utility check to 100% validate if the application is online or
+                 * offline prior to launching any map functionality.
+                 */
+                verifyOnline(function(result){ console.log("VERIFY ONLINE " + result)
+                    result == true ? _isOnline = true : _isOnline = false;
+                    startMap();
+                })
+
+                function startMap(){
+                    var tileLayer = new OfflineTilesEnabler("http://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer",function(evt){
+                        console.log("YAYA")
+                    },true);
+
+                    var map = new Map("map",{
+                        center: [-104.98,39.74], // long, lat
+                        zoom: 8,
+                        sliderStyle: "small"
+                    });
+
+                    map.addLayer(tileLayer);
+
+                    var busStopFeatureLayer = new FeatureLayer("http://services.arcgis.com/IZtlGBUe4KTzLOl4/arcgis/rest/services/BPX_RTD_BusStops2/FeatureServer/0", {
+                        mode: FeatureLayer.MODE_SNAPSHOT,
+                        outFields: ["OBJECTID","BSID","ROUTES","STOPNAME"]
+                    });
+
+                    //Set the graphics to red boxes to make it easy to click on them
+                    //on a mobile device.
+                    busStopFeatureLayer.setRenderer(new SimpleRenderer(defaultSymbol));
+
+                    map.addLayer(busStopFeatureLayer);
+                }
+
+                /**
+                 * Attempts an http request to verify if app is online or offline.
+                 * Use this in conjunction with the offline checker library: offline.min.js
+                 * @param callback
+                 */
+                function verifyOnline(callback){
+                    var req = new XMLHttpRequest();
+                    req.open("GET", "images/blue-pin.png?" + (Math.floor(Math.random() * 1000000000)), true);
+                    req.onload = function()
+                    {
+                        if( req.status === 200 && req.responseText !== "")
+                        {
+                            callback(true);
+                        }
+                        else
+                        {
+                            console.log("verifyOffline failed");
+                            callback(false);
+                        }
+                    };
+                    req.onerror = function(e)
+                    {
+                        console.log("verifyOffline failed: " + e);
+                        callback(false);
+                    };
+                    req.send(null);
+                }
+            });
+</script>
+
+</body>
+</html>
