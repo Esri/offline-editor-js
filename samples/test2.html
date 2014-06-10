@@ -105,6 +105,9 @@
                 var busStopFeatureLayer;
                 var appCacheManager;
 
+                // Important settings for determining which tile layers gets stored for offline use.
+                var minZoomAdjust = -1, maxZoomAdjust = 1, resetZoom = 18;
+
                 // Modify symbol size based on screen size.
                 // Bigger screens get smaller symbols. Smaller screens get larger symbols.
                 if (document.documentElement.clientHeight > 768 || document.documentElement.clientWidth > 1024) {
@@ -130,7 +133,7 @@
 
                 function startMap(){
                     tileLayer = new OfflineTilesEnabler("http://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer",function(evt){
-                        console.log("Tile Layer Loaded.")
+                        console.log("Tile Layer Loaded.");
                     },true);
 
                     var map = new Map("map",{
@@ -215,7 +218,21 @@
                  * ************************************
                  */
 
+                /**
+                 * Utility function to validate min and max zoom settings of the map
+                 */
+                function getMinMaxZoom(){
 
+                    var zoom = {};
+                    var min = map.getLevel() + minZoomAdjust;
+                    var max = map.getLevel() + maxZoomAdjust;
+                    var mMaxZoom = map.getMaxZoom();
+                    var mMinZoom = map.getMinZoom();
+                    zoom.max = Math.min(mMaxZoom, max);  //prevent errors by setting the tile layer floor
+                    zoom.min = Math.max(mMinZoom, min);   //prevent errors by setting the tile layer ceiling
+
+                    return zoom;
+                }
 
                 /**
                  * ************************************
