@@ -317,24 +317,31 @@
                         updateOfflineUsage();
 
                         if(_isOnline == false){
+
                             var featureLayer = JSON.parse(localStorage.offlineLayerDef);
                             var featuresArray = JSON.parse(localStorage.offlineFeature);
                             var geometryType = "esriGeometryPoint";
 
                             restartOfflineFeaturesMgr.getFeatureDefinition(featureLayer,featuresArray,geometryType,function(featureDef){
 
-                                busStopsFeatureLayer = new FeatureLayer(featureDef,{
+                                busStopFeatureLayer = new FeatureLayer(featureDef,{
                                     mode: FeatureLayer.MODE_SNAPSHOT,
                                     outFields: ["OBJECTID","BSID","ROUTES","STOPNAME"]
                                 });
                                 // Set the graphics to red boxes to make it easy to click on them
                                 // on a mobile device.
-                                busStopsFeatureLayer.setRenderer(new SimpleRenderer(defaultSymbol));
+                                busStopFeatureLayer.setRenderer(new SimpleRenderer(defaultSymbol));
                                 var mapListen = map.on("update-end",function(evt){
-                                    console.log("Feature has been added back to the map while offline.")
+                                    console.log("Feature has been added back to the map while offline.");
+                                    on(btnGetTiles,"click",downloadTiles);
+                                    on(btnOnlineOffline, 'click', goOnlineOffline);
+
+                                    initOfflineFeaturesMgr();
+                                    setFeatureLayerClickHandler();
+                                    setModalPopupClickListeners();
                                     mapListen.remove();
                                 })
-                                map.addLayer(busStopsFeatureLayer);
+                                map.addLayer(busStopFeatureLayer);
 
 //                                offlineFeaturesManager.extend(busStopsFeatureLayer);
 //                                setFeatureLayerClickHandler()
