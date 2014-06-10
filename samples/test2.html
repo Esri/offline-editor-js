@@ -116,6 +116,7 @@
                 var defaultSymbol;
 
                 // Variables for editing handling
+                var currentFeature;
                 var busStopFeatureLayer;
                 var offlineFeaturesManager;
                 var pendingEdits = document.getElementById("pending-edits");
@@ -193,6 +194,7 @@
                     busStopFeatureLayer.on("update-end",function(evt){
                         on(btnGetTiles,"click",downloadTiles);
                         initOfflineFeaturesMgr();
+                        setFeatureLayerClickHandler();
                         
                         var features = evt.target.graphics;
 
@@ -284,6 +286,30 @@
                     {
                         pendingEdits.innerHTML = "Pending edits: 0";
                     }
+                }
+
+                /**
+                 * Display modal popup when someone clicks on a feature
+                 */
+                function setFeatureLayerClickHandler(){
+                    busStopFeatureLayer.on("click", function(evt) { console.log("test")
+//                        currentFeature = evt.graphic
+//
+//                        var query = new Query();
+//                        query.objectIds = [evt.graphic.attributes.OBJECTID];
+//                        busStopsFeatureLayer.selectFeatures(query,FeatureLayer.SELECTION_NEW,
+//                                function(evt){
+//                                    console.log("Success: " + JSON.stringify(evt[0].attributes));
+//                                    showModalPopup(evt[0]);
+//                                    var atts = evt[0].attributes
+//                                    stopID.value = atts.OBJECTID;
+//                                    stopMainID.value = atts.BSID;
+//                                    stopNames.value = atts.STOPNAME;
+//                                    stopRoutes.value = atts.ROUTES;
+//                                },function(err){
+//                                    console.log("ERROR " + JSON.stringify(err));
+//                                });
+                    }.bind(this));
                 }
 
                 /**
