@@ -63,7 +63,7 @@ module.exports = function(grunt) {
 		            "*.html",
                     "../samples/images/*.png",
                     "../samples/css/*.css",
-                    "../vendor/IndexedDBShim/dist/*.min.js",
+                    "../vendor/IndexedDBShim/dist/*.js",
                     "../vendor/offline/offline.min.js",
                     "../lib/tiles/*.js",
                     "../lib/tiles/*.png",
