@@ -276,7 +276,10 @@
                     busStopFeatureLayer.setRenderer(new SimpleRenderer(defaultSymbol));
 
                     busStopFeatureLayer.on("update-end",function(evt){
+
                         on(btnGetTiles,"click",downloadTiles);
+                        on(btnOnlineOffline, 'click', goOnlineOffline);
+
                         initOfflineFeaturesMgr();
                         setFeatureLayerClickHandler();
                         setModalPopupClickListeners();
@@ -556,6 +559,15 @@
                     imgOfflineIndicator.src = redPinPath;
                     offlineFeaturesManager.goOffline();
                     if(typeof tileLayer != "undefined") tileLayer.goOffline();
+                }
+
+                function goOnlineOffline(){
+                    if(offlineFeaturesManager.getOnlineStatus() == offlineFeaturesManager.ONLINE){
+                        goOffline();
+                    }
+                    else{
+                        goOnline();
+                    }
                 }
 
                 /**
