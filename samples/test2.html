@@ -112,27 +112,33 @@
 
                 initAppCacheManager();
 
-                var tileLayer;
                 var _isOnline = true;
                 var defaultSymbol;
-                var busStopFeatureLayer;
-                var appCacheManager;
 
                 // Variables for editing handling
+                var busStopFeatureLayer;
                 var offlineFeaturesManager;
                 var pendingEdits = document.getElementById("pending-edits");
                 var imgOfflineIndicator = document.getElementById("img-offline-indicator");
 
+                // Variables for handling tiles
+                var tileLayer;
+                var _currentExtent = null;
+                var _wantToCancel;
+                var globalState = {};
+                var btnGetTiles = document.getElementById("btn-get-tiles");
+                // Important settings for determining which tile layers gets stored for offline use.
+                var minZoomAdjust = -1, maxZoomAdjust = 1, resetZoom = 18;
+                var EXTENT_BUFFER = 0; //buffers the map extent in meters
+
                 // Misc.
+                var appCacheManager;
                 var btnOnlineOffline = document.getElementById("btn-online-offline");
 
                 // Symbols and images
                 var redPinPath = "../samples/images/red-pin.png";
                 var redPinImage = new Image().src = redPinPath;
                 var bluePinPath = "../samples/images/blue-pin.png";
-
-                // Important settings for determining which tile layers gets stored for offline use.
-                var minZoomAdjust = -1, maxZoomAdjust = 1, resetZoom = 18;
 
                 // Modify symbol size based on screen size.
                 // Bigger screens get smaller symbols. Smaller screens get larger symbols.
@@ -161,7 +167,7 @@
 
                     //Make sure map shows up after a browser refresh
                     Offline.check();
-                    Offline.state === 'up' ? zoom = 18 : zoom = 17;
+                    Offline.state === 'up' ? resetZoom = 18 : resetZoom = 17;
 
                     tileLayer = new OfflineTilesEnabler("http://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer",function(evt){
                         console.log("Tile Layer Loaded.");
@@ -185,7 +191,9 @@
                     busStopFeatureLayer.setRenderer(new SimpleRenderer(defaultSymbol));
 
                     busStopFeatureLayer.on("update-end",function(evt){
+                        on(btnGetTiles,"click",downloadTiles);
                         initOfflineFeaturesMgr();
+                        
                         var features = evt.target.graphics;
 
                         // Convert existing feature graphics into JSON.
@@ -204,8 +212,17 @@
                         })
                     });
 
+                    map.on("zoom-end",function(evt){
+                        _currentExtent = evt.extent;
+                    });
+
+                    map.on("pan-end",function(evt){
+                       _currentExtent = evt.extent;
+                    });
+
                     map.on("load",function(evt){
 
+                        _currentExtent = evt.map.extent;
                         updateOfflineUsage();
 
                         if(_isOnline == false){
@@ -276,15 +293,84 @@
                  */
 
                 /**
+                 * Manually starts the process to download and store tiles
+                 * in the local database
+                 */
+                function downloadTiles(){
+                    tileLayer.deleteAllTiles(function(success,err){
+                        if(success == false){
+                            alert("There was a problem deleting the tile cache");
+                        }
+                        else{
+                            console.log("success deleting tile cache");
+
+                            if( globalState.downloadState == 'downloading')
+                            {
+                                console.log("cancel!");
+                                _wantToCancel = true;
+                                btnGetTiles.innerHTML = "cancelling..";
+                            }
+                            else
+                            {
+                                var zoom = getMinMaxZoom();
+
+                                var extent = tileLayer.getExtentBuffer(EXTENT_BUFFER,_currentExtent);
+                                _wantToCancel = false;
+                                tileLayer.prepareForOffline(zoom.min, zoom.max, extent, reportProgress.bind(this));
+                                globalState.downloadState = 'downloading';
+                            }
+                        }
+                    }.bind(this))
+                }
+
+                /**
+                 * Reports the process while downloading tiles.
+                 */
+                function reportProgress(progress)
+                {
+                    console.log("downloading tiles...");
+                    if(progress.hasOwnProperty("countNow")){
+                        var percent = Math.floor(progress.countNow / progress.countMax * 100);
+                        btnGetTiles.innerHTML = 'Saving to phone ' + percent + "% - Tap to Cancel";
+                    }
+
+                    if( progress.finishedDownloading )
+                    {
+                        btnGetTiles.innerHTML = "Saving to phone 100% - Tap to Cancel";
+                        updateOfflineUsage();
+
+                        if( progress.cancelRequested )
+                        {
+                            globalState.downloadState = 'cancelled';
+                            alert("Tile download was cancelled");
+                        }
+                        else
+                        {
+                            globalState.downloadState = 'downloaded';
+                            alert("Tile download complete");
+                        }
+
+                        btnGetTiles.innerHTML = '1. Download Tiles';
+                    }
+                    return _wantToCancel; //determines if a cancel request has been issued
+                }
+
+                /**
                  * Utility function to validate min and max zoom settings of the map
                  */
                 function getMinMaxZoom(){
 
                     var zoom = {};
-                    var min = map.getLevel() + minZoomAdjust;
-                    var max = map.getLevel() + maxZoomAdjust;
-                    var mMaxZoom = map.getMaxZoom();
-                    var mMinZoom = map.getMinZoom();
+                    var min = tileLayer.getLevel() + minZoomAdjust;
+                    var max = tileLayer.getLevel() + maxZoomAdjust;
+                    var mMaxZoom;
+                    tileLayer.getMaxZoom(function(result){
+                        mMaxZoom = result;
+                    });
+                    var mMinZoom;
+                    tileLayer.getMinZoom(function(result){
+                        mMinZoom = result;
+                    });
                     zoom.max = Math.min(mMaxZoom, max);  //prevent errors by setting the tile layer floor
                     zoom.min = Math.max(mMinZoom, min);   //prevent errors by setting the tile layer ceiling
 
