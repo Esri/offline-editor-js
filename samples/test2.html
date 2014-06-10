@@ -175,12 +175,13 @@
 <script>
     require(["esri/map","esri/layers/FeatureLayer","tiles/OfflineTilesEnablerLayer",
                 "edit/restartOfflineFeaturesManager", "utils/appCacheManager",
-                "esri/renderers/SimpleRenderer","esri/symbols/SimpleMarkerSymbol","esri/Color",
+                "esri/renderers/SimpleRenderer","esri/symbols/SimpleMarkerSymbol","esri/Color","esri/tasks/query",
                 "edit/offlineFeaturesManager", "edit/editsStore",
                 "dojo/on",
                 "dojo/domReady!"],
             function(Map,FeatureLayer,OfflineTilesEnabler,restartOfflineFeaturesMgr,AppCacheManager,
-                SimpleRenderer,SimpleMarkerSymbol,Color,OfflineFeaturesManager,editsStore,on) {
+                SimpleRenderer,SimpleMarkerSymbol,Color,Query,
+                OfflineFeaturesManager,editsStore,on) {
 
                 initAppCacheManager();
 
@@ -208,6 +209,16 @@
                 // Misc.
                 var appCacheManager;
                 var btnOnlineOffline = document.getElementById("btn-online-offline");
+
+                // Variables for modal popup
+                var modPopup = document.getElementById("popup");
+                var closeBtn = document.getElementById("mod-popup-close-btn");
+                var saveBtn = document.getElementById("mod-popup-save-btn");
+                var deleteBtn = document.getElementById("mod-popup-delete-btn");
+                var stopMainID = document.getElementById("stop-main-id");
+                var stopID = document.getElementById("stop-id");
+                var stopRoutes = document.getElementById("stop-routes");
+                var stopNames = document.getElementById("stop-names");
 
                 // Symbols and images
                 var redPinPath = "../samples/images/red-pin.png";
@@ -268,6 +279,7 @@
                         on(btnGetTiles,"click",downloadTiles);
                         initOfflineFeaturesMgr();
                         setFeatureLayerClickHandler();
+                        setModalPopupClickListeners();
                         
                         var features = evt.target.graphics;
 
@@ -365,24 +377,54 @@
                  * Display modal popup when someone clicks on a feature
                  */
                 function setFeatureLayerClickHandler(){
-                    busStopFeatureLayer.on("click", function(evt) { console.log("test")
-//                        currentFeature = evt.graphic
-//
-//                        var query = new Query();
-//                        query.objectIds = [evt.graphic.attributes.OBJECTID];
-//                        busStopsFeatureLayer.selectFeatures(query,FeatureLayer.SELECTION_NEW,
-//                                function(evt){
-//                                    console.log("Success: " + JSON.stringify(evt[0].attributes));
-//                                    showModalPopup(evt[0]);
-//                                    var atts = evt[0].attributes
-//                                    stopID.value = atts.OBJECTID;
-//                                    stopMainID.value = atts.BSID;
-//                                    stopNames.value = atts.STOPNAME;
-//                                    stopRoutes.value = atts.ROUTES;
-//                                },function(err){
-//                                    console.log("ERROR " + JSON.stringify(err));
-//                                });
+                    busStopFeatureLayer.on("click", function(evt) {
+                        currentFeature = evt.graphic
+
+                        var query = new Query();
+                        query.objectIds = [evt.graphic.attributes.OBJECTID];
+                        busStopFeatureLayer.selectFeatures(query,FeatureLayer.SELECTION_NEW,
+                                function(evt){
+                                    console.log("Success: " + JSON.stringify(evt[0].attributes));
+                                    showModalPopup(evt[0]);
+                                    var atts = evt[0].attributes
+                                    stopID.value = atts.OBJECTID;
+                                    stopMainID.value = atts.BSID;
+                                    stopNames.value = atts.STOPNAME;
+                                    stopRoutes.value = atts.ROUTES;
+                                },function(err){
+                                    console.log("ERROR " + JSON.stringify(err));
+                                });
                     }.bind(this));
+                }
+
+                function setModalPopupClickListeners(){
+                    closeBtn.onclick = function(evt){
+                        hideModalPopup();
+                    }
+
+                    saveBtn.onclick = function(evt){
+
+                        modPopup.graphic.attributes.ROUTES = stopRoutes.value;
+                        modPopup.graphic.attributes.STOPNAME = stopNames.value;
+
+                        busStopFeatureLayer.applyEdits(null,[modPopup.graphic],null,function(result){
+                                    console.log("Successfully saved changes to: " + modPopup.graphic.attributes.STOPNAME);
+                                    hideModalPopup();
+                                },
+                                function(err){
+                                    alert("There was a problem while trying to save: " + modPopup.graphic.attributes.STOPNAME);
+                                })
+                    }
+
+                    deleteBtn.onclick = function(evt){
+                        busStopFeatureLayer.applyEdits(null,null,[modPopup.graphic],function(result){
+                                    console.log("Successfully deleted: " + modPopup.graphic.attributes.STOPNAME);
+                                    hideModalPopup();
+                                },
+                                function(err){
+                                    alert("There was a problem while trying to delete: " + modPopup.graphic.attributes.STOPNAME);
+                                })
+                    }
                 }
 
                 function showModalPopup(graphic){
