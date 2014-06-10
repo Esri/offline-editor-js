@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html>
+<!--<html>-->
+<html manifest="appcache-features.appcache">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <!--The viewport meta tag is used to improve the presentation and behavior of the samples 
@@ -70,6 +71,8 @@
             }
         }
     </script>
+    <!-- Required when using the offline-editor-js library with Safari -->
+    <script src="../vendor/IndexedDBShim/dist/IndexedDBShim.js"></script>
     <script src="http://js.arcgis.com/o/agup_hack4co/appcacheFeatures/dojo/dojo.js" data-dojo-config="async: true"></script>
     <!-- Use this tag below if you are hosting your ArcGIS API for JavaScript files locally -->
     <!--<script src="libs/dojo/dojo/dojo.js" data-dojo-config="async: true"></script>-->
@@ -94,6 +97,7 @@
 
                 var _isOnline = true;
                 var defaultSymbol;
+                var busStopFeatureLayer;
 
                 // Modify symbol size based on screen size.
                 // Bigger screens get smaller symbols. Smaller screens get larger symbols.
@@ -131,7 +135,7 @@
 
                     map.addLayer(tileLayer);
 
-                    var busStopFeatureLayer = new FeatureLayer("http://services.arcgis.com/IZtlGBUe4KTzLOl4/arcgis/rest/services/BPX_RTD_BusStops2/FeatureServer/0", {
+                    busStopFeatureLayer = new FeatureLayer("http://services.arcgis.com/IZtlGBUe4KTzLOl4/arcgis/rest/services/BPX_RTD_BusStops2/FeatureServer/0", {
                         mode: FeatureLayer.MODE_SNAPSHOT,
                         outFields: ["OBJECTID","BSID","ROUTES","STOPNAME"]
                     });
@@ -142,9 +146,52 @@
 
                     busStopFeatureLayer.on("update-end",function(evt){
                         var features = evt.target.graphics;
-                        restartOfflineFeaturesMgr.convertGraphicLayerToJSON(features,evt,function(jsonArr,layerDef){
-                            console.log("HIYA!")
+
+                        // Convert existing feature graphics into JSON.
+                        // These are then stored in localStorage.
+                        // If you want you can store multiple feature layers.
+                        // Just be aware of the localStorage limitations.
+                        restartOfflineFeaturesMgr.convertGraphicLayerToJSON(features,evt,function(features,layerDef){
+
+                            if(typeof(Storage) !== "undefined") {
+                                localStorage.offlineLayerDef = layerDef;
+                                localStorage.offlineFeature = features;
+                                console.log("Done pushing layerDef and features to localStorage.")
+                            } else {
+                                alert("The offline library is not supported on this browser.")
+                            }
                         })
+                    });
+
+                    map.on("load",function(evt){
+
+//                        updateOfflineUsage();
+//
+//                        initAppCacheManager();
+                        if(_isOnline == false){
+                            var featureLayer = JSON.parse(localStorage.offlineLayerDef);
+                            var featuresArray = JSON.parse(localStorage.offlineFeature);
+                            var geometryType = "esriGeometryPoint";
+
+                            restartOfflineFeaturesMgr.getFeatureDefinition(featureLayer,featuresArray,geometryType,function(featureDef){
+
+                                busStopsFeatureLayer = new FeatureLayer(featureDef,{
+                                    mode: FeatureLayer.MODE_SNAPSHOT,
+                                    outFields: ["OBJECTID","BSID","ROUTES","STOPNAME"]
+                                });
+                                // Set the graphics to red boxes to make it easy to click on them
+                                // on a mobile device.
+                                busStopsFeatureLayer.setRenderer(new SimpleRenderer(defaultSymbol));
+                                var mapListen = map.on("update-end",function(evt){
+                                    console.log("Feature has been added back to the map while offline.")
+                                    mapListen.remove();
+                                })
+                                map.addLayer(busStopsFeatureLayer);
+
+//                                offlineFeaturesManager.extend(busStopsFeatureLayer);
+//                                setFeatureLayerClickHandler()
+                            });
+                        }
                     })
 
                     map.addLayer(busStopFeatureLayer);
