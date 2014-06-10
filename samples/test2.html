@@ -60,7 +60,19 @@
         }
     </style>
 
+    <script src="../vendor/offline/offline.min.js"></script>
     <script>
+        Offline.options = {
+            checks: {
+                image: {
+                    url: function() {
+                        return 'http://esri.github.io/offline-editor-js/tiny-image.png?_=' + (Math.floor(Math.random() * 1000000000));
+                    }
+                },
+                active: 'image'
+            }
+        }
+
         var locationPath = location.pathname.replace(/\/[^/]+$/, "");
         var dojoConfig = {
             paths: {
@@ -132,6 +144,13 @@
                 })
 
                 function startMap(){
+
+                    //Make sure map shows up after a browser refresh
+                    Offline.check();
+                    Offline.on('up', goOnline);
+                    Offline.on('down', goOffline);
+                    Offline.state === 'up' ? zoom = 18 : zoom = 17;
+
                     tileLayer = new OfflineTilesEnabler("http://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer",function(evt){
                         console.log("Tile Layer Loaded.");
                     },true);
@@ -239,6 +258,14 @@
                  * MISC. CODE GOES BELOW HERE
                  * ************************************
                  */
+
+                function goOnline(){
+                    console.log("Online");
+                }
+
+                function goOffline(){
+                    console.log("Offline");
+                }
 
                 /**
                  * For internal use - detecting amount of storage used and number of tiles stored.
