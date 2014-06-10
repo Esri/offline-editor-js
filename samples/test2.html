@@ -63,6 +63,9 @@
         var locationPath = location.pathname.replace(/\/[^/]+$/, "");
         var dojoConfig = {
             paths: {
+                edit: locationPath  + "/../lib/edit",
+                vendor: locationPath + "/../vendor",
+                utils: locationPath + "/../utils",
                 tiles: locationPath  + "/../lib/tiles"
             }
         }
@@ -83,10 +86,11 @@
 <div id="map"></div>
 
 <script>
-    require(["esri/map","esri/layers/FeatureLayer","tiles/offlineTilesEnabler2",
+    require(["esri/map","esri/layers/FeatureLayer","tiles/OfflineTilesEnablerLayer",
+                "edit/restartOfflineFeaturesManager",
                 "esri/renderers/SimpleRenderer","esri/symbols/SimpleMarkerSymbol","esri/Color",
                 "dojo/domReady!"],
-            function(Map,FeatureLayer,OfflineTilesEnabler,SimpleRenderer,SimpleMarkerSymbol,Color) {
+            function(Map,FeatureLayer,OfflineTilesEnabler,restartOfflineFeaturesMgr,SimpleRenderer,SimpleMarkerSymbol,Color) {
 
                 var _isOnline = true;
                 var defaultSymbol;
@@ -136,8 +140,28 @@
                     //on a mobile device.
                     busStopFeatureLayer.setRenderer(new SimpleRenderer(defaultSymbol));
 
+                    busStopFeatureLayer.on("update-end",function(evt){
+                        var features = evt.target.graphics;
+                        restartOfflineFeaturesMgr.convertGraphicLayerToJSON(features,evt,function(jsonArr,layerDef){
+                            console.log("HIYA!")
+                        })
+                    })
+
                     map.addLayer(busStopFeatureLayer);
                 }
+
+                /**
+                 * **********************************************
+                 * FEATURELAYER  MANAGEMENT CODE GOES BELOW HERE
+                 * **********************************************
+                 */
+
+
+                /**
+                 * ************************************
+                 * TILE MANAGEMENT CODE GOES BELOW HERE
+                 * ************************************
+                 */
 
                 /**
                  * Attempts an http request to verify if app is online or offline.
