@@ -104,11 +104,11 @@
     require(["esri/map","esri/layers/FeatureLayer","tiles/OfflineTilesEnablerLayer",
                 "edit/restartOfflineFeaturesManager", "utils/appCacheManager",
                 "esri/renderers/SimpleRenderer","esri/symbols/SimpleMarkerSymbol","esri/Color",
-                "edit/offlineFeaturesManager",
+                "edit/offlineFeaturesManager", "edit/editsStore",
                 "dojo/on",
                 "dojo/domReady!"],
             function(Map,FeatureLayer,OfflineTilesEnabler,restartOfflineFeaturesMgr,AppCacheManager,
-                SimpleRenderer,SimpleMarkerSymbol,Color,OfflineFeaturesManager,on) {
+                SimpleRenderer,SimpleMarkerSymbol,Color,OfflineFeaturesManager,editsStore,on) {
 
                 initAppCacheManager();
 
@@ -120,6 +120,7 @@
 
                 // Variables for editing handling
                 var offlineFeaturesManager;
+                var pendingEdits = document.getElementById("pending-edits");
                 var imgOfflineIndicator = document.getElementById("img-offline-indicator");
 
                 // Misc.
@@ -257,15 +258,15 @@
                 }
 
                 function updateStatus(){
-//                    if( editsStore.hasPendingEdits())
-//                    {
-//                        var edits = editsStore._retrieveEditsQueue();
-//                        pendingEdits.innerHTML = "Pending edits: " + edits.length;
-//                    }
-//                    else
-//                    {
-//                        pendingEdits.innerHTML = "Pending edits: 0";
-//                    }
+                    if( editsStore.hasPendingEdits())
+                    {
+                        var edits = editsStore._retrieveEditsQueue();
+                        pendingEdits.innerHTML = "Pending edits: " + edits.length;
+                    }
+                    else
+                    {
+                        pendingEdits.innerHTML = "Pending edits: 0";
+                    }
                 }
 
                 /**
