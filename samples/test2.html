@@ -104,10 +104,11 @@
     require(["esri/map","esri/layers/FeatureLayer","tiles/OfflineTilesEnablerLayer",
                 "edit/restartOfflineFeaturesManager", "utils/appCacheManager",
                 "esri/renderers/SimpleRenderer","esri/symbols/SimpleMarkerSymbol","esri/Color",
+                "edit/offlineFeaturesManager",
                 "dojo/on",
                 "dojo/domReady!"],
             function(Map,FeatureLayer,OfflineTilesEnabler,restartOfflineFeaturesMgr,AppCacheManager,
-                SimpleRenderer,SimpleMarkerSymbol,Color,on) {
+                SimpleRenderer,SimpleMarkerSymbol,Color,OfflineFeaturesManager,on) {
 
                 initAppCacheManager();
 
@@ -116,6 +117,17 @@
                 var defaultSymbol;
                 var busStopFeatureLayer;
                 var appCacheManager;
+
+                // Variables for editing handling
+                var offlineFeaturesManager;
+                var imgOfflineIndicator = document.getElementById("img-offline-indicator");
+
+                // Misc.
+                var btnOnlineOffline = document.getElementById("btn-online-offline");
+
+                // Symbols and images
+                var redPinPath = "../samples/images/red-pin.png";
+                var bluePinPath = "../samples/images/blue-pin.png";
 
                 // Important settings for determining which tile layers gets stored for offline use.
                 var minZoomAdjust = -1, maxZoomAdjust = 1, resetZoom = 18;
@@ -173,6 +185,7 @@
                     busStopFeatureLayer.setRenderer(new SimpleRenderer(defaultSymbol));
 
                     busStopFeatureLayer.on("update-end",function(evt){
+                        initOfflineFeaturesMgr();
                         var features = evt.target.graphics;
 
                         // Convert existing feature graphics into JSON.
@@ -219,7 +232,7 @@
 //                                setFeatureLayerClickHandler()
                             });
                         }
-                    })
+                    });
 
                     map.addLayer(busStopFeatureLayer);
                 }
@@ -230,6 +243,27 @@
                  * **********************************************
                  */
 
+                function initOfflineFeaturesMgr(){
+                    offlineFeaturesManager = new OfflineFeaturesManager();
+                    offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_ENQUEUED, updateStatus);
+                    offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_SENT, updateStatus);
+                    offlineFeaturesManager.on(offlineFeaturesManager.events.ALL_EDITS_SENT, updateStatus);
+
+                    offlineFeaturesManager.extend(busStopFeatureLayer);
+                    console.log("offlineFeaturesManager initialized.");
+                }
+
+                function updateStatus(){
+//                    if( editsStore.hasPendingEdits())
+//                    {
+//                        var edits = editsStore._retrieveEditsQueue();
+//                        pendingEdits.innerHTML = "Pending edits: " + edits.length;
+//                    }
+//                    else
+//                    {
+//                        pendingEdits.innerHTML = "Pending edits: 0";
+//                    }
+                }
 
                 /**
                  * ************************************
@@ -264,7 +298,12 @@
                 }
 
                 function goOffline(){
-                    console.log("Offline");
+                    console.log("Going offline...");
+                    btnOnlineOffline.innerHTML = "2. Go Online";
+                    imgOfflineIndicator.src = redPinPath;
+                    imgOfflineIndicator.offlineColor = "red";
+//                    offlineFeaturesManager.goOffline();
+                    if(typeof tileLayer != "undefined") tileLayer.goOffline();
                 }
 
                 /**
