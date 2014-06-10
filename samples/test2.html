@@ -92,9 +92,10 @@
     require(["esri/map","esri/layers/FeatureLayer","tiles/OfflineTilesEnablerLayer",
                 "edit/restartOfflineFeaturesManager", "utils/appCacheManager",
                 "esri/renderers/SimpleRenderer","esri/symbols/SimpleMarkerSymbol","esri/Color",
+                "dojo/on",
                 "dojo/domReady!"],
             function(Map,FeatureLayer,OfflineTilesEnabler,restartOfflineFeaturesMgr,AppCacheManager,
-                SimpleRenderer,SimpleMarkerSymbol,Color) {
+                SimpleRenderer,SimpleMarkerSymbol,Color,on) {
 
                 initAppCacheManager();
 
