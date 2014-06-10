@@ -160,13 +160,11 @@
 
                     //Make sure map shows up after a browser refresh
                     Offline.check();
-                    Offline.on('up', goOnline);
-                    Offline.on('down', goOffline);
                     Offline.state === 'up' ? zoom = 18 : zoom = 17;
 
                     tileLayer = new OfflineTilesEnabler("http://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer",function(evt){
                         console.log("Tile Layer Loaded.");
-                    },true);
+                    },_isOnline);
 
                     var map = new Map("map",{
                         center: [-104.98,39.74], // long, lat
@@ -252,6 +250,10 @@
 
                     offlineFeaturesManager.extend(busStopFeatureLayer);
                     console.log("offlineFeaturesManager initialized.");
+
+                    Offline.check();
+                    Offline.on('up', goOnline);
+                    Offline.on('down', goOffline);
                 }
 
                 function updateStatus(){
