@@ -93,8 +93,10 @@
                 "edit/restartOfflineFeaturesManager", "utils/appCacheManager",
                 "esri/renderers/SimpleRenderer","esri/symbols/SimpleMarkerSymbol","esri/Color",
                 "dojo/domReady!"],
-            function(Map,FeatureLayer,OfflineTilesEnabler,restartOfflineFeaturesMgr,appCacheManager,
+            function(Map,FeatureLayer,OfflineTilesEnabler,restartOfflineFeaturesMgr,AppCacheManager,
                 SimpleRenderer,SimpleMarkerSymbol,Color) {
+
+                initAppCacheManager();
 
                 var _isOnline = true;
                 var defaultSymbol;
@@ -126,7 +128,7 @@
 
                 function startMap(){
                     var tileLayer = new OfflineTilesEnabler("http://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer",function(evt){
-                        console.log("YAYA")
+                        console.log("Tile Layer Loaded.")
                     },true);
 
                     var map = new Map("map",{
@@ -168,8 +170,7 @@
                     map.on("load",function(evt){
 
 //                        updateOfflineUsage();
-//
-//                        initAppCacheManager();
+
                         if(_isOnline == false){
                             var featureLayer = JSON.parse(localStorage.offlineLayerDef);
                             var featuresArray = JSON.parse(localStorage.offlineFeature);
