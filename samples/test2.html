@@ -294,15 +294,27 @@
                  */
 
                 function goOnline(){
-                    console.log("Online");
+                    console.log("Going online...");
+                    offlineFeaturesManager.goOnline(function(success,error){
+                        if(error === undefined){
+                            btnOnlineOffline.innerHTML = "2. Go Offline";
+                            imgOfflineIndicator.src = bluePinPath;
+                            console.log("offlineFeatureManager is online.");
+                        }
+                        else{
+                            alert("There was a problem syncing offline edits: " + JSON.stringify(error));
+                        }
+                    });
+
+                    updateOfflineUsage();
+                    if(typeof baseMapLayer != "undefined") baseMapLayer.goOnline();
                 }
 
                 function goOffline(){
                     console.log("Going offline...");
                     btnOnlineOffline.innerHTML = "2. Go Online";
                     imgOfflineIndicator.src = redPinPath;
-                    imgOfflineIndicator.offlineColor = "red";
-//                    offlineFeaturesManager.goOffline();
+                    offlineFeaturesManager.goOffline();
                     if(typeof tileLayer != "undefined") tileLayer.goOffline();
                 }
 
