@@ -21,13 +21,12 @@
     <script src="http://js.arcgis.com/3.8/"></script>
 
     <!-- include spec files here... -->
-    <script type="text/javascript" src="spec/offlineTilesEnablerSpec.js"></script>
+    <script type="text/javascript" src="spec/offlineTilesEnablerLayerSpec.js"></script>
 
     <script type="text/javascript">
 
         var g_map;
         var g_basemapLayer;
-        var g_offlineTilesEnabler;
 
         require(["esri/map",
                     "esri/layers/GraphicsLayer", "esri/graphic", "esri/symbols/SimpleFillSymbol",
@@ -46,7 +45,7 @@
                 {
                     g_basemapLayer = new OfflineTilesEnablerLayer("http://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer",function(evt){
                         console.log("Tile Layer Loaded.");
-                    },null);
+                    },true);
 
                     g_map = new Map("map", {
                         center: [-3.695, 40.412],	 // Madrid center
@@ -62,7 +61,7 @@
                     {
                         var jasmineEnv = jasmine.getEnv();
                         jasmineEnv.updateInterval = 1000;
-                        jasmineEnv.defaultTimeoutInterval = 10000; // 10 sec
+                        jasmineEnv.defaultTimeoutInterval = 20000; // 20 sec
                         var htmlReporter = new jasmine.HtmlReporter();
 
                         jasmineEnv.addReporter(htmlReporter);
@@ -73,16 +72,7 @@
 
                         var currentWindowOnload = window.onload;
 
-                        window.onload = function() {
-                            if (currentWindowOnload) {
-                                currentWindowOnload();
-                            }
-                            execJasmine();
-                        };
-
-                        function execJasmine() {
-                            jasmineEnv.execute();
-                        }
+                        jasmineEnv.execute();
 
                     }; // test()
 
