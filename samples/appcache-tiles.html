@@ -159,7 +159,6 @@ require(["esri/map","utils/appCacheManager","tiles/OfflineTilesEnablerLayer","do
 
                 map.on("load",function(evt){
                     init();
-//                    initOfflineTileEnabler();
 
                     Offline.check();
 
@@ -206,36 +205,6 @@ require(["esri/map","utils/appCacheManager","tiles/OfflineTilesEnablerLayer","do
                 map.reposition();
                 map.resize();
             }
-
-//            function initOfflineTileEnabler(){
-//
-//                mMaxZoom = map.getMaxZoom();
-//                mMinZoom = map.getMinZoom();
-//
-//                offlineTileEnabler = new OfflineTileEnablerLayer();
-//                baseMapLayer = offlineTileEnabler.getBasemapLayer(map); console.log("Offline State: " + Offline.state)
-//
-//                offlineTileEnabler.extend(baseMapLayer,function(success)
-//                {
-//                    if( success )
-//                    {
-//                        console.log("Offline tile lib is enabled. Application state is: " + Offline.state);
-//                        Offline.check();
-//
-//                        //using null sets this for CORS
-//                        baseMapLayer.offline.proxyPath = null;
-//
-//                        on(btnOnlineOffline,"click",goOnlineOffline);
-//                        on(btnGetTiles,"click",downloadTiles);
-//
-//                        updateOfflineUsage();
-//                    }
-//                    else
-//                    {
-//                        alert("error initializing storage - browser doesn't support indexeddb or websql")
-//                    }
-//                }.bind(this),_isOnline);
-//            }
 
             function updateState(){
                 if(Offline.state === 'up'){
