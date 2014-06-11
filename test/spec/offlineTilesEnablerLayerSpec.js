@@ -1,11 +1,11 @@
 "use strict"
 
-describe("offline enabler library", function()
+describe("offline enabler custom layer library", function()
 {
     var async = new AsyncSpec(this);
 
     async.it("validate map", function(done)
-    {
+    { console.log("VALIDATE !!!!!")
         expect(g_map).toEqual(jasmine.any(Object));
         expect(g_map.id).toEqual("map");
         done();
@@ -18,27 +18,27 @@ describe("offline enabler library", function()
         done();
     });
 
-    async.it("extends the tiled layer object", function(done)
-    {
-        expect(g_basemapLayer.goOffline).toBeUndefined();
-        g_offlineTilesEnabler.extend(g_basemapLayer,function(success)
-        {
-            expect(success).toEqual(true);
-            expect(g_basemapLayer.goOffline).toEqual(jasmine.any(Function));
-            expect(g_basemapLayer.goOnline).toEqual(jasmine.any(Function));
-            expect(g_basemapLayer.getTileUrl).toEqual(jasmine.any(Function));
-            expect(g_basemapLayer._getTileUrl).toEqual(jasmine.any(Function));
-            expect(g_basemapLayer.prepareForOffline).toEqual(jasmine.any(Function));
-            expect(g_basemapLayer._storeTile).toEqual(jasmine.any(Function));
-            expect(g_basemapLayer.deleteAllTiles).toEqual(jasmine.any(Function));
-            expect(g_basemapLayer.offline).toEqual(jasmine.any(Object));
-            expect(g_basemapLayer.offline.store).toEqual(jasmine.any(Object));
-
-            g_basemapLayer.offline.proxyPath = "../lib/resource-proxy/proxy.php";
-            done();
-        });
-    });
-
+//    async.it("extends the tiled layer object", function(done)
+//    {
+//        expect(g_basemapLayer.goOffline).toBeUndefined();
+//        g_offlineTilesEnabler.extend(g_basemapLayer,function(success)
+//        {
+//            expect(success).toEqual(true);
+//            expect(g_basemapLayer.goOffline).toEqual(jasmine.any(Function));
+//            expect(g_basemapLayer.goOnline).toEqual(jasmine.any(Function));
+//            expect(g_basemapLayer.getTileUrl).toEqual(jasmine.any(Function));
+//            expect(g_basemapLayer._getTileUrl).toEqual(jasmine.any(Function));
+//            expect(g_basemapLayer.prepareForOffline).toEqual(jasmine.any(Function));
+//            expect(g_basemapLayer._storeTile).toEqual(jasmine.any(Function));
+//            expect(g_basemapLayer.deleteAllTiles).toEqual(jasmine.any(Function));
+//            expect(g_basemapLayer.offline).toEqual(jasmine.any(Object));
+//            expect(g_basemapLayer.offline.store).toEqual(jasmine.any(Object));
+//
+//            g_basemapLayer.offline.proxyPath = "../lib/resource-proxy/proxy.php";
+//            done();
+//        });
+//    });
+//
     async.it("can go offline", function(done)
     {
         expect(g_basemapLayer.goOffline).toEqual(jasmine.any(Function));
@@ -197,12 +197,42 @@ describe("offline enabler library", function()
             //NOTE: We are getting new attributes at ArcGIS JS API v3.8 : blankTile=false&_ts=1393031666639 <last part is a random number>
             // http://services.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/14/6178/8023?blankTile=false&_ts=1393031666639"
             var tempUrl = onlineUrl.slice( 0, onlineUrl.indexOf('?'))
-            expect(tempUrl).toEqual('http://services.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/14/6178/8023');
+            expect(tempUrl).toEqual('http://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/14/6178/802');
 
             g_basemapLayer.goOffline();
             var offlineUrl = fakeTile.src = g_basemapLayer.getTileUrl(14,6178,8023);
             expect(offlineUrl).toEqual('void:/14/6178/8023');
             done();
+        })
+    });
+
+    async.it("getMaxZoom", function(done){
+       g_basemapLayer.getMaxZoom(function(result){
+           expect(result).toBe(19);
+           done();
+       })
+    });
+
+    async.it("getMinZoom", function(done){
+        g_basemapLayer.getMinZoom(function(result){
+            expect(result).toBe(0);
+            done();
+        })
+    });
+
+    it("verifies ability to retrieve layer info",function(done){
+       g_basemapLayer._getTileInfoPrivate("http://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer",function(result){
+           var fixedResponse = result.replace(/\\'/g, "'");
+           var resultObj = JSON.parse(fixedResponse);
+           expect(resultObj).toEqual(jasmine.any(Object));
+       })
+    });
+
+    it("verifies ability to parse layer info",function(done){
+        g_basemapLayer._getTileInfoPrivate("http://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer",function(result){
+            g_basemapLayer.parseGetTileInfo(result,function(result){
+                expect(result).toEqual(jasmine.any(Object));
+            })
         })
     });
 
