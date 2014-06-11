@@ -107,19 +107,24 @@ ask if you want to reload the application.
 <div id="map"></div>
 
 <script>
-var map,offlineTileEnabler,baseMapLayer,zoom = 18;
-var globalState = {};
-var _wantToCancel;
-var _isOnline = true;
-var minZoomAdjust = -1, maxZoomAdjust = 1, mMinZoom, mMaxZoom;
-var imgOfflineIndicator,btnGetTiles,btnOnlineOffline,btnZoom;
-var tiles,appCacheManager,tileInfo;
-var redPinPath = "../samples/images/red-pin.png";
-var bluePinPath = "../samples/images/blue-pin.png"
-var EXTENT_BUFFER = 0; //buffers the map extent in meters
 
-require(["esri/map","utils/appCacheManager","tiles/offlineTilesEnabler","dojo/on","dojo/domReady!"],
-        function(Map,AppCacheManager,OfflineTileEnabler,on) {
+var map;
+
+require(["esri/map","utils/appCacheManager","tiles/OfflineTilesEnablerLayer","dojo/on","dojo/domReady!"],
+        function(Map,AppCacheManager,OfflineTileEnablerLayer,on) {
+
+            var tileLayer = null;
+
+            var zoom = 18;
+            var globalState = {};
+            var _wantToCancel;
+            var _isOnline = true;
+            var minZoomAdjust = -1, maxZoomAdjust = 1, mMinZoom, mMaxZoom;
+            var imgOfflineIndicator,btnGetTiles,btnOnlineOffline,btnZoom;
+            var tiles,appCacheManager,tileInfo;
+            var redPinPath = "../samples/images/red-pin.png";
+            var bluePinPath = "../samples/images/blue-pin.png"
+            var EXTENT_BUFFER = 0; //buffers the map extent in meters
 
             imgOfflineIndicator = document.getElementById("img-offline-indicator");
             imgOfflineIndicator.offlineColor = "blue";
@@ -143,23 +148,46 @@ require(["esri/map","utils/appCacheManager","tiles/offlineTilesEnabler","dojo/on
                 Offline.state === 'up' ? zoom = 18 : zoom = 17;
 
                 map = new Map("map", {
-                    basemap: "topo",
                     center: [-122.45,37.75], // long, lat
                     zoom: zoom,
                     sliderStyle: "small"
                 });
 
+                tileLayer = new OfflineTileEnablerLayer("http://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer",function(evt){
+                    console.log("Offline tile lib is enabled. Application state is: " + Offline.state);
+                },_isOnline);
+
                 map.on("load",function(evt){
                     init();
-                    initOfflineTileEnabler();
-                    console.log("level: " + map.getLevel() + ", maxZoom: " + map.getMaxZoom());
+//                    initOfflineTileEnabler();
+
+                    Offline.check();
+
+                    //using null sets this for CORS
+                    tileLayer.offline.proxyPath = null;
+
+                    on(btnOnlineOffline,"click",goOnlineOffline);
+                    on(btnGetTiles,"click",downloadTiles);
+
+                    updateOfflineUsage();
+
+                    tileLayer.getMaxZoom(function(result){
+                        mMaxZoom = result;
+                    });
+                    tileLayer.getMinZoom(function(result){
+                        mMinZoom = result;
+                    });
+
+                    console.log("level: " + tileLayer.getLevel() + ", maxZoom: " + mMaxZoom);
                 })
+
+                map.addLayer(tileLayer);
             }
 
             function init(){
                 map.on("extent-change",function(evt){
                     updateOfflineUsage();
-                    console.log("Zoom level = " + map.getLevel())
+                    console.log("Zoom level = " + tileLayer.getLevel())
                 });
 
                 appCacheManager = new AppCacheManager(true,true);
@@ -179,51 +207,51 @@ require(["esri/map","utils/appCacheManager","tiles/offlineTilesEnabler","dojo/on
                 map.resize();
             }
 
-            function initOfflineTileEnabler(){
-
-                mMaxZoom = map.getMaxZoom();
-                mMinZoom = map.getMinZoom();
-
-                offlineTileEnabler = new OfflineTileEnabler();
-                baseMapLayer = offlineTileEnabler.getBasemapLayer(map); console.log("Offline State: " + Offline.state)
-
-                offlineTileEnabler.extend(baseMapLayer,function(success)
-                {
-                    if( success )
-                    {
-                        console.log("Offline tile lib is enabled. Application state is: " + Offline.state);
-                        Offline.check();
-
-                        //using null sets this for CORS
-                        baseMapLayer.offline.proxyPath = null;
-
-                        on(btnOnlineOffline,"click",goOnlineOffline);
-                        on(btnGetTiles,"click",downloadTiles);
-
-                        updateOfflineUsage();
-                    }
-                    else
-                    {
-                        alert("error initializing storage - browser doesn't support indexeddb or websql")
-                    }
-                }.bind(this),_isOnline);
-            }
+//            function initOfflineTileEnabler(){
+//
+//                mMaxZoom = map.getMaxZoom();
+//                mMinZoom = map.getMinZoom();
+//
+//                offlineTileEnabler = new OfflineTileEnablerLayer();
+//                baseMapLayer = offlineTileEnabler.getBasemapLayer(map); console.log("Offline State: " + Offline.state)
+//
+//                offlineTileEnabler.extend(baseMapLayer,function(success)
+//                {
+//                    if( success )
+//                    {
+//                        console.log("Offline tile lib is enabled. Application state is: " + Offline.state);
+//                        Offline.check();
+//
+//                        //using null sets this for CORS
+//                        baseMapLayer.offline.proxyPath = null;
+//
+//                        on(btnOnlineOffline,"click",goOnlineOffline);
+//                        on(btnGetTiles,"click",downloadTiles);
+//
+//                        updateOfflineUsage();
+//                    }
+//                    else
+//                    {
+//                        alert("error initializing storage - browser doesn't support indexeddb or websql")
+//                    }
+//                }.bind(this),_isOnline);
+//            }
 
             function updateState(){
                 if(Offline.state === 'up'){
                     updateOfflineUsage();
                     imgOfflineIndicator.src = bluePinPath;
-                    if(typeof baseMapLayer != "undefined") baseMapLayer.goOnline();
+                    if(typeof tileLayer != "undefined") tileLayer.goOnline();
                 }
                 else{
                     imgOfflineIndicator.src = redPinPath;
-                    if(typeof baseMapLayer != "undefined") baseMapLayer.goOffline();
+                    if(typeof tileLayer != "undefined") tileLayer.goOffline();
                 }
             }
 
             function updateOfflineUsage()
             {
-                baseMapLayer.offline.store.usedSpace(function(result,err){
+                tileLayer.offline.store.usedSpace(function(result,err){
                     if(result != null){
                         tileInfo.innerHTML = "DB Tile count: " + result.tileCount + "\r\nDB Bytes: " +  result.sizeBytes;
                     }
@@ -239,8 +267,8 @@ require(["esri/map","utils/appCacheManager","tiles/offlineTilesEnabler","dojo/on
             function getMinMaxZoom(){
 
                 var zoom = {};
-                var min = map.getLevel() + minZoomAdjust;
-                var max = map.getLevel() + maxZoomAdjust;
+                var min = tileLayer.getLevel() + minZoomAdjust;
+                var max = tileLayer.getLevel() + maxZoomAdjust;
                 zoom.max = Math.min(mMaxZoom, max);  //prevent errors by setting the tile layer floor
                 zoom.min = Math.max(mMinZoom, min);   //prevent errors by setting the tile layer ceiling
 
@@ -288,13 +316,13 @@ require(["esri/map","utils/appCacheManager","tiles/offlineTilesEnabler","dojo/on
                     btnOnlineOffline.innerHTML = "2. Go Online";
                     imgOfflineIndicator.src = redPinPath;
                     imgOfflineIndicator.offlineColor = "red";
-                    baseMapLayer.goOffline();
+                    tileLayer.goOffline();
                 }
                 else{
                     btnOnlineOffline.innerHTML = "2. Go Offline";
                     imgOfflineIndicator.src = bluePinPath;
                     imgOfflineIndicator.offlineColor = "blue";
-                    baseMapLayer.goOnline();
+                    tileLayer.goOnline();
                 }
             }
 
@@ -303,7 +331,7 @@ require(["esri/map","utils/appCacheManager","tiles/offlineTilesEnabler","dojo/on
              * in the local database
              */
             function downloadTiles(){
-                baseMapLayer.deleteAllTiles(function(success,err){
+                tileLayer.deleteAllTiles(function(success,err){
                     if(success == false){
                         alert("There was a problem deleting the tile cache");
                     }
@@ -321,9 +349,9 @@ require(["esri/map","utils/appCacheManager","tiles/offlineTilesEnabler","dojo/on
                         {
                             var zoom = getMinMaxZoom();
 
-                            var extent = baseMapLayer.getExtentBuffer(EXTENT_BUFFER,map.extent);
+                            var extent = tileLayer.getExtentBuffer(EXTENT_BUFFER,map.extent);
                             _wantToCancel = false;
-                            baseMapLayer.prepareForOffline(zoom.min, zoom.max, extent, reportProgress.bind(this));
+                            tileLayer.prepareForOffline(zoom.min, zoom.max, extent, reportProgress.bind(this));
                             globalState.downloadState = 'downloading';
                         }
                     }
