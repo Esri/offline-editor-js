@@ -1,343 +1,377 @@
 <!DOCTYPE html>
 <html  manifest="appcache-tiles.appcache">
 <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no"/>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no"/>
 
-    <!--
+<!--
 
-    This sample demonstrates using an application manifest to store tiles locally.
+This sample demonstrates using an application manifest to store tiles locally.
 
-    The use cases for using this sample are to ensure you can reload and restart you application
-    one it is offline.
+The use cases for using this sample are to ensure you can reload and restart you application
+one it is offline.
 
-    Use the included Grunt task to help generate the manifest file. There is manual
-    work involved in determining which files need to go into the manifest. The included manifest
-    file should work with this sample to give you an idea of what goes into the manifest.
+It is strongly recommended that you use your own optimized build of the ArcGIS API for JavaScript
+using the Web Optimizer: http://jso.arcgis.com/. You can reference the CDN or host it on your
+own web server.
 
-    A few things to know about manifest files:
-    - You cannot load an online url that has a redirect.
-    - If there is an error encountered, the manifest file will stop loading
-    - The /utils/appCacheManager.js library will auto detect if the manifest changed and
-    ask if you want to reload the application.
+Use the included Grunt task to help generate the manifest file. There is manual
+work involved in determining which files need to go into the manifest. The included manifest
+file should work with this sample to give you an idea of what goes into the manifest.
 
-    -->
+A few things to know about manifest files:
+- You cannot load an online url that has a redirect.
+- If there is an error encountered, the manifest file will stop loading
+- The /utils/appCacheManager.js library will auto detect if the manifest changed and
+ask if you want to reload the application.
 
-    <title>Cache Tiles</title>
-    <link rel="stylesheet" href="http://js.arcgis.com/3.9/js/esri/css/esri.css">
-    <style>
-        html, body, #map {
-            height: 100%;
-            width: 100%;
-            margin: 0;
-            padding: 0;
+-->
+
+<title>Cache Tiles</title>
+<link rel="stylesheet" href="http://js.arcgis.com/3.9/js/esri/css/esri.css">
+<style>
+    html, body, #map {
+        height: 100%;
+        width: 100%;
+        margin: 0;
+        padding: 0;
+    }
+    body {
+        background-color: #FFF;
+        overflow: hidden;
+        font-family: "Trebuchet MS";
+    }
+    #button-div1{
+        position: relative;
+        background: #000000;
+        color: #ffffff;
+        width: 100%;
+        height: 50px;
+    }
+    .basic-btn{
+        background-color: #000000;
+        border-color: #ffffff 1px;
+        color: #ffffff;
+        padding: 8px;
+        position: relative; float: left;
+    }
+    #img-offline-indicator{
+        padding: 8px;
+        position: relative; float: right;
+    }
+    #tile-info{
+        background-color: #000000;
+        color: white;
+        padding: 8px;
+        position: relative; float: right;
+    }
+</style>
+<script>
+    var locationPath = location.pathname.replace(/\/[^/]+$/, "");
+    var dojoConfig = {
+        paths: {
+            tiles: locationPath  + "/../lib/tiles",
+            vendor: locationPath + "/../vendor",
+            utils: locationPath  + "/../utils"
         }
-        body {
-            background-color: #FFF;
-            overflow: hidden;
-            font-family: "Trebuchet MS";
-        }
-        #button-div1{
-            position: relative;
-            background: #000000;
-            color: #ffffff;
-            width: 100%;
-            height: 50px;
-        }
-        .basic-btn{
-            background-color: #000000;
-            border-color: #ffffff 1px;
-            color: #ffffff;
-            padding: 8px;
-            position: relative; float: left;
-        }
-        #img-offline-indicator{
-            padding: 8px;
-            position: relative; float: right;
-        }
-        #tile-info{
-            background-color: #000000;
-            color: white;
-            padding: 8px;
-            position: relative; float: right;
-        }
-    </style>
-    <script>
-        var locationPath = location.pathname.replace(/\/[^/]+$/, "");
-        var dojoConfig = {
-            paths: {
-                tiles: locationPath  + "/../lib/tiles",
-                vendor: locationPath + "/../vendor",
-                utils: locationPath  + "/../utils"
-            }
-        }
-    </script>
-    <!-- This is a custom build of the ArcGIS API for JavaScript using the new Web Optimizer Tool -->
-    <script src="http://js.arcgis.com/3.9/" data-dojo-config="async: true"></script>
-    <!-- Use this tag below if you are hosting your ArcGIS API for JavaScript files locally -->
-    <!--<script src="libs/dojo/dojo/dojo.js" data-dojo-config="async: true"></script>-->
-    <script src="../vendor/IndexedDBShim/dist/IndexedDBShim.min.js"></script>
-    <script src="../vendor/offline/offline.min.js"></script>
-    <script>
-        Offline.options = {
-            checks: {
-                image: {
-                    url: function() {
-                        return 'http://esri.github.io/offline-editor-js/tiny-image.png?_=' + (Math.floor(Math.random() * 1000000000));
-                    }
-                },
-                active: 'image'
-            }
-        }
-    </script>
-    <script>
-        var map,offlineTileEnabler,baseMapLayer,zoom = 18;
-        var globalState = {};
-        var _wantToCancel;
-        var minZoomAdjust = -1, maxZoomAdjust = 1, mMinZoom, mMaxZoom;
-        var imgOfflineIndicator,btnGetTiles,btnOnlineOffline,btnZoom;
-        var tiles,appCacheManager,tileInfo;
-        var redPinPath = "../samples/images/red-pin.png";
-        var bluePinPath = "../samples/images/blue-pin.png"
-        var EXTENT_BUFFER = 0; //buffers the map extent in meters
-
-        require(["esri/map","utils/appCacheManager","tiles/offlineTilesEnabler","dojo/on","dojo/domReady!"],
-                function(Map,AppCacheManager,OfflineTileEnabler,on) {
-
-                    imgOfflineIndicator = document.getElementById("img-offline-indicator");
-                    imgOfflineIndicator.offlineColor = "blue";
-
-                    Offline.check();
-                    Offline.on('up down', updateState );
-
-                    //Make sure map shows up after a browser refresh
-                    Offline.state === 'up' ? zoom = 18 : zoom = 17;
-
-                    map = new Map("map", {
-                        basemap: "topo",
-                        center: [-122.45,37.75], // long, lat
-                        zoom: zoom,
-                        sliderStyle: "small"
-                    });
-
-                    map.on("load",function(evt){
-                        init();
-                        initOfflineTileEnabler();
-                        console.log("level: " + map.getLevel() + ", maxZoom: " + map.getMaxZoom());
-                    })
-
-                    function init(){
-                        map.on("extent-change",function(evt){
-                            updateOfflineUsage();
-                            console.log("Zoom level = " + map.getLevel())
-                        })
-                        appCacheManager = new AppCacheManager(true,true);
-                        appCacheManager.on(appCacheManager.CACHE_EVENT,cacheEventHandler);
-                        appCacheManager.on(appCacheManager.CACHE_ERROR,cacheErrorHandler);
-
-                        btnGetTiles = document.getElementById("btn-get-tiles");
-                        btnOnlineOffline = document.getElementById("btn-online-offline");
-                        btnZoom = document.getElementById("btn-zoom-out");
-
-                        tileInfo = document.getElementById("tile-info")
-                        tileInfo.innerHTML = "Tile count: 0\r\nBytes: 0";
-
-                        map.reposition();
-                        map.resize();
-                    }
-
-                    function initOfflineTileEnabler(){
-
-                        mMaxZoom = map.getMaxZoom();
-                        mMinZoom = map.getMinZoom();
-
-                        offlineTileEnabler = new OfflineTileEnabler();
-                        baseMapLayer = offlineTileEnabler.getBasemapLayer(map);
-
-                        offlineTileEnabler.extend(baseMapLayer,function(success)
-                        {
-                            if( success )
-                            {
-                                console.log("Offline tile lib is enabled");
-
-                                //using null sets this for CORS
-                                baseMapLayer.offline.proxyPath = null;
-
-                                updateOfflineUsage();
-                            }
-                            else
-                            {
-                                alert("error initializing storage - browser doesn't support indexeddb or websql")
-                            }
-                        }.bind(this));
-                    }
-
-                    function cacheEventHandler(evt){
-                        console.log("CACHE EVENT: " + JSON.stringify(evt));
-                    }
-
-                    function cacheErrorHandler(evt){
-                        console.log("CACHE ERROR: " + JSON.stringify(evt));
-                    }
-
-                    function updateState(){
-                        if(Offline.state === 'up'){
-                            updateOfflineUsage();
-                            imgOfflineIndicator.src = bluePinPath;
-                            baseMapLayer.goOnline();
-                        }
-                        else{
-                            imgOfflineIndicator.src = redPinPath;
-                            baseMapLayer.goOffline();
-                        }
-                    }
-
-                    function updateOfflineUsage()
-                    {
-                        var count = getEstimateTileCount(function(info,err){
-                            if(info != null){
-                                console.log("COUNT " + info)
-                                tileInfo.innerHTML = "Tile count: " + info.tileCount + "\r\nBytes: " + info.sizeBytes;
-                            }
-                            else{
-                                console.log("ERROR updateOfflineUsage(): " + JSON.stringify(err));
-                            }
-                        });
-                    }
-
-                    /**
-                     * Gets tile count and size estimates. Not perfect.
-                     * @param callback
-                     */
-                    function getEstimateTileCount(callback)
-                    {
-                        var extent = baseMapLayer.getExtentBuffer(EXTENT_BUFFER,map.extent);
-                        var level = map.getLevel();
-                        var url = baseMapLayer.getTileUrlsByExtent(extent,level)[0];
-                        baseMapLayer._lastTileUrl = url;
-                        baseMapLayer.estimateTileSize(function(tileSize,err){
-
-                            if(tileSize != null){
-                                var totalEstimation = {tileCount:0,sizeBytes:0};
-
-                                var zoom = getMinMaxZoom();
-
-                                for(var level = zoom.min; level<= zoom.max; level++)
-                                {
-                                    var levelEstimation = baseMapLayer.getLevelEstimation(baseMapLayer.getExtentBuffer(EXTENT_BUFFER,map.extent),level,tileSize);
-
-                                    totalEstimation.tileCount += levelEstimation.tileCount;
-                                    totalEstimation.sizeBytes += levelEstimation.sizeBytes;
-                                }
-
-                                console.log("Size estimate: " + totalEstimation.sizeBytes + ", tile count: " + totalEstimation.tileCount)
-                                callback(totalEstimation,null);
-                            }
-                            else{
-                                callback(null,err);
-                            }
-
-                        }.bind(this))
-                    }
+    }
+</script>
+<!-- This is a custom build of the ArcGIS API for JavaScript using the new Web Optimizer Tool -->
+<script src="http://js.arcgis.com/o/agup_hack4co/appcache2/dojo/dojo.js" data-dojo-config="async: true"></script>
+<!-- Use this tag below if you are hosting your ArcGIS API for JavaScript files locally -->
+<!--<script src="libs/dojo/dojo/dojo.js" data-dojo-config="async: true"></script>-->
+<script src="../vendor/IndexedDBShim/dist/IndexedDBShim.min.js"></script>
+<script src="../vendor/offline/offline.min.js"></script>
+<script>
+    Offline.options = {
+        checks: {
+            image: {
+                url: function() {
+                    return 'http://esri.github.io/offline-editor-js/tiny-image.png?_=' + (Math.floor(Math.random() * 1000000000));
                 }
-        );
-
-        function getMinMaxZoom(){
-
-            var zoom = {};
-            var min = map.getLevel() + minZoomAdjust;
-            var max = map.getLevel() + maxZoomAdjust;
-            zoom.max = Math.min(mMaxZoom, max);  //prevent errors by setting the tile layer floor
-            zoom.min = Math.max(mMinZoom, min);   //prevent errors by setting the tile layer ceiling
-
-            return zoom;
+            },
+            active: 'image'
         }
-
-        function reportProgress(progress)
-        {
-            console.log("downloading tiles...");
-            if(progress.hasOwnProperty("countNow")){
-                var percent = Math.floor(progress.countNow / progress.countMax * 100);
-                btnGetTiles.innerHTML = 'Saving to phone ' + percent + "% - Tap to Cancel";
-            }
-
-            if( progress.finishedDownloading )
-            {
-                btnGetTiles.innerHTML = "Saving to phone 100% - Tap to Cancel";
-
-                if( progress.cancelRequested )
-                {
-                    globalState.downloadState = 'cancelled';
-                    alert("Tile download was cancelled");
-                }
-                else
-                {
-                    globalState.downloadState = 'downloaded';
-                    alert("Tile download complete");
-                }
-
-                btnGetTiles.innerHTML = '1. Download Tiles';
-            }
-            return _wantToCancel; //determines if a cancel request has been issued
-        }
-
-        function downloadTiles(){
-            baseMapLayer.deleteAllTiles(function(success,err){
-                if(success == false){
-                    alert("There was a problem deleting the tile cache");
-                }
-                else{
-                    console.log("success deleting tile cache");
-                    var self = this.data;
-
-                    if( globalState.downloadState == 'downloading')
-                    {
-                        console.log("cancel!");
-                        _wantToCancel = true;
-                        btnGetTiles.innerHTML = "cancelling..";
-                    }
-                    else
-                    {
-                        var zoom = getMinMaxZoom();
-
-                        var extent = baseMapLayer.getExtentBuffer(EXTENT_BUFFER,map.extent);
-                        _wantToCancel = false;
-                        baseMapLayer.prepareForOffline(zoom.min, zoom.max, extent, reportProgress.bind(this));
-                        globalState.downloadState = 'downloading';
-                    }
-                }
-            }.bind(this))
-        }
-
-        function goOnlineOffline(){
-            if(imgOfflineIndicator.offlineColor == "blue"){
-                btnOnlineOffline.innerHTML = "2. Go Online";
-                imgOfflineIndicator.src = redPinPath;
-                imgOfflineIndicator.offlineColor = "red";
-                baseMapLayer.goOffline();
-            }
-            else{
-                btnOnlineOffline.innerHTML = "2. Go Offline";
-                imgOfflineIndicator.src = bluePinPath;
-                imgOfflineIndicator.offlineColor = "blue";
-                baseMapLayer.goOnline();
-            }
-        }
-
-        function panLeft(){
-            map.panLeft();
-        }
-    </script>
+    }
+</script>
 </head>
 
 <body>
 <div id="button-div1">
-    <img id="img-offline-indicator" onclick="goOnlineOffline()" src="../samples/images/blue-pin.png"/>
+    <img id="img-offline-indicator"  src="../samples/images/blue-pin.png"/>
     <textarea contenteditable="false" id="tile-info"></textarea>
-    <button class="basic-btn" id="btn-get-tiles" onclick="downloadTiles()">1. Download Tiles</button>
-    <button class="basic-btn" onclick="goOnlineOffline()" id="btn-online-offline">2. Go Offline</button>
+    <button class="basic-btn" id="btn-get-tiles">1. Download Tiles</button>
+    <button class="basic-btn" id="btn-online-offline">2. Go Offline</button>
     <button class="basic-btn" id="btn-zoom-out" onclick="panLeft()">3. Pan left</button>
 </div>
 <div id="map"></div>
+
+<script>
+
+var map;
+
+require(["esri/map","utils/appCacheManager","tiles/OfflineTilesEnablerLayer","dojo/on","dojo/domReady!"],
+        function(Map,AppCacheManager,OfflineTileEnablerLayer,on) {
+
+            var tileLayer = null;
+
+            var zoom = 18;
+            var globalState = {};
+            var _wantToCancel;
+            var _isOnline = true;
+            var minZoomAdjust = -1, maxZoomAdjust = 1, mMinZoom, mMaxZoom;
+            var imgOfflineIndicator,btnGetTiles,btnOnlineOffline,btnZoom;
+            var tiles,appCacheManager,tileInfo;
+            var redPinPath = "../samples/images/red-pin.png";
+            var bluePinPath = "../samples/images/blue-pin.png"
+            var EXTENT_BUFFER = 0; //buffers the map extent in meters
+
+            imgOfflineIndicator = document.getElementById("img-offline-indicator");
+            imgOfflineIndicator.offlineColor = "blue";
+
+            Offline.check();
+            Offline.on('up down', updateState );
+
+            /**
+             * There have been a few bugs in the offline detection library (offline.min.js)
+             * This is a utility check to 100% validate if the application is online or
+             * offline prior to launching any map functionality.
+             */
+            verifyOnline(function(result){ console.log("VERIFY ONLINE " + result)
+                result == true ? _isOnline = true : _isOnline = false;
+                startMap();
+
+            })
+
+            function startMap(){
+                //Make sure map shows up after a browser refresh
+                Offline.state === 'up' ? zoom = 18 : zoom = 17;
+
+                map = new Map("map", {
+                    center: [-122.45,37.75], // long, lat
+                    zoom: zoom,
+                    sliderStyle: "small"
+                });
+
+                tileLayer = new OfflineTileEnablerLayer("http://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer",function(evt){
+                    console.log("Offline tile lib is enabled. Application state is: " + Offline.state);
+                },_isOnline);
+
+                map.on("load",function(evt){
+                    init();
+
+                    Offline.check();
+
+                    //using null sets this for CORS
+                    tileLayer.offline.proxyPath = null;
+
+                    on(btnOnlineOffline,"click",goOnlineOffline);
+                    on(btnGetTiles,"click",downloadTiles);
+
+                    updateOfflineUsage();
+
+                    tileLayer.getMaxZoom(function(result){
+                        mMaxZoom = result;
+                    });
+                    tileLayer.getMinZoom(function(result){
+                        mMinZoom = result;
+                    });
+
+                    console.log("level: " + tileLayer.getLevel() + ", maxZoom: " + mMaxZoom);
+                })
+
+                map.addLayer(tileLayer);
+            }
+
+            function init(){
+                map.on("extent-change",function(evt){
+                    updateOfflineUsage();
+                    console.log("Zoom level = " + tileLayer.getLevel())
+                });
+
+                appCacheManager = new AppCacheManager(true,true);
+                appCacheManager.on(appCacheManager.CACHE_EVENT,cacheEventHandler);
+                appCacheManager.on(appCacheManager.CACHE_ERROR,cacheErrorHandler);
+                appCacheManager.on(appCacheManager.CACHE_LOADED,cacheLoaderHandler);
+
+                btnGetTiles = document.getElementById("btn-get-tiles");
+                btnOnlineOffline = document.getElementById("btn-online-offline");
+
+                btnZoom = document.getElementById("btn-zoom-out");
+
+                tileInfo = document.getElementById("tile-info")
+                tileInfo.innerHTML = "Tile count: 0\r\nBytes: 0";
+
+                map.reposition();
+                map.resize();
+            }
+
+            function updateState(){
+                if(Offline.state === 'up'){
+                    updateOfflineUsage();
+                    imgOfflineIndicator.src = bluePinPath;
+                    if(typeof tileLayer != "undefined") tileLayer.goOnline();
+                }
+                else{
+                    imgOfflineIndicator.src = redPinPath;
+                    if(typeof tileLayer != "undefined") tileLayer.goOffline();
+                }
+            }
+
+            function updateOfflineUsage()
+            {
+                tileLayer.offline.store.usedSpace(function(result,err){
+                    if(result != null){
+                        tileInfo.innerHTML = "DB Tile count: " + result.tileCount + "\r\nDB Bytes: " +  result.sizeBytes;
+                    }
+                    else{
+                        tileInfo.innerHTML = "DB Tile count: " + count + "\r\nDB Bytes: Error";
+                    }
+                })
+            }
+
+            /**
+             * Utility function to validate min and max zoom settings of the map
+             */
+            function getMinMaxZoom(){
+
+                var zoom = {};
+                var min = tileLayer.getLevel() + minZoomAdjust;
+                var max = tileLayer.getLevel() + maxZoomAdjust;
+                zoom.max = Math.min(mMaxZoom, max);  //prevent errors by setting the tile layer floor
+                zoom.min = Math.max(mMinZoom, min);   //prevent errors by setting the tile layer ceiling
+
+                return zoom;
+            }
+
+            /**
+             * Reports the process while downloading tiles.
+             */
+            function reportProgress(progress)
+            {
+                console.log("downloading tiles...");
+                if(progress.hasOwnProperty("countNow")){
+                    var percent = Math.floor(progress.countNow / progress.countMax * 100);
+                    btnGetTiles.innerHTML = 'Saving to phone ' + percent + "% - Tap to Cancel";
+                }
+
+                if( progress.finishedDownloading )
+                {
+                    btnGetTiles.innerHTML = "Saving to phone 100% - Tap to Cancel";
+                    updateOfflineUsage();
+
+                    if( progress.cancelRequested )
+                    {
+                        globalState.downloadState = 'cancelled';
+                        alert("Tile download was cancelled");
+                    }
+                    else
+                    {
+                        globalState.downloadState = 'downloaded';
+                        alert("Tile download complete");
+                    }
+
+                    btnGetTiles.innerHTML = '1. Download Tiles';
+                }
+                return _wantToCancel; //determines if a cancel request has been issued
+            }
+
+            /**
+             * Forces offlineTileEnabler to go online or offline.
+             * If it is offline it will try to find a tile in the local database.
+             */
+            function goOnlineOffline(){
+                if(imgOfflineIndicator.offlineColor == "blue"){
+                    btnOnlineOffline.innerHTML = "2. Go Online";
+                    imgOfflineIndicator.src = redPinPath;
+                    imgOfflineIndicator.offlineColor = "red";
+                    tileLayer.goOffline();
+                }
+                else{
+                    btnOnlineOffline.innerHTML = "2. Go Offline";
+                    imgOfflineIndicator.src = bluePinPath;
+                    imgOfflineIndicator.offlineColor = "blue";
+                    tileLayer.goOnline();
+                }
+            }
+
+            /**
+             * Manually starts the process to download and store tiles
+             * in the local database
+             */
+            function downloadTiles(){
+                tileLayer.deleteAllTiles(function(success,err){
+                    if(success == false){
+                        alert("There was a problem deleting the tile cache");
+                    }
+                    else{
+                        console.log("success deleting tile cache");
+                        var self = this.data;
+
+                        if( globalState.downloadState == 'downloading')
+                        {
+                            console.log("cancel!");
+                            _wantToCancel = true;
+                            btnGetTiles.innerHTML = "cancelling..";
+                        }
+                        else
+                        {
+                            var zoom = getMinMaxZoom();
+
+                            var extent = tileLayer.getExtentBuffer(EXTENT_BUFFER,map.extent);
+                            _wantToCancel = false;
+                            tileLayer.prepareForOffline(zoom.min, zoom.max, extent, reportProgress.bind(this));
+                            globalState.downloadState = 'downloading';
+                        }
+                    }
+                }.bind(this))
+            }
+
+            /**
+             * Attempts an http request to verify if app is online or offline.
+             * Use this in conjunction with the offline checker library: offline.min.js
+             * @param callback
+             */
+            function verifyOnline(callback){
+                var req = new XMLHttpRequest();
+                req.open("GET", "images/blue-pin.png?" + (Math.floor(Math.random() * 1000000000)), true);
+                req.onload = function()
+                {
+                    if( req.status === 200 && req.responseText !== "")
+                    {
+                        callback(true);
+                    }
+                    else
+                    {
+                        console.log("verifyOffline failed");
+                        callback(false);
+                    }
+                };
+                req.onerror = function(e)
+                {
+                    console.log("verifyOffline failed: " + e);
+                    callback(false);
+                };
+                req.send(null);
+            }
+
+            function cacheLoaderHandler(evt){
+                if(evt == appCacheManager.CACHE_LOADED) console.log("Application cache successfully loaded!")
+            }
+
+            function cacheEventHandler(evt){
+                console.log("CACHE EVENT: " + JSON.stringify(evt));
+            }
+
+            function cacheErrorHandler(evt){
+                console.log("CACHE ERROR: " + JSON.stringify(evt));
+            }
+        }
+);
+
+function panLeft(){
+    map.panLeft();
+}
+</script>
+
 </body>
-</html>

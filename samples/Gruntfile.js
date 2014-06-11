@@ -26,13 +26,18 @@ module.exports = function(grunt) {
                         "#",
 						"# ArcGIS API for JavaScript files",
 						"<%= pkg.optimizedApiURL %>/dojo/dojo.js",
+                        "<%= pkg.optimizedApiURL %>/dojo/nls/dojo_en-us.js",
+                        "<%= pkg.optimizedApiURL %>/dojo/selector/acme.js",
                         "#",
+                        "<%= pkg.arcGISBaseURL %>/js/esri/dijit/images/popup-sprite.png",
+                        "<%= pkg.arcGISBaseURL %>/js/esri/dijit/images/attribute_inspector_sprite.png",
 						"<%= pkg.arcGISBaseURL %>/js/dojo/dojox/gfx/svg.js",
 						"<%= pkg.arcGISBaseURL %>/js/dojo/dojo/resources/blank.gif",
 						"<%= pkg.arcGISBaseURL %>/js/esri/dijit/images/ajax-loader.gif",
                         "<%= pkg.arcGISBaseURL %>/js/esri/images/map/logo-sm.png",
                         "<%= pkg.arcGISBaseURL %>/js/esri/images/map/logo-med.png",
                         "<%= pkg.arcGISBaseURL %>/js/esri/css/esri.css",
+                        "<%= pkg.arcGISBaseURL %>/js/dojo/dijit/themes/claro/claro.css",
                         "<%= pkg.arcGISBaseURL %>/js/esri/nls/jsapi_en-us.js",
                         "#",
 						"//services.arcgisonline.com/ArcGIS/rest/info?f=json",
@@ -42,7 +47,7 @@ module.exports = function(grunt) {
                         "# required for web maps",
                         "<%= pkg.arcGISBaseURL %>/js/esri/dijit/images/ajax-loader.gif",
                         "#",
-						"# required custom libs",
+						"# required local html",
 						"# /xyz/style.css",
 						"# /img/1.png"],
 		        network: [
@@ -56,18 +61,19 @@ module.exports = function(grunt) {
 		      },
 		      src: [
 		            "*.html",
-		          /*"js/*.min.js",*/
-                  "samples/images/*.png",
-				  "vendor/IndexedDBShim/dist/*.min.js",
-                  "vendor/offline/offline.min.js",
-				  "lib/tiles/*.js",
-                  "lib/tiles/*.png",
-                  "lib/tiles/*.psd",
-                  "utils/*.js"
-                  /*
-				  "images/*",
-		          "css/*.css"
-		          */
+                    "../samples/images/*.png",
+                    "../samples/css/*.css",
+                    "../vendor/IndexedDBShim/dist/*.js",
+                    "../vendor/offline/offline.min.js",
+                    "../lib/tiles/*.js",
+                    "../lib/tiles/*.png",
+                    "../lib/tiles/*.psd",
+                    "../lib/edit/*.js",
+                    "../utils/*.js"
+                    /*
+                    "images/*",
+                    "css/*.css"
+                    */
 		      ],
 		      dest: "<%= pkg.manifestName %>"
 		    }

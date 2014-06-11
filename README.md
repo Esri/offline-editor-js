@@ -42,7 +42,7 @@ Extends and overrides a feature layer. This library allows you to extend esri.la
 
  
 ##offlineTilesEnabler
-Extends and overrides a tiled map service. Provides the ability to customize the extent used to cut the tiles. See the detailed description of basemap.prepareForOffline() in the "How To Use" section below to learn different options.
+Extends and overrides a tiled map service. Provides the ability to customize the extent used to cut the tiles. See the detailed description of basemap.prepareForOffline() in the "How To Use" section to learn different options.
 
 * __Click [here](doc/offlinetilesenabler.md) to see the full API doc for `offlineTilesEnabler`__ 
 
@@ -57,6 +57,7 @@ Extends TileMapServiceLayer. You can display TPK files with this library.
 * [Learn more about using the `tile` library](doc/howtousetiles.md)
 * [Learn more about using the `edit` library](doc/howtouseeditlibrary.md)
 * [Learn more about using the `tpk` library](doc/howtousetpklibrary.md)
+* [Learn more abuut using an application cache with this library](doc/howtouseappcache.md)
 
 
 ##Setup Instructions
@@ -68,7 +69,7 @@ Extends TileMapServiceLayer. You can display TPK files with this library.
 
 
 ##Samples
-* `appcache-features.html` - shows how to work with the application manifest and features.
+* `appcache-features.html` - shows how to work with the application manifest, tiles and features.
 * `appcache-tiles.html` - shows how to work with the application manifest and map tiles.
 * `attachments-editor.html` - demonstrates how to work with this library and feature attachments.
 * `military-offline.html` - shows working with points, lines and polygons locally.

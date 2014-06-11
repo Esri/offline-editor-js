@@ -1,5 +1,12 @@
 /**
  * Helper Class for working with the application cache.
+ *
+ * Listen for the following events:
+ * UPDATE_READY - an update to the cache is ready
+ * UPDATE_NONE - the cache hasn't changed since the last app load.
+ * CACHE_LOADED - the cache has finished loading.
+ * CACHE_ERROR - an error was thrown by the browser while attempting to load the cache.
+ *
  * For more information on application cache:
  * https://developer.mozilla.org/en-US/docs/HTML/Using_the_application_cache
  * Many thanks and all kudos go to the following blog posts:
@@ -14,6 +21,7 @@ define([
             UPDATE_READY: "update-ready",
             UPDATE_NONE: "no-update",
             CACHE_EVENT: "cache-event",
+            CACHE_LOADED: "cache-loaded",
             CACHE_ERROR: "cache-error",
             appCache: window.applicationCache,
 
@@ -101,6 +109,12 @@ define([
             },
 
             _handleCacheEvents:function(evt){
+                if(evt.hasOwnProperty("total") && evt.hasOwnProperty("loaded")){
+                    if(evt.total == evt.loaded){
+                        console.log("appCacheManager: cache has finished loading.")
+                        this.emit(this.CACHE_LOADED,"cache-loaded");
+                    }
+                }
                 this.emit(this.CACHE_EVENT,evt);
             },
 

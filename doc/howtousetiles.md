@@ -3,8 +3,13 @@ How to use the tiles library
 
 ##`tiles` library
 
-
 The `tiles` library allows a developer to extend a tiled layer with offline support.
+
+There are two approaches to using this set of libraries. The first approach is if you are using an ArcGIS.com Web Map, and the second approach is if you need to be able to restart or reload your application offline.
+
+## Approach 1 - ArcGIS.com Map
+
+Approach #1 is best for partial offline use cases and it uses the `offlineTilesEnabler.js` library. This approach will not allow you to reload or restart the application.
 
 **Step 1** Configure paths for dojo loader to find the tiles and vendor modules (you need to set paths relative to the location of your html document), before loading ArcGIS JavaScript API
 
@@ -19,7 +24,7 @@ The `tiles` library allows a developer to extend a tiled layer with offline supp
 			}
 		}
 	</script>
-	<script src="//js.arcgis.com/3.7compact"></script>
+	<script src="//js.arcgis.com/3.8compact"></script>
 
 ```
 
@@ -123,4 +128,73 @@ It calculates the geographic boundary of each of the tiles stored in the indexed
 			console.log("showStoredTiles: ", err);
 		}
 	}
+```
+
+## Approach #2 - Custom TileLayer
+
+This approach is best if you have requirements for restarting or reloading your application while offline. For this approach use the `OfflineTilesEnablerLayer.js` library. This library extends TileMapServiceLayer and you can use it with any Esri tiled basemap layer.
+
+
+**Step 1** Configure paths for dojo loader to find the tiles and vendor modules (you need to set paths relative to the location of your html document), before loading ArcGIS JavaScript API
+
+```html
+	<script>
+		// configure paths BEFORE loading arcgis or dojo libs
+		var locationPath = location.pathname.replace(/\/[^/]+$/, "");
+		var dojoConfig = {
+			paths: { 
+				tiles: locationPath  + "/../../lib/tiles",
+				vendor: locationPath + "/../../vendor"
+			}
+		}
+	</script>
+	<script src="//js.arcgis.com/3.8compact"></script>
+
+```
+
+**Step 2** Include the `tiles/offlineTilesEnabler` library in your app.
+
+```js
+	require([
+		"esri/map", 
+		"tiles/OfflineTilesEnablerLayer"], 
+		function(Map,OfflineTilesEnablerLayer)
+	{
+		...
+	});
+```
+
+**Step 3** Create a new instance of `OfflineTilesEnablerLayer`. Note, when you instantiate the `Map` leave off the `basemap` property because we are adding a customer tile layer as our basemap. `OfflineTilesEnablerLayer` has three properties in the constructor. The first is the REST endpoint of the basemap you want to use, the second is the callback and the last is an optional parameter to preset the layer as online or offline. This will help with with drawing tiles correctly during offline restarts or reloads.
+
+```js
+    tileLayer = new OfflineTilesEnablerLayer("http://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer",function(evt){
+        console.log("Tile Layer Loaded.");
+    },_isOnline);
+
+    var map = new Map("map",{
+        center: [-104.98,39.74], // long, lat
+        zoom: 8,
+        sliderStyle: "small"
+    });
+
+    map.addLayer(tileLayer);
+
+
+```
+
+All map events will continue to work normally. Although some methods that are typically available will now have to be accessed through the OfflineTilesEnablerLayer such as `getLevel()`, `getMaxZoom()`, and `getMinZoom()`.
+
+To get the current extent you will need to monitor the `zoom-end` and `pan-end` events like this:
+
+```js
+
+
+    map.on("zoom-end",function(evt){
+        _currentExtent = evt.extent;
+    });
+
+    map.on("pan-end",function(evt){
+       _currentExtent = evt.extent;
+    });
+
 ```
