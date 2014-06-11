@@ -180,7 +180,7 @@
                 "edit/offlineFeaturesManager", "edit/editsStore",
                 "dojo/on",
                 "dojo/domReady!"],
-            function(Map,FeatureLayer,OfflineTilesEnabler,restartOfflineFeaturesMgr,AppCacheManager,
+            function(Map,FeatureLayer,OfflineTilesEnablerLayer,restartOfflineFeaturesMgr,AppCacheManager,
                 SimpleRenderer,SimpleMarkerSymbol,Color,Query,
                 OfflineFeaturesManager,editsStore,on) {
 
@@ -255,7 +255,7 @@
                     Offline.check();
                     Offline.state === 'up' ? resetZoom = 18 : resetZoom = 17;
 
-                    tileLayer = new OfflineTilesEnabler("http://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer",function(evt){
+                    tileLayer = new OfflineTilesEnablerLayer("http://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer",function(evt){
                         console.log("Tile Layer Loaded.");
                     },_isOnline);
 
