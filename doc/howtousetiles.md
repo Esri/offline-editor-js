@@ -164,7 +164,7 @@ This approach is best if you have requirements for restarting or reloading your 
 	});
 ```
 
-**Step 3** Create a new instance of OfflineTilesEnablerLayer. Note, when you instantiate the Map leave off the `basemap` property because we are adding a customer tile layer as our basemap.
+**Step 3** Create a new instance of `OfflineTilesEnablerLayer`. Note, when you instantiate the `Map` leave off the `basemap` property because we are adding a customer tile layer as our basemap. `OfflineTilesEnablerLayer` has three properties in the constructor. The first is the REST endpoint of the basemap you want to use, the second is the callback and the last is an optional parameter to preset the layer as online or offline. This will help with with drawing tiles correctly during offline restarts or reloads.
 
 ```js
     tileLayer = new OfflineTilesEnablerLayer("http://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer",function(evt){
