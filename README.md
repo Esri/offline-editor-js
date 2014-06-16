@@ -11,7 +11,8 @@ This repo contains the following libraries:
    * `offlineFeaturesManager` - Extends and overrides a feature layer.
    * `editsStore` - Provides static helper methods for working with the offline data store.
 - `/tiles`: stores portions of tiled maps client-side and uses the cached tiles when device is offline
-   * `offlineTilesEnabler` Extends and overrides a tiled map service.
+   * `offlineTilesEnabler` Extends and overrides a tiled map service from ArcGIS Online or for partial offline use.
+   * `OfflineTilesEnablerLayer` Extends any Esri tiled basemap service for a web app that has a requirement for browser reload and/or restart. This library should be used in conjunction with an application cache coding pattern.
 - `/tpk`: lets you work with TPK files.
    * `TPKLayer` - parses a TPK file and displays it as a tiled map layer.
 - `/utils`: contains various helper libraries.
@@ -48,7 +49,7 @@ Extends and overrides a tiled map service. Provides the ability to customize the
 
 ##TPKLayer
 
-Extends TileMapServiceLayer. You can display TPK files with this library.
+Extends TileMapServiceLayer. You can display TPK files with this library. TPK's are binary tile package files. Go [here](http://resources.arcgis.com/en/help/main/10.1/index.html#//00170000017w000000) for more information on how to create a TPK file.
 
 * __Click [here](doc/tpklayer.md) to see the full API doc for `TPKLayer`__ 
 
@@ -81,19 +82,20 @@ Extends TileMapServiceLayer. You can display TPK files with this library.
 ##Dependencies
 
 * ArcGIS API for JavaScript (v3.8+)
-* NOTE: browser limitations and technical dependencies. The offline capabilities in this toolkit depend on psuedo-persistent HTML5 capabilities being present in the browser. Go [here](doc/dependencies.md) for a detailed breakdown of the information.
+* NOTE: browser limitations and technical dependencies. The offline capabilities in this toolkit depend on certain HTML5 capabilities being present in the browser. Go [here](doc/dependencies.md) for a detailed breakdown of the information.
+	* We offer browser support for Chrome and Safari only, at this time. Some of the capabilities in the repository will not work on Internet Explorer. We continue to evaluate IE's capabilities as new releases become available to try and identify a point where we might be able to support it.  	
 
 * Sub-modules (see `/vendor` directory)
 
    * [offline.js](https://github.com/hubspot/offline) - it allows detection of the online/offline condition and provides events to hook callbacks on when this condition changes
-   * [IndexedDBShim](https://github.com/axemclion/IndexedDBShim) - polyfill to simulate indexed db functionality in browsers/platforms where it is not supported (notably iOS Safari, PhoneGap, Android Chrome)
-   		- IMPORTANT: There is a know [issue](https://github.com/axemclion/IndexedDBShim/issues/115) with IndexedDBShim on Safari. The workaround is to switch from using /dist/IndexedDBShim.min.js to just using IndexedDBShim.js and then modify line #1467 to a more appropriate size that will meet all your storage needs, for example: ```var DEFAULT_DB_SIZE = 24 * 1024 * 1024```
+   * [IndexedDBShim](https://github.com/axemclion/IndexedDBShim) - polyfill to simulate indexeddb, or access WebSQL functionality in browsers/platforms where it is not supported (notably desktop Safari and iOS Safari)
+   		- IMPORTANT: There is a know [issue](https://github.com/axemclion/IndexedDBShim/issues/115) with IndexedDBShim on Safari. The workaround is to switch from using /dist/IndexedDBShim.min.js to just using IndexedDBShim.js and then search for and modify the line that defines the value for `DEFAULT_DB_SIZE`. Set this to more appropriate size that will meet all your storage needs, for example: ```var DEFAULT_DB_SIZE = 24 * 1024 * 1024```
    * [jasmine.async](https://github.com/derickbailey/jasmine.async.git) - library to help implementing tests of async functionality (used in tests)
 
 * Non sub-module based libraries
 	* [FileSaver.js](https://github.com/Esri/offline-editor-js/blob/master/lib/tiles/README.md) - library to assist with uploading and downloading of files containing tile information.
 	* [grunt-manifest](https://github.com/gunta/grunt-manifest) node.js library to assist with the creation of manifest files.
-	* [zip](http://gildas-lormeau.github.io/zip.js/) A library for zipping and unzipping files.
+	* [zip](http://gildas-lormeau.github.io/zip.js/) A library for zipping and unzipping files. 
 	* [xml2json](https://code.google.com/p/x2js/) A library for converting XML to JSON. Seems to handle complex XML. 
 
 ## Resources
