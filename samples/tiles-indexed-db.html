@@ -320,7 +320,7 @@ require(
 				map = response.map;
                 try{
 				    // Bind to map
-				    BootstrapMap.bindTo(map);
+				    BootstrapMap.create(map);
                 }
                 catch(err){
                     console.log("boot " + err.toString())
