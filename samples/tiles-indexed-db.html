@@ -387,7 +387,14 @@ require(
 			on(dojo.byId('minLevel'),'change', updateTileCountEstimation);
 			on(dojo.byId('maxLevel'),'change', updateTileCountEstimation);
 
-			dojo.byId('minLevel').value = basemapLayer.minLevel = basemapLayer.tileInfo.lods[0].level;
+            var currentLevel = map.getLevel();
+            if(currentLevel - 3 < 0){
+                dojo.byId('minLevel').value = currentLevel;
+            }
+            else{
+                dojo.byId('minLevel').value = currentLevel - 3;
+            }
+
 			dojo.byId('maxLevel').value = basemapLayer.maxLevel = basemapLayer.tileInfo.lods[basemapLayer.tileInfo.lods.length-1].level;
 		}
 
