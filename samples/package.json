@@ -5,10 +5,10 @@
     "https://www.npmjs.org/doc/cli/npm-init.html"
   ],
   "name": "manifest-generator",
-  "manifestName": "appcache-tiles.appcache",
-  "appHomePage": "appcache-tiles.html",
-  "optimizedApiURL": "http://jsdev.arcgis.com/o/andygup/appcache1",
-  "arcGISBaseURL": "http://js.arcgis.com/3.8",
+  "manifestName": "appcache-features.appcache",
+  "appHomePage": "appcache-features.html",
+  "optimizedApiURL": "http://js.arcgis.com/o/agup_hack4co/appcacheFeatures",
+  "arcGISBaseURL": "http://js.arcgis.com/3.9",
   "version": "0.0.1",
   "private": true,
   "description": "manifest generator project",
@@ -16,7 +16,7 @@
     "type": "git",
     "url": "https://github.com/Esri/offline-editor-js.git"
   },
-  "author": "Lloyd Heberlie",
+  "author": "Andy Gup",
   "license": "Apache 2",
   "bugs": {
     "url": "https://github.com/Esri/offline-editor-js/issues"

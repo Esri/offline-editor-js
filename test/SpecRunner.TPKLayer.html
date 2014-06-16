@@ -1,0 +1,122 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Jasmine Spec Runner - TPKLayer</title>
+
+    <link rel="shortcut icon" type="image/png" href="../vendor/jasmine-1.3.1/jasmine_favicon.png">
+    <link rel="stylesheet" type="text/css" href="../vendor/jasmine-1.3.1/jasmine.css">
+    <script type="text/javascript" src="../vendor/jasmine-1.3.1/jasmine.js"></script>
+    <script type="text/javascript" src="../vendor/jasmine-1.3.1/jasmine-html.js"></script>
+    <script type="text/javascript" src="../vendor/jasmine.async/lib/jasmine.async.js"></script>
+    <style type="text/css">
+        #loader-gif{
+            display: block;
+            visibility: hidden;
+            position: relative;
+            float: left;
+            z-index: 10;
+        }
+    </style>
+
+    <script>
+        var locationPath = location.pathname.replace(/\/[^/]+$/, "");
+        var dojoConfig = {
+            paths: {
+                edit: locationPath + "../../lib/edit",
+                tpk: locationPath  + "/../lib/tpk",
+                tiles: locationPath + "/../lib/tiles"
+            }
+        }
+    </script>
+
+    <link rel="stylesheet" href="http://js.arcgis.com/3.9/js/dojo/dijit/themes/claro/claro.css">
+    <link rel="stylesheet" href="http://js.arcgis.com/3.9/js/esri/css/esri.css">
+    <script src="http://js.arcgis.com/3.9/"></script>
+
+    <!-- include spec files here... -->
+    <script type="text/javascript" src="spec/tpkLayerSpec.js"></script>
+    <script type="text/javascript">
+        "use strict"
+
+        var getFileBtn, fileInput, FILE;
+        var loading = dojo.byId("loader-gif");
+        var tilesEntries = null;
+        var tpkLayer = null;
+
+        require(["esri/map",
+                    "esri/layers/GraphicsLayer", "esri/graphic", "esri/symbols/SimpleFillSymbol", "esri/symbols/SimpleMarkerSymbol", "esri/symbols/SimpleLineSymbol",
+                    "esri/SpatialReference","esri/geometry",
+                    "edit/attachmentsStore",
+                    "dojo/dom", "dojo/on",
+                    "tpk/TPKLayer","tpk/zip",
+                    "dojo/domReady!"],
+                function(Map,
+                         GraphicsLayer, Graphic, SimpleFillSymbol, SimpleMarkerSymbol, SimpleLineSymbol,
+                         SpatialReference, geometry,
+                         AttachmentsStore,
+                         dom, on, TPKLayer,zip)
+                {
+                    var jasmineEnv;
+                    loading = dojo.byId("loader-gif");
+                    getFileBtn = dojo.byId("url-btn");
+                    //IMPORTANT!
+                    zip.workerScriptsPath = locationPath + "/../lib/tpk/"; //tell zip.js where to find it's associated scripts
+
+                    tpkLayer = new TPKLayer();
+
+                    initChooseLocalFile();
+
+                    /**
+                     * Choose a TPK file from your local filesystem
+                     */
+                    function initChooseLocalFile(){
+                        fileInput = document.getElementById("file-input");
+                        fileInput.addEventListener('change', function() {
+                            console.log("File success");
+                            FILE = fileInput.files[0];
+
+
+                            try
+                            {
+                                console.log("everything ok!");
+
+                                jasmineEnv = jasmine.getEnv();
+                                jasmineEnv.updateInterval = 1000;
+                                jasmineEnv.defaultTimeoutInterval = 10000; // 1 sec
+                                var htmlReporter = new jasmine.HtmlReporter();
+
+                                jasmineEnv.addReporter(htmlReporter);
+
+                                jasmineEnv.specFilter = function(spec) {
+                                    return htmlReporter.specFilter(spec);
+                                };
+
+                                jasmineEnv.execute();
+
+                            }
+                            catch(err)
+                            {
+                                alert(err);
+                            }
+
+                        },false);
+                    }
+
+                }); // require()
+    </script>
+</head>
+
+<body>
+
+<span>Select a tpk file to launch unit testing. You may have to change it to .zip</span>
+<br>
+<br>
+<div id="input-container">
+    <input type="file" id="file-input" name="files[]" accept="application/zip"/>
+</div>
+
+<img id="loader-gif" src="../samples/images/loading.gif"/>
+</body>
+</html>

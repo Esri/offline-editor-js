@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no"/>
+    <title>TPKLayer</title>
+    <link rel="stylesheet" href="http://js.arcgis.com/3.9/js/esri/css/esri.css">
+    <style>
+        html, body, #map {
+            height: 100%;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            background-color: #FFF;
+            overflow: hidden;
+            font-family: "Trebuchet MS";
+        }
+        #header-div{
+            font-family: helvetica, serif;
+            background: #000000;
+            color: #ffffff;
+            width: 100%;
+            height: 90px;
+            display:inline-block;
+            vertical-align:middle;
+            line-height: 50px;
+            padding-left: 8px;
+        }
+        #input-container{
+            position: absolute;
+        }
+        #file-input{
+            margin-top: 10px;
+            margin-left: 10px;
+            position: absolute;
+            float: left;
+            margin-bottom: 15px;
+        }
+        #url-input{
+            position: relative;
+            /* float: left; */
+            padding-left: 10px;
+            margin-left: 10px;
+            margin-top: 40px;
+            width: 250px;
+        }
+        #url-btn{
+            position: relative;
+            /*float: left;*/
+        }
+        #header-title{
+            position: relative;
+            float: right;
+            padding-right: 15px;
+        }
+        #loader-gif{
+            display: block;
+            visibility: hidden;
+            position: relative;
+            float: left;
+            padding-left: 50%;
+            padding-top: 25%;
+            z-index: 10;
+        }
+        #map{
+            position: absolute;
+            left: 0;
+            z-index: 1;
+        }
+        /* Portrait */
+        @media screen and (orientation:portrait) {
+            #loader-gif{
+                display: block;
+                visibility: hidden;
+                position: relative;
+                float: left;
+                padding-left: 50%;
+                padding-top: 25%;
+                z-index: 10;
+            }
+        }
+
+        /* Landscape */
+        @media screen and (orientation:landscape) {
+            #loader-gif{
+                display: block;
+                visibility: hidden;
+                position: relative;
+                float: left;
+                padding-left: 50%;
+                padding-top: 25%;
+                z-index: 10;
+            }
+        }
+
+    </style>
+</head>
+
+<body>
+<div id="header-div">
+    <div id="input-container">
+        <input type="file" id="file-input" name="files[]" accept="application/zip"/>
+        <input type="text" id="url-input" value="tpks/Beirut.zip" />
+        <button id="url-btn">Get file via url</button>
+    </div>
+    <div id="header-title">TPKLayer demo</div>
+</div>
+<img id="loader-gif" src="images/loading.gif"/>
+
+<div id="map"></div>
+
+<script>
+    var locationPath = location.pathname.replace(/\/[^/]+$/, "");
+    var dojoConfig = {
+        paths: {
+            tpk: locationPath  + "/../lib/tpk",
+            tiles: locationPath + "/../lib/tiles"
+        }
+    }
+</script>
+<script src="../vendor/IndexedDBShim/dist/IndexedDBShim.min.js"></script>
+<script src="http://js.arcgis.com/3.9/"></script>
+<script>
+    require(["esri/map","tpk/TPKLayer","tpk/zip","dojo/on","dojo/_base/window","dojo/domReady!"],
+            function(Map,TPKLayer,zip,on,win) {
+                var map;
+                var fileInput,tpkLayer, urlInputBtn;
+
+                var loading = dojo.byId("loader-gif");
+                var getFileBtn = dojo.byId("url-btn");
+
+                initChooseLocalFile();
+                initGetRemoteFile();
+
+                /**
+                 * Parse zipped TPK file and get the individual files.
+                 */
+                function zipParser(blob){
+
+                    //IMPORTANT!
+                    zip.workerScriptsPath = locationPath + "/../lib/tpk/"; //tell zip.js where to find it's associated scripts
+
+                    zip.createReader(new zip.BlobReader(blob), function (zipReader) {
+                        zipReader.getEntries(function (entries) {
+                            initMap(entries);
+                            zipReader.close(function(evt){
+                                console.log("Done reading zip file.")
+                            })
+                        }, function (err) {
+                            alert("There was a problem reading the file!: " + err);
+                        })
+                    })
+                }
+
+                /**
+                 * Initialize the Map and the TPKLayer
+                 */
+                function initMap(entries){
+                    tpkLayer = new TPKLayer();
+                    tpkLayer.on("progress", function (evt) {
+                        evt == "start" ? loading.style.visibility = "visible" : loading.style.visibility = "hidden";
+                    })
+                    tpkLayer.extend(entries);
+
+                    map = new Map("map");
+                    map.addLayer(tpkLayer);
+                }
+
+                /**
+                 * Choose a TPK file from your local filesystem
+                 */
+                function initChooseLocalFile(){
+                    fileInput = document.getElementById("file-input");
+                    fileInput.addEventListener('change', function() {
+                        console.log("File success");
+                        zipParser(fileInput.files[0]);
+                    },false);
+                }
+
+                /**
+                 * Get a TPK file from a remote server via a URL
+                 */
+                function initGetRemoteFile(){
+                    getFileBtn.innerHTML = "Get file via url";
+                    var url = document.getElementById("url-input");
+                    urlInputBtn = document.getElementById("url-btn");
+                    urlInputBtn.onclick = function(){
+                        var xhrRequest = new XMLHttpRequest();
+                        xhrRequest.open("GET", url.value, true);
+                        xhrRequest.responseType = "blob";
+                        xhrRequest.onprogress = function(evt){
+                            loading.style.visibility = "visible";
+                            var percent = (parseFloat(evt.loaded / evt.totalSize) * 100).toFixed(0);
+                            getFileBtn.innerHTML = "Get file via url " + percent + "%";
+                            console.log("Begin downloading remote tpk file...")
+                        }
+
+                        xhrRequest.error = function(err){console.log("ERRROR")}
+
+                        xhrRequest.onload = function(oEvent) {
+                            if(this.status == 200) {
+                                loading.style.visibility = "hidden";
+                                console.log("Remote tpk download finished.")
+                                zipParser(this.response)
+                            }
+                            else{
+                                loading.style.visibility = "hidden";
+                                alert("There was a problem loading the file. " + this.status + ": " + this.statusText )
+                            }
+                        };
+
+                        xhrRequest.send();
+                    }
+                }
+            }
+    );
+</script>
+</body>
+</html>
