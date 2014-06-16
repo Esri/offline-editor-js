@@ -415,6 +415,8 @@ require(
 					esri.hide(dojo.byId('downloading-ui'));
 					updateOfflineUsage();
 
+                    // Hack to correctly set _lastTileUrl. It needs to be set for the tile size
+                    // estimation to work properly.
                     var cellArray = basemapLayer.getTileUrlsByExtent(map.extent,map.getLevel());
                     var uriFragment = cellArray[0].split("/MapServer/");
                     var rebuiltURI = uriFragment[0] + "/MapServer/tile/" + uriFragment[1];
