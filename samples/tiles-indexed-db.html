@@ -414,6 +414,12 @@ require(
 					esri.show(dojo.byId('ready-to-download-ui'));
 					esri.hide(dojo.byId('downloading-ui'));
 					updateOfflineUsage();
+
+                    var cellArray = basemapLayer.getTileUrlsByExtent(map.extent,map.getLevel());
+                    var uriFragment = cellArray[0].split("/MapServer/");
+                    var rebuiltURI = uriFragment[0] + "/MapServer/tile/" + uriFragment[1];
+                    basemapLayer._lastTileUrl = rebuiltURI;
+
 					updateTileCountEstimation();
 				}
 				else
