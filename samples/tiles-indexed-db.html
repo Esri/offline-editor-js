@@ -147,15 +147,15 @@
 			<form role="form">
 				<div class="form-group">
 					<label class="control-label" for="minLevel">Min Zoom Level (farthest from ground)</label>
-					<input type="number" id="minLevel" name"minLevel" class="form-control" value=1 min=0 max=19>
+					<input type="number" id="minLevel" name="minLevel" class="form-control" value=1 min=0 max=19 />
 				</div>
 				<div class="form-group">
 					<label class="control-label" for="currentLevel">Current Zoom Level</label>
-					<input type="number" id="currentLevel" name"currentLevel" class="form-control" value=19 min=0 max=19>
+					<input type="number" id="currentLevel" name="currentLevel" class="form-control" value=19 min=0 max=19 />
 				</div>
 				<div class="form-group">
 					<label class="control-label" for="maxLevel">Max Zoom Level (closer to ground)</label>
-					<input type="number" id="maxLevel" name"maxLevel" class="form-control" value=19 min=0 max=19>
+					<input type="number" id="maxLevel" name"maxLevel" class="form-control" value=19 min=0 max=19 />
 				</div>
 			</form>
 			<table id="tile-count-table" class="table table-striped table-condensed table-hover">
@@ -320,7 +320,7 @@ require(
 				map = response.map;
                 try{
 				    // Bind to map
-				    BootstrapMap.bindTo(map);
+				    BootstrapMap.create(map);
                 }
                 catch(err){
                     console.log("boot " + err.toString())
@@ -376,6 +376,12 @@ require(
 		function initEvents()
 		{
 			map.on('extent-change',debouncer.debounceMap(function(){
+                var zoomLevel = map.getLevel();
+                dojo.byId('currentLevel').value = zoomLevel;
+                var low = Math.max(basemapLayer.minLevel, zoomLevel - 3);
+                var high = Math.min(basemapLayer.maxLevel, zoomLevel + 4)
+                dojo.byId('minLevel').value = low;
+                dojo.byId('maxLevel').value = high;
                 updateTileCountEstimation();
             },250));
 
@@ -387,8 +393,17 @@ require(
 			on(dojo.byId('minLevel'),'change', updateTileCountEstimation);
 			on(dojo.byId('maxLevel'),'change', updateTileCountEstimation);
 
-			dojo.byId('minLevel').value = basemapLayer.minLevel = basemapLayer.tileInfo.lods[0].level;
-			dojo.byId('maxLevel').value = basemapLayer.maxLevel = basemapLayer.tileInfo.lods[basemapLayer.tileInfo.lods.length-1].level;
+            var currentLevel = map.getLevel();
+            if(currentLevel - 3 < 0){
+                dojo.byId('minLevel').value = currentLevel;
+            }
+            else{
+                dojo.byId('minLevel').value = currentLevel - 3;
+            }
+
+            basemapLayer.minLevel = basemapLayer.tileInfo.lods[0].level;
+			basemapLayer.maxLevel = basemapLayer.tileInfo.lods[basemapLayer.tileInfo.lods.length-1].level;
+            updateMinMaxLayerInfo();
 		}
 
 		function initOffline()
@@ -414,6 +429,14 @@ require(
 					esri.show(dojo.byId('ready-to-download-ui'));
 					esri.hide(dojo.byId('downloading-ui'));
 					updateOfflineUsage();
+
+                    // Hack to correctly set _lastTileUrl. It needs to be set for the tile size
+                    // estimation to work properly.
+                    var cellArray = basemapLayer.getTileUrlsByExtent(map.extent,map.getLevel());
+                    var uriFragment = cellArray[0].split("/MapServer/");
+                    var rebuiltURI = uriFragment[0] + "/MapServer/tile/" + uriFragment[1];
+                    basemapLayer._lastTileUrl = rebuiltURI;
+
 					updateTileCountEstimation();
 				}
 				else
@@ -485,20 +508,21 @@ require(
 			});
 		}
 
+        function updateMinMaxLayerInfo(){
+            var zoomLevel = map.getLevel();
+            dojo.byId('currentLevel').value = zoomLevel;
+            var low = Math.max(basemapLayer.minLevel, zoomLevel - 3);
+            var high = Math.min(basemapLayer.maxLevel, zoomLevel + 4)
+            dojo.byId('minLevel').value = low;
+            dojo.byId('maxLevel').value = high;
+        }
+
 		function updateTileCountEstimation()
 		{
 			console.log('updating');
-			var zoomLevel = map.getLevel();
-            dojo.byId('currentLevel').value = zoomLevel;
 
-            var minLevel = parseInt(dojo.byId('minLevel').value);
-            var maxLevel = parseInt(dojo.byId('maxLevel').value);
-
-            if( maxLevel > zoomLevel + 4 || maxLevel > basemapLayer.maxLevel)
-            {
-                maxLevel = Math.min(basemapLayer.maxLevel, zoomLevel + 4);
-                dojo.byId('maxLevel').value = maxLevel;
-            }
+            var minLevel = dojo.byId('minLevel').value;
+            var maxLevel = dojo.byId('maxLevel').value;
 
 			var totalEstimation = { tileCount:0, sizeBytes:0 }
 
@@ -513,7 +537,7 @@ require(
                     totalEstimation.tileCount += levelEstimation.tileCount;
                     totalEstimation.sizeBytes += levelEstimation.sizeBytes;
 
-                    if( levelEstimation.tileCount > 1)
+                    if( levelEstimation.tileCount > 0)
                     {
                         var rowContent = [levelEstimation.level, levelEstimation.tileCount, Math.round(levelEstimation.sizeBytes / 1024 / 1024 * 100) / 100 + " Mb"]
                         rowContent = "<td>" + rowContent.join("</td><td>") + "</td>";
