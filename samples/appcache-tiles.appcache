@@ -32,14 +32,6 @@ http://js.arcgis.com/3.9/js/esri/dijit/images/ajax-loader.gif
 # required local html
 # /xyz/style.css
 # /img/1.png
-appcache-features.html
-appcache-tiles.html
-attachments-editor-online.html
-attachments-editor.html
-military-offline.html
-service-inspector.html
-tiles-indexed-db.html
-tpk-layer.html
 ../samples/images/blue-pin.png
 ../samples/images/red-pin.png
 ../vendor/IndexedDBShim/dist/IndexedDBShim.min.js

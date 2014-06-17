@@ -60,7 +60,6 @@ module.exports = function(grunt) {
 		        timestamp: true
 		      },
 		      src: [
-		            "*.html",
                     "../samples/images/*.png",
                     "../samples/css/*.css",
                     "../vendor/IndexedDBShim/dist/*.js",
