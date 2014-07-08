@@ -259,6 +259,8 @@
                         console.log("Tile Layer Loaded.");
                     },_isOnline);
 
+                    tileLayer.offline.proxyPath = null;
+
                     var map = new Map("map",{
                         center: [-104.98,39.74], // long, lat
                         zoom: 8,

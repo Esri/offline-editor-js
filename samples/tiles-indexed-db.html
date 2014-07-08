@@ -414,7 +414,8 @@ require(
 			{
 				if(success)
 				{
-                    basemapLayer.offline.proxyPath = window.proxyPath || "../lib/resource-proxy/proxy.php";
+                    //basemapLayer.offline.proxyPath = window.proxyPath || "../lib/resource-proxy/proxy.php";
+                    basemapLayer.offline.proxyPath = null; //We are using CORS
 					on(dojo.byId('prepare-for-offline-btn'),'click', prepareForOffline);
 					on(dojo.byId('cancel-btn'),'click', cancel);
 					on(dojo.byId('delete-all-tiles-btn'),'click', deleteAllTiles);

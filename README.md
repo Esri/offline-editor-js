@@ -58,7 +58,7 @@ Extends TileMapServiceLayer. You can display TPK files with this library. TPK's 
 * [Learn more about using the `tile` library](doc/howtousetiles.md)
 * [Learn more about using the `edit` library](doc/howtouseeditlibrary.md)
 * [Learn more about using the `tpk` library](doc/howtousetpklibrary.md)
-* [Learn more abuut using an application cache with this library](doc/howtouseappcache.md)
+* [Learn more about using an application cache with this library](doc/howtouseappcache.md)
 
 
 ##Setup Instructions
@@ -73,7 +73,7 @@ Extends TileMapServiceLayer. You can display TPK files with this library. TPK's 
 * `appcache-features.html` - shows how to work with the application manifest, tiles and features.
 * `appcache-tiles.html` - shows how to work with the application manifest and map tiles.
 * `attachments-editor.html` - demonstrates how to work with this library and feature attachments.
-* `military-offline.html` - shows working with points, lines and polygons locally.
+* ~~`military-offline.html`~~ - renamed `draw-pointlinepoly-offline.html` shows working with points, lines and polygons locally.
 * `tpklayer.html` - shows how to work with TPK files.
 * `tiles-indexed-db.html` - shows how to work with storing tiles locally.
 * `Gruntfile.js` - a node.js app and its associated `package.json` file to help with creating an application manifest file.
@@ -88,8 +88,8 @@ Extends TileMapServiceLayer. You can display TPK files with this library. TPK's 
 * Sub-modules (see `/vendor` directory)
 
    * [offline.js](https://github.com/hubspot/offline) - it allows detection of the online/offline condition and provides events to hook callbacks on when this condition changes
-   * [IndexedDBShim](https://github.com/axemclion/IndexedDBShim) - polyfill to simulate indexeddb, or access WebSQL functionality in browsers/platforms where it is not supported (notably desktop Safari and iOS Safari)
-   		- IMPORTANT: There is a know [issue](https://github.com/axemclion/IndexedDBShim/issues/115) with IndexedDBShim on Safari. The workaround is to switch from using /dist/IndexedDBShim.min.js to just using IndexedDBShim.js and then search for and modify the line that defines the value for `DEFAULT_DB_SIZE`. Set this to more appropriate size that will meet all your storage needs, for example: ```var DEFAULT_DB_SIZE = 24 * 1024 * 1024```
+   * [IndexedDBShim](https://github.com/axemclion/IndexedDBShim) - polyfill to simulate indexedDB functionality in browsers/platforms where it is not supported (notably desktop Safari and iOS Safari)
+   		- IMPORTANT: There is a known [issue](https://github.com/axemclion/IndexedDBShim/issues/115) with IndexedDBShim on Safari. The workaround is to switch from using /dist/IndexedDBShim.min.js to just using IndexedDBShim.js and then search for and modify the line that defines the value for `DEFAULT_DB_SIZE`. Set this to more appropriate size that will meet all your storage needs, for example: ```var DEFAULT_DB_SIZE = 24 * 1024 * 1024```
    * [jasmine.async](https://github.com/derickbailey/jasmine.async.git) - library to help implementing tests of async functionality (used in tests)
 
 * Non sub-module based libraries
