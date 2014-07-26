@@ -1,7 +1,7 @@
 offline-editor-js
 =================
 
-A prototype JavaScript toolkit for using the ArcGIS API for JavaScript offline. It manages both editing and tiles in an offline mode. It's still a work-in-progress so if you have suggestions open an issue or if you want to make a pull request we welcome your proposed modifications. 
+A prototype JavaScript toolkit for using the ArcGIS API for JavaScript offline. It offers both lightweight editing and tile management capabilities while offline or intermittently offline. It's still a work-in-progress so if you have suggestions open an issue or if you want to make a pull request we welcome your proposed modifications. 
 
 *IMPORTANT:* If you want a full, robust offline solution then you should be using our ArcGIS Runtime SDKs for .NET, WPF, Java, iOS, Android and Qt.
 
@@ -10,6 +10,7 @@ This repo contains the following libraries:
 - `/edit`: handles vector features and stores adds, updates and deletes while offline. Resync's edits with server once connection is reestablished
    * `offlineFeaturesManager` - Extends and overrides a feature layer.
    * `editsStore` - Provides static helper methods for working with the offline data store.
+   * `attachmentsStore` - Provides limited support for attachments.
 - `/tiles`: stores portions of tiled maps client-side and uses the cached tiles when device is offline
    * `offlineTilesEnabler` Extends and overrides a tiled map service from ArcGIS Online or for partial offline use.
    * `OfflineTilesEnablerLayer` Extends any Esri tiled basemap service for a web app that has a requirement for browser reload and/or restart. This library should be used in conjunction with an application cache coding pattern.
@@ -29,7 +30,7 @@ The following workflow is currently supported for both both features and tiles:
 
 4) Return online when you want to resync edits.
 
-Using an [application manifest](https://developer.mozilla.org/en-US/docs/HTML/Using_the_application_cache) allows you to reload and restart the application while offline. The application manifest let's you store .html, .js, .css and image files locally.
+Using an [application manifest](https://developer.mozilla.org/en-US/docs/HTML/Using_the_application_cache) allows you to reload and restart the application while offline. The application manifest lets you store .html, .js, .css and image files locally.
 
 __Attachment Support__: Attachments are supported with some limitations. See documentation [here](./doc/attachments.md)
 
@@ -72,7 +73,7 @@ Extends TileMapServiceLayer. You can display TPK files with this library. TPK's 
 ##Samples
 * `appcache-features.html` - shows how to work with the application manifest, tiles and features.
 * `appcache-tiles.html` - shows how to work with the application manifest and map tiles.
-* `attachments-editor.html` - demonstrates how to work with this library and feature attachments.
+* `attachments-editor.html` - demonstrates how to work with this library using feature attachments.
 * ~~`military-offline.html`~~ - renamed `draw-pointlinepoly-offline.html` shows working with points, lines and polygons locally.
 * `tpklayer.html` - shows how to work with TPK files.
 * `tiles-indexed-db.html` - shows how to work with storing tiles locally.
@@ -83,13 +84,13 @@ Extends TileMapServiceLayer. You can display TPK files with this library. TPK's 
 
 * ArcGIS API for JavaScript (v3.8+)
 * NOTE: browser limitations and technical dependencies. The offline capabilities in this toolkit depend on certain HTML5 capabilities being present in the browser. Go [here](doc/dependencies.md) for a detailed breakdown of the information.
-	* We offer browser support for Chrome and Safari only, at this time. Some of the capabilities in the repository will not work on Internet Explorer. We continue to evaluate IE's capabilities as new releases become available to try and identify a point where we might be able to support it.  	
+* We offer browser support for Chrome and Safari only, at this time. Some of the capabilities in the repository will not work on Internet Explorer. We continue to evaluate IE's capabilities as new releases become available to try and identify a point where we might be able to support it.  	
 
 * Sub-modules (see `/vendor` directory)
 
    * [offline.js](https://github.com/hubspot/offline) - it allows detection of the online/offline condition and provides events to hook callbacks on when this condition changes
    * [IndexedDBShim](https://github.com/axemclion/IndexedDBShim) - polyfill to simulate indexedDB functionality in browsers/platforms where it is not supported (notably desktop Safari and iOS Safari)
-   		- IMPORTANT: There is a known [issue](https://github.com/axemclion/IndexedDBShim/issues/115) with IndexedDBShim on Safari. The workaround is to switch from using /dist/IndexedDBShim.min.js to just using IndexedDBShim.js and then search for and modify the line that defines the value for `DEFAULT_DB_SIZE`. Set this to more appropriate size that will meet all your storage needs, for example: ```var DEFAULT_DB_SIZE = 24 * 1024 * 1024```
+   		- IMPORTANT: There are known [issues](https://github.com/axemclion/IndexedDBShim/issues/115) with IndexedDBShim on Safari. For Safari, the storage error workaround is to switch from using /dist/IndexedDBShim.min.js to just using IndexedDBShim.js and then search for and modify the line that defines the value for `DEFAULT_DB_SIZE`. Set this to more appropriate size that will meet all your storage needs, for example: ```var DEFAULT_DB_SIZE = 24 * 1024 * 1024```
    * [jasmine.async](https://github.com/derickbailey/jasmine.async.git) - library to help implementing tests of async functionality (used in tests)
 
 * Non sub-module based libraries
