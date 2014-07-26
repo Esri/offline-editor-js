@@ -157,6 +157,8 @@ require(["esri/map","utils/appCacheManager","tiles/OfflineTilesEnablerLayer","do
                     console.log("Offline tile lib is enabled. Application state is: " + Offline.state);
                 },_isOnline);
 
+                tileLayer.offline.proxyPath = null;
+
                 map.on("load",function(evt){
                     init();
 
