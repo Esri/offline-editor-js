@@ -28,6 +28,7 @@
   var g_map;
   var g_basemapLayer;
   var g_offlineTilesEnabler;
+  var g_tilesCore;
 
   require(["esri/map", 
   	"esri/layers/GraphicsLayer", "esri/graphic", "esri/symbols/SimpleFillSymbol",
@@ -60,7 +61,7 @@
 
   			var jasmineEnv = jasmine.getEnv();
   			jasmineEnv.updateInterval = 1000;
-        jasmineEnv.defaultTimeoutInterval = 10000; // 10 sec
+            jasmineEnv.defaultTimeoutInterval = 15000; // 15 sec
   			var htmlReporter = new jasmine.HtmlReporter();
 
   			jasmineEnv.addReporter(htmlReporter);

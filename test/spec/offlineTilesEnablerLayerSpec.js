@@ -78,7 +78,10 @@ describe("offline enabler custom layer library", function()
         g_basemapLayer.getOfflineUsage(function(usage)
         {
             expect(usage.tileCount).toEqual(0);
-            g_basemapLayer._storeTile(14,6177,8023, function(success)
+
+            var url = g_basemapLayer._getTileUrl(14,6177,8023);
+
+            tilesCore._storeTile(url,g_basemapLayer.offline.proxyPath,g_basemapLayer.offline.store, function(success)
             {
                 expect(success).toEqual(true);
                 g_basemapLayer.getOfflineUsage(function(usage)
@@ -95,7 +98,10 @@ describe("offline enabler custom layer library", function()
         g_basemapLayer.getOfflineUsage(function(usage)
         {
             expect(usage.tileCount).toEqual(1);
-            g_basemapLayer._storeTile(14,6177,8023, function(success)
+
+            var url = g_basemapLayer._getTileUrl(14,6177,8023);
+
+            tilesCore._storeTile(url,g_basemapLayer.offline.proxyPath,g_basemapLayer.offline.store, function(success)
             {
                 expect(success).toEqual(true);
                 g_basemapLayer.getOfflineUsage(function(usage)
