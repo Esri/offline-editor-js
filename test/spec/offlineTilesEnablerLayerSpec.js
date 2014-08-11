@@ -236,7 +236,7 @@ describe("offline enabler custom layer library", function()
 
     it("verifies ability to parse layer info",function(done){
         g_basemapLayer._getTileInfoPrivate("http://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer",function(result){
-            g_basemapLayer.parseGetTileInfo(result,function(result){
+            tilesCore._parseGetTileInfo(result,function(result){
                 expect(result).toEqual(jasmine.any(Object));
             })
         })
