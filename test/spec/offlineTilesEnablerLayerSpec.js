@@ -242,4 +242,28 @@ describe("offline enabler custom layer library", function()
         })
     });
 
+    async.it("get all tile polygons within extent",function(done){
+        require(["dojo/Deferred","dojo/promise/all",],function(Deferred,all){
+
+            var promises = [];
+
+            g_basemapLayer.getTilePolygons(function(result,err){
+
+                var deferred = new Deferred();
+                if(result && result.type){
+                    console.log("Tile polygon: " + result);
+                    expect(result.type).toEqual("polygon");
+                }
+                deferred.resolve(result);
+                promises.push(deferred);
+            })
+
+            all(promises).then( function(results)
+            {
+                done();
+            });
+
+        })
+    });
+
 });
