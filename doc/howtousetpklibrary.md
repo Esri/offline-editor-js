@@ -3,7 +3,7 @@ How to use the TPKLayer library
 
 ## `TPKLayer` Library
 
-The `TPKLayer` Library allows you to display at TPK file as a map.
+The `TPKLayer` Library allows you to display at TPK file as a map. 
 
 **Step 1** Unzip the TPK file. This creates an array of Entry objects. Depending on your operating system you may have to rename the TPK file to .zip so that it becomes a recognized MIME type for the html input element.
 
@@ -84,6 +84,15 @@ When you need to delete all tiles from the existing data use the following patte
 	})
 
 ```
+
+**Can I use the TPKLayer with a tiled basemap?**
+
+Yes for ArcGIS API for JavaScript v3.x and ONLY if the TPKs Levels of Detail (LODs) match the tiled map services LODs exactly.
+
+The basemap (base tiled layer) defines the LODs that the map can display. Any other operational tiled layers on the map will not display if they don’t match the basemap’s LODs. Esri.Map doesn’t union LODs of all tiled layers on the map.
+
+For more information on creating TPKs go [here](http://resources.arcgis.com/en/help/main/10.1/index.html#//006600000457000000).
+
 **Additional Considerations**
 
 There are a few things to keep in mind when working with TPK files and JavaScript.
