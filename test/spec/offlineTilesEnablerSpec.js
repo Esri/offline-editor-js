@@ -235,4 +235,15 @@ describe("offline enabler library", function()
         })
     });
 
+    async.it("load csv from file",function(done){
+        var csv = ["url,img\r\nhttp://esri.com,base64image_goes_here"];
+        var blob = new Blob(csv, {type : 'text/csv'});
+        blob.name = "test1";
+        g_basemapLayer.loadFromFile(blob,function(success,result){
+            expect(success).toBe(true);
+            expect(result).toEqual("1 tiles loaded from test1");
+            done();
+        })
+    });
+
 });
