@@ -246,4 +246,11 @@ describe("offline enabler library", function()
         })
     });
 
+    async.it("save tiles to csv",function(done){
+       g_basemapLayer.saveToFile("testSaveToCSV",function(success,result){
+           expect(success).toBe(true);
+           done();
+       })
+    });
+
 });
