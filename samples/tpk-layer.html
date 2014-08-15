@@ -192,7 +192,15 @@
                         xhrRequest.responseType = "blob";
                         xhrRequest.onprogress = function(evt){
                             loading.style.visibility = "visible";
-                            var percent = (parseFloat(evt.loaded / evt.totalSize) * 100).toFixed(0);
+                            var percent = 0;
+
+                            if(evt && evt.totalSize){
+                                percent = (parseFloat(evt.loaded / evt.totalSize) * 100).toFixed(0);
+                            }
+                            else if(evt && evt.total){
+                                percent = (parseFloat(evt.loaded / evt.total) * 100).toFixed(0);
+                            }
+
                             getFileBtn.innerHTML = "Get file via url " + percent + "%";
                             console.log("Begin downloading remote tpk file...")
                         }
