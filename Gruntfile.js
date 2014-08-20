@@ -41,15 +41,6 @@ module.exports = function(grunt) {
                     '*   Apache License' +
                     '*/\n'
             },
-            full: {
-                src: [
-                    'lib/*.js',
-                    'lib/edit/*.js',
-                    'lib/tiles/*.js',
-                    'lib/tpk/*.js'
-                ],
-                dest: 'dist/offline-editor-src.js'
-            },
             edit: {
                 src: [
                     'lib/*.js',
@@ -67,7 +58,7 @@ module.exports = function(grunt) {
             tpk: {
                 src: [
                     'lib/tpk/TPKLayer.js',
-                    'lib/OfflineMaps.js',
+                    'lib/OfflineMapsNS.js',
                     'lib/tiles/TilesStore.js',
                     'lib/tpk/zip.js',
                     'lib/tpk/autoCenterMap.js',
@@ -90,7 +81,6 @@ module.exports = function(grunt) {
             },
             dist: {
                 files: {
-                    'dist/offline-editor.js': ['dist/offline-editor-src.js'],
                     'dist/offline-editor-edit.js': ['dist/offline-editor-edit-src.js'],
                     'dist/offline-editor-tiles.js': ['dist/offline-editor-tiles-src.js'],
                     'dist/offline-editor-tpk.js': ['dist/offline-editor-tpk-src.js']
