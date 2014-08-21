@@ -36,7 +36,9 @@
   	"dojo/dom", "dojo/on", "dojo/query", 
   	"esri/urlUtils", "esri/geometry/webMercatorUtils",
   	"tiles/offlineTilesEnabler",
-  	"dojo/dom-construct", "dojo/domReady!"], 
+  	"dojo/dom-construct",
+    "../dist/offline-editor-tiles-basic-src.js",
+    "dojo/domReady!"],
   	function(Map, 
   		GraphicsLayer, Graphic, SimpleFillSymbol, 
   		Scalebar, esriUtils, geometry, 
@@ -61,7 +63,7 @@
 
   			var jasmineEnv = jasmine.getEnv();
   			jasmineEnv.updateInterval = 1000;
-            jasmineEnv.defaultTimeoutInterval = 15000; // 15 sec
+            jasmineEnv.defaultTimeoutInterval = 5000; // 15 sec
   			var htmlReporter = new jasmine.HtmlReporter();
 
   			jasmineEnv.addReporter(htmlReporter);

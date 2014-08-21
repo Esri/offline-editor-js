@@ -231,9 +231,7 @@
 <script>
 	var locationPath = location.pathname.replace(/\/[^/]+$/, "");
 	var dojoConfig = {
-		paths: { 
-			tiles: locationPath  + "/../lib/tiles",
-			vendor: locationPath + "/../vendor",
+		paths: {
             utils: locationPath  + "/../utils",
             bootstrapmap: "//esri.github.io/bootstrap-map-js/src/js/bootstrapmap"
 		}
@@ -272,16 +270,16 @@ require(
 	"esri/layers/GraphicsLayer", "esri/graphic", "esri/symbols/SimpleFillSymbol",
 	"esri/dijit/Scalebar", "esri/arcgis/utils", "esri/geometry",
 	"esri/urlUtils", "esri/geometry/webMercatorUtils",
-	"tiles/offlineTilesEnabler","utils/debouncer",
+	"utils/debouncer",
     "dojo/on", "dojo/query",
     "dojo/dom","dojo/dom-construct","dojo/dom-class","dojo/dom-style",
     "dojo/_base/window",
-    "bootstrapmap", "dojo/domReady!"],
+    "bootstrapmap","../dist/offline-editor-tiles-basic-src.js", "dojo/domReady!"],
 	function(Map,
 		GraphicsLayer, Graphic, SimpleFillSymbol,
 		Scalebar, esriUtils, geometry,
 		urlUtils, webMercatorUtils,
-		OfflineTilesEnabler,debouncer,
+		debouncer,
         on, query,
         dom,domConstruct,domClass,domStyle,
         win,
@@ -293,7 +291,7 @@ require(
         var stateNode;
 
         initOfflineDetector();
-        var offlineTilesEnabler = new OfflineTilesEnabler();
+        var offlineTilesEnabler = new esri.OfflineTilesEnabler();
 
 		// Load web map when page loads
 		var urlObject = urlUtils.urlToObject(window.location.href);

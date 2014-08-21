@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html  manifest="appcache-tiles.appcache">
+<html >
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no"/>
@@ -110,8 +110,8 @@ ask if you want to reload the application.
 
 var map;
 
-require(["esri/map","utils/appCacheManager","tiles/OfflineTilesEnablerLayer","dojo/on","dojo/domReady!"],
-        function(Map,AppCacheManager,OfflineTileEnablerLayer,on) {
+require(["esri/map","utils/appCacheManager","dojo/on","../dist/offline-editor-tiles-basic-src.js","dojo/domReady!"],
+        function(Map,AppCacheManager,on) {
 
             var tileLayer = null;
 
@@ -153,7 +153,7 @@ require(["esri/map","utils/appCacheManager","tiles/OfflineTilesEnablerLayer","do
                     sliderStyle: "small"
                 });
 
-                tileLayer = new OfflineTileEnablerLayer("http://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer",function(evt){
+                tileLayer = esri.OfflineTileEnablerLayer("http://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer",function(evt){
                     console.log("Offline tile lib is enabled. Application state is: " + Offline.state);
                 },_isOnline);
 

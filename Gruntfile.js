@@ -48,12 +48,31 @@ module.exports = function(grunt) {
                 ],
                 dest: 'dist/offline-editor-edit-src.js'
             },
-            tiles: {
+            /* Tiles basic is for use with WebMaps. Cannot be reloaded or restarted while offline */
+            tilesBasic: {
                 src: [
                     'lib/*.js',
-                    'lib/tiles/*.js'
+                    'lib/tiles/base64utils.js',
+                    'lib/tiles/FileSaver.js',
+                    'lib/tiles/offlineTilesEnabler.js',
+                    'lib/tiles/TilesCore.js',
+                    'lib/tiles/TilesStore.js',
+                    'lib/tiles/tilingScheme.js'
                 ],
-                dest: 'dist/offline-editor-tiles-src.js'
+                dest: 'dist/offline-editor-tiles-basic-src.js'
+            },
+            /* Tiles advanced is for use with tiled map services. Works with reload or restart while offline */
+            tilesAdvanced: {
+                src: [
+                    'lib/*.js',
+                    'lib/tiles/base64utils.js',
+                    'lib/tiles/FileSaver.js',
+                    'lib/tiles/offlineTilesEnablerLayer.js',
+                    'lib/tiles/TilesCore.js',
+                    'lib/tiles/TilesStore.js',
+                    'lib/tiles/tilingScheme.js'
+                ],
+                dest: 'dist/offline-editor-tiles-advanced-src.js'
             },
             tpk: {
                 src: [
@@ -82,7 +101,8 @@ module.exports = function(grunt) {
             dist: {
                 files: {
                     'dist/offline-editor-edit.js': ['dist/offline-editor-edit-src.js'],
-                    'dist/offline-editor-tiles.js': ['dist/offline-editor-tiles-src.js'],
+                    'dist/offline-editor-tiles-basic-min.js': ['dist/offline-editor-tiles-basic-src.js'],
+                    'dist/offline-editor-tiles-advanced-min.js': ['dist/offline-editor-tiles-advanced-src.js'],
                     'dist/offline-editor-tpk.js': ['dist/offline-editor-tpk-src.js']
                 }
             }
