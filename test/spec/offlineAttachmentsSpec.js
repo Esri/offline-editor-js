@@ -58,7 +58,7 @@ describe("Attachments", function()
 			clearFeatureLayer( g_featureLayers[3], function(success,response)
 			{
 				expect(success).toBeTruthy();
-				var listener = g_featureLayers[3].on('update-end', function(){ listener.remove(); completedOne();})
+				var listener = g_featureLayers[3].on('update-end', function(){ listener.remove(); })
 				g_featureLayers[3].refresh();
 				done();
 			});
