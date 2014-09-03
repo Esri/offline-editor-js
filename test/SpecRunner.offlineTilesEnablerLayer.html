@@ -34,18 +34,25 @@
                     "esri/dijit/Scalebar", "esri/arcgis/utils", "esri/geometry",
                     "dojo/dom", "dojo/on", "dojo/query",
                     "esri/urlUtils", "esri/geometry/webMercatorUtils",
-                    "tiles/OfflineTilesEnablerLayer",
-                    "tiles/TilesCore",
+                    "esri/layers/LOD",
+                    "esri/geometry/Point",
+                    "esri/geometry/Extent",
+                    "esri/layers/TileInfo",
+                    "esri/SpatialReference",
+                    "esri/geometry/Polygon",
+                    "../dist/offline-editor-tiles-advanced-src.js",
                     "dojo/dom-construct", "dojo/domReady!"],
                 function(Map,
                          GraphicsLayer, Graphic, SimpleFillSymbol,
                          Scalebar, esriUtils, geometry,
                          dom, on, query,
                          urlUtils, webMercatorUtils,
-                         OfflineTilesEnablerLayer,TilesCore,
+                         LOD,Point,Extent,TileInfo,SpatialReference,Polygon,
+                         OfflineTilesEnablerLayer,
                          domConstruct)
                 {
-                    g_basemapLayer = new OfflineTilesEnablerLayer("http://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer",function(evt){
+
+                    g_basemapLayer = new esri.OfflineTileEnablerLayer("http://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer",function(evt){
                         console.log("Tile Layer Loaded.");
                     },true);
 
@@ -59,13 +66,13 @@
 
                     g_map.addLayer(g_basemapLayer);
 
-                    tilesCore = new TilesCore();
+                    tilesCore = new O.esri.Tiles.TilesCore();
 
                     function test()
                     {
                         var jasmineEnv = jasmine.getEnv();
                         jasmineEnv.updateInterval = 1000;
-                        jasmineEnv.defaultTimeoutInterval = 20000; // 20 sec
+                        jasmineEnv.defaultTimeoutInterval = 5000; // 20 sec
                         var htmlReporter = new jasmine.HtmlReporter();
 
                         jasmineEnv.addReporter(htmlReporter);

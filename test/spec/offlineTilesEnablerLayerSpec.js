@@ -226,20 +226,36 @@ describe("offline enabler custom layer library", function()
         })
     });
 
-    it("verifies ability to retrieve layer info",function(done){
+    async.it("verifies ability to retrieve layer info",function(done){
        g_basemapLayer._getTileInfoPrivate("http://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer",function(result){
            var fixedResponse = result.replace(/\\'/g, "'");
            var resultObj = JSON.parse(fixedResponse);
            expect(resultObj).toEqual(jasmine.any(Object));
+           done();
        })
     });
 
-    it("verifies ability to parse layer info",function(done){
-        g_basemapLayer._getTileInfoPrivate("http://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer",function(result){
-            tilesCore._parseGetTileInfo(result,function(result){
-                expect(result).toEqual(jasmine.any(Object));
+    async.it("verifies ability to parse layer info",function(done){
+        require(["esri/layers/LOD",
+            "esri/geometry/Point",
+            "esri/geometry/Extent",
+            "esri/layers/TileInfo",
+            "esri/SpatialReference",
+            "esri/geometry/Polygon"],function(LOD,Point,Extent,TileInfo,SpatialReference){
+
+
+            g_basemapLayer._getTileInfoPrivate("http://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer",function(result){
+                tilesCore._parseGetTileInfo(SpatialReference,LOD,Extent,TileInfo,Point,result,function(result){
+                    expect(result.resultObj).toEqual(jasmine.any(Object));
+                    expect(result.initExtent.type).toEqual("extent");
+                    expect(result.fullExtent.type).toEqual("extent");
+                    expect(result.tileInfo.format).toEqual("JPEG");
+                    done();
+                })
             })
+
         })
+
     });
 
     async.it("get all tile polygons within extent",function(done){
