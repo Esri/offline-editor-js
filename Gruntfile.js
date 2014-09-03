@@ -44,7 +44,9 @@ module.exports = function(grunt) {
             edit: {
                 src: [
                     'lib/*.js',
-                    'lib/edit/*.js'
+                    'lib/edit/offlineFeaturesManager.js',
+                    'lib/edit/editsStore.js',
+                    'lib/edit/attachmentsStore.js'
                 ],
                 dest: 'dist/offline-editor-edit-src.js'
             },
