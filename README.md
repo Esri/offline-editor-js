@@ -3,23 +3,19 @@ offline-editor-js
 
 A prototype JavaScript toolkit for using the ArcGIS API for JavaScript offline. It offers both lightweight editing and tile management capabilities while offline or intermittently offline. It's still a work-in-progress so if you have suggestions open an issue or if you want to make a pull request we welcome your proposed modifications. 
 
-*IMPORTANT:* If you want a full, robust offline solution then you should be using our ArcGIS Runtime SDKs for .NET, WPF, Java, iOS, Android and Qt.
+*IMPORTANT:* If you want a fully integrated robust offline solution then you should be using our ArcGIS Runtime SDKs for .NET, WPF, Java, iOS, Android and Qt.
 
 This repo contains the following libraries:
 
-- `/edit`: handles vector features and stores adds, updates and deletes while offline. Resync's edits with server once connection is reestablished
-   * `offlineFeaturesManager` - Extends and overrides a feature layer.
-   * `editsStore` - Provides static helper methods for working with the offline data store.
-   * `attachmentsStore` - Provides limited support for attachments.
-- `/tiles`: stores portions of tiled maps client-side and uses the cached tiles when device is offline
-   * `offlineTilesEnabler` Extends and overrides a tiled map service from ArcGIS Online or for partial offline use.
-   * `OfflineTilesEnablerLayer` Extends any Esri tiled basemap service for a web app that has a requirement for browser reload and/or restart. This library should be used in conjunction with an application cache coding pattern.
-- `/tpk`: lets you work with TPK files.
-   * `TPKLayer` - parses a TPK file and displays it as a tiled map layer.
-- `/utils`: contains various helper libraries.
+- `/dist`: 
+   * `offline-edit-min.js` - stores adds, updates and deletes of features as well as limited attachment support while offline. Resync's edits with server once connection is reestablished.
+   * `offline-tiles-basic-min.js` stores portions of tiled maps client-side and uses the cached tiles when device is offline or partial offline. Use this library with ArcGIS Online Web maps. 
+   * `offline-tiles-advanced-min.js` Extends any Esri tiled basemap service for a web app that has a requirement for offline browser reload and/or restart. This library should be used in conjunction with an HTML5 application cache coding pattern.
+   * `offline-tpk-min.js` - parses a TPK file and displays it as a tiled map layer.
+- `/utils`: contains various helper library modules.
 - `/samples`: sample apps to show how to use different aspects of the offline library capabilities.
 
-#Workflows Supported (v1)
+#Workflows Supported
 The following workflow is currently supported for both both features and tiles:
 
 1) Load web application while online.
@@ -37,22 +33,22 @@ __Attachment Support__: Attachments are supported with some limitations. See doc
 
 #API Doc
 
-##offlineFeaturesManager
-Extends and overrides a feature layer. This library allows you to extend esri.layers.FeatureLayer objects with offline capability and manage the resync process.
+##Offline Editing of Geographic Features
+Extends and overrides an ArcGIS Feature Layer. This library allows you to extend esri.layers.FeatureLayer with offline capabilities and to manage the resync process.
 
-* __Click [here](doc/offlinefeaturesmanager.md) to see the full API doc for `offlineFeaturesManager`__
+* __Click [here](doc/offlinefeaturesmanager.md) to see the full API doc for `offline-edit-min.js`__
 
  
-##offlineTilesEnabler
+##Offline Mapping Tiles
 Extends and overrides a tiled map service. Provides the ability to customize the extent used to cut the tiles. See the detailed description of basemap.prepareForOffline() in the "How To Use" section to learn different options.
 
-* __Click [here](doc/offlinetilesenabler.md) to see the full API doc for `offlineTilesEnabler`__ 
+* __Click [here](doc/offlinetilesenabler.md) to see the full API doc for `offline-tiles-basic-min.js and offline-tiles-advanced-min.js`__ 
 
 ##TPKLayer
 
-Extends TileMapServiceLayer. You can display TPK files with this library. TPK's are binary tile package files. Go [here](http://resources.arcgis.com/en/help/main/10.1/index.html#//00170000017w000000) for more information on how to create a TPK file.
+You can display TPK files with this library. TPK's are binary tile package files. Extends TileMapServiceLayer. Go [here](http://resources.arcgis.com/en/help/main/10.1/index.html#//00170000017w000000) for more information on how to create a TPK file.
 
-* __Click [here](doc/tpklayer.md) to see the full API doc for `TPKLayer`__ 
+* __Click [here](doc/tpklayer.md) to see the full API doc for `offline-tpk-min.js`__ 
 
 #How to use
 
@@ -69,12 +65,17 @@ Extends TileMapServiceLayer. You can display TPK files with this library. TPK's 
 3. Run `git submodule init` and `git submodule update`
 4. Try out the apps in the `/samples` folder.
 
+If you need to build the libraries:
+
+1. From the root directory run `npm install`
+2. Run `Grunt build`. If there are no errors, the libraries will be output to `\dist`
+
 
 ##Samples
 * `appcache-features.html` - shows how to work with the application manifest, tiles and features.
 * `appcache-tiles.html` - shows how to work with the application manifest and map tiles.
 * `attachments-editor.html` - demonstrates how to work with this library using feature attachments.
-* ~~`military-offline.html`~~ - renamed `draw-pointlinepoly-offline.html` shows working with points, lines and polygons locally.
+* `draw-pointlinepoly-offline.html` shows working with points, lines and polygons locally.
 * `tpklayer.html` - shows how to work with TPK files.
 * `tiles-indexed-db.html` - shows how to work with storing tiles locally.
 * `Gruntfile.js` - a node.js app and its associated `package.json` file to help with creating an application manifest file.
