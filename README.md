@@ -8,12 +8,12 @@ A prototype JavaScript toolkit for using the ArcGIS API for JavaScript offline. 
 This repo contains the following libraries:
 
 - `/dist`: 
-   * `offline-edit-min.js` - stores adds, updates and deletes of features as well as limited attachment support while offline. Resync's edits with server once connection is reestablished.
-   * `offline-tiles-basic-min.js` stores portions of tiled maps client-side and uses the cached tiles when device is offline or partial offline. Use this library with ArcGIS Online Web maps. 
-   * `offline-tiles-advanced-min.js` Extends any Esri tiled basemap service for a web app that has a requirement for offline browser reload and/or restart. This library should be used in conjunction with an HTML5 application cache coding pattern.
-   * `offline-tpk-min.js` - parses a TPK file and displays it as a tiled map layer.
+   * `offline-edit-min.js` - _(replaces v1.x of OfflineFeaturesManager.js)_ stores adds, updates and deletes of features as well as limited attachment support while offline. Resync's edits with server once connection is reestablished.
+   * `offline-tiles-basic-min.js` - _(replaces v1.x of offlineTilesEnabler.js)_ stores portions of tiled maps client-side and uses the cached tiles when device is offline or partial offline. Use this library with ArcGIS Online Web maps. 
+   * `offline-tiles-advanced-min.js` - _(replaces v1.x of OfflineTilesEnablerLayer.js)_ Extends any ArcGIS Tiled Map Service that has a requirement for offline browser reload and/or restart. This library should be used in conjunction with an HTML5 application cache coding pattern.
+   * `offline-tpk-min.js` - _(replaces v1.x of TPKLayer.js)_ parses a TPK file and displays it as a tiled map layer.
 - `/utils`: contains various helper library modules.
-- `/samples`: sample apps to show how to use different aspects of the offline library capabilities.
+- `/samples`: samples that show how to use the different offline libraries capabilities.
 
 #Workflows Supported
 The following workflow is currently supported for both both features and tiles:
@@ -68,7 +68,7 @@ You can display TPK files with this library. TPK's are binary tile package files
 If you need to build the libraries:
 
 1. From the root directory run `npm install`
-2. Run `Grunt build`. If there are no errors, the libraries will be output to `\dist`
+2. Run `Grunt build`. If there are no errors, the minimized _(min)_ and source _(src)_ versions of the libraries will be output to `\dist`
 
 
 ##Samples

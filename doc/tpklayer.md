@@ -9,7 +9,7 @@ Extends a tiled map service and provides the ability to display tiles from a .tp
 
 Constructor | Description
 --- | ---
-`TPKLayer()` | Creates an instance of the TPKLayer class. This library allows you to extend a TiledMapServiceLayer for the purpose of displaying a TPK file as a map.
+`esri.TPKLayer()` | Creates an instance of the TPKLayer class. This library allows you to extend a TiledMapServiceLayer for the purpose of displaying a TPK file as a map.
 
 ###Methods
 Methods | Returns | Description

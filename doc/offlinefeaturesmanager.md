@@ -1,14 +1,14 @@
-API offlineFeaturesManager
+API OfflineFeaturesManager
 ==================================
 
-##offlineFeaturesManager
+##esri.OfflineFeaturesManager
 Extends and overrides a feature layer. This library allows you to extend esri.layers.FeatureLayer objects with offline capability and manage the resync process.
 
 
 ###Constructor
 Constructor | Description
 --- | ---
-`OfflineFeaturesManager()` | Creates an instance of the offlineFeaturesManager class. This library allows you to extend FeatureLayer objects with offline editing capabilities and manage the online/offline resynchronization process.
+`esri.OfflineFeaturesManager()` | Creates an instance of the offlineFeaturesManager class. This library allows you to extend FeatureLayer objects with offline editing capabilities and manage the online/offline resynchronization process.
 
 ###ENUMs
 The manager can be in one of these three states (see `getOnlineStatus()` method):
@@ -55,7 +55,7 @@ Methods | Returns | Description
 
 ##editsStore
 
-Provides a number of public static methods that are used by `offlineFeaturesManager` lib. They provide a low-level storage mechanism using indexedDb browser functions. These methods don't require a `new` statement or a constructor. After the module has been included in your application you can access these methods directly for example: `editsStore.getEditsStoreSizeBytes();`.
+Provides a number of public static methods that are used by `OfflineFeaturesManager` lib. They provide a low-level storage mechanism using indexedDb browser functions. These methods don't require a `new` statement or a constructor. After the module has been included in your application you can access these methods directly for example: `O.esri.Edit.EditStore.getEditsStoreSizeBytes();`.
 
 ###Public Methods
 Methods | Returns | Description

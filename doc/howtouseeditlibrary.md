@@ -5,16 +5,16 @@ How to use the edit library
 
 The `edit` library allows a developer to extend a feature layer with offline editing support.
 
-**Step 1** Include `offline.min.js`, `tiles/offlineTilesEnabler` and `tiles/editsStore` in your app.
+**Step 1** Include `offline.min.js`, `offline-tiles-basic-min.js` and `offline-edit-min.js` in your app. The pattern for including the tiles and edit library is called generic script injection.
 
 ```html	
 	<script src="../vendor/offline/offline.min.js"></script>
 	<script>
 	require([
 		"esri/map", 
-		"edit/offlineFeaturesManager",
-	    "edit/editsStore", 
-		function(Map,OfflineFeaturesManager,editsStore)
+		"..dist/offline-tiles-basic-min.js",
+		"..dist/offline-edit-min.js",
+		function(Map)
 	{
 		...
 	});
@@ -22,7 +22,7 @@ The `edit` library allows a developer to extend a feature layer with offline edi
 **Step 2** Once your map is created (either using new Map() or using esriUtils.createMap(webmapid,...), you create a new OfflineFeaturesManager instance and starting assigning events listeners to tie the library into your user interface:
 
 ```js
-		var offlineFeaturesManager = new OfflineFeaturesManager();
+		var offlineFeaturesManager = new esri.OfflineFeaturesManager();
 		offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_ENQUEUED, updateStatus);
 		offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_SENT, updateStatus);
 		offlineFeaturesManager.on(offlineFeaturesManager.events.ALL_EDITS_SENT, updateStatus);
