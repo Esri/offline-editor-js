@@ -59,16 +59,18 @@ module.exports = function(grunt) {
 		        verbose: true,
 		        timestamp: true
 		      },
+              /* Include all library files that you need here! */
 		      src: [
                     "../samples/images/*.png",
                     "../samples/css/*.css",
                     "../vendor/IndexedDBShim/dist/*.js",
                     "../vendor/offline/offline.min.js",
-                    "../lib/tiles/*.js",
                     "../lib/tiles/*.png",
                     "../lib/tiles/*.psd",
-                    "../lib/edit/*.js",
-                    "../utils/*.js"
+                    "../utils/*.js",
+                    "../dist/offline-editor-edit-src.js",
+                    "../dist/offline-editor-tiles-advanced-src.js",
+                    "../dist/offline-editor-tiles-basic-src.js"
                     /*
                     "images/*",
                     "css/*.css"

@@ -41,9 +41,10 @@ module.exports = function(grunt) {
                     '*   Apache License' +
                     '*/\n'
             },
+            /* All feature editing capabilities: adds, updates and deletes */
             edit: {
                 src: [
-                    'lib/*.js',
+                    'lib/edit/OfflineEditNS.js',
                     'lib/edit/offlineFeaturesManager.js',
                     'lib/edit/editsStore.js',
                     'lib/edit/attachmentsStore.js'
@@ -53,7 +54,7 @@ module.exports = function(grunt) {
             /* Tiles basic is for use with WebMaps. Cannot be reloaded or restarted while offline */
             tilesBasic: {
                 src: [
-                    'lib/*.js',
+                    'lib/tiles/OfflineTilesNS.js',
                     'lib/tiles/base64utils.js',
                     'lib/tiles/FileSaver.js',
                     'lib/tiles/offlineTilesEnabler.js',
@@ -66,20 +67,21 @@ module.exports = function(grunt) {
             /* Tiles advanced is for use with tiled map services. Works with reload or restart while offline */
             tilesAdvanced: {
                 src: [
-                    'lib/*.js',
+                    'lib/tiles/OfflineTilesNS.js',
                     'lib/tiles/base64utils.js',
                     'lib/tiles/FileSaver.js',
-                    'lib/tiles/offlineTilesEnablerLayer.js',
                     'lib/tiles/TilesCore.js',
                     'lib/tiles/TilesStore.js',
-                    'lib/tiles/tilingScheme.js'
+                    'lib/tiles/tilingScheme.js',
+                    'lib/tiles/offlineTilesEnablerLayer.js'
                 ],
                 dest: 'dist/offline-editor-tiles-advanced-src.js'
             },
+            /* TPKLayer - for working directly with tile packages (.tpk files) */
             tpk: {
                 src: [
                     'lib/tpk/TPKLayer.js',
-                    'lib/OfflineMapsNS.js',
+                    'lib/tpk/OfflineTpkNS.js',
                     'lib/tiles/TilesStore.js',
                     'lib/tpk/zip.js',
                     'lib/tpk/autoCenterMap.js',
@@ -119,5 +121,6 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-jshint');
 
     grunt.registerTask('build',['concat','uglify']);
-    grunt.registerTask('buildAll',['jshint','concat','uglify']);
+    // JSHint not currently working. Needs alot of cleanup.
+//    grunt.registerTask('buildAll',['jshint','concat','uglify']);
 }
