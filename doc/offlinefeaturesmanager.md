@@ -69,6 +69,7 @@ Methods | Returns | Description
 `isSupported()` | boolean | Determines if local storage is available. If it is not available then the storage cache will not work. It's a best practice to verify this before attempting to write to the local cache.
 `hasPendingEdits()` | boolean | Determines if there are any queued edits in the local cache.
 `resetEditsQueue()` | nothing | Empties the edits queue and replaces it with an empty string.
+`retrieveEditsQueue()` | Array | returns an array of all pending edits.
 `pendingEditsCount()` | int | The total number of edits that are queued in the local cache.
 `getEditsStoreSizeBytes()` | Number | Returns the total size of all pending edits in bytes.
 `getLocalStorageSizeBytes()` | Number | Returns the total size in bytes of all items for local storage cached using the current domain name. 

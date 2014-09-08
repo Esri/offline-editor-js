@@ -117,13 +117,13 @@ Within your application you can manually check online status and then update you
 ```
 
 ####editStore.hasPendingEdits()
-You can check if there are any edits pending by using the EditStore library. If there are edits then you can iterate `editsStore._retrieveEditsQueue()` and convert the edits to a readable format via `offlineFeaturesManager.getReadableEdit(edit)`.
+You can check if there are any edits pending by using the EditStore library. If there are edits then you can iterate `editsStore.retrieveEditsQueue()` and convert the edits to a readable format via `offlineFeaturesManager.getReadableEdit(edit)`.
 		
 ```js
 			var editStore = new O.esri.Edit.EditStore(Graphic);
 			if( editStore.hasPendingEdits())
 			{
-				var edits = editStore._retrieveEditsQueue();
+				var edits = editStore.retrieveEditsQueue();
 				edits.forEach(function(edit)
 				{
 					var readableEdit = offlineFeaturesManager.getReadableEdit(edit);
