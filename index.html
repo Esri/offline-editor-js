@@ -47,18 +47,7 @@
 <h1 class="title">ArcGIS Offline Library for JavaScript</h1>
 <p>This repo contains a set of libraries for using the ArcGIS API for JavaScript offline. You can now edit and map while offline. It's still a work-in-progress
     so if you have suggestions open an issue or if you want to make a pull request we welcome your proposed modifications.</p>
-<p>This repo contains two libraries: </p>
-<ul>
-    <li><b>/edit</b>: handles vector features and stores adds, updates and deletes while offline. Resync's edits with server once connection is reestablished</li>
-    <ul>
-        <li><b>offlineFeaturesManager</b> - Extends and overrides a feature layer. </li>
-        <li><b>editsStore</b> - Provides static helper methods for working with the offline data store.</li>
-    </ul>
-    <li><b>/tiles</b>: stores portions of tiled maps client-side and uses the cached tiles when device is offline</li>
-    <ul>
-        <li><b>offlineTilesEnabler</b> - Extends and overrides a tiled map service.</li>
-    </ul>
-</ul>
+
 <h3>Why edit offline with JavaScript?</h3>
 <p>Many "in the field" use cases for mapping apps require that workers go into areas with limited, intermittent or no cellular network connectivity.
 Using this library will allow you to re-use your JavaScript skills for building web applications that work in these use cases.</p>
