@@ -1,6 +1,6 @@
 # offline-editor-js - Changelog
 
-## Version 2.0 - 
+## Version 2.0 - Sep 8, 2014
 
 Version 2.0 involves many changes. Please read the following carefully when upgrading from v1.x to v2.0.
 
