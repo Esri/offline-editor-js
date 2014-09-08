@@ -139,6 +139,7 @@ This approach is best if you have requirements for restarting or reloading your 
         console.log("Tile Layer Loaded.");
     },_isOnline);
 
+	// NOTE: When instantiating the Map, do not specify the basemap property!
     var map = new Map("map",{
         center: [-104.98,39.74], // long, lat
         zoom: 8,
