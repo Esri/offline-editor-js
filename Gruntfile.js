@@ -44,8 +44,8 @@ module.exports = function(grunt) {
             /* All feature editing capabilities: adds, updates and deletes */
             edit: {
                 src: [
-                    'lib/edit/OfflineEditNS.js',
                     'lib/edit/offlineFeaturesManager.js',
+                    'lib/edit/OfflineEditNS.js',
                     'lib/edit/editsStore.js',
                     'lib/edit/attachmentsStore.js'
                 ],
@@ -54,10 +54,10 @@ module.exports = function(grunt) {
             /* Tiles basic is for use with WebMaps. Cannot be reloaded or restarted while offline */
             tilesBasic: {
                 src: [
+                    'lib/tiles/offlineTilesEnabler.js',
                     'lib/tiles/OfflineTilesNS.js',
                     'lib/tiles/base64utils.js',
                     'lib/tiles/FileSaver.js',
-                    'lib/tiles/offlineTilesEnabler.js',
                     'lib/tiles/TilesCore.js',
                     'lib/tiles/TilesStore.js',
                     'lib/tiles/tilingScheme.js'
@@ -67,21 +67,21 @@ module.exports = function(grunt) {
             /* Tiles advanced is for use with tiled map services. Works with reload or restart while offline */
             tilesAdvanced: {
                 src: [
+                    'lib/tiles/offlineTilesEnablerLayer.js',
                     'lib/tiles/OfflineTilesNS.js',
                     'lib/tiles/base64utils.js',
                     'lib/tiles/FileSaver.js',
                     'lib/tiles/TilesCore.js',
                     'lib/tiles/TilesStore.js',
-                    'lib/tiles/tilingScheme.js',
-                    'lib/tiles/offlineTilesEnablerLayer.js'
+                    'lib/tiles/tilingScheme.js'
                 ],
                 dest: 'dist/offline-tiles-advanced-src.js'
             },
             /* TPKLayer - for working directly with tile packages (.tpk files) */
             tpk: {
                 src: [
-                    'lib/tpk/OfflineTpkNS.js',
                     'lib/tpk/TPKLayer.js',
+                    'lib/tpk/OfflineTpkNS.js',
                     'lib/tiles/TilesStore.js',
                     'lib/tpk/zip.js',
                     'lib/tpk/autoCenterMap.js',
