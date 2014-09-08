@@ -49,7 +49,7 @@ module.exports = function(grunt) {
                     'lib/edit/editsStore.js',
                     'lib/edit/attachmentsStore.js'
                 ],
-                dest: 'dist/offline-editor-edit-src.js'
+                dest: 'dist/offline-edit-src.js'
             },
             /* Tiles basic is for use with WebMaps. Cannot be reloaded or restarted while offline */
             tilesBasic: {
@@ -62,7 +62,7 @@ module.exports = function(grunt) {
                     'lib/tiles/TilesStore.js',
                     'lib/tiles/tilingScheme.js'
                 ],
-                dest: 'dist/offline-editor-tiles-basic-src.js'
+                dest: 'dist/offline-tiles-basic-src.js'
             },
             /* Tiles advanced is for use with tiled map services. Works with reload or restart while offline */
             tilesAdvanced: {
@@ -75,20 +75,20 @@ module.exports = function(grunt) {
                     'lib/tiles/tilingScheme.js',
                     'lib/tiles/offlineTilesEnablerLayer.js'
                 ],
-                dest: 'dist/offline-editor-tiles-advanced-src.js'
+                dest: 'dist/offline-tiles-advanced-src.js'
             },
             /* TPKLayer - for working directly with tile packages (.tpk files) */
             tpk: {
                 src: [
-                    'lib/tpk/TPKLayer.js',
                     'lib/tpk/OfflineTpkNS.js',
+                    'lib/tpk/TPKLayer.js',
                     'lib/tiles/TilesStore.js',
                     'lib/tpk/zip.js',
                     'lib/tpk/autoCenterMap.js',
                     'lib/tpk/inflate.js',
                     'lib/tpk/xml2json.js'
                 ],
-                dest: 'dist/offline-editor-tpk-src.js'
+                dest: 'dist/offline-tpk-src.js'
             }
         },
 
@@ -104,10 +104,10 @@ module.exports = function(grunt) {
             },
             dist: {
                 files: {
-                    'dist/offline-editor-edit.js': ['dist/offline-editor-edit-src.js'],
-                    'dist/offline-editor-tiles-basic-min.js': ['dist/offline-editor-tiles-basic-src.js'],
-                    'dist/offline-editor-tiles-advanced-min.js': ['dist/offline-editor-tiles-advanced-src.js'],
-                    'dist/offline-editor-tpk.js': ['dist/offline-editor-tpk-src.js']
+                    'dist/offline-edit-min.js': ['dist/offline-edit-src.js'],
+                    'dist/offline-tiles-basic-min.js': ['dist/offline-tiles-basic-src.js'],
+                    'dist/offline-tiles-advanced-min.js': ['dist/offline-tiles-advanced-src.js'],
+                    'dist/offline-tpk-min.js': ['dist/offline-tpk-src.js']
                 }
             }
         }

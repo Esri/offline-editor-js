@@ -29,7 +29,7 @@ module.exports = function(grunt) {
                         "<%= pkg.optimizedApiURL %>/dojo/nls/dojo_en-us.js",
                         "<%= pkg.optimizedApiURL %>/dojo/selector/acme.js",
                         "#",
-                        "<%= pkg.arcGISBaseURL %>/js/esri/dijit/images/popup-sprite.png",
+                        "#<%= pkg.arcGISBaseURL %>/js/esri/dijit/images/popup-sprite.png",
                         "<%= pkg.arcGISBaseURL %>/js/esri/dijit/images/attribute_inspector_sprite.png",
 						"<%= pkg.arcGISBaseURL %>/js/dojo/dojox/gfx/svg.js",
 						"<%= pkg.arcGISBaseURL %>/js/dojo/dojo/resources/blank.gif",
@@ -68,9 +68,9 @@ module.exports = function(grunt) {
                     "../lib/tiles/*.png",
                     "../lib/tiles/*.psd",
                     "../utils/*.js",
-                    "../dist/offline-editor-edit-src.js",
-                    "../dist/offline-editor-tiles-advanced-src.js",
-                    "../dist/offline-editor-tiles-basic-src.js"
+                    "../dist/offline-edit-src.js",
+                    "../dist/offline-tiles-advanced-src.js",
+                    "../dist/offline-tiles-basic-src.js"
                     /*
                     "images/*",
                     "css/*.css"
