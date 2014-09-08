@@ -3,9 +3,9 @@ How to use the edit library
 
 ##`edit` library
 
-The `edit` library allows a developer to extend a feature layer with offline editing support.
+The `edit` library allows a developer to extend a feature layer with offline editing support. You can combine this functionality with offline tiles.
 
-**Step 1** Include `offline.min.js`, `offline-tiles-basic-min.js` and `offline-edit-min.js` in your app. The pattern for including the tiles and edit library is called generic script injection.
+**Step 1** Include `offline.min.js`, `offline-tiles-basic-min.js` and `offline-edit-min.js` in your app. The pattern for how we include the tiles and edit library within the _require_ statement is called generic script injection.
 
 ```html	
 	<script src="../vendor/offline/offline.min.js"></script>
@@ -22,7 +22,7 @@ The `edit` library allows a developer to extend a feature layer with offline edi
 **Step 2** Once your map is created (either using new Map() or using esriUtils.createMap(webmapid,...), you create a new OfflineFeaturesManager instance and starting assigning events listeners to tie the library into your user interface:
 
 ```js
-		var offlineFeaturesManager = new esri.OfflineFeaturesManager();
+		var offlineFeaturesManager = new O.esri.Edit.OfflineFeaturesManager();
 		offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_ENQUEUED, updateStatus);
 		offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_SENT, updateStatus);
 		offlineFeaturesManager.on(offlineFeaturesManager.events.ALL_EDITS_SENT, updateStatus);
@@ -116,12 +116,14 @@ Within your application you can manually check online status and then update you
 		
 ```
 
-####editsStore.hasPendingEdits()
-You can check if there are any edits pending. If there are then iterate `editsStore._retrieveEditsQueue()` and then convert the edits to a readable format via `offlineFeaturesManager.getReadableEdit(edit)`. 		
+####editStore.hasPendingEdits()
+You can check if there are any edits pending by using the EditStore library. If there are edits then you can iterate `editsStore._retrieveEditsQueue()` and convert the edits to a readable format via `offlineFeaturesManager.getReadableEdit(edit)`.
+		
 ```js
-			if( editsStore.hasPendingEdits())
+			var editStore = new O.esri.Edit.EditStore(Graphic);
+			if( editStore.hasPendingEdits())
 			{
-				var edits = editsStore._retrieveEditsQueue();
+				var edits = editStore._retrieveEditsQueue();
 				edits.forEach(function(edit)
 				{
 					var readableEdit = offlineFeaturesManager.getReadableEdit(edit);

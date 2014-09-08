@@ -39,7 +39,7 @@
 		"esri/layers/FeatureLayer", "esri/geometry", "esri/request",
 		"dojo/dom", "dojo/on", "dojo/query",
 		"dojo/dom-construct",
-        "../dist/offline-editor-edit-src.js",
+        "../dist/offline-edit-src.js",
         "dojo/domReady!"],
 		function(Map, 
 			GraphicsLayer, Graphic, 
@@ -50,7 +50,7 @@
 		{
 			g_modules.esriRequest = esriRequest;
 			g_modules.Graphic = Graphic;
-			g_offlineFeaturesManager = new esri.OfflineFeaturesManager();
+			g_offlineFeaturesManager = new O.esri.Edit.OfflineFeaturesManager();
 			g_editsStore = new O.esri.Edit.EditStore();
 
 			g_map = new Map("map", {
