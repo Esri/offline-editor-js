@@ -46,7 +46,7 @@
         var tpkLayer = null;
 
         require([
-                    "../dist/offline-editor-tpk.js",
+                    "../dist/offline-tpk-src.js",
                     "dojo/domReady!"],
                 function()
                 {
@@ -56,7 +56,7 @@
                     //IMPORTANT!
 //                    zip.workerScriptsPath = locationPath + "/../lib/tpk/"; //tell zip.js where to find it's associated scripts
 
-                    tpkLayer = new esri.TPKLayer();
+                    tpkLayer = new O.esri.TPK.TPKLayer();
 
                     initChooseLocalFile();
 
