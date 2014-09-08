@@ -9,7 +9,7 @@
 
 	<link rel="shortcut icon" href="http://esri.github.io/bootstrap-map-js/doc/images/favicon.ico">
 
-	<link rel="stylesheet" href="//js.arcgis.com/3.7/js/esri/css/esri.css">
+	<link rel="stylesheet" href="//js.arcgis.com/3.10/js/esri/css/esri.css">
 
 	<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" >
 	<link rel="stylesheet" href="http://esri.github.io/bootstrap-map-js/src/css/bootstrapmap.css">
@@ -240,9 +240,9 @@
 </script>
 
 <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
-<script src="//js.arcgis.com/3.8compact"></script>
+<script src="//js.arcgis.com/3.10compact"></script>
 <script src="../vendor/IndexedDBShim/dist/IndexedDBShim.min.js"></script>
-<script src="../vendor/offline/offline.min.js"></script>
+<!-- For detecting if app is online or offline --><script src="../vendor/offline/offline.min.js"></script>
 <script>
     Offline.options = {
         checks: {
@@ -274,7 +274,7 @@ require(
     "dojo/on", "dojo/query",
     "dojo/dom","dojo/dom-construct","dojo/dom-class","dojo/dom-style",
     "dojo/_base/window",
-    "bootstrapmap","../dist/offline-editor-tiles-basic-src.js", "dojo/domReady!"],
+    "bootstrapmap","../dist/offline-tiles-basic-src.js", "dojo/domReady!"],
 	function(Map,
 		GraphicsLayer, Graphic, SimpleFillSymbol,
 		Scalebar, esriUtils, geometry,
@@ -291,7 +291,7 @@ require(
         var stateNode;
 
         initOfflineDetector();
-        var offlineTilesEnabler = new esri.OfflineTilesEnabler();
+        var offlineTilesEnabler = new O.esri.Tiles.OfflineTilesEnabler();
 
 		// Load web map when page loads
 		var urlObject = urlUtils.urlToObject(window.location.href);
@@ -520,8 +520,8 @@ require(
 		{
 			console.log('updating');
 
-            var minLevel = dojo.byId('minLevel').value;
-            var maxLevel = dojo.byId('maxLevel').value;
+            var minLevel = parseInt(dojo.byId('minLevel').value);
+            var maxLevel = parseInt(dojo.byId('maxLevel').value);
 
 			var totalEstimation = { tileCount:0, sizeBytes:0 }
 

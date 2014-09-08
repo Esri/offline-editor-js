@@ -114,7 +114,7 @@
 <script src="../vendor/IndexedDBShim/dist/IndexedDBShim.min.js"></script>
 <script src="http://js.arcgis.com/3.10/"></script>
 <script>
-    require(["esri/map","dojo/on","dojo/_base/window","../dist/offline-editor-tpk-src.js","dojo/domReady!"],
+    require(["esri/map","dojo/on","dojo/_base/window","../dist/offline-tpk-src.js","dojo/domReady!"],
             function(Map,on,win) {
                 var map;
                 var fileInput,tpkLayer, urlInputBtn;
@@ -146,7 +146,7 @@
                  * Initialize the Map and the TPKLayer
                  */
                 function initMap(entries){
-                    tpkLayer = new esri.TPKLayer();
+                    tpkLayer = new O.esri.TPK.TPKLayer();
                     tpkLayer.on("progress", function (evt) {
                         evt == "start" ? loading.style.visibility = "visible" : loading.style.visibility = "hidden";
                     })
