@@ -1,3 +1,6 @@
+/*! offline-editor - v0.0.1 - 2014-09-08
+*   Copyright (c) 2014 Environmental Systems Research Institute, Inc.
+*   Apache License*/
 
 define([
     "dojo/Evented",
@@ -1006,3 +1009,603 @@ define([
 
     }); // declare
 }); // define
+
+/**
+ * Creates a namespace for the non-AMD libraries in this directory
+ */
+
+
+if(typeof O != "undefined"){
+    O.esri.Edit = {}
+}
+else{
+    O = {};
+    O.esri = {
+        VERSION: '2.0',
+        Edit: {}
+    }
+}
+
+"use strict";
+
+O.esri.Edit.EditStore = function(Graphic){
+
+	/* private consts */
+	var EDITS_QUEUE_KEY = "esriEditsQueue";
+	var SEPARATOR = "|@|";
+
+    //
+    // public interface
+    //
+
+    // enum
+
+    this.ADD = "add";
+    this.UPDATE = "update";
+    this.DELETE = "delete";
+
+    // ERROR_DUPLICATE_EDIT: "Attempt to insert duplicated edit",
+    this.ERROR_LOCALSTORAGE_FULL = "LocalStorage capacity exceeded";
+
+    this.isSupported = function()
+    {
+        // http://stackoverflow.com/questions/11214404/how-to-detect-if-browser-supports-html5-local-storage
+        var mod = "esriLocalStorageTest";
+        try {
+            window.localStorage.setItem(mod, mod);
+            window.localStorage.removeItem(mod);
+            return true;
+        } catch(e) {
+            return false;
+        }
+    };
+
+    this.pushEdit = function(operation,layer,graphic)
+    {
+        var edit = {
+            operation: operation,
+            layer: layer,
+            graphic: this._serialize(graphic)
+        };
+
+        var edits = this.retrieveEditsQueue();
+        edits.push(edit);
+        var success = this._storeEditsQueue(edits);
+        return { success: success, error: success? undefined : {code: 1000, description:this.ERROR_LOCALSTORAGE_FULL} };
+    };
+
+    this.peekFirstEdit = function()
+    {
+        var edits = this.retrieveEditsQueue();
+        var firstEdit;
+
+        if( edits )
+        {
+            firstEdit = edits[0];
+            firstEdit.graphic = this._deserialize(firstEdit.graphic);
+            return firstEdit;
+        }
+        return null;
+    };
+
+    this.popFirstEdit = function()
+    {
+        var edits = this.retrieveEditsQueue();
+        var firstEdit;
+
+        if( edits )
+        {
+            firstEdit = edits.shift();
+            this._storeEditsQueue(edits);
+            firstEdit.graphic = this._deserialize(firstEdit.graphic);
+            return firstEdit;
+        }
+        return null;
+    };
+
+    this.hasPendingEdits = function()
+    {
+        var storedValue = window.localStorage.getItem(EDITS_QUEUE_KEY) || "";
+        return ( storedValue !== "" );
+    };
+
+    this.pendingEditsCount = function()
+    {
+        var storedValue = window.localStorage.getItem(EDITS_QUEUE_KEY) || "";
+
+        if( storedValue === "" )
+        {
+            return 0;	// fast easy case
+        }
+
+        var editsArray = this._unpackArrayOfEdits(storedValue);
+        return editsArray.length;
+    };
+
+    this.resetEditsQueue = function()
+    {
+        window.localStorage.setItem(EDITS_QUEUE_KEY, "");
+    };
+
+    this.retrieveEditsQueue = function()
+    {
+        var storedValue = window.localStorage.getItem(EDITS_QUEUE_KEY) || "";
+        return this._unpackArrayOfEdits(storedValue);
+    };
+
+    this.getEditsStoreSizeBytes = function()
+    {
+        var editsQueueValue = window.localStorage.getItem(EDITS_QUEUE_KEY);
+
+        return (editsQueueValue? EDITS_QUEUE_KEY.length + editsQueueValue.length : 0);
+    }
+
+    this.getLocalStorageSizeBytes = function()
+    {
+        var bytes = 0,
+            key, value;
+
+        for(key in window.localStorage )
+        {
+            if( window.localStorage.hasOwnProperty(key))
+            {
+                value = window.localStorage.getItem(key);
+                bytes += key.length + value.length;
+            }
+        }
+        return bytes;
+    };
+
+    //
+    // internal methods
+    //
+
+    //
+    // graphic serialization/deserialization
+    //
+    this._serialize = function(graphic)
+    {
+        // keep only attributes and geometry, that are the values that get sent to the server by applyEdits()
+        // see http://resources.arcgis.com/en/help/arcgis-rest-api/index.html#/Apply_Edits_Feature_Service_Layer/02r3000000r6000000/
+        // use graphic's built-in serializing method
+        var json = graphic.toJson();
+        var jsonClean =
+        {
+            attributes: json.attributes,
+            geometry: json.geometry
+        };
+        return JSON.stringify(jsonClean);
+    };
+
+    this._deserialize = function(json)
+    {
+        var graphic = new Graphic(JSON.parse(json));
+        return graphic;
+    };
+
+    this._storeEditsQueue = function(edits)
+    {
+        try
+        {
+            var serializedEdits = this._packArrayOfEdits(edits);
+            window.localStorage.setItem(EDITS_QUEUE_KEY, serializedEdits);
+            return true;
+        }
+        catch(err)
+        {
+            return false;
+        }
+    };
+
+    this._packArrayOfEdits = function(edits)
+    {
+        var serializedEdits = [];
+        edits.forEach(function(edit)
+        {
+            serializedEdits.push( JSON.stringify(edit) );
+        });
+        return serializedEdits.join(SEPARATOR);
+    };
+
+    this._unpackArrayOfEdits = function(serializedEdits)
+    {
+        if( !serializedEdits )
+        {
+            return [];
+        }
+
+        var edits = [];
+        serializedEdits.split(SEPARATOR).forEach( function(serializedEdit)
+        {
+            edits.push( JSON.parse(serializedEdit) );
+        });
+
+        return edits;
+    };
+
+    this._isEditDuplicated = function(newEdit,edits)
+    {
+        var i,
+            edit;
+
+        for(i=0; i<edits.length; i++)
+        {
+            edit = edits[i];
+            if( edit.operation === newEdit.operation &&
+                edit.layer     === newEdit.layer     &&
+                edit.graphic   === newEdit.graphic )
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+};
+
+
+/*global IDBKeyRange,indexedDB */
+
+    "use strict";
+O.esri.Edit.AttachmentsStore = function()
+	{
+        this._db = null;
+
+        var DB_NAME = "attachments_store";
+        var OBJECT_STORE_NAME = "attachments";
+
+		this.isSupported = function()
+		{
+            if(!window.indexedDB){
+                return false;
+            }
+            return true;
+		};
+
+		this.store = function(featureLayerUrl, attachmentId, objectId, attachmentFile, callback)
+		{
+            try
+            {
+                // first of all, read file content
+                this._readFile(attachmentFile, function(fileContent)
+                {
+                    // now, store it in the db
+                    var newAttachment = 
+                    {
+                        id: attachmentId,
+                        objectId: objectId,
+                        featureId: featureLayerUrl + "/" + objectId,
+                        contentType: attachmentFile.type,
+                        name: attachmentFile.name,
+                        size: attachmentFile.size,
+                        url: this._createLocalURL(attachmentFile),
+                        content: fileContent
+                    };
+
+                    var transaction = this._db.transaction([OBJECT_STORE_NAME],"readwrite");
+
+                    transaction.oncomplete = function(event) 
+                    {
+                        callback(true, newAttachment);
+                    };
+
+                    transaction.onerror = function(event) 
+                    {
+                        callback(false,event.target.error.message);
+                    };
+
+                    var objectStore = transaction.objectStore(OBJECT_STORE_NAME);
+                    var request = objectStore.put(newAttachment);
+                    request.onsuccess = function(event) 
+                    {
+                        //console.log("item added to db " + event.target.result);
+                    };
+
+                }.bind(this));
+            }
+            catch(err)
+            {
+                console.log("AttachmentsStore: " + err.stack);
+                callback(false,err.stack);
+            }
+		};
+
+		this.retrieve = function(attachmentId, callback)
+		{
+            console.assert(this._db !== null, "indexeddb not initialized");
+
+            var objectStore = this._db.transaction([OBJECT_STORE_NAME]).objectStore(OBJECT_STORE_NAME);
+            var request = objectStore.get(attachmentId);
+            request.onsuccess = function(event)
+            {
+                var result = event.target.result;
+                if(!result){
+                    callback(false,"not found");
+                }
+                else{
+                    callback(true,result);
+                }
+            };
+            request.onerror = function(err)
+            {
+                console.log(err);
+                callback(false,err);
+            };
+		};
+
+		this.getAttachmentsByFeatureId = function(featureLayerUrl,objectId,callback)
+		{
+            console.assert(this._db !== null, "indexeddb not initialized");
+
+			var featureId = featureLayerUrl + "/" + objectId;
+			var attachments = [];
+
+			var objectStore = this._db.transaction([OBJECT_STORE_NAME]).objectStore(OBJECT_STORE_NAME);
+			var index = objectStore.index("featureId");
+			var keyRange = IDBKeyRange.only(featureId);
+			index.openCursor(keyRange).onsuccess = function(evt)
+			{
+				var cursor = evt.target.result;
+				if(cursor)
+				{
+					attachments.push( cursor.value );
+					cursor.continue();
+				}
+				else
+				{
+					callback(attachments);
+				}
+			};
+		};
+
+        this.getAttachmentsByFeatureLayer = function(featureLayerUrl,callback)
+        {
+            console.assert(this._db !== null, "indexeddb not initialized");
+
+            var attachments = [];
+
+            var objectStore = this._db.transaction([OBJECT_STORE_NAME]).objectStore(OBJECT_STORE_NAME);
+            var index = objectStore.index("featureId");
+            var keyRange = IDBKeyRange.bound(featureLayerUrl + "/", featureLayerUrl + "/A");
+            index.openCursor(keyRange).onsuccess = function(evt)
+            {
+                var cursor = evt.target.result;
+                if(cursor)
+                {
+                    attachments.push( cursor.value );
+                    cursor.continue();
+                }
+                else
+                {
+                    callback(attachments);
+                }
+            };
+        };
+
+        this.getAllAttachments = function(callback)
+        {
+            console.assert(this._db !== null, "indexeddb not initialized");
+
+            var attachments = [];
+
+            var objectStore = this._db.transaction([OBJECT_STORE_NAME]).objectStore(OBJECT_STORE_NAME);
+            objectStore.openCursor().onsuccess = function(evt)
+            {
+                var cursor = evt.target.result;
+                if(cursor)
+                {
+                    attachments.push( cursor.value );
+                    cursor.continue();
+                }
+                else
+                {
+                    callback(attachments);
+                }
+            };
+        };
+
+		this.deleteAttachmentsByFeatureId = function(featureLayerUrl,objectId,callback)
+		{
+            console.assert(this._db !== null, "indexeddb not initialized");
+
+			var featureId = featureLayerUrl + "/" + objectId;
+
+			var objectStore = this._db.transaction([OBJECT_STORE_NAME],"readwrite").objectStore(OBJECT_STORE_NAME);
+			var index = objectStore.index("featureId");
+			var keyRange = IDBKeyRange.only(featureId);
+			var deletedCount = 0;
+			index.openCursor(keyRange).onsuccess = function(evt)
+			{
+				var cursor = evt.target.result;
+				if(cursor)
+				{
+                    var attachment = cursor.value;
+                    this._revokeLocalURL(attachment);
+					objectStore.delete(cursor.primaryKey);
+					deletedCount++;
+					cursor.continue();
+				}
+				else
+				{
+					setTimeout(function(){callback(deletedCount);},0);
+				}
+			}.bind(this);
+		};
+
+		this.delete = function(attachmentId, callback)
+		{
+            console.assert(this._db !== null, "indexeddb not initialized");
+
+            // before deleting an attachment we must revoke the blob URL that it contains
+            // in order to free memory in the browser
+            this.retrieve(attachmentId, function(success, attachment)
+            {
+                if( !success )
+                {
+                    callback(false,"attachment " + attachmentId + " not found");
+                    return;
+                }
+
+                this._revokeLocalURL(attachment);
+
+                var request = this._db.transaction([OBJECT_STORE_NAME],"readwrite")
+                    .objectStore(OBJECT_STORE_NAME)
+                    .delete(attachmentId);
+                request.onsuccess = function(event)
+                {
+                    setTimeout(function(){callback(true);},0);
+                };
+                request.onerror = function(err)
+                {
+                    callback(false,err);
+                };
+            }.bind(this));
+		};
+
+        this.deleteAll = function(callback)
+        {
+            console.assert(this._db !== null, "indexeddb not initialized");
+
+            this.getAllAttachments(function(attachments)
+            {
+                attachments.forEach(function(attachment)
+                {
+                    this._revokeLocalURL(attachment);
+                },this);
+
+                var request = this._db.transaction([OBJECT_STORE_NAME],"readwrite")
+                    .objectStore(OBJECT_STORE_NAME)
+                    .clear();
+                request.onsuccess = function(event)
+                {
+                    setTimeout(function(){callback(true);},0);
+                };
+                request.onerror = function(err)
+                {
+                    callback(false,err);
+                };
+            }.bind(this));
+        };
+
+        this.replaceFeatureId = function(featureLayerUrl, oldId, newId, callback)
+        {
+            console.assert(this._db !== null, "indexeddb not initialized");
+
+            var featureId = featureLayerUrl + "/" + oldId;
+
+            var objectStore = this._db.transaction([OBJECT_STORE_NAME],"readwrite").objectStore(OBJECT_STORE_NAME);
+            var index = objectStore.index("featureId");
+            var keyRange = IDBKeyRange.only(featureId);
+            var replacedCount = 0;
+            index.openCursor(keyRange).onsuccess = function(evt)
+            {
+                var cursor = evt.target.result;
+                if(cursor)
+                {
+                    var newFeatureId = featureLayerUrl + "/" + newId;
+                    var updated = cursor.value;
+                    updated.featureId = newFeatureId;
+                    updated.objectId = newId;
+                    objectStore.put(updated);
+                    replacedCount++;
+                    cursor.continue();
+                }
+                else
+                {
+                    // allow time for all changes to persist...
+                    setTimeout( function() { callback(replacedCount); }, 1 );
+                }
+            };
+        };
+
+        this.getUsage = function(callback)
+        {
+            console.assert(this._db !== null, "indexeddb not initialized");
+
+            var usage = { sizeBytes: 0, attachmentCount: 0 };
+
+            var transaction = this._db.transaction([OBJECT_STORE_NAME])
+                .objectStore(OBJECT_STORE_NAME)
+                .openCursor();
+
+            console.log("dumping keys");
+
+            transaction.onsuccess = function(event)
+            {
+                var cursor = event.target.result;
+                if(cursor)
+                {
+                    console.log(cursor.value.id, cursor.value.featureId, cursor.value.objectId);
+                    var storedObject = cursor.value;
+                    var json = JSON.stringify(storedObject);
+                    usage.sizeBytes += json.length;
+                    usage.attachmentCount += 1;
+                    cursor.continue();
+                }
+                else
+                {                        
+                    callback(usage,null);
+                }
+            }.bind(this);
+            transaction.onerror = function(err)
+            {
+                callback(null,err);
+            };
+        };
+
+        // internal methods
+
+        this._readFile = function(attachmentFile, callback)
+        {
+            var reader = new FileReader();
+            reader.onload = function(evt) 
+            {
+                callback(evt.target.result);
+            };
+            reader.readAsBinaryString(attachmentFile);
+        };
+
+        this._createLocalURL = function(attachmentFile)
+        {
+            return window.URL.createObjectURL(attachmentFile);
+        };
+
+        this._revokeLocalURL = function(attachment)
+        {
+            window.URL.revokeObjectURL(attachment.url);
+        };
+
+		this.init = function(callback)
+		{
+			console.log("init AttachmentStore");
+			
+            var request = indexedDB.open(DB_NAME, 11);
+            callback = callback || function(success) { console.log("AttachmentsStore::init() success:", success); }.bind(this);
+
+            request.onerror = function(event) 
+            {
+                console.log("indexedDB error: " + event.target.errorCode);
+                callback(false,event.target.errorCode);
+            }.bind(this);
+
+            request.onupgradeneeded = function(event) 
+            {
+                var db = event.target.result;
+
+                if( db.objectStoreNames.contains(OBJECT_STORE_NAME)) 
+                {
+                    db.deleteObjectStore(OBJECT_STORE_NAME);
+                }            
+
+                var objectStore = db.createObjectStore(OBJECT_STORE_NAME, { keyPath: "id" });
+                objectStore.createIndex("featureId","featureId", {unique: false});
+            }.bind(this);
+
+            request.onsuccess = function(event)
+            {
+                this._db = event.target.result;
+                console.log("database opened successfully");
+                callback(true);
+            }.bind(this);
+        };
+	};
+

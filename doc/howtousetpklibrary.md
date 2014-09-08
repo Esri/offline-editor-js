@@ -5,13 +5,23 @@ How to use the TPKLayer library
 
 The `TPKLayer` Library allows you to display at TPK file as a map. 
 
-**Step 1** Unzip the TPK file. This creates an array of Entry objects. Depending on your operating system you may have to rename the TPK file to .zip so that it becomes a recognized MIME type for the html input element.
+**Step 1** Include the `offline-tpk-min.js` library in your app.
+
+```js
+	require([
+		"esri/map", 
+		"..dist/offline-tpk-min.js"], 
+		function(Map)
+	{
+		...
+	});
+```
+
+**Step 2** Unzip the TPK file. This creates an array of Entry objects. Depending on your operating system you may have to rename the TPK file to .zip so that it becomes a recognized MIME type for the html input element.
 
 ```js
 
-	//IMPORTANT: Tell zip.js where to find its associated scripts
-	zip.workerScriptsPath = locationPath + "/../lib/tpk/"; 
-	zip.createReader(new zip.BlobReader(blob), function (zipReader) {
+	O.esri.zip.createReader(new O.esri.zip.BlobReader(blob), function (zipReader) {
     	zipReader.getEntries(function (entries) {
         	initMap(entries);
         	zipReader.close(function(evt){
@@ -24,12 +34,12 @@ The `TPKLayer` Library allows you to display at TPK file as a map.
 
 
 ```
-**Step 2** Create a new instance of TPKLayer and pass the array of Entry objects from the zipReader into the `extend()` method's constructor. Then add the layer to the map. As soon as this code executes the layer will start parsing the TPK file. 
+**Step 3** Create a new instance of TPKLayer and pass the array of Entry objects from the zipReader into the `extend()` method's constructor. Then add the layer to the map. As soon as this code executes the layer will start parsing the TPK file. 
 
 
 ```js
 
-	tpkLayer = new TPKLayer();
+	tpkLayer = new esri.TPKLayer();
 	
 	//Listen for progress events to provide UX feedback
 	tpkLayer.on("progress", function (evt) {
@@ -87,7 +97,7 @@ When you need to delete all tiles from the existing data use the following patte
 
 **Can I use the TPKLayer with a tiled basemap?**
 
-Yes for ArcGIS API for JavaScript v3.x and ONLY if the TPKs Levels of Detail (LODs) match the tiled map services LODs exactly.
+Yes for ArcGIS API for JavaScript v3.8+ and ONLY if the TPKs Levels of Detail (LODs) match the tiled map services LODs exactly.
 
 The basemap (base tiled layer) defines the LODs that the map can display. Any other operational tiled layers on the map will not display if they don’t match the basemap’s LODs. Esri.Map doesn’t union LODs of all tiled layers on the map.
 

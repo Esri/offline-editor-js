@@ -16,9 +16,9 @@
     }
   </script>
 
-    <link rel="stylesheet" href="http://js.arcgis.com/3.8/js/dojo/dijit/themes/claro/claro.css">
-    <link rel="stylesheet" href="http://js.arcgis.com/3.8/js/esri/css/esri.css">
-    <script src="http://js.arcgis.com/3.8/"></script>
+    <link rel="stylesheet" href="http://js.arcgis.com/3.10/js/dojo/dijit/themes/claro/claro.css">
+    <link rel="stylesheet" href="http://js.arcgis.com/3.10/js/esri/css/esri.css">
+    <script src="http://js.arcgis.com/3.10/"></script>
 
   <!-- include spec files here... -->
   <script type="text/javascript" src="spec/offlineTilesEnablerSpec.js"></script>
@@ -36,7 +36,9 @@
   	"dojo/dom", "dojo/on", "dojo/query", 
   	"esri/urlUtils", "esri/geometry/webMercatorUtils",
   	"tiles/offlineTilesEnabler",
-  	"dojo/dom-construct", "dojo/domReady!"], 
+  	"dojo/dom-construct",
+    "../dist/offline-tiles-basic-min.js",
+    "dojo/domReady!"],
   	function(Map, 
   		GraphicsLayer, Graphic, SimpleFillSymbol, 
   		Scalebar, esriUtils, geometry, 
@@ -57,11 +59,11 @@
   		function test() 
   		{
   			g_basemapLayer = g_map.getLayer( g_map.layerIds[0] );
-  			g_offlineTilesEnabler = new OfflineTilesEnabler();
+  			g_offlineTilesEnabler = new O.esri.Tiles.OfflineTilesEnabler();
 
   			var jasmineEnv = jasmine.getEnv();
   			jasmineEnv.updateInterval = 1000;
-            jasmineEnv.defaultTimeoutInterval = 15000; // 15 sec
+            jasmineEnv.defaultTimeoutInterval = 5000; // 15 sec
   			var htmlReporter = new jasmine.HtmlReporter();
 
   			jasmineEnv.addReporter(htmlReporter);

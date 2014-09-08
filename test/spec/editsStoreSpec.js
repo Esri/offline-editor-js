@@ -330,7 +330,8 @@ describe("Public Interface", function()
 		{
 			it("exhaust localStorage capacity", function()
 			{
-				console.log("this will take some time");
+				window.localStorage.clear();
+                console.log("this will take some time");
 
 				// clean everything before
 				for( var key in window.localStorage )
@@ -349,6 +350,8 @@ describe("Public Interface", function()
 				}
 
 				// first, fill localStorage up to max capacity
+                var error = null;
+
 				try
 				{
 					var index = 0;
@@ -367,7 +370,10 @@ describe("Public Interface", function()
 				catch(err)
 				{
 					console.log(err);
+                    error = err;
 				}
+
+                expect(error).not.toBe(null);
 
 				// now, try to push one edit
 				var result = g_editsStore.pushEdit(g_editsStore.ADD, 20, g_test.polygonFeature);

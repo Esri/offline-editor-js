@@ -1,25 +1,21 @@
 offline-editor-js
 =================
 
-A prototype JavaScript toolkit for using the ArcGIS API for JavaScript offline. It offers both lightweight editing and tile management capabilities while offline or intermittently offline. It's still a work-in-progress so if you have suggestions open an issue or if you want to make a pull request we welcome your proposed modifications. 
+Offline-editor-js is a set of JavaScript libraries for using the ArcGIS API for JavaScript offline. It offers both lightweight editing and tile management capabilities while offline or intermittently offline. It's a work-in-progress so if you have suggestions open an issue or if you want to make a pull request we welcome your proposed modifications. 
 
-*IMPORTANT:* If you want a full, robust offline solution then you should be using our ArcGIS Runtime SDKs for .NET, WPF, Java, iOS, Android and Qt.
+*IMPORTANT:* If you need a fully integrated robust offline solution then you should be using our ArcGIS Runtime SDKs for .NET, WPF, Java, iOS, Android and Qt.
 
 This repo contains the following libraries:
 
-- `/edit`: handles vector features and stores adds, updates and deletes while offline. Resync's edits with server once connection is reestablished
-   * `offlineFeaturesManager` - Extends and overrides a feature layer.
-   * `editsStore` - Provides static helper methods for working with the offline data store.
-   * `attachmentsStore` - Provides limited support for attachments.
-- `/tiles`: stores portions of tiled maps client-side and uses the cached tiles when device is offline
-   * `offlineTilesEnabler` Extends and overrides a tiled map service from ArcGIS Online or for partial offline use.
-   * `OfflineTilesEnablerLayer` Extends any Esri tiled basemap service for a web app that has a requirement for browser reload and/or restart. This library should be used in conjunction with an application cache coding pattern.
-- `/tpk`: lets you work with TPK files.
-   * `TPKLayer` - parses a TPK file and displays it as a tiled map layer.
-- `/utils`: contains various helper libraries.
-- `/samples`: sample apps to show how to use different aspects of the offline library capabilities.
+- `/dist`: 
+   * `offline-edit-min.js` - _(replaces v1.x of OfflineFeaturesManager.js)_ stores adds, updates and deletes of features as well as limited attachment support while offline. Resync's edits with server once connection is reestablished.
+   * `offline-tiles-basic-min.js` - _(replaces v1.x of offlineTilesEnabler.js)_ caches map tiles for partial offline use cases. Use this library with ArcGIS Online Web maps as well as with tiled map services. This repo will not work with browser restarts or reloads while offline. 
+   * `offline-tiles-advanced-min.js` - _(replaces v1.x of OfflineTilesEnablerLayer.js)_ Extends any ArcGIS Tiled Map Service that has a requirement for offline browser reload and/or restart. This library should be used in conjunction with an HTML5 application cache coding pattern.
+   * `offline-tpk-min.js` - _(replaces v1.x of TPKLayer.js)_ parses a TPK file and displays it as a tiled map layer.
+- `/utils`: contains various helper library modules. These modules are all AMD compliant.
+- `/samples`: samples that show how to use the different offline libraries capabilities.
 
-#Workflows Supported (v1)
+#Workflows Supported
 The following workflow is currently supported for both both features and tiles:
 
 1) Load web application while online.
@@ -37,22 +33,22 @@ __Attachment Support__: Attachments are supported with some limitations. See doc
 
 #API Doc
 
-##offlineFeaturesManager
-Extends and overrides a feature layer. This library allows you to extend esri.layers.FeatureLayer objects with offline capability and manage the resync process.
+##Offline Editing of Geographic Features
+Extends and overrides an ArcGIS Feature Layer. This library allows you to extend esri.layers.FeatureLayer with offline capabilities and to manage the resync process.
 
-* __Click [here](doc/offlinefeaturesmanager.md) to see the full API doc for `offlineFeaturesManager`__
+* __Click [here](doc/offlinefeaturesmanager.md) to see the full API doc for `offline-edit-min.js`__
 
  
-##offlineTilesEnabler
+##Offline Mapping Tiles
 Extends and overrides a tiled map service. Provides the ability to customize the extent used to cut the tiles. See the detailed description of basemap.prepareForOffline() in the "How To Use" section to learn different options.
 
-* __Click [here](doc/offlinetilesenabler.md) to see the full API doc for `offlineTilesEnabler`__ 
+* __Click [here](doc/offlinetilesenabler.md) to see the full API doc for `offline-tiles-basic-min.js and offline-tiles-advanced-min.js`__ 
 
 ##TPKLayer
 
-Extends TileMapServiceLayer. You can display TPK files with this library. TPK's are binary tile package files. Go [here](http://resources.arcgis.com/en/help/main/10.1/index.html#//00170000017w000000) for more information on how to create a TPK file.
+You can display TPK files with this library. TPK's are binary tile package files. Extends TileMapServiceLayer. Go [here](http://resources.arcgis.com/en/help/main/10.1/index.html#//00170000017w000000) for more information on how to create a TPK file.
 
-* __Click [here](doc/tpklayer.md) to see the full API doc for `TPKLayer`__ 
+* __Click [here](doc/tpklayer.md) to see the full API doc for `offline-tpk-min.js`__ 
 
 #How to use
 
@@ -69,12 +65,18 @@ Extends TileMapServiceLayer. You can display TPK files with this library. TPK's 
 3. Run `git submodule init` and `git submodule update`
 4. Try out the apps in the `/samples` folder.
 
+##Build Instructions
+
+1. From the root directory run `npm install`
+2. Run `Grunt build`. If there are no errors, the minimized _(min)_ and source _(src)_ versions of the libraries will be output to `\dist`
+
 
 ##Samples
-* `appcache-features.html` - shows how to work with the application manifest, tiles and features.
-* `appcache-tiles.html` - shows how to work with the application manifest and map tiles.
+
+* `appcache-features.html` - shows how to work with the application manifest, tiles and features. This sample works with browser reloads and restarts.
+* `appcache-tiles.html` - shows how to work with the application manifest and map tiles. This sample works with browser reloads and restarts.
 * `attachments-editor.html` - demonstrates how to work with this library using feature attachments.
-* ~~`military-offline.html`~~ - renamed `draw-pointlinepoly-offline.html` shows working with points, lines and polygons locally.
+* `draw-pointlinepoly-offline.html` shows working with points, lines and polygons locally.
 * `tpklayer.html` - shows how to work with TPK files.
 * `tiles-indexed-db.html` - shows how to work with storing tiles locally.
 * `Gruntfile.js` - a node.js app and its associated `package.json` file to help with creating an application manifest file.
@@ -83,6 +85,7 @@ Extends TileMapServiceLayer. You can display TPK files with this library. TPK's 
 ##Dependencies
 
 * ArcGIS API for JavaScript (v3.8+)
+* Node.js required for building the source
 * NOTE: browser limitations and technical dependencies. The offline capabilities in this toolkit depend on certain HTML5 capabilities being present in the browser. Go [here](doc/dependencies.md) for a detailed breakdown of the information.
 * We offer browser support for Chrome and Safari only, at this time. Some of the capabilities in the repository will not work on Internet Explorer. We continue to evaluate IE's capabilities as new releases become available to try and identify a point where we might be able to support it.  	
 
@@ -91,6 +94,7 @@ Extends TileMapServiceLayer. You can display TPK files with this library. TPK's 
    * [offline.js](https://github.com/hubspot/offline) - it allows detection of the online/offline condition and provides events to hook callbacks on when this condition changes
    * [IndexedDBShim](https://github.com/axemclion/IndexedDBShim) - polyfill to simulate indexedDB functionality in browsers/platforms where it is not supported (notably desktop Safari and iOS Safari)
    		- IMPORTANT: There are known [issues](https://github.com/axemclion/IndexedDBShim/issues/115) with IndexedDBShim on Safari. For Safari, the storage error workaround is to switch from using /dist/IndexedDBShim.min.js to just using IndexedDBShim.js and then search for and modify the line that defines the value for `DEFAULT_DB_SIZE`. Set this to more appropriate size that will meet all your storage needs, for example: ```var DEFAULT_DB_SIZE = 24 * 1024 * 1024```
+   		- IMPORTANT: Coming in Safari 8 is built-in supported for IndexedDB. 
    * [jasmine.async](https://github.com/derickbailey/jasmine.async.git) - library to help implementing tests of async functionality (used in tests)
 
 * Non sub-module based libraries

@@ -29,7 +29,7 @@ module.exports = function(grunt) {
                         "<%= pkg.optimizedApiURL %>/dojo/nls/dojo_en-us.js",
                         "<%= pkg.optimizedApiURL %>/dojo/selector/acme.js",
                         "#",
-                        "<%= pkg.arcGISBaseURL %>/js/esri/dijit/images/popup-sprite.png",
+                        "#<%= pkg.arcGISBaseURL %>/js/esri/dijit/images/popup-sprite.png",
                         "<%= pkg.arcGISBaseURL %>/js/esri/dijit/images/attribute_inspector_sprite.png",
 						"<%= pkg.arcGISBaseURL %>/js/dojo/dojox/gfx/svg.js",
 						"<%= pkg.arcGISBaseURL %>/js/dojo/dojo/resources/blank.gif",
@@ -59,16 +59,18 @@ module.exports = function(grunt) {
 		        verbose: true,
 		        timestamp: true
 		      },
+              /* Include all library files that you need here! */
 		      src: [
                     "../samples/images/*.png",
                     "../samples/css/*.css",
                     "../vendor/IndexedDBShim/dist/*.js",
                     "../vendor/offline/offline.min.js",
-                    "../lib/tiles/*.js",
                     "../lib/tiles/*.png",
                     "../lib/tiles/*.psd",
-                    "../lib/edit/*.js",
-                    "../utils/*.js"
+                    "../utils/*.js",
+                    "../dist/offline-edit-src.js",
+                    "../dist/offline-tiles-advanced-src.js",
+                    "../dist/offline-tiles-basic-src.js"
                     /*
                     "images/*",
                     "css/*.css"

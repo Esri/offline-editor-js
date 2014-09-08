@@ -1,5 +1,5 @@
 #Attachment Support
-The __offlineFeaturesManager__ has support for attachments in offline mode. See [attachments-editor.html](../samples/attachments-editor.html) sample.
+The __offline-edit-min.js__ has support for attachments in offline mode. See [attachments-editor.html](../samples/attachments-editor.html) sample.
 
 ##What you can do:
 While your application is in `OFFLINE` mode, you can:
@@ -11,20 +11,20 @@ While your application is in `OFFLINE` mode, you can:
 * when the app goes to `ONLINE` mode, all attachments are sent back to the server and removed from local browser storage
 
 ##How you do that:
-You can either use the FeatureLayer API directly or use the built-in [AttachmentEditor](https://developers.arcgis.com/javascript/jsapi/attachmenteditor-amd.html) widget that support feature attachment editing. Both approaches work well, and the code you write works the same either if you are on `ONLINE` or `OFFLINE` modes.
+You can either use the ArcGIS FeatureLayer API _(esri.layers.FeatureLayer)_ directly or use the built-in [AttachmentEditor](https://developers.arcgis.com/javascript/jsapi/attachmenteditor-amd.html) widget that support feature attachment editing. Both approaches work well, and the code you write works the same either if you are on `ONLINE` or `OFFLINE` modes.
 
 The only differences in your code are:
 
-* create an offlineFeaturesManager and enable attachment support:
+* create an offlineFeaturesManager enabled for attachment support:
 
-            var offlineFeaturesManager = new OfflineFeaturesManager();
+            var offlineFeaturesManager = new esri.OfflineFeaturesManager();
             offlineFeaturesManager.initAttachments();
 
 * extend your featureLayers with offline editing functionality:
 
 		offlineFeaturesManager.extend(featureLayer, function(success)
 		{
-			console.log("layer extended", success? "successfully" : "without success");
+			console.log("layer extended", success? "success" : "failed");
 		});
 
 ###Using the FeatureLayer API

@@ -17,9 +17,9 @@
 	}
   </script>
 
-	<link rel="stylesheet" href="http://js.arcgis.com/3.6/js/dojo/dijit/themes/claro/claro.css">
-	<link rel="stylesheet" href="http://js.arcgis.com/3.6/js/esri/css/esri.css">
-	<script src="http://js.arcgis.com/3.6/"></script>
+	<link rel="stylesheet" href="http://js.arcgis.com/3.10/js/dojo/dijit/themes/claro/claro.css">
+	<link rel="stylesheet" href="http://js.arcgis.com/3.10/js/esri/css/esri.css">
+	<script src="http://js.arcgis.com/3.10/"></script>
 
   <!-- include spec files here... -->
   <script type="text/javascript" src="spec/editsStoreSpec.js"></script>
@@ -33,14 +33,14 @@
 	require(["esri/map", 
 	"esri/layers/GraphicsLayer", "esri/graphic", "esri/symbols/SimpleFillSymbol", "esri/symbols/SimpleMarkerSymbol", "esri/symbols/SimpleLineSymbol",
 	"esri/SpatialReference","esri/geometry",
-	"edit/editsStore",
 	"dojo/dom", "dojo/on", "dojo/query", 
-	"dojo/dom-construct", "dojo/domReady!"], 
+	"dojo/dom-construct",
+    "../dist/offline-edit-min.js",
+    "dojo/domReady!"],
 	function(Map, 
 		GraphicsLayer, Graphic, SimpleFillSymbol, SimpleMarkerSymbol, SimpleLineSymbol,
-		SpatialReference, geometry, 
-		editsStore,
-		dom, on, query, 
+		SpatialReference, geometry,
+		dom, on, query,
 		domConstruct) 
 	{
 		/*
@@ -53,7 +53,7 @@
 
 		g_map.on('load', test);
 		*/
-		g_editsStore = editsStore;
+		g_editsStore = new O.esri.Edit.EditStore(Graphic);
 		test();
 
 		function initTestData()

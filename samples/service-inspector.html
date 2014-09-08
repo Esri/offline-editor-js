@@ -237,7 +237,7 @@
 		function refreshLocalStorageSummary()
 		{
 			domConstruct.empty('local-storage-summary-table-body');
-			var edits = editsStore._retrieveEditsQueue();
+			var edits = editsStore.retrieveEditsQueue();
 			edits.forEach(function(edit)
 			{
 				var components = edit.layer.split('/');
