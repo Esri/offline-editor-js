@@ -37,7 +37,7 @@
   	"esri/urlUtils", "esri/geometry/webMercatorUtils",
   	"tiles/offlineTilesEnabler",
   	"dojo/dom-construct",
-    "../dist/offline-editor-tiles-basic-src.js",
+    "../dist/offline-tiles-basic-src.js",
     "dojo/domReady!"],
   	function(Map, 
   		GraphicsLayer, Graphic, SimpleFillSymbol, 
@@ -59,7 +59,7 @@
   		function test() 
   		{
   			g_basemapLayer = g_map.getLayer( g_map.layerIds[0] );
-  			g_offlineTilesEnabler = new OfflineTilesEnabler();
+  			g_offlineTilesEnabler = new O.esri.Tiles.OfflineTilesEnabler();
 
   			var jasmineEnv = jasmine.getEnv();
   			jasmineEnv.updateInterval = 1000;
