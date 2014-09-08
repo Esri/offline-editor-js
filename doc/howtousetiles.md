@@ -7,9 +7,10 @@ The `tiles` library allows a developer to extend a tiled layer with offline supp
 
 There are two approaches to using this set of libraries. The first approach is if you are using an ArcGIS.com Web Map, and the second approach is if you need to be able to restart or reload your application offline.
 
+
 ## Approach 1 - ArcGIS.com Map
 
-Approach #1 is best for partial offline use cases and it uses the `offline-tiles-basic-min.js` library. This approach will not allow you to reload or restart the application.
+Approach #1 is best for partial offline use cases and it uses the `offline-tiles-basic-min.js` library. This approach will not allow you to reload or restart the application while offline.
 
 **Step 1** Include the `offline-tiles-basic-min.js` library in your app.
 
@@ -26,7 +27,7 @@ Approach #1 is best for partial offline use cases and it uses the `offline-tiles
 
 ```js
 	var basemapLayer = map.getLayer( map.layerIds[0] );
-	var offlineTilesEnabler = new esri.OfflineTilesEnabler();
+	var offlineTilesEnabler = new O.esri.Tiles.OfflineTilesEnabler();
 	offlineTilesEnabler.extend(basemapLayer, function(success)
 	{
 		if(success)	{
@@ -134,7 +135,7 @@ This approach is best if you have requirements for restarting or reloading your 
 
 ```js
 
-    tileLayer = new esri.OfflineTilesEnablerLayer("http://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer",function(evt){
+    tileLayer = new O.esri.Tiles.OfflineTilesEnablerLayer("http://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer",function(evt){
         console.log("Tile Layer Loaded.");
     },_isOnline);
 
