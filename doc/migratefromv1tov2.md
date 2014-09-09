@@ -6,7 +6,7 @@ This doc is to provide pointers for migrating from offline-editor-js v1 to v2. M
 
 ##Importing the libraries
 
-In your main html application you can use generic script injection to import the offline-editor-js libraries into your project. Don't create any aliases for the offline-editor-js libraries within the function statement and add them add the end of the module array, but before domReady. As you can see in the example below, the only alias is for `Map`.
+In your main html application you can use generic script injection to import the offline-editor-js libraries into your project. Don't create any aliases for the offline-editor-js libraries within the function statement and add them to the end of the module array, but before domReady. As you can see in the example below, the only alias is for `Map`.
 
 ```html	
 
