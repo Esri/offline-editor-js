@@ -1,7 +1,7 @@
 Migrating from v1 to v2
 =======================
 
-This doc is to provide pointers for migrating from offline-editor-js v1 to v2. Migration should be fairly straightforward as you are simply going to be changing library names and method namespaces. Check the [CHANGELOG](CHANGELOG.md) doc for specifics as well as any deprecations.
+This doc is to provide pointers for migrating from offline-editor-js v1 to v2. Migration should be fairly straightforward as you are simply going to be changing library names and method namespaces. Check the CHANGELOG doc for specifics as well as any deprecations.
 
 
 ##Importing the libraries
