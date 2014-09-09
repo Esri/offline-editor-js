@@ -458,7 +458,6 @@ if(typeof O != "undefined"){
 else{
     O = {};
     O.esri = {
-        VERSION: '2.0',
         Tiles: {}
     }
 }
