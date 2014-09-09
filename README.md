@@ -50,13 +50,17 @@ You can display TPK files with this library. TPK's are binary tile package files
 
 * __Click [here](doc/tpklayer.md) to see the full API doc for `offline-tpk-min.js`__ 
 
-#How to use
+##How to use
 
 * [Learn more about using the `tile` library](doc/howtousetiles.md)
 * [Learn more about using the `edit` library](doc/howtouseeditlibrary.md)
 * [Learn more about using the `tpk` library](doc/howtousetpklibrary.md)
 * [Learn more about using an application cache with this library](doc/howtouseappcache.md)
 
+
+## Migrating from v1 to v2
+
+If you are migrating your v1 code to v2 then go [here](doc/migratefromv1tov2.md) for some pointers.
 
 ##Setup Instructions
 

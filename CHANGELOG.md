@@ -1,5 +1,10 @@
 # offline-editor-js - Changelog
 
+## Version 2.0.2 - Sep 9, 2014
+- Documentation update only.
+- More minor doc updates.
+- Minor README update to include link to new migration tips doc.
+
 ## Version 2.0.1 - Sep 8, 2014
 - Minor updates to documentation
 - Removed VERSION property from namespace (for now)

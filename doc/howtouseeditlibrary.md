@@ -5,7 +5,7 @@ How to use the edit library
 
 The `edit` library allows a developer to extend a feature layer with offline editing support. You can combine this functionality with offline tiles.
 
-**Step 1** Include `offline.min.js`, `offline-tiles-basic-min.js` and `offline-edit-min.js` in your app. The pattern for how we include the tiles and edit library within the _require_ statement is called generic script injection.
+**Step 1** Include `offline.min.js`, `offline-tiles-basic-min.js` and `offline-edit-min.js` in your app. `ofline.mins.js` is another 3rd party library for detecting if the browser is online or offline. The pattern for how we include the tiles and edit library within the `require` statement is called generic script injection.
 
 ```html	
 	<script src="../vendor/offline/offline.min.js"></script>
@@ -19,6 +19,17 @@ The `edit` library allows a developer to extend a feature layer with offline edi
 		...
 	});
 ```
+
+Also, if you have other AMD libraries in your project and you want to refer to offline-editor-js within a `define` statement you can use the following pattern for importing the library. Note you can leave off the `.js` from the module identifier, for example:
+
+```js
+
+	define(["..dist/offline-edit-min"],function(){
+		...
+	})
+
+```
+
 **Step 2** Once your map is created (either using new Map() or using esriUtils.createMap(webmapid,...), you create a new OfflineFeaturesManager instance and starting assigning events listeners to tie the library into your user interface:
 
 ```js
