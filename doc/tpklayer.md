@@ -1,7 +1,7 @@
 API Doc for TPKLayer
 ====================
 
-##TPKLayer
+##O.esri.TPK.TPKLayer
 
 Extends a tiled map service and provides the ability to display tiles from a .tpk (ArcGIS Tile Page).
 
@@ -9,7 +9,7 @@ Extends a tiled map service and provides the ability to display tiles from a .tp
 
 Constructor | Description
 --- | ---
-`esri.TPKLayer()` | Creates an instance of the TPKLayer class. This library allows you to extend a TiledMapServiceLayer for the purpose of displaying a TPK file as a map.
+`O.esri.TPK.TPKLayer()` | Creates an instance of the TPKLayer class. This library allows you to extend a TiledMapServiceLayer for the purpose of displaying a TPK file as a map.
 
 ###Methods
 Methods | Returns | Description
