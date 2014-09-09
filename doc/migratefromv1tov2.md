@@ -9,6 +9,7 @@ This doc is to provide pointers for migrating from offline-editor-js v1 to v2. M
 In your main html application you can use generic script injection to import the offline-editor-js libraries into your project. Don't create any aliases for the offline-editor-js libraries within the function statement and add them add the end of the module array, but before domReady. As you can see in the example below, the only alias is for `Map`.
 
 ```html	
+
 	<script>
 	require([
 		"esri/map", 
@@ -28,6 +29,7 @@ If you have other AMD libraries in your project and you want to refer to offline
 	define(["..dist/offline-edit-min"],function(){
 		...
 	})
+```
 
 ## Referencing the libraries by namespace
 
