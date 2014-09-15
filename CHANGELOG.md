@@ -1,5 +1,8 @@
 # offline-editor-js - Changelog
 
+## Version 2.0.3 - Sep 15, 2014
+- Closes issue #234 - Minor cleanup of samples. Removed unused dojoConfig pathnames. 
+
 ## Version 2.0.2 - Sep 9, 2014
 - Documentation update only.
 - More minor doc updates.
