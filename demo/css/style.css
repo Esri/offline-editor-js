@@ -1,0 +1,19 @@
+body {
+    padding-top: 50px;
+    padding-bottom: 20px;
+}
+.thumbnail {
+    width: 200px;
+}
+.navbar-brand-title {
+    float: left;
+    padding: 15px;
+    height: 50px;
+    line-height: 20px;
+    font-size: large;
+    color: #ffffff;
+}
+.navbar-brand-title:hover {
+    color: lightgray;
+    text-decoration: none;
+}

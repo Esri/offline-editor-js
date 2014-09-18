@@ -39,7 +39,7 @@ The `TPKLayer` Library allows you to display at TPK file as a map.
 
 ```js
 
-	tpkLayer = new esri.TPKLayer();
+	tpkLayer = new O.esri.TPK.TPKLayer();
 	
 	//Listen for progress events to provide UX feedback
 	tpkLayer.on("progress", function (evt) {
