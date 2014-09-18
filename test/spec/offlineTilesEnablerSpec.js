@@ -29,10 +29,10 @@ describe("offline enabler library", function()
 			expect(g_basemapLayer.getTileUrl).toEqual(jasmine.any(Function));
 			expect(g_basemapLayer._getTileUrl).toEqual(jasmine.any(Function));
 			expect(g_basemapLayer.prepareForOffline).toEqual(jasmine.any(Function));
-			expect(g_basemapLayer._storeTile).toEqual(jasmine.any(Function));
 			expect(g_basemapLayer.deleteAllTiles).toEqual(jasmine.any(Function));
 			expect(g_basemapLayer.offline).toEqual(jasmine.any(Object));
 			expect(g_basemapLayer.offline.store).toEqual(jasmine.any(Object));
+            expect(g_basemapLayer._tilesCore._storeTile).toEqual(jasmine.any(Function));
 
 			g_basemapLayer.offline.proxyPath = "../lib/resource-proxy/proxy.php";
 	        done();
@@ -78,7 +78,10 @@ describe("offline enabler library", function()
 		g_basemapLayer.getOfflineUsage(function(usage)
 		{
 			expect(usage.tileCount).toEqual(0);
-			g_basemapLayer._storeTile(14,6177,8023, function(success)
+
+            var url = g_basemapLayer._getTileUrl(14,6177,8023);
+
+			g_basemapLayer._tilesCore._storeTile(url,g_basemapLayer.offline.proxyPath,g_basemapLayer.offline.store, function(success)
 			{
 				expect(success).toEqual(true);
 				g_basemapLayer.getOfflineUsage(function(usage)
@@ -95,8 +98,10 @@ describe("offline enabler library", function()
 		g_basemapLayer.getOfflineUsage(function(usage)
 		{
 			expect(usage.tileCount).toEqual(1);
-			g_basemapLayer._storeTile(14,6177,8023, function(success)
-			{
+            var url = g_basemapLayer._getTileUrl(14,6177,8023);
+
+            g_basemapLayer._tilesCore._storeTile(url,g_basemapLayer.offline.proxyPath,g_basemapLayer.offline.store, function(success)
+            {
 				expect(success).toEqual(true);
 				g_basemapLayer.getOfflineUsage(function(usage)
 				{
@@ -205,5 +210,47 @@ describe("offline enabler library", function()
 			done();
 		})
 	});
+
+    async.it("get all tile polygons within extent",function(done){
+        require(["dojo/Deferred","dojo/promise/all",],function(Deferred,all){
+
+            var promises = [];
+
+            g_basemapLayer.getTilePolygons(function(result,err){
+
+                var deferred = new Deferred();
+                if(result && result.type){
+                    console.log("Tile polygon: " + result);
+                    expect(result.type).toEqual("polygon");
+                }
+                deferred.resolve(result);
+                promises.push(deferred);
+            })
+
+            all(promises).then( function(results)
+            {
+                done();
+            });
+
+        })
+    });
+
+    async.it("load csv from file",function(done){
+        var csv = ["url,img\r\nhttp://esri.com,base64image_goes_here"];
+        var blob = new Blob(csv, {type : 'text/csv'});
+        blob.name = "test1";
+        g_basemapLayer.loadFromFile(blob,function(success,result){
+            expect(success).toBe(true);
+            expect(result).toEqual("1 tiles loaded from test1");
+            done();
+        })
+    });
+
+    async.it("save tiles to csv",function(done){
+       g_basemapLayer.saveToFile("testSaveToCSV",function(success,result){
+           expect(success).toBe(true);
+           done();
+       })
+    });
 
 });

@@ -1,3 +1,5 @@
+License for FileSaver.js
+
 This software is licensed under the MIT/X11 license.
 
 MIT/X11 license

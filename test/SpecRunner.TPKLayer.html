@@ -31,9 +31,9 @@
         }
     </script>
 
-    <link rel="stylesheet" href="http://js.arcgis.com/3.9/js/dojo/dijit/themes/claro/claro.css">
-    <link rel="stylesheet" href="http://js.arcgis.com/3.9/js/esri/css/esri.css">
-    <script src="http://js.arcgis.com/3.9/"></script>
+    <link rel="stylesheet" href="http://js.arcgis.com/3.10/js/dojo/dijit/themes/claro/claro.css">
+    <link rel="stylesheet" href="http://js.arcgis.com/3.10/js/esri/css/esri.css">
+    <script src="http://js.arcgis.com/3.10/"></script>
 
     <!-- include spec files here... -->
     <script type="text/javascript" src="spec/tpkLayerSpec.js"></script>
@@ -45,26 +45,18 @@
         var tilesEntries = null;
         var tpkLayer = null;
 
-        require(["esri/map",
-                    "esri/layers/GraphicsLayer", "esri/graphic", "esri/symbols/SimpleFillSymbol", "esri/symbols/SimpleMarkerSymbol", "esri/symbols/SimpleLineSymbol",
-                    "esri/SpatialReference","esri/geometry",
-                    "edit/attachmentsStore",
-                    "dojo/dom", "dojo/on",
-                    "tpk/TPKLayer","tpk/zip",
+        require([
+                    "../dist/offline-tpk-min.js",
                     "dojo/domReady!"],
-                function(Map,
-                         GraphicsLayer, Graphic, SimpleFillSymbol, SimpleMarkerSymbol, SimpleLineSymbol,
-                         SpatialReference, geometry,
-                         AttachmentsStore,
-                         dom, on, TPKLayer,zip)
+                function()
                 {
                     var jasmineEnv;
                     loading = dojo.byId("loader-gif");
                     getFileBtn = dojo.byId("url-btn");
                     //IMPORTANT!
-                    zip.workerScriptsPath = locationPath + "/../lib/tpk/"; //tell zip.js where to find it's associated scripts
+//                    zip.workerScriptsPath = locationPath + "/../lib/tpk/"; //tell zip.js where to find it's associated scripts
 
-                    tpkLayer = new TPKLayer();
+                    tpkLayer = new O.esri.TPK.TPKLayer();
 
                     initChooseLocalFile();
 
@@ -84,7 +76,7 @@
 
                                 jasmineEnv = jasmine.getEnv();
                                 jasmineEnv.updateInterval = 1000;
-                                jasmineEnv.defaultTimeoutInterval = 10000; // 1 sec
+                                jasmineEnv.defaultTimeoutInterval = 3000; // 1 sec
                                 var htmlReporter = new jasmine.HtmlReporter();
 
                                 jasmineEnv.addReporter(htmlReporter);

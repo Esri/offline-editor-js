@@ -26,7 +26,7 @@ describe("TPKLayer module", function(){
 
     async.it("Unzip TPK file", function(done){
         var blob = FILE;
-        zip.createReader(new zip.BlobReader(blob), function (zipReader) {
+        O.esri.zip.createReader(new O.esri.zip.BlobReader(blob), function (zipReader) {
             zipReader.getEntries(function (entries) {
 
                 tilesEntries = entries;
@@ -43,10 +43,11 @@ describe("TPKLayer module", function(){
     })
 
     async.it("Parse file entry", function(done){
+        var obj = {};
         tpkLayer._fileEntriesLength = 2;
-        tpkLayer._unzipConfFiles(tilesEntries,1,function(evt){
-            var objectSize = tpkLayer.ObjectSize(evt);
-            expect(objectSize).toEqual(1);
+        tpkLayer._unzipConfFiles(tilesEntries,1,obj,function(deferred,token){
+            expect(token).toEqual(1);
+            expect(deferred).toEqual(obj);
             done();
         })
     })
@@ -65,8 +66,10 @@ describe("TPKLayer module", function(){
             var indexCDI = name.indexOf("CONF.CDI",0);
             var indexXML = name.indexOf("CONF.XML",0);
             if(indexCDI == -1 || indexXML == -1){
-                tpkLayer._unzipTileFiles(tilesEntries,i,function(result){
-                    expect(result).toEqual(jasmine.any(Object));
+                var obj = {};
+                tpkLayer._unzipTileFiles(tilesEntries,i,obj,function(deferred,token){
+                    expect(token).toEqual(jasmine.any(Number));
+                    expect(deferred).toEqual(obj);
                     done();
                 },tpkLayer._self);
             }
@@ -90,8 +93,9 @@ describe("TPKLayer module", function(){
 
             var indexCDI = name.indexOf("CONF.CDI",0);
             if(indexCDI != -1){
-                tpkLayer._unzipConfFiles(tilesEntries,i,function(result){
-                    expect(result).toEqual(jasmine.any(Object));
+                var obj = {};
+                tpkLayer._unzipConfFiles(tilesEntries,i,obj,function(deferred,token){
+                    expect(deferred).toEqual(obj);
                     tpkLayer._parseConfCdi(function(extent){
                         expect(extent.type).toEqual("extent");
                         done();
@@ -118,8 +122,9 @@ describe("TPKLayer module", function(){
 
             var indexXML = name.indexOf("CONF.XML",0);
             if(indexXML != -1){
-                tpkLayer._unzipConfFiles(tilesEntries,i,function(result){
-                    expect(result).toEqual(jasmine.any(Object));
+                var obj = {};
+                tpkLayer._unzipConfFiles(tilesEntries,i,obj,function(deferred,token){
+                    expect(deferred).toEqual(obj);
                     tpkLayer._parseConfXml(function(result){
                         expect(result).toEqual(jasmine.any(Object));
                         expect(result.lods.length).toBeGreaterThan(0);
@@ -255,9 +260,9 @@ describe("TPKLayer module", function(){
 
         tpkLayer._storeTile(url,imgURL,db,function(success,err){
             expect(success).toBeTruthy();
-            tpkLayer._getInMemTiles("test",null,null,null,null,null,function(img,id,url){
+            tpkLayer._getInMemTiles("test",null,null,null,null,"101",function(img,id,url){
                 expect(img).toBe(imgURL);
-                expect(id).toBeNull();
+                expect(id).toBe("101");
                 expect(url).toBe("test");
                 done();
             })

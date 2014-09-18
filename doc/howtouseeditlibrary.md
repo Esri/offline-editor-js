@@ -3,26 +3,37 @@ How to use the edit library
 
 ##`edit` library
 
-The `edit` library allows a developer to extend a feature layer with offline editing support.
+The `edit` library allows a developer to extend a feature layer with offline editing support. You can combine this functionality with offline tiles.
 
-**Step 1** Include `offline.min.js`, `tiles/offlineTilesEnabler` and `tiles/editsStore` in your app.
+**Step 1** Include `offline.min.js`, `offline-tiles-basic-min.js` and `offline-edit-min.js` in your app. `ofline.mins.js` is another 3rd party library for detecting if the browser is online or offline. The pattern for how we include the tiles and edit library within the `require` statement is called generic script injection.
 
 ```html	
 	<script src="../vendor/offline/offline.min.js"></script>
 	<script>
 	require([
 		"esri/map", 
-		"edit/offlineFeaturesManager",
-	    "edit/editsStore", 
-		function(Map,OfflineFeaturesManager,editsStore)
+		"..dist/offline-tiles-basic-min.js",
+		"..dist/offline-edit-min.js",
+		function(Map)
 	{
 		...
 	});
 ```
+
+Also, if you have other AMD libraries in your project and you want to refer to offline-editor-js within a `define` statement you can use the following pattern for importing the library. Note you can leave off the `.js` from the module identifier, for example:
+
+```js
+
+	define(["..dist/offline-edit-min"],function(){
+		...
+	})
+
+```
+
 **Step 2** Once your map is created (either using new Map() or using esriUtils.createMap(webmapid,...), you create a new OfflineFeaturesManager instance and starting assigning events listeners to tie the library into your user interface:
 
 ```js
-		var offlineFeaturesManager = new OfflineFeaturesManager();
+		var offlineFeaturesManager = new O.esri.Edit.OfflineFeaturesManager();
 		offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_ENQUEUED, updateStatus);
 		offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_SENT, updateStatus);
 		offlineFeaturesManager.on(offlineFeaturesManager.events.ALL_EDITS_SENT, updateStatus);
@@ -116,12 +127,15 @@ Within your application you can manually check online status and then update you
 		
 ```
 
-####editsStore.hasPendingEdits()
-You can check if there are any edits pending. If there are then iterate `editsStore._retrieveEditsQueue()` and then convert the edits to a readable format via `offlineFeaturesManager.getReadableEdit(edit)`. 		
+####editStore.hasPendingEdits()
+You can check if there are any edits pending by using the EditStore library. If there are edits then you can iterate `editsStore.retrieveEditsQueue()` and convert the edits to a readable format via `offlineFeaturesManager.getReadableEdit(edit)`.
+		
 ```js
-			if( editsStore.hasPendingEdits())
+			// Be sure to import the module "esri/graphic" in your require statement
+			var editStore = new O.esri.Edit.EditStore(Graphic);
+			if( editStore.hasPendingEdits())
 			{
-				var edits = editsStore._retrieveEditsQueue();
+				var edits = editStore.retrieveEditsQueue();
 				edits.forEach(function(edit)
 				{
 					var readableEdit = offlineFeaturesManager.getReadableEdit(edit);

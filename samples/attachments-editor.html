@@ -44,13 +44,6 @@
     </style>
 
     <script>
-        var locationPath = location.pathname.replace(/\/[^/]+$/, "");
-        var dojoConfig = {
-            paths: {
-                edit: locationPath  + "/../lib/edit",
-                vendor: locationPath + "/../vendor"
-            }
-        }
         window.proxyPath = "../lib/resource-proxy/proxy.php";
     </script>
 
@@ -82,14 +75,16 @@
             "dojo/parser", "dojo/dom", "dojo/dom-class",
             "dojo/dom-construct",
 
-            "edit/offlineFeaturesManager",
-            "edit/editsStore",
             "dojo/on",
 
-            "dijit/layout/BorderContainer", "dijit/layout/ContentPane", "dojo/domReady!"
+            "dijit/layout/BorderContainer", "dijit/layout/ContentPane",
+
+            "../dist/offline-edit-min.js",
+
+            "dojo/domReady!"
         ], function(
             Map,FeatureLayer,AttachmentEditor,esriConfig,
-            parser,dom,domClass,domConstruct,OfflineFeaturesManager,editsStore,on
+            parser,dom,domClass,domConstruct,on
         ) 
         {
             parser.parse();
@@ -103,7 +98,7 @@
             //esriConfig.defaults.io.proxyUrl = "../lib/proxy.php";
             esriConfig.defaults.io.proxyUrl = window.proxyPath;
 
-            var offlineFeaturesManager = new OfflineFeaturesManager();
+            var offlineFeaturesManager = new O.esri.Edit.OfflineFeaturesManager();
             offlineFeaturesManager.initAttachments(function(success)
             {
                 attachmentsInited = success;
@@ -138,7 +133,7 @@
                 var attachmentEditor = new AttachmentEditor({}, dom.byId("content"));
                 attachmentEditor.startup();
 
-                featureLayer.on("click", function(evt) 
+                featureLayer.on("click", function(evt)
                 {
                     var event = evt;
                     var objectId = evt.graphic.attributes[featureLayer.objectIdField];

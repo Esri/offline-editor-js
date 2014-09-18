@@ -1,7 +1,7 @@
 API Doc for TPKLayer
 ====================
 
-##TPKLayer
+##O.esri.TPK.TPKLayer
 
 Extends a tiled map service and provides the ability to display tiles from a .tpk (ArcGIS Tile Page).
 
@@ -9,7 +9,7 @@ Extends a tiled map service and provides the ability to display tiles from a .tp
 
 Constructor | Description
 --- | ---
-`TPKLayer()` | Creates an instance of the TPKLayer class. This library allows you to extend a TiledMapServiceLayer for the purpose of displaying a TPK file as a map.
+`O.esri.TPK.TPKLayer()` | Creates an instance of the TPKLayer class. This library allows you to extend a TiledMapServiceLayer for the purpose of displaying a TPK file as a map.
 
 ###Methods
 Methods | Returns | Description
@@ -45,4 +45,13 @@ Event | Value | Description
 Methods | Returns | Description
 --- | --- | ---
 `getTileUrl(level, row, col)` | String | Use the url's level, row and column to retrieve tiles as requested by the ArcGIS API for JavaScript. If a tile is in the local database it is returned. If it is not then the library parsing the TPK file for the appropriate tile image. If 	`isDBWriteable()` is set to true (default), then an image retrieved from the TPK will be written to the database. Tile retrieval times from images stored in the database are significantly faster than pulling images from the TPK.
+
+###O.esri.zip
+
+Integrates zip.js into the TPKLayer library. Here is a short listing, for a completing listing of zip.js functionality go [here](http://gildas-lormeau.github.io/zip.js/).
+
+Methods | Returns | Description
+--- | --- | ---
+`createReader(reader, callback[, onerror])` | {ZipReader} | Create a ZipReader object. A ZipReader object helps to read the zipped content.
+`BlobReader(blob)` | Binary contents of Blob | Use this as the reader property in the createReader constructor.
 

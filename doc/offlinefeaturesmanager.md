@@ -1,14 +1,14 @@
-API offlineFeaturesManager
+API OfflineFeaturesManager
 ==================================
 
-##offlineFeaturesManager
+##O.esri.Edit.OfflineFeaturesManager
 Extends and overrides a feature layer. This library allows you to extend esri.layers.FeatureLayer objects with offline capability and manage the resync process.
 
 
 ###Constructor
 Constructor | Description
 --- | ---
-`OfflineFeaturesManager()` | Creates an instance of the offlineFeaturesManager class. This library allows you to extend FeatureLayer objects with offline editing capabilities and manage the online/offline resynchronization process.
+`O.esri.Edit.OfflineFeaturesManager()` | Creates an instance of the offlineFeaturesManager class. This library allows you to extend FeatureLayer objects with offline editing capabilities and manage the online/offline resynchronization process.
 
 ###ENUMs
 The manager can be in one of these three states (see `getOnlineStatus()` method):
@@ -33,6 +33,7 @@ Methods | Returns | Description
 Application code can subscribe to offlineFeaturesManager events to be notified of different conditions. 
 
 ```js
+
 	offlineFeaturesManager.on(
 		offlineFeaturesManager.events.EDITS_SENT, 
 		function(edits) 
@@ -53,15 +54,22 @@ Methods | Returns | Description
 --- | --- | ---
 `applyEdits(`  `adds, updates, deletes,`  `callback, errback)` | `deferred`| applyEdits() method is replaced by this library. It's behaviour depends upon online state of the manager. You need to pass the same arguments as to the original applyEdits() method and it returns a deferred object, that will be resolved in the same way as the original, as well as the callbacks will be called under the same conditions. This method looks the same as the original to calling code, the only difference is internal.
 
-##editsStore
+##O.esri.Edit.EditStore
 
-Provides a number of public static methods that are used by `offlineFeaturesManager` lib. They provide a low-level storage mechanism using indexedDb browser functions. These methods don't require a `new` statement or a constructor. After the module has been included in your application you can access these methods directly for example: `editsStore.getEditsStoreSizeBytes();`.
+Provides a number of public methods that are used by `OfflineFeaturesManager` library. They provide a low-level storage mechanism using indexedDb browser functions. Instiantiate this library using a `new` statement. 
+
+###Constructor
+Constructor | Description
+--- | ---
+`O.esri.Edit.EditStore(Graphic)` | Creates an instance of the EditStore class. This library is responsible for managing the storage, reading, writing, serialization, deserialization of geometric features. Importing `Graphic` _("esri/graphic")_ allows the library to provide more abstraction when returning serialized data.
 
 ###Public Methods
 Methods | Returns | Description
 --- | --- | ---
 `isSupported()` | boolean | Determines if local storage is available. If it is not available then the storage cache will not work. It's a best practice to verify this before attempting to write to the local cache.
 `hasPendingEdits()` | boolean | Determines if there are any queued edits in the local cache.
+`resetEditsQueue()` | nothing | Empties the edits queue and replaces it with an empty string.
+`retrieveEditsQueue()` | Array | returns an array of all pending edits.
 `pendingEditsCount()` | int | The total number of edits that are queued in the local cache.
 `getEditsStoreSizeBytes()` | Number | Returns the total size of all pending edits in bytes.
 `getLocalStorageSizeBytes()` | Number | Returns the total size in bytes of all items for local storage cached using the current domain name. 

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html  manifest="appcache-tiles.appcache">
+<html manifest="appcache-tiles.appcache">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no"/>
@@ -70,14 +70,13 @@ ask if you want to reload the application.
     var locationPath = location.pathname.replace(/\/[^/]+$/, "");
     var dojoConfig = {
         paths: {
-            tiles: locationPath  + "/../lib/tiles",
             vendor: locationPath + "/../vendor",
             utils: locationPath  + "/../utils"
         }
     }
 </script>
 <!-- This is a custom build of the ArcGIS API for JavaScript using the new Web Optimizer Tool -->
-<script src="http://js.arcgis.com/o/agup_hack4co/appcache2/dojo/dojo.js" data-dojo-config="async: true"></script>
+<script src="http://js.arcgis.com/o/agup_hack4co/appcacheFeatures/dojo/dojo.js" data-dojo-config="async: true"></script>
 <!-- Use this tag below if you are hosting your ArcGIS API for JavaScript files locally -->
 <!--<script src="libs/dojo/dojo/dojo.js" data-dojo-config="async: true"></script>-->
 <script src="../vendor/IndexedDBShim/dist/IndexedDBShim.min.js"></script>
@@ -110,8 +109,8 @@ ask if you want to reload the application.
 
 var map;
 
-require(["esri/map","utils/appCacheManager","tiles/OfflineTilesEnablerLayer","dojo/on","dojo/domReady!"],
-        function(Map,AppCacheManager,OfflineTileEnablerLayer,on) {
+require(["esri/map","utils/appCacheManager","dojo/on","../dist/offline-tiles-advanced-min.js","dojo/domReady!"],
+        function(Map,AppCacheManager,on) {
 
             var tileLayer = null;
 
@@ -132,6 +131,8 @@ require(["esri/map","utils/appCacheManager","tiles/OfflineTilesEnablerLayer","do
             Offline.check();
             Offline.on('up down', updateState );
 
+            initAppCacheManager();
+
             /**
              * There have been a few bugs in the offline detection library (offline.min.js)
              * This is a utility check to 100% validate if the application is online or
@@ -141,7 +142,14 @@ require(["esri/map","utils/appCacheManager","tiles/OfflineTilesEnablerLayer","do
                 result == true ? _isOnline = true : _isOnline = false;
                 startMap();
 
-            })
+            });
+
+            function initAppCacheManager(){
+                appCacheManager = new AppCacheManager(true,true);
+                appCacheManager.on(appCacheManager.CACHE_EVENT,cacheEventHandler);
+                appCacheManager.on(appCacheManager.CACHE_ERROR,cacheErrorHandler);
+                appCacheManager.on(appCacheManager.CACHE_LOADED,cacheLoaderHandler);
+            }
 
             function startMap(){
                 //Make sure map shows up after a browser refresh
@@ -153,7 +161,7 @@ require(["esri/map","utils/appCacheManager","tiles/OfflineTilesEnablerLayer","do
                     sliderStyle: "small"
                 });
 
-                tileLayer = new OfflineTileEnablerLayer("http://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer",function(evt){
+                tileLayer = O.esri.Tiles.OfflineTileEnablerLayer("http://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer",function(evt){
                     console.log("Offline tile lib is enabled. Application state is: " + Offline.state);
                 },_isOnline);
 
@@ -190,11 +198,6 @@ require(["esri/map","utils/appCacheManager","tiles/OfflineTilesEnablerLayer","do
                     updateOfflineUsage();
                     console.log("Zoom level = " + tileLayer.getLevel())
                 });
-
-                appCacheManager = new AppCacheManager(true,true);
-                appCacheManager.on(appCacheManager.CACHE_EVENT,cacheEventHandler);
-                appCacheManager.on(appCacheManager.CACHE_ERROR,cacheErrorHandler);
-                appCacheManager.on(appCacheManager.CACHE_LOADED,cacheLoaderHandler);
 
                 btnGetTiles = document.getElementById("btn-get-tiles");
                 btnOnlineOffline = document.getElementById("btn-online-offline");
