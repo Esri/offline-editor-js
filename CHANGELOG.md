@@ -1,5 +1,9 @@
 # offline-editor-js - Changelog
 
+## Version 2.1 - Sep 18, 2014
+- Closes #236 - Minor typo in How to use TPKLayer doc
+- Closes #237 - Completely rebuilt gh-pages. Now we have an online demo app page.
+
 ## Version 2.0.3 - Sep 15, 2014
 - Closes issue #234 - Minor cleanup of samples. Removed unused dojoConfig pathnames. 
 
