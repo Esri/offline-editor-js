@@ -72,28 +72,28 @@
 <div class="container">
     <div class="bs-docs-section">
         <h1 id="examples" class="page-header">Examples</h1>
-        <p>Use the following applications as building blocks.</p>
+        <p class="lead">Use the following applications as building blocks. </p>
         <div class="row bs-examples">
             <div class="col-xs-6 col-md-4">
                 <a class="thumbnail" href="../samples/tiles-indexed-db.html">
                     <img src="images/tiles-demo-thumb.png">
                 </a>
-                <h3>Tiles Demo</h3>
+                <h3>Tiles Only</h3>
                 <p>Gives you an overview of the functionality related to storing and managing multiple layers of tiles.</p>
             </div>
             <div class="col-xs-6 col-md-4">
                 <a class="thumbnail" href="../samples/draw-pointlinepoly-offline.html">
                     <img src="images/cop-demo-thumb.png">
                 </a>
-                <h3>COP Demo</h3>
-                <p>Common Operating Picture app lets you add, update and delete geographic features while offline. </p>
+                <h3>Feature Editing</h3>
+                <p>This app shows how add, update and delete geographic features while offline and auto-resync when internet is reestablished. </p>
             </div>
             <div class="col-xs-6 col-md-4">
                 <a class="thumbnail" href="../samples/attachments-editor.html">
                     <img src="images/attachments-demo-thumb.png">
                 </a>
-                <h3>Attachments Demo</h3>
-                <p>Demonstrates working with geographic feature attachments such as images and associating them with a feature.</p>
+                <h3>Attachments</h3>
+                <p>Demonstrates working with geographic feature attachments such as images and associating them with a feature while offline.</p>
             </div>
         </div>
         <div class="row bs-examples">
@@ -101,21 +101,21 @@
                 <a class="thumbnail" href="../samples/tpk-layer.html">
                     <img src="images/tpk-demo-thumb.png">
                 </a>
-                <h3>TPK Demo</h3>
-                <p>Shows how to integrate <a href="http://resources.arcgis.com/en/help/main/10.1/index.html#//006600000457000000">.tpk files</a> into your mapping app.</p>
+                <h3>TPK Only</h3>
+                <p>Shows how to integrate <a href="http://resources.arcgis.com/en/help/main/10.1/index.html#//006600000457000000">.tpk files</a> into your mapping app. Tile packages are a set of tile images from a map compressed into a single binary file.</p>
             </div>
             <div class="col-xs-6 col-md-4">
                 <a class="thumbnail" href="../samples/appcache-features.html">
                     <img src="images/appcachefeatures-demo-thumb.png">
                 </a>
-                <h3>AppCache Features and Tiles Demo</h3>
+                <h3>AppCache Features and Tiles</h3>
                 <p>This mobile feature editing demo is configured to maintain your edits and tiles after offline browser reloads and restarts.</p>
             </div>
             <div class="col-xs-6 col-md-4">
                 <a class="thumbnail" href="../samples/appcache-tiles.html">
                     <img src="images/appcachetiles-demo-thumb.png">
                 </a>
-                <h3>AppCache Tiles Demo</h3>
+                <h3>AppCache Tiles Only</h3>
                 <p>A bare bones app that demos maintaining the map tiles after offline browser reloads and restarts.</p>
             </div>
         </div>
@@ -123,7 +123,8 @@
 
     <div class="bs-docs-section">
         <h1 id="examples" class="page-header">Supported Browsers</h1>
-        <p>The offline libraries are supported on the <strong>latest versions</strong> of the following browsers and operating systems. At this time, we don't offer any IE support.</p>
+        <p class="lead">The offline libraries are supported on the <strong>latest versions</strong> of the following browsers and operating systems. At this time, we don't offer any IE support.<br>
+        </p>
         <table class="table table-bordered table-striped">
             <thead>
             <tr>
@@ -149,14 +150,14 @@
                 <td class="text-success"><span class="glyphicon glyphicon-ok"></span> <span class="sr-only">Supported</span></td>
                 <td class="text-muted">N/A</td>
                 <td class="text-danger"><span class="glyphicon glyphicon-remove"></span> <span class="sr-only">Not Supported</span></td>
-                <td class="text-success"><span class="glyphicon glyphicon-ok"></span> <span class="sr-only">Supported</span></td>
+                <td class="text-success"><span class="glyphicon glyphicon-ok">*</span> <span class="sr-only">Supported</span></td>
             </tr>
             <tr>
                 <th>Mac OS X</th>
                 <td class="text-success"><span class="glyphicon glyphicon-ok"></span> <span class="sr-only">Supported</span></td>
                 <td class="text-success"><span class="glyphicon glyphicon-ok"></span> <span class="sr-only">Supported</span></td>
                 <td class="text-danger"><span class="glyphicon glyphicon-remove"></span> <span class="sr-only">Not Supported</span></td>
-                <td class="text-success"><span class="glyphicon glyphicon-ok"></span> <span class="sr-only">Supported</span></td>
+                <td class="text-success"><span class="glyphicon glyphicon-ok">*</span> <span class="sr-only">Supported</span></td>
             </tr>
             <tr>
                 <th>Windows</th>
@@ -168,6 +169,7 @@
             </tr>
             </tbody>
          </table>
+        <span class="text-success"><span class="glyphicon glyphicon-ok">*</span></span> - means that <a href="https://github.com/axemclion/IndexedDBShim"> IndexedDBShim.js</a> may be required on this browser/platform. More info available in the <a href="https://github.com/Esri/offline-editor-js"> README </a> under Dependencies.
     </div>
 
 </div>
