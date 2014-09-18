@@ -1,19 +1,19 @@
-API Doc for offlineTilesEnabler
+API Doc for OfflineTilesEnabler
 ===============================
 
-There are two different libraries for taking tiles offline: offlineTilesEnabler.js and OfflineTilesEnablerLayer.js. The first one, offlineTilesEnabler.js, is for use with ArcGIS.com web maps and partial offline scenario. You won't be able to restart or reload your app when using this library.
+There are two different libraries for taking tiles offline: `offline-tiles-basic-min.js` and `offline-tiles-advanced-min.js`. The basic library is for use with ArcGIS.com web maps and partial/intermittently offline use cases. You won't be able to restart or reload your app when using this library offline.
 
-If you have a requirement to allow restarting or reloading then you should use OfflineTilesEnablerLayer.js. The OfflineTilesEnablerLayer.js library lets you create a custom basemap layer that extends TiledMapServiceLayer. To view the docs for this library scroll down on this page.
+If you have a requirement for restarting or reloading the app while offline then you should use the advanced library. The `offline-tiles-advanced-min.js` library lets you create a custom basemap layer that extends TiledMapServiceLayer. To view the docs for this library scroll down on this page.
 
-##offlineTilesEnabler
+##O.esri.Tiles.OfflineTilesEnabler
 Extends and overrides a tiled map service. For use with ArcGIS.com maps or partial-offline situations that don't require a browser restart or reload. 
 
-Provides the ability to customize the extent used to cut the tiles. See the detailed description of basemap.prepareForOffline() in the "How To Use" section below to learn different options.
+Provides the ability to customize the extent used to cut the tiles. See the detailed description of `basemap.prepareForOffline()` in the "How To Use" section below to learn different options.
 
 ###Constructor
 Constructor | Description
 --- | ---
-`OfflineTilesEnabler()` | Creates an instance of the offlineTilesEnabler class. This library allows you to extend an ArcGISTiledMapServiceLayer with partial offline capability as well as manage the online/offline resynchronization process.
+`O.esri.Tiles.OfflineTilesEnabler()` | Creates an instance of the offlineTilesEnabler class. This library allows you to extend an ArcGISTiledMapServiceLayer with partial offline capability as well as manage the online/offline resynchronization process.
 
 
 ###Methods
@@ -40,13 +40,13 @@ Property  | Description
 
 
 
-##OfflineTilesEnablerLayer
-Extends and overrides a tiled map service. This library creates a custom tiled map layer. It can be used in situations where a browser restart or reload is required.
+##O.esri.Tiles.OfflineTilesEnablerLayer
+Extends and overrides a tiled map service. This library can be used in situations where an offline browser restart or reload is required.
 
 ###Constructor
 Constructor | Description
 --- | ---
-`OfflineTilesEnablerLayer(url,callback,state)` | Creates an instance of the offlineTilesEnabler class. This library allows you to extend an ArcGISTiledMapServiceLayer with offline capability as well as manage the online/offline resynchronization process. Any Esri basemap REST endpoint should work. The state property is a boolean for specifying if the application is intializing the layer online (true) or offline (false). When you first load the map you should set this property to `true`.
+`O.esri.Tiles.OfflineTilesEnablerLayer(url,callback,state)` | Creates an instance of the offlineTilesEnabler class. This library allows you to extend an ArcGISTiledMapServiceLayer with offline capability as well as manage the online/offline resynchronization process. Any Esri basemap REST endpoint should work. The state property is a boolean for specifying if the application is intializing the layer online (true) or offline (false). When you first load the map you should set this property to `true`.
 
 
 ###Methods

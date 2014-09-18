@@ -65,14 +65,6 @@
 	</style>
 	
 	<script>
-		var locationPath = location.pathname.replace(/\/[^/]+$/, "");
-		var dojoConfig = {
-			paths: { 
-				edit: locationPath  + "/../lib/edit",
-				tiles: locationPath  + "/../lib/tiles",
-				vendor: locationPath + "/../vendor"
-			}
-		}
         window.proxyPath = "../lib/resource-proxy/proxy.php";
 	</script>
 
@@ -102,10 +94,7 @@
 
 	    "esri/layers/ArcGISTiledMapServiceLayer",
 	    "esri/layers/FeatureLayer",
-		
-	    "edit/offlineFeaturesManager",
-	    "edit/editsStore",
-	    "tiles/offlineTilesEnabler",
+
 
 	    "esri/symbols/SimpleMarkerSymbol",
 	    "esri/symbols/SimpleLineSymbol",
@@ -119,20 +108,24 @@
 	    "dojo/_base/array", "dojo/parser", "dojo/keys", 
 		"dojo/dom", "dojo/on", "dojo/dom-construct", "dojo/dom-class", "esri/domUtils",
 
-	    "dijit/layout/BorderContainer", "dijit/layout/ContentPane", 
+        "esri/graphic",
+
+	    "dijit/layout/BorderContainer", "dijit/layout/ContentPane",
+        "../dist/offline-tiles-basic-min.js",
+        "../dist/offline-edit-src.js",
 	    "dojo/domReady!"
 	], function(
 	    Map, GeometryService, Edit, 
-	    ArcGISTiledMapServiceLayer, FeatureLayer, 
-		OfflineFeaturesManager, editsStore, OfflineTilesEnabler,
+	    ArcGISTiledMapServiceLayer, FeatureLayer,
 	    SimpleMarkerSymbol, SimpleLineSymbol, 
 	    Editor, TemplatePicker,
 	    esriConfig, jsapiBundle,
 	    arrayUtils, parser, keys, 
-		dom, on, domConstruct, domClass, domUtils
+		dom, on, domConstruct, domClass, domUtils,Graphic
 	) {
 		var editor;
 		var basemapLayer;
+        var editStore = new O.esri.Edit.EditStore(Graphic); // include esri/graphic reference for serialization/deserialization
 
 		parser.parse();
 		dojo.fadeOut({node:'loader-cloak', onEnd: function(n){n.style.display="none"}}).play();
@@ -143,7 +136,7 @@
 		on(dom.byId('go-offline-btn'),'click', goOffline);
 		on(dom.byId('go-online-btn'),'click', goOnline);
 		on(dom.byId('refresh-feature-layers-btn'),'click', refreshFeatureLayers);
-		var offlineFeaturesManager = new OfflineFeaturesManager();
+		var offlineFeaturesManager = new O.esri.Edit.OfflineFeaturesManager();
 		offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_ENQUEUED, updateStatus);
 		offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_SENT, updateStatus);
 		offlineFeaturesManager.on(offlineFeaturesManager.events.ALL_EDITS_SENT, updateStatus);
@@ -186,7 +179,7 @@
 		function initEditor(evt)
 		{
 			try {
-				var offlineTilesEnabler = new OfflineTilesEnabler();
+				var offlineTilesEnabler = new O.esri.Tiles.OfflineTilesEnabler();
 				basemapLayer = map.getLayer( map.layerIds[0] );
 				offlineTilesEnabler.extend(basemapLayer);
 
@@ -292,10 +285,10 @@
 			{
 				return Math.floor(bytes / 1024 / 1024 * 100)/100 + " MBs";
 			}
-			var localStorageSizeBytes = editsStore.getLocalStorageSizeBytes();
-			var editsStoreSizeBytes = editsStore.getEditsStoreSizeBytes();
+			var localStorageSizeBytes = editStore.getLocalStorageSizeBytes();
+			var editStoreSizeBytes = editStore.getEditsStoreSizeBytes();
 
-			var info = "Used " + formatMb(localStorageSizeBytes) + " (" + formatMb(editsStoreSizeBytes) + ")";
+			var info = "Used " + formatMb(localStorageSizeBytes) + " (" + formatMb(editStoreSizeBytes) + ")";
 			dom.byId('storageInfo').innerHTML = info;
 		}
 
@@ -313,9 +306,9 @@
 		{
 			var li;
 			domConstruct.empty('pendingEdits');
-			if( editsStore.hasPendingEdits())
+			if( editStore.hasPendingEdits())
 			{
-				var edits = editsStore._retrieveEditsQueue();
+				var edits = editStore.retrieveEditsQueue();
 				edits.forEach(function(edit)
 				{
 					var readableEdit = offlineFeaturesManager.getReadableEdit(edit);
@@ -332,7 +325,7 @@
 
 		function clearPendingEdits()
 		{
-			editsStore.resetEditsQueue();
+			editStore.resetEditsQueue();
 			updateStatus();
 		}
 

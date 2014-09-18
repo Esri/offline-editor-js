@@ -19,9 +19,9 @@
 		}
 	</script>
 
-		<link rel="stylesheet" href="http://js.arcgis.com/3.8/js/dojo/dijit/themes/claro/claro.css">
-		<link rel="stylesheet" href="http://js.arcgis.com/3.8/js/esri/css/esri.css">
-		<script src="http://js.arcgis.com/3.8/"></script>
+		<link rel="stylesheet" href="http://js.arcgis.com/3.10/js/dojo/dijit/themes/claro/claro.css">
+		<link rel="stylesheet" href="http://js.arcgis.com/3.10/js/esri/css/esri.css">
+		<script src="http://js.arcgis.com/3.10/"></script>
 
 	<!-- include spec files here... -->
 	<script type="text/javascript" src="spec/offlineFeaturesManagerSpec.js"></script>
@@ -38,8 +38,9 @@
 		"esri/layers/GraphicsLayer", "esri/graphic",
 		"esri/layers/FeatureLayer", "esri/geometry", "esri/request",
 		"dojo/dom", "dojo/on", "dojo/query",
-		"edit/offlineFeaturesManager", "edit/editsStore",
-		"dojo/dom-construct", "dojo/domReady!"], 
+		"dojo/dom-construct",
+        "../dist/offline-edit-min.js",
+        "dojo/domReady!"],
 		function(Map, 
 			GraphicsLayer, Graphic, 
 			FeatureLayer, geometry, esriRequest,
@@ -49,8 +50,8 @@
 		{
 			g_modules.esriRequest = esriRequest;
 			g_modules.Graphic = Graphic;
-			g_offlineFeaturesManager = new OfflineFeaturesManager();
-			g_editsStore = editsStore;
+			g_offlineFeaturesManager = new O.esri.Edit.OfflineFeaturesManager();
+			g_editsStore = new O.esri.Edit.EditStore();
 
 			g_map = new Map("map", {
 				basemap: "satellite",
@@ -94,7 +95,7 @@
 				{					
 				var jasmineEnv = jasmine.getEnv();
 				jasmineEnv.updateInterval = 1000;
-				jasmineEnv.defaultTimeoutInterval = 10000; // 10 sec
+				jasmineEnv.defaultTimeoutInterval = 5000; // 10 sec
 				var htmlReporter = new jasmine.HtmlReporter();
 
 				jasmineEnv.addReporter(htmlReporter);

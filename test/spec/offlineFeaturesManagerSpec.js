@@ -555,6 +555,10 @@ describe("Offline Editing", function()
 			expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2,g4,g5,g6]));
 			expect(g_featureLayers[0].graphics.length).toBe(5);
 			expect(g_editsStore.pendingEditsCount()).toBe(16);
+
+            var queue = g_editsStore.retrieveEditsQueue();
+            expect(queue.length).toBe(16);
+
 			countFeatures(g_featureLayers[0], function(success,result)
 			{
 				expect(success).toBeTruthy();
@@ -644,6 +648,10 @@ describe("Offline Editing", function()
 				}
 			}
 			expect(g_editsStore.pendingEditsCount()).toBe(0);
+
+            var queue = g_editsStore.retrieveEditsQueue();
+            expect(queue.length).toBe(0);
+
 			// how to get the final id of g4 and g6 ?
 			//expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2,g4,g6]));
 			// all of them are positive
