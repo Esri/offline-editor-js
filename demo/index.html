@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!--<link rel="shortcut icon" href="../images/favicon.ico">-->
 
     <title>Offline-editor-js</title>
 
@@ -44,8 +45,8 @@
 <div class="jumbotron">
     <div class="container">
         <h1>Offline-editor-js</h1>
-        <p>Examples of how to build offline mapping applications for the web.</p>
-        <p><a class="btn btn-primary btn-lg" role="button">Learn more &raquo;</a></p>
+        <p>Examples of how to build lightweight offline mapping applications for the web.</p>
+        <!--<p><a class="btn btn-primary btn-lg" role="button">Samples &raquo;</a></p>-->
     </div>
 </div>
 
@@ -54,20 +55,73 @@
     <div class="row">
         <div class="col-md-4">
             <h2>Editing</h2>
-            <p>Build web mapping and geospatial applications that use the <a href="http://developers.arcgis.com/en/documentation" target="_blank">ArcGIS JavaScript API</a> and allow you to temporarily store adds, updates and deletes while the device is offline.</p>
+            <p>Build web mapping and geospatial applications that use the <a href="http://developers.arcgis.com/en/documentation" target="_blank">ArcGIS JavaScript API</a> and allow you to temporarily store adds, updates and deletes of geographic features while the device is offline.</p>
         </div>
         <div class="col-md-4">
             <h2>Tiles</h2>
-            <p>Store tile images from tiled map services locally so that they can continue to be used when your application goes offline.</p>
+            <p>Stores tile images from tiled map services locally. Once tiles are stored your mapping app can seemlessly transition between online and offline modes.</p>
         </div>
         <div class="col-md-4">
             <h2>TPK</h2>
-            <p>Add .tpk files (binary tile packages) directly to your app whether it is online or offline. TPKs can be used by themselves or alongside tiled map services.</p>
+            <p>Add .tpk files (binary tile packages) directly to your app whether it is online or offline. Use TPKs as the stand-alone mapping source file or alongside tiled map services.</p>
         </div>
     </div>
 
     <hr>
 </div> <!-- /container -->
+<div class="container">
+    <div class="bs-docs-section">
+        <h1 id="examples" class="page-header">Examples</h1>
+        <p>Use the following applications as building blocks.</p>
+        <div class="row bs-examples">
+            <div class="col-xs-6 col-md-4">
+                <a class="thumbnail" href="../samples/tiles-indexed-db.html">
+                    <img src="images/tiles-demo-thumb.png">
+                </a>
+                <h3>Tiles Demo</h3>
+                <p>Gives you an overview of the functionality related to storing and managing multiple layers of tiles.</p>
+            </div>
+            <div class="col-xs-6 col-md-4">
+                <a class="thumbnail" href="../samples/draw-pointlinepoly-offline.html">
+                    <img src="images/cop-demo-thumb.png">
+                </a>
+                <h3>COP Demo</h3>
+                <p>Common Operating Picture app lets you add, update and delete geographic features while offline. </p>
+            </div>
+            <div class="col-xs-6 col-md-4">
+                <a class="thumbnail" href="../samples/attachments-editor.html">
+                    <img src="images/attachments-demo-thumb.png">
+                </a>
+                <h3>Attachments Demo</h3>
+                <p>Demonstrates working with geographic feature attachments such as images and associating them with a feature.</p>
+            </div>
+        </div>
+        <div class="row bs-examples">
+            <div class="col-xs-6 col-md-4">
+                <a class="thumbnail" href="../samples/tpk-layer.html">
+                    <img src="images/tpk-demo-thumb.png">
+                </a>
+                <h3>TPK Demo</h3>
+                <p>Shows how to integrate <a href="http://resources.arcgis.com/en/help/main/10.1/index.html#//006600000457000000">.tpk files</a> into your mapping app.</p>
+            </div>
+            <div class="col-xs-6 col-md-4">
+                <a class="thumbnail" href="../samples/appcache-features.html">
+                    <img src="images/appcachefeatures-demo-thumb.png">
+                </a>
+                <h3>AppCache Features and Tiles Demo</h3>
+                <p>This mobile feature editing demo is configured to maintain your edits and tiles after offline browser reloads and restarts.</p>
+            </div>
+            <div class="col-xs-6 col-md-4">
+                <a class="thumbnail" href="../samples/appcache-tiles.html">
+                    <img src="images/appcachetiles-demo-thumb.png">
+                </a>
+                <h3>AppCache Tiles Demo</h3>
+                <p>A bare bones app that demos maintaining the map tiles after offline browser reloads and restarts.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
 
 
 <!-- Bootstrap core JavaScript
