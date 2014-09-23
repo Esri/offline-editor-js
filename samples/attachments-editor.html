@@ -96,7 +96,7 @@
             // a proxy page is required to upload attachments
             // refer to "Using the Proxy Page" for more information:  https://developers.arcgis.com/en/javascript/jshelp/ags_proxy.html
             //esriConfig.defaults.io.proxyUrl = "../lib/proxy.php";
-            esriConfig.defaults.io.proxyUrl = window.proxyPath;
+            esriConfig.defaults.io.proxyUrl = null; //can be set to null when using a CORS-enabled server
 
             var offlineFeaturesManager = new O.esri.Edit.OfflineFeaturesManager();
             offlineFeaturesManager.initAttachments(function(success)
@@ -109,8 +109,8 @@
 
             map = new Map("map", {
                 basemap: "streets",
-                center: [-122.427, 37.769],
-                zoom: 15
+                center: [-88.1,41.7],
+                zoom: 11
             });
 
             map.on("load", mapLoaded);
@@ -123,7 +123,7 @@
 
             function mapLoaded() 
             {
-                featureLayer = new FeatureLayer("http://sampleserver3.arcgisonline.com/ArcGIS/rest/services/SanFrancisco/311Incidents/FeatureServer/0",{
+                featureLayer = new FeatureLayer("http://sampleserver6.arcgisonline.com/arcgis/rest/services/ServiceRequest/FeatureServer/0",{
                     mode: FeatureLayer.MODE_ONDEMAND
                     //mode: FeatureLayer.MODE_SNAPSHOT
                 });

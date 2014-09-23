@@ -1,5 +1,8 @@
 # offline-editor-js - Changelog
 
+## Version 2.1.1 - Sep 22, 2014
+- Closes #244 - broken attachements-editor sample gh-pages
+
 ## Version 2.1 - Sep 18, 2014
 - Closes #236 - Minor typo in How to use TPKLayer doc
 - Closes #237 - Completely rebuilt gh-pages. Now we have an online demo app page.
