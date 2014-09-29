@@ -81,6 +81,17 @@ Also, if you have other AMD libraries in your project and you want to refer to o
 ```
 **Step 5** Use the new offline methods on the layer to prepare for offline mode while still online. Here are a few examples that include code snippets of how to take advantage of some of the libraries methods. You can use a combination of methods from `editsStore` and `offlineFeaturesManager`.
 
+####offlineFeaturesManager.proxyPath
+By default, the library assumes you are using a CORS-enabled Feature Service. All ArcGIS Online Feature Services are CORS-enabled. If you are hosting your own service and it is not CORS-enabled, then you will need to set this path.
+
+Here's one example:
+
+```js
+
+	offlineFeaturesManager.proxyPath = "../your-local-proxy-directory/proxy.php";
+
+```
+
 ####offlineFeaturesManager.goOffline()
 Force the library to go offline. Once this condition is set, then any offline edits will be cached locally.
 

@@ -10,14 +10,20 @@ Constructor | Description
 --- | ---
 `O.esri.Edit.OfflineFeaturesManager()` | Creates an instance of the offlineFeaturesManager class. This library allows you to extend FeatureLayer objects with offline editing capabilities and manage the online/offline resynchronization process.
 
+###Properties
+Property | Description
+--- | ---
+`proxyPath` | Default is null. If you are using a Feature Service that is not CORS-enabled then you will need to set this path.
+`attachmentsStore` | Default is null. If you are using attachments, this property gives you access to the associated database.
+
 ###ENUMs
 The manager can be in one of these three states (see `getOnlineStatus()` method):
 
-Property | Description
---- | ---
-offlineFeaturesManager.ONLINE | all edits will directly go to the server
-offlineFeaturesManager.OFFLINE | edits will be enqueued
-offlineFeaturesManager.RECONNECTING | sending stored edits to the server
+Property | Value | Description
+--- | --- | ---
+`ONLINE` | "online" | All edits will directly go to the server
+`OFFLINE` | "offline" | Edits will be enqueued
+`RECONNECTING` | "reconnecting" | Sending stored edits to the server
 
 ###Methods
 Methods | Returns | Description
@@ -42,11 +48,13 @@ Application code can subscribe to offlineFeaturesManager events to be notified o
 		});
 ```
 
-Event |  Description
---- | ---
-offlineFeaturesManager.events.EDITS_SENT | When any edit is actually sent to the server.
-offlineFeaturesManager.events.EDITS_ENQUEUED | When an edit is enqueued and not sent to the server.
-offlineFeaturesManager.events.ALL_EDITS_SENT |  After going online and there are no pending edits remaining in the queue.
+Event | Value |  Description
+--- | --- | ---
+`events.EDITS_SENT` | "edits-sent" | When any edit is actually sent to the server.
+`events.EDITS_ENQUEUED` | "edits-enqueued" | When an edit is enqueued and not sent to the server.
+`events.ALL_EDITS_SENT` | "all-edits-sent" | After going online and there are no pending edits remaining in the queue.
+`events.ATTACHMENT_ENQUEUED` | "attachment-enqueued" | An attachment is in the queue to be sent to the server.
+`events.ATTACHMENTS_SENT` | "attachments-sent" | When any attachment is actually sent to the server.
 
 ###FeatureLayer Overrides
 
