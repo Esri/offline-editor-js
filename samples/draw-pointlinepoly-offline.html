@@ -63,10 +63,6 @@
 		.dj_ie .infowindow .window .top .right .user .content { position: relative; }
 		.dj_ie .simpleInfoWindow .content {position: relative;}	
 	</style>
-	
-	<script>
-        window.proxyPath = "../lib/resource-proxy/proxy.php";
-	</script>
 
 	<script src="http://js.arcgis.com/3.8"></script>
 	<script src="../vendor/offline/offline.min.js"></script>
@@ -137,6 +133,13 @@
 		on(dom.byId('go-online-btn'),'click', goOnline);
 		on(dom.byId('refresh-feature-layers-btn'),'click', refreshFeatureLayers);
 		var offlineFeaturesManager = new O.esri.Edit.OfflineFeaturesManager();
+
+        // IMPORTANT!!!
+        // A proxy page may be required to upload attachments.
+        // If you are using a CORS enabled server you may be ablew to set the proxyPath to null.
+        // Refer to "Using the Proxy Page" for more information:  https://developers.arcgis.com/en/javascript/jshelp/ags_proxy.html
+        offlineFeaturesManager.proxyPath = null;
+
 		offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_ENQUEUED, updateStatus);
 		offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_SENT, updateStatus);
 		offlineFeaturesManager.on(offlineFeaturesManager.events.ALL_EDITS_SENT, updateStatus);
@@ -146,8 +149,6 @@
         Offline.check();
 		Offline.on('up', goOnline );
 		Offline.on('down', goOffline );
-
-		esriConfig.defaults.io.proxyUrl = "../resource-proxy/proxy.php";
 
 		map = new Map("map", {
 			basemap: "satellite",
