@@ -272,7 +272,7 @@ describe("TPKLayer module", function(){
     it("Get tiles - do not store", function(done){
         var url = "test";
         var db = tpkLayer.store;
-        tpkLayer.isDBWriteable(false);
+        tpkLayer.setDBWriteable(false);
 
         db.deleteAll(function(success,err){
             expect(success).toBeTruthy();
