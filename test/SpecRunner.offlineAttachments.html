@@ -17,7 +17,6 @@
 				vendor: location.pathname.replace(/\/[^/]+$/, "") + "../../vendor" 
 			}
 		}
-        window.proxyPath = "../lib/resource-proxy/proxy.php";
 	</script>
 
 		<link rel="stylesheet" href="http://js.arcgis.com/3.10/js/dojo/dijit/themes/claro/claro.css">
@@ -53,8 +52,6 @@
 			g_modules.Graphic = Graphic;
 			g_offlineFeaturesManager = new O.esri.Edit.OfflineFeaturesManager();
 			g_editsStore = new O.esri.Edit.EditStore();
-			
-            esriConfig.defaults.io.proxyUrl = window.proxyPath;
 
 			g_offlineFeaturesManager.initAttachments(function(success)
 			{
