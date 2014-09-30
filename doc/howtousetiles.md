@@ -133,10 +133,15 @@ This approach is best if you have requirements for restarting or reloading your 
 
 **Step 2** Create a new instance of `OfflineTilesEnablerLayer`. Note, when you instantiate the `Map` leave off the `basemap` property because we are adding a customer tile layer as our basemap. `OfflineTilesEnablerLayer` has three properties in the constructor. The first is the REST endpoint of the basemap you want to use, the second is the callback and the last is an optional parameter to preset the layer as online or offline. This will help with with drawing tiles correctly during offline restarts or reloads.
 
+IMPORTANT: If you are trying to use a non-CORS-enabled Feature Service you will need to explicity declare your `proxyPath`. We've set `proxyPath` to `null` here just as an illustration. You don't need to do that since its default is `null`.
+
 ```js
 
     tileLayer = new O.esri.Tiles.OfflineTilesEnablerLayer("http://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer",function(evt){
         console.log("Tile Layer Loaded.");
+        // All non-CORS-enabled Feature Services require a proxy.
+        // You can set the property here if needed.
+        tileLayer.offline.proxyPath = null;
     },_isOnline);
 
 	// NOTE: When instantiating the Map, do not specify the basemap property!

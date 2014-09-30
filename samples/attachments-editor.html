@@ -8,7 +8,7 @@
     <title>SanFrancisco311 - Incidents</title>
 
     <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" >
-    <link rel="stylesheet" href="http://js.arcgis.com/3.8/js/esri/css/esri.css">
+    <link rel="stylesheet" href="http://js.arcgis.com/3.10/js/esri/css/esri.css">
     <style>
         html, body { height: 100%; width: 100%; margin: 0; overflow: hidden; font-family: Arial; }
         #map { height: 100%; padding: 0;}
@@ -43,11 +43,7 @@
         }
     </style>
 
-    <script>
-        window.proxyPath = "../lib/resource-proxy/proxy.php";
-    </script>
-
-    <script src="http://js.arcgis.com/3.8/"></script>
+    <script src="http://js.arcgis.com/3.10/"></script>
     <script src="../vendor/offline/offline.min.js"></script>
     <script>
         Offline.options = {
@@ -93,12 +89,17 @@
                 featureLayer,
                 attachmentsInited = false;
 
-            // a proxy page is required to upload attachments
-            // refer to "Using the Proxy Page" for more information:  https://developers.arcgis.com/en/javascript/jshelp/ags_proxy.html
-            //esriConfig.defaults.io.proxyUrl = "../lib/proxy.php";
-            esriConfig.defaults.io.proxyUrl = null; //can be set to null when using a CORS-enabled server
+//            window.proxyPath = null; //can be set to null when using a CORS-enabled server
+//            esriConfig.defaults.io.proxyUrl = null; //can be set to null when using a CORS-enabled server
 
             var offlineFeaturesManager = new O.esri.Edit.OfflineFeaturesManager();
+
+            // IMPORTANT!!!
+            // A proxy page may be required to upload attachments.
+            // If you are using a CORS enabled server you may be ablew to set the proxyPath to null.
+            // Refer to "Using the Proxy Page" for more information:  https://developers.arcgis.com/en/javascript/jshelp/ags_proxy.html
+            offlineFeaturesManager.proxyPath = null;
+
             offlineFeaturesManager.initAttachments(function(success)
             {
                 attachmentsInited = success;
