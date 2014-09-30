@@ -1,4 +1,4 @@
-/*! offline-editor - v0.0.1 - 2014-09-08
+/*! offline-editor - v2.2 - 2014-09-30
 *   Copyright (c) 2014 Environmental Systems Research Institute, Inc.
 *   Apache License*/
 define([
@@ -51,10 +51,16 @@ define([
                 isOnline = state; console.log("STATE IS: " + state)
             }
 
+            /**
+             * IMPORTANT! proxyPath is set to null by default since we assume Feature Service is CORS-enabled.
+             * All AGOL Feature Services are CORS-enabled.
+             *
+             * @type {{online: boolean, store: O.esri.Tiles.TilesStore, proxyPath: null}}
+             */
             this.offline = {
                 online: isOnline,
                 store: new O.esri.Tiles.TilesStore(),
-                proxyPath: "../lib/resource-proxy/proxy.php"
+                proxyPath: null
             };
 
             if( /*false &&*/ this.offline.store.isSupported() )
@@ -77,7 +83,7 @@ define([
                                 alert("There was a problem retrieving tiled map info in OfflineTilesEnablerLayer.");
                             }
 
-                            this._tilesCore._parseGetTileInfo(SpatialReference,LOD,Extent,TileInfo,Point,result,function(tileResult){
+                            this._tilesCore._parseGetTileInfo(result,function(tileResult){
                                 this.layerInfos = tileResult.resultObj.layers;
                                 this.minScale = tileResult.resultObj.minScale;
                                 this.maxScale = tileResult.resultObj.maxScale;
@@ -307,7 +313,7 @@ define([
          */
         getTilePolygons : function(callback)	// callback(Polygon polygon) or callback(null, error)
         {
-            this._tilesCore._getTilePolygons(Polygon,this.offline.store,this.url,this,callback);
+            this._tilesCore._getTilePolygons(this.offline.store,this.url,this,callback);
         },
 
         /**
@@ -1042,7 +1048,7 @@ O.esri.Tiles.TilesCore = function(){
      * @param context a reference to the layer
      * @param callback callback(polygon, error)
      */
-    this._getTilePolygons = function(Polygon,store,layerUrl,context,callback)	// callback(Polygon polygon) or callback(null, error)
+    this._getTilePolygons = function(store,layerUrl,context,callback)	// callback(Polygon polygon) or callback(null, error)
     {
         var components, level, col, row, cellId, polygon;
 
@@ -1067,7 +1073,7 @@ O.esri.Tiles.TilesCore = function(){
                     row = parseInt(components[ components.length - 1],10);
                 }
                 cellId = [row,col];
-                polygon = tilingScheme.getCellPolygonFromCellId(Polygon,cellId, level);
+                polygon = tilingScheme.getCellPolygonFromCellId(cellId, level);
                 callback(polygon);
             }
             else
@@ -1082,57 +1088,64 @@ O.esri.Tiles.TilesCore = function(){
 
     /**
      * Gets all the important bits out of the map services description page
-     * @param SpatialReference "esri/SpatialReference"
-     * @param LOD "esri/layers/LOD"
      * @param data The http response via f=pjson
      * @param callback callback({initExtent,fullExtent,tileInfo,resultObj});
      * @private
      */
-    this._parseGetTileInfo = function(SpatialReference,LOD,Extent,TileInfo,Point,data,callback){
+    this._parseGetTileInfo = function(data,callback){
 
         var fixedResponse = data.replace(/\\'/g, "'");
         var resultObj = JSON.parse(fixedResponse);
-        var spatialRef = new SpatialReference({wkid:resultObj.spatialReference.wkid});
 
-        var lods = [];
+        require([
+            "esri/SpatialReference",
+            "esri/layers/LOD",
+            "esri/geometry/Extent",
+            "esri/layers/TileInfo",
+            "esri/geometry/Point"],function(SpatialReference,LOD,Extent,TileInfo,Point){
 
-        var lodsObj = JSON.parse(data,function(key,value){
-            if(((typeof key == 'number') || (key % 1 == 0)) &&  (typeof value === "object")){
-                var l = new LOD();
-                l.level = value.level;
-                l.resolution = value.resolution;
-                l.scale = value.scale;
+                var spatialRef = new SpatialReference({wkid:resultObj.spatialReference.wkid});
 
-                if(value.hasOwnProperty("level")) lods.push(l);
-                return value;
-            }
-            else{
-                return value;
-            }
-        });
+                var lods = [];
 
-        var initialExtent = new Extent(
-            parseFloat(resultObj.initialExtent.xmin),
-            parseFloat(resultObj.initialExtent.ymin),
-            parseFloat(resultObj.initialExtent.xmax),
-            parseFloat(resultObj.initialExtent.ymax),
-            spatialRef
-        );
+                var lodsObj = JSON.parse(data,function(key,value){
+                    if(((typeof key == 'number') || (key % 1 == 0)) &&  (typeof value === "object")){
+                        var l = new LOD();
+                        l.level = value.level;
+                        l.resolution = value.resolution;
+                        l.scale = value.scale;
 
-        var fullExtent = new Extent(
-            parseFloat(resultObj.fullExtent.xmin),
-            parseFloat(resultObj.fullExtent.ymin),
-            parseFloat(resultObj.fullExtent.xmax),
-            parseFloat(resultObj.fullExtent.ymax),
-            spatialRef
-        );
+                        if(value.hasOwnProperty("level")) lods.push(l);
+                        return value;
+                    }
+                    else{
+                        return value;
+                    }
+                });
 
-        var tileInfo = new TileInfo(resultObj.tileInfo);
-        var origin = new Point(tileInfo.origin.x,tileInfo.origin.y,spatialRef)
-        tileInfo.origin = origin;
-        tileInfo.lods = lods;
+                var initialExtent = new Extent(
+                    parseFloat(resultObj.initialExtent.xmin),
+                    parseFloat(resultObj.initialExtent.ymin),
+                    parseFloat(resultObj.initialExtent.xmax),
+                    parseFloat(resultObj.initialExtent.ymax),
+                    spatialRef
+                );
 
-        callback({initExtent:initialExtent,fullExtent:fullExtent,tileInfo:tileInfo,resultObj:resultObj});
+                var fullExtent = new Extent(
+                    parseFloat(resultObj.fullExtent.xmin),
+                    parseFloat(resultObj.fullExtent.ymin),
+                    parseFloat(resultObj.fullExtent.xmax),
+                    parseFloat(resultObj.fullExtent.ymax),
+                    spatialRef
+                );
+
+                var tileInfo = new TileInfo(resultObj.tileInfo);
+                var origin = new Point(tileInfo.origin.x,tileInfo.origin.y,spatialRef)
+                tileInfo.origin = origin;
+                tileInfo.lods = lods;
+
+                callback({initExtent:initialExtent,fullExtent:fullExtent,tileInfo:tileInfo,resultObj:resultObj});
+        })
     }
 };
 
@@ -1410,7 +1423,7 @@ O.esri.Tiles.TilingScheme.prototype = {
         return [col, row];
     },
 
-    getCellPolygonFromCellId: function (Polygon,cellId, level) {
+    getCellPolygonFromCellId: function (cellId, level) {
         var col1 = cellId[0];
         var row1 = cellId[1];
         var col2 = col1 + 1;
@@ -1421,7 +1434,13 @@ O.esri.Tiles.TilingScheme.prototype = {
         var x2 = this.tileInfo.origin.x + (col2 * this.tileInfo.cols * this.tileInfo.lods[level].resolution);
         var y2 = this.tileInfo.origin.y - (row2 * this.tileInfo.rows * this.tileInfo.lods[level].resolution);
 
-        var polygon = new Polygon(this.tileInfo.spatialReference);
+        var polygon;
+        var spatialReference = this.tileInfo.spatialReference;
+
+        require(["esri/geometry/Polygon"],function(Polygon){
+            polygon = new Polygon(spatialReference);
+        })
+
         polygon.addRing([
             [x1, y1], // clockwise
             [x2, y1],
