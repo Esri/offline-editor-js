@@ -11,14 +11,6 @@ Constructor | Description
 --- | ---
 `O.esri.TPK.TPKLayer()` | Creates an instance of the TPKLayer class. This library allows you to extend a TiledMapServiceLayer for the purpose of displaying a TPK file as a map.
 
-###Methods
-Methods | Returns | Description
---- | --- | ---
-`extend(files)`| nothing | Overrides a TiledMapServiceLayer. Files is an array of Entry Objects derived from a zip (tpk) file parsed via zip.js. As soon as this method is called it will extract all the necessary information from the zip file and display the TPK as a map.
-`setMaxDBSize(size)`| nothing | (Optional) Let's you specify a maximum size in MBs for the local database. The default is 75MBs. Recommended maximum is 100MBs. Important: Making the database too large can result in browser crashes and slow application performance.
-`getDBSize(callback)`| `callback(size,err)` | Returns the size of local database in bytes or an error message. Calling this too often during parsing operations can affect application performance.
-`isDBWriteable(value)`| boolean | Default is true. Let's you programmatically allow or not allow the storing of tiles in the local database. This method can help you manage the size of the database. Use this in conjunction with `getDBSize()` on a map pan or zoom event listener. Tile retrieval times from images stored in the database are significantly faster than pulling images from the TPK.
-
 ###Properties
 Property  | Value | Description
 --- | --- | ---
@@ -32,6 +24,16 @@ Property  | Value | Description
 `PARSING_ERROR` | "parsingError" | An event property indicating an error occured while parsing the TPK file.
 `DB_INIT_ERROR` | "dbInitError"| An event property indicating an error occurred while initializing the database.
 `NO_SUPPORT_ERROR` | "libNotSupportedError"| An event property indicating the library won't work on this browser.
+
+###Methods
+Methods | Returns | Description
+--- | --- | ---
+`extend(files)`| nothing | Overrides a TiledMapServiceLayer. Files is an array of Entry Objects derived from a zip (tpk) file parsed via zip.js. As soon as this method is called it will extract all the necessary information from the zip file and display the TPK as a map.
+`setMaxDBSize(size)`| nothing | (Optional) Let's you specify a maximum size in MBs for the local database. The default is 75MBs. Recommended maximum is 100MBs. Important: Making the database too large can result in browser crashes and slow application performance.
+`getDBSize(callback)`| `callback(size,err)` | Returns the size of local database in bytes or an error message. Calling this too often during parsing operations can affect application performance.
+`setDBWriteable(value)`| nothing | Default is true. Value is boolean. Let's you programmatically allow or not allow the storing of tiles in the local database. This method can help you manage the size of the database. Use this in conjunction with `getDBSize()` on a map pan or zoom event listener. Tile retrieval times from images stored in the database are significantly faster than pulling images from the TPK.
+`loadFromURL(tile,callback)` | `callback(success,err)` | Use this method when working with both tiled map services and TPKs. With this method you can force load tiles into the database. Use this in conjunction with offlineTilesEnabler.saveToFile() and OfflineTilesEnablerLayer.saveToFile(). The `tile` property must confirm to the following Object construction: {/\* String \*/ url, /\* base64 String \*/ img}. Returns a boolean that indicates if the load was successful or not. 
+`isDBValid()` | boolean | Verifies whether not the browser supports this library.
 
 ###Events
 Event | Value | Description

@@ -34,7 +34,7 @@
                     "esri/layers/TileInfo",
                     "esri/SpatialReference",
                     "esri/geometry/Polygon",
-                    "../dist/offline-tiles-advanced-min.js",
+                    "../dist/offline-tiles-advanced-src.js",
                     "dojo/dom-construct", "dojo/domReady!"],
                 function(Map,
                          GraphicsLayer, Graphic, SimpleFillSymbol,
@@ -48,6 +48,7 @@
 
                     g_basemapLayer = new O.esri.Tiles.OfflineTileEnablerLayer("http://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer",function(evt){
                         console.log("Tile Layer Loaded.");
+                        g_basemapLayer.offline.proxyPath = null;
                     },true);
 
                     g_map = new Map("map", {

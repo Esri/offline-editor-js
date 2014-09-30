@@ -5,7 +5,7 @@ describe("offline enabler custom layer library", function()
     var async = new AsyncSpec(this);
 
     async.it("validate map", function(done)
-    { console.log("VALIDATE !!!!!")
+    {
         expect(g_map).toEqual(jasmine.any(Object));
         expect(g_map.id).toEqual("map");
         done();
@@ -18,27 +18,6 @@ describe("offline enabler custom layer library", function()
         done();
     });
 
-//    async.it("extends the tiled layer object", function(done)
-//    {
-//        expect(g_basemapLayer.goOffline).toBeUndefined();
-//        g_offlineTilesEnabler.extend(g_basemapLayer,function(success)
-//        {
-//            expect(success).toEqual(true);
-//            expect(g_basemapLayer.goOffline).toEqual(jasmine.any(Function));
-//            expect(g_basemapLayer.goOnline).toEqual(jasmine.any(Function));
-//            expect(g_basemapLayer.getTileUrl).toEqual(jasmine.any(Function));
-//            expect(g_basemapLayer._getTileUrl).toEqual(jasmine.any(Function));
-//            expect(g_basemapLayer.prepareForOffline).toEqual(jasmine.any(Function));
-//            expect(g_basemapLayer._storeTile).toEqual(jasmine.any(Function));
-//            expect(g_basemapLayer.deleteAllTiles).toEqual(jasmine.any(Function));
-//            expect(g_basemapLayer.offline).toEqual(jasmine.any(Object));
-//            expect(g_basemapLayer.offline.store).toEqual(jasmine.any(Object));
-//
-//            g_basemapLayer.offline.proxyPath = "../lib/resource-proxy/proxy.php";
-//            done();
-//        });
-//    });
-//
     async.it("can go offline", function(done)
     {
         expect(g_basemapLayer.goOffline).toEqual(jasmine.any(Function));
@@ -236,26 +215,15 @@ describe("offline enabler custom layer library", function()
     });
 
     async.it("verifies ability to parse layer info",function(done){
-        require(["esri/layers/LOD",
-            "esri/geometry/Point",
-            "esri/geometry/Extent",
-            "esri/layers/TileInfo",
-            "esri/SpatialReference",
-            "esri/geometry/Polygon"],function(LOD,Point,Extent,TileInfo,SpatialReference){
-
-
-            g_basemapLayer._getTileInfoPrivate("http://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer",function(result){
-                tilesCore._parseGetTileInfo(SpatialReference,LOD,Extent,TileInfo,Point,result,function(result){
-                    expect(result.resultObj).toEqual(jasmine.any(Object));
-                    expect(result.initExtent.type).toEqual("extent");
-                    expect(result.fullExtent.type).toEqual("extent");
-                    expect(result.tileInfo.format).toEqual("JPEG");
-                    done();
-                })
+        g_basemapLayer._getTileInfoPrivate("http://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer",function(result){
+            tilesCore._parseGetTileInfo(result,function(result){
+                expect(result.resultObj).toEqual(jasmine.any(Object));
+                expect(result.initExtent.type).toEqual("extent");
+                expect(result.fullExtent.type).toEqual("extent");
+                expect(result.tileInfo.format).toEqual("JPEG");
+                done();
             })
-
         })
-
     });
 
     async.it("get all tile polygons within extent",function(done){

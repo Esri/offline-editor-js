@@ -23,7 +23,9 @@ describe("offline enabler library", function()
 		expect(g_basemapLayer.goOffline).toBeUndefined();
 		g_offlineTilesEnabler.extend(g_basemapLayer,function(success)
 		{
-			expect(success).toEqual(true);
+            g_basemapLayer.offline.proxyPath = null;
+
+            expect(success).toEqual(true);
 			expect(g_basemapLayer.goOffline).toEqual(jasmine.any(Function));
 			expect(g_basemapLayer.goOnline).toEqual(jasmine.any(Function));
 			expect(g_basemapLayer.getTileUrl).toEqual(jasmine.any(Function));
@@ -34,7 +36,7 @@ describe("offline enabler library", function()
 			expect(g_basemapLayer.offline.store).toEqual(jasmine.any(Object));
             expect(g_basemapLayer._tilesCore._storeTile).toEqual(jasmine.any(Function));
 
-			g_basemapLayer.offline.proxyPath = "../lib/resource-proxy/proxy.php";
+//			g_basemapLayer.offline.proxyPath = "../lib/resource-proxy/proxy.php";
 	        done();
 		});
 	});

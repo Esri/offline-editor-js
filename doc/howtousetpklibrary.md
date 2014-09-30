@@ -53,6 +53,8 @@ The `TPKLayer` Library allows you to display at TPK file as a map.
 
 ```
 
+
+
 **Listen for errors**
 
 It is a best practice to listen for the following events and handle them appropriately in the user interface.
@@ -100,6 +102,19 @@ When you need to delete all tiles from the existing data use the following patte
 Yes for ArcGIS API for JavaScript v3.8+ and ONLY if the TPKs Levels of Detail (LODs) match the tiled map services LODs exactly.
 
 The basemap (base tiled layer) defines the LODs that the map can display. Any other operational tiled layers on the map will not display if they don’t match the basemap’s LODs. Esri.Map doesn’t union LODs of all tiled layers on the map.
+
+You can also use the `TPKLayer.loadFromURL()` method to add tiled map service tiles directly to the database. In order to get the tile information, use this method with `offlineTilesEnabler.saveToFile()` and `OfflineTilesEnablerLayer.saveToFile()`. That will create a CSV file that contains all the tiles within the extent that you define. The tiles-indexed-db.html sample demonstrates this pattern. Each tile within the CSV is defined by a URL as a String, and the tile image as a base64 String:
+
+```js
+
+	var tile = {
+    	url: "http://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/16/24710/32091",
+       	img: "data:image/png;base64,iVBORw0KGgoAAA...pQAAAABJRU5ErkJggg=="
+    };
+
+``` 
+
+See the [TPKLayer API doc](tpklayer.md) for more info.
 
 For more information on creating TPKs go [here](http://resources.arcgis.com/en/help/main/10.1/index.html#//006600000457000000).
 
