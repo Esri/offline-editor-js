@@ -142,8 +142,7 @@ Within your application you can manually check online status and then update you
 You can check if there are any edits pending by using the EditStore library. If there are edits then you can iterate `editsStore.retrieveEditsQueue()` and convert the edits to a readable format via `offlineFeaturesManager.getReadableEdit(edit)`.
 		
 ```js
-			// Be sure to import the module "esri/graphic" in your require statement
-			var editStore = new O.esri.Edit.EditStore(Graphic);
+			var editStore = new O.esri.Edit.EditStore();
 			if( editStore.hasPendingEdits())
 			{
 				var edits = editStore.retrieveEditsQueue();

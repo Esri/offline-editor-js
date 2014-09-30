@@ -69,7 +69,7 @@ Provides a number of public methods that are used by `OfflineFeaturesManager` li
 ###Constructor
 Constructor | Description
 --- | ---
-`O.esri.Edit.EditStore(Graphic)` | Creates an instance of the EditStore class. This library is responsible for managing the storage, reading, writing, serialization, deserialization of geometric features. Importing `Graphic` _("esri/graphic")_ allows the library to provide more abstraction when returning serialized data.
+`O.esri.Edit.EditStore()` | Creates an instance of the EditStore class. This library is responsible for managing the storage, reading, writing, serialization, deserialization of geometric features. 
 
 ###Public Methods
 Methods | Returns | Description
