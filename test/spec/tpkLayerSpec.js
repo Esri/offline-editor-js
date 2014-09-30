@@ -21,6 +21,7 @@ describe("TPKLayer module", function(){
     {
         expect(tpkLayer).toEqual(jasmine.any(Object));
         expect(tpkLayer.store).toEqual(jasmine.any(Object));
+        expect(tpkLayer.isDBValid()).toBe(true);
         done();
     });
 
