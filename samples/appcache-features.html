@@ -9,8 +9,8 @@
     <title>AppCache Tiles and Features</title>
 
     <link rel="stylesheet" href="../samples/css/modular-popup.css">
-    <link rel="stylesheet" href="http://js.arcgis.com/3.9/js/dojo/dijit/themes/claro/claro.css">
-    <link rel="stylesheet" href="http://js.arcgis.com/3.9/js/esri/css/esri.css">
+    <link rel="stylesheet" href="http://js.arcgis.com/3.10/js/dojo/dijit/themes/claro/claro.css">
+    <link rel="stylesheet" href="http://js.arcgis.com/3.10/js/esri/css/esri.css">
 
     <style>
         html, body, #map {
@@ -363,6 +363,13 @@
 
                 function initOfflineFeaturesMgr(){
                     offlineFeaturesManager = new O.esri.Edit.OfflineFeaturesManager();
+
+                    // IMPORTANT!!!
+                    // A proxy page may be required to upload attachments.
+                    // If you are using a CORS enabled server you may be ablew to set the proxyPath to null.
+                    // Refer to "Using the Proxy Page" for more information:  https://developers.arcgis.com/en/javascript/jshelp/ags_proxy.html
+                    offlineFeaturesManager.proxyPath = null;
+
                     offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_ENQUEUED, updateStatus);
                     offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_SENT, updateStatus);
                     offlineFeaturesManager.on(offlineFeaturesManager.events.ALL_EDITS_SENT, updateStatus);
@@ -596,6 +603,9 @@
                     })
                 }
 
+                /**
+                 * Listen for app cache events.
+                 */
                 function initAppCacheManager(){
                     appCacheManager = new AppCacheManager(true,true);
                     appCacheManager.on(appCacheManager.CACHE_EVENT,cacheEventHandler);

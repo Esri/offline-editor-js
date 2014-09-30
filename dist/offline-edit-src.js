@@ -1,4 +1,4 @@
-/*! offline-editor - v0.0.1 - 2014-09-08
+/*! offline-editor - v2.2 - 2014-09-30
 *   Copyright (c) 2014 Environmental Systems Research Institute, Inc.
 *   Apache License*/
 
@@ -27,12 +27,13 @@ define([
     {
         _onlineStatus: "online",
         _featureLayers: {},
-        _editStore: new O.esri.Edit.EditStore(Graphic),
+        _editStore: new O.esri.Edit.EditStore(),
 
         ONLINE: "online",				// all edits will directly go to the server
         OFFLINE: "offline",             // edits will be enqueued
         RECONNECTING: "reconnecting",   // sending stored edits to the server
         attachmentsStore: null,         // indexedDB for storing attachments
+        proxyPath: null,                // by default we use CORS and therefore proxyPath is null
 
         // manager emits event when...
         events: {
@@ -713,7 +714,11 @@ define([
             {
                 dfd.reject(err);
             };
-            var proxy = esriConfig.defaults.io.proxyUrl || "";
+
+            // IMPORTANT!
+            // Proxy path can be set to null if feature service is CORS enabled
+            // Refer to "Using the Proxy Page" for more information:  https://developers.arcgis.com/en/javascript/jshelp/ags_proxy.html
+            var proxy = this.proxyPath || esriConfig.defaults.io.proxyUrl || "";
             if(proxy !== ""){
                 proxy += "?";
             }
@@ -1027,7 +1032,7 @@ else{
 
 "use strict";
 
-O.esri.Edit.EditStore = function(Graphic){
+O.esri.Edit.EditStore = function(){
 
 	/* private consts */
 	var EDITS_QUEUE_KEY = "esriEditsQueue";
@@ -1178,7 +1183,12 @@ O.esri.Edit.EditStore = function(Graphic){
 
     this._deserialize = function(json)
     {
-        var graphic = new Graphic(JSON.parse(json));
+        var graphic;
+
+        require(["esri/graphic"],function(Graphic){
+            graphic = new Graphic(JSON.parse(json));
+        });
+
         return graphic;
     };
 

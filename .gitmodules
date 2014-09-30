@@ -3,7 +3,7 @@
 	url = https://github.com/HubSpot/offline.git
 [submodule "vendor/IndexedDBShim"]
 	path = vendor/IndexedDBShim
-	url = https://github.com/axemclion/IndexedDBShim
+	url = https://github.com/axemclion/IndexedDBShim.git
 [submodule "vendor/jasmine.async"]
 	path = vendor/jasmine.async
 	url = https://github.com/derickbailey/jasmine.async.git

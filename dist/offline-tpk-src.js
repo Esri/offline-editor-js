@@ -1,4 +1,4 @@
-/*! offline-editor - v0.0.1 - 2014-09-08
+/*! offline-editor - v2.2 - 2014-09-30
 *   Copyright (c) 2014 Environmental Systems Research Institute, Inc.
 *   Apache License*/
 /**
@@ -48,6 +48,7 @@ define([
             //
             _maxDBSize: 75,                         // User configurable maximum size in MBs.
             _isDBWriteable: true,                   // Manually allow or stop writing to the database.
+            _isDBValid: false,                      // Does the browser support IndexedDB or IndexedDBShim
             _autoCenter: null,                      // Auto center the map
             _fileEntriesLength: 0,                  // Number of files in zip
             _inMemTilesObject: null,                // Stores unzipped files from tpk
@@ -98,8 +99,10 @@ define([
                     var tileid = "void:/" + level + "/" + row + "/" + col;
 
                     if(this.map == null) this.map = this.getMap();
-                    if(this._autoCenter == null) this._autoCenter = new O.esri.TPK.autoCenterMap(this.map,this.RECENTER_DELAY);
-                    this._autoCenter.init();
+                    if(this._autoCenter == null) {
+                        this._autoCenter = new O.esri.TPK.autoCenterMap(this.map,this.RECENTER_DELAY);
+                        this._autoCenter.init();
+                    }
 
                     this._getInMemTiles(url,layersDir, level, row, col,tileid,function (result,tileid,url) {
                         var img = query("img[src=" + tileid + "]")[0];
@@ -183,8 +186,44 @@ define([
              * Use this in conjunction with getDBSize() on a map pan or zoom event listener.
              * @param value
              */
-            isDBWriteable: function(/* Boolean */ value){
+            setDBWriteable: function(/* Boolean */ value){
                 this._isDBWriteable = value;
+            },
+
+            /**
+             * Validates whether or not the browser supports this library
+             * @returns {boolean}
+             */
+            isDBValid: function(){
+                this._validate();
+                return this._isDBValid;
+            },
+
+            /**
+             * Reads a tile into tile database. Works with offlineTilesEnabler.js and OfflineTilesEnablerLayer.js
+             * saveToFile() functionality.
+             * IMPORTANT! The tile must confirm to an object using the pattern shown in _storeTile().
+             * @param file
+             * @param callback callback( boolean, error)
+             */
+            loadFromURL: function (tile, callback) // callback(success,msg)
+            {
+                if (this.isDBValid()) {
+                    this.store.store(tile, function (success,err) {
+                        //Check the result
+                        if (success) {
+                            console.log("loadFromURL() success.");
+                            callback(true, "");
+                        }
+                        else {
+                            console.log("loadFromURL() Failed.");
+                            callback(false, err);
+                        }
+                    });
+                }
+                else {
+                    callback(false, "not supported");
+                }
             },
 
             /**
@@ -218,7 +257,8 @@ define([
                                     this.emit(this.DATABASE_ERROR_EVENT,{msg:this.DB_FULL_ERROR,err : err});
                                 }
                                 this.emit(this.VALIDATION_EVENT,{msg:this.DB_VALIDATED,err : null})
-                                console.log("DB size: " + mb + " MBs, Tile count: " + size.tileCount +  ", Error: " + err)
+                                console.log("DB size: " + mb + " MBs, Tile count: " + size.tileCount +  ", Error: " + err);
+                                this._isDBValid = true;
                             }.bind(this))
                         }
                     }.bind(this));

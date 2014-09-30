@@ -1,5 +1,25 @@
 # offline-editor-js - Changelog
 
+## Version 2.2 - Sep 30, 2014
+- Closes #233 - Rename TPKLayer.isDBWriteable()
+- Closes #238 - TPKLayer - load tiles from URL
+- Closes #242 - Internal - replace certain constructor properties
+- Closes #243 - Update vendor versions
+- Closes #247 - TPKLayer - only init autoCenter when null
+- Closes #248 - Remove resource-proxy sub-directory
+- Closes #249 - Add a public proxyPath var to offlineFeaturesManager.js
+
+New functionality:
+
+- Rename TPKLayer.isDBWriteable() to setDBWriteable(boolean). (Issue #233)
+- In TPKLayer - load tiles from URL creates a new method loadTilesFromURL(). (Issue #238)
+- Adds a public proxyPath var to offlineFeaturesManager.js. (Issue #249)
+
+Breaking change:
+
+- Issue [#248](https://github.com/Esri/offline-editor-js/issues/248) removes the ArcGIS proxy libraries from this repo. This means if you have an application that referred to that directory it will break and you'll need to fork and clone your own version of that repository [here](https://github.com/Esri/resource-proxy). 
+
+
 ## Version 2.1.1 - Sep 22, 2014
 - Closes #244 - broken attachements-editor sample gh-pages
 
