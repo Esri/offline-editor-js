@@ -11,6 +11,9 @@
     <!-- Bootstrap core CSS -->
     <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" rel="stylesheet">
 
+    <link rel="stylesheet" href="http://js.arcgis.com/3.10/js/esri/css/esri.css">
+    <link rel="stylesheet" type="text/css" href="http://esri.github.io/bootstrap-map-js/src/css/bootstrapmap.css">
+
     <!-- Custom styles for this template -->
     <link href="css/style.css" rel="stylesheet">
 
@@ -21,6 +24,12 @@
     <![endif]-->
 
     <style>
+
+        #mapDiv {
+            min-height: 300px;
+            max-height: 1000px;
+        }
+
         pre {
             overflow: auto;
             word-wrap: normal;
@@ -32,6 +41,11 @@
 
         pre.prettyprint {
             border: 1px solid #cccccc !important;
+        }
+
+        #img-offline-indicator {
+            padding: 8px;
+            position: relative; float: right;
         }
     </style>
 </head>
@@ -163,7 +177,7 @@
                 </div>
                 <div class="tab-pane" id="Step3">
                     <h3>Step 3: Configure tiled basemap to work offline</h3>
-                    <p>This is the minimum needed to initialize the offline-editor-js library. Test to make sure map loads.</p>
+                    <p>This initializes the offline-editor-js library. Test to make sure map loads.</p>
                     <br>
 
                     <pre class="prettyprint">
@@ -267,10 +281,21 @@
 
                 <div class="tab-pane" id="Step4">
                     <h3>Step 4: Configure tiles download.</h3>
-                    <p>Enable the ability to download tiles. </p>
+                    <p>Now we enable the ability to download tiles as well as toggling the app between online and offline.</p>
                     <br>
-                    <pre class="prettyprint">
-                        <code>
+
+                    <ul id="myTab" class="nav nav-tabs">
+                        <li class="active"><a href="#code" data-toggle="tab">Code</a></li>
+                        <li class=""><a href="#mapTab" data-toggle="tab">Map</a></li>
+                    </ul>
+
+                    </br>
+
+
+                    <div id="myTabContent" class="tab-content">
+                        <div class="tab-pane fade in active" id="code">
+                        <pre class="prettyprint">
+                            <code>
 
 &lt;!DOCTYPE html>
 &lt;html>
@@ -322,7 +347,7 @@
     &lt;!-- Create two buttons -->
     &lt;button class="basic-btn" id="btn-get-tiles">1. Download Tiles&lt;/button>
     &lt;button class="basic-btn" id="btn-online-offline">2. Go Offline&lt;/button>
-    &lt;button class="basic-btn" id="btn-zoom-out" onclick="panLeft()">3. Pan left&lt;/button>
+    &lt;button class="basic-btn" id="btn-pan" onclick="panLeft()">3. Pan left&lt;/button>
 
     &lt;div id="map">&lt;/div>
 
@@ -346,8 +371,11 @@
             // Set up button click listeners.
             var btnGetTiles = document.getElementById("btn-get-tiles");
             var btnOnlineOffline = document.getElementById("btn-online-offline");
+            var btnPanLeft = document.getElementById("btn-pan-left");
+
             on(btnGetTiles,"click",downloadTiles);
             on(btnOnlineOffline,"click",goOnlineOffline);
+            on(btnPanLeft,"click",panLeft);
 
             map = new Map("map", {
                 //basemap: "topo", // comment out this basemap!
@@ -362,6 +390,17 @@
                                 console.log("Offline tile lib enabled. App is: " + Offline.state);
                             },
                             true);
+
+            // Set the min and max zoom levels for when retrieving tiles
+            // This helps manage the amount of database space used.
+            map.on("load",function(evt){
+                tileLayer.getMaxZoom(function(result){
+                    mMaxZoom = result;
+                });
+                tileLayer.getMinZoom(function(result){
+                    mMinZoom = result;
+                });
+            })
 
             // Add our offline tile layer to the map instead of using the default basemap!
             map.addLayer(tileLayer);
@@ -442,29 +481,235 @@
                 return zoom;
             }
 
-        });
+            function panLeft(){
+                map.panLeft();
+            }
 
-        function panLeft(){
-            map.panLeft();
-        }
+        });
     &lt;&#47;script&gt;
 &lt;/body>
 &lt;/html>
 
-                        </code>
-                    </pre>
-                    <div class="alert alert-info">NOTE: Replace paths with your references.</div>
-                </div>
-            </div>
+                            </code>
+                        </pre>
+                        <div class="alert alert-info">NOTE: Replace paths with your references.</div>
+                        </div>
+
+                        <div class="tab-pane fade in" id="mapTab">
+                            <div class="row">
+                                <div class="col-xs-12">
+                                    <div class="form form-group btn-group" data-toggle="buttons">
+                                        <button class="btn btn-success" id="btn-get-tiles">1. Download Tiles</button>
+                                        <button class="btn btn-success" disabled id="btn-online-offline">2. Go Offline</button>
+                                        <button class="btn btn-success" disabled id="btn-pan-left">3. Pan left</button>
+                                    </div>
+                                    <img id="img-offline-indicator"  src="../samples/images/blue-pin.png"/>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-xs-12">
+                                    <div id="mapDiv"></div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div><!-- id="code" -->
+                </div><!-- id="myTabContent" -->
+            </div><!-- id="step4" -->
 
             </br>
-        </div>
-    </div>
+        </div><!-- class="tab-content well" -->
+    </div><!-- class="col-sm-12 col-md-12 col-lg-12" -->
     <hr>
 </div> <!-- /container -->
 
+<!-- mapping code -->
+<script src="../vendor/offline/offline.min.js"></script>
+<script>
+    // Set the online/offline detection options.
+    // More info at: http://github.hubspot.com/offline/docs/welcome/
+    Offline.options = {
+        checks: {
+            image: {
+                url: function() {
+                    return 'http://esri.github.io/offline-editor-js/tiny-image.png?_=' +
+                            (Math.floor(Math.random() * 1000000000));
+                }
+            },
+            active: 'image'
+        }
+    }
+</script>
+
+<!-- Include a reference to IndexedDBShim for library to work on Safari 7.x -->
+<script src="../vendor/IndexedDBShim/dist/IndexedDBShim.js"></script>
+
+<script src="http://js.arcgis.com/3.10/"></script>
+
+<script>
+    var map;
+
+    // Make sure to reference the offline tiles library within the require statement!
+    require(["esri/map","dojo/on","//esri.github.com/bootstrap-map-js/src/js/bootstrapmap.js","../dist/offline-tiles-advanced-min.js", "dojo/domReady!"],
+            function(Map,on,Bootstrapmap){
+
+                // Check if browser state is online or offline
+                Offline.check();
+                Offline.on('up down', updateState );
+
+                // For cancelling the download of tiles
+                var _wantToCancel;
+
+                // Set up min and max boundaries for retrieving tiles
+                var minZoomAdjust = -1, maxZoomAdjust = 1, mMinZoom, mMaxZoom;
+
+                // Set up button click listeners.
+                var btnGetTiles = document.getElementById("btn-get-tiles");
+                var btnOnlineOffline = document.getElementById("btn-online-offline");
+                var btnPanLeft = document.getElementById("btn-pan-left");
+                var imgOfflineIndicator = document.getElementById("img-offline-indicator");
+
+                var redPinPath = "../samples/images/red-pin.png";
+                var bluePinPath = "../samples/images/blue-pin.png"
+
+                on(btnGetTiles,"click",downloadTiles);
+                on(btnOnlineOffline,"click",goOnlineOffline);
+                on(btnPanLeft,"click",panLeft);
+
+                $(document).ready(function () {
+                    $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+                        if (e.target.text === "Map") {
+                            showMap("mapDiv");
+                        }
+                    });
+                });
+
+                function showMap(){
+
+                    if(map){
+                        map.destroy();
+                    }
+
+                    map = Bootstrapmap.create("mapDiv",{
+                        //basemap: "topo", // comment out this basemap!
+                        center: [-122.45, 37.75], // longitude, latitude
+                        zoom: 15
+                    });
+
+                    // Now we initialize the basemap to be offline-enabled. This is out new basemap.
+                    tileLayer = O.esri.Tiles.OfflineTileEnablerLayer(
+                            "http://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer",
+                            function(evt){
+                                console.log("Offline tile lib enabled. App is: " + Offline.state);
+                            },
+                            true);
+
+                    // Set the min and max zoom for when retrieving tiles
+                    map.on("load",function(evt){
+                        tileLayer.getMaxZoom(function(result){
+                            mMaxZoom = result;
+                        });
+                        tileLayer.getMinZoom(function(result){
+                            mMinZoom = result;
+                        });
+                    })
 
 
+                    // Add our offline tile layer to the map instead of using the default basemap!
+                    map.addLayer(tileLayer);
+                }
+
+                function downloadTiles(){
+
+                    // First we need to empty the database.
+                    tileLayer.deleteAllTiles(function(success,err){
+
+                        var zoom = getMinMaxZoom();
+                        var extent = tileLayer.getExtentBuffer(0,map.extent);
+
+                        // Begin downloading tiles
+                        tileLayer.prepareForOffline(zoom.min, zoom.max, extent, function(progress){
+                            console.log("downloading tiles...");
+                            if(progress.hasOwnProperty("countNow")){
+                                var percent = Math.floor(progress.countNow / progress.countMax * 100);
+                                btnGetTiles.innerHTML = 'Saving to phone ' + percent + "% - Tap to Cancel";
+                            }
+
+                            if( progress.finishedDownloading )
+                            {
+                                btnGetTiles.innerHTML = "Saving to phone 100% - Tap to Cancel";
+
+                                if( progress.cancelRequested )
+                                {
+                                    alert("Tile download was cancelled");
+                                }
+                                else
+                                {
+                                    alert("Tile download complete");
+                                }
+
+                                btnGetTiles.innerHTML = '1. Download Tiles';
+
+                                btnOnlineOffline.disabled = false;
+                                btnGetTiles.disabled = true;
+                            }
+                            return _wantToCancel; //determines if a cancel request has been issued
+                        });
+                    });
+                }
+
+                // Force the tileLayer between online and offline
+                function goOnlineOffline(){
+
+                    btnPanLeft.disabled = false;
+
+                    if(btnOnlineOffline.innerHTML == "2. Go Offline"){
+                        btnOnlineOffline.innerHTML = "2. Go Online";
+                        tileLayer.goOffline();
+                        imgOfflineIndicator.src = redPinPath;
+                        console.log("tileLayer is offline");
+                    }
+                    else{
+                        btnOnlineOffline.innerHTML = "2. Go Offline";
+                        tileLayer.goOnline();
+                        imgOfflineIndicator.src = bluePinPath;
+                        console.log("tileLayer is online");
+                    }
+                }
+
+
+                // Set the tileLayer online or offline.
+                // When set to offline, the map will look for tiles in the tiles database
+                function updateState(){
+                    if(Offline.state === 'up'){
+                        if(typeof tileLayer != "undefined") tileLayer.goOnline();
+                        imgOfflineIndicator.src = bluePinPath;
+                    }
+                    else{
+                        if(typeof tileLayer != "undefined") tileLayer.goOffline();
+                        imgOfflineIndicator.src = redPinPath;
+                    }
+                }
+
+                // Utility function to validate min and max zoom settings of the map
+                function getMinMaxZoom(){
+
+                    var zoom = {};
+                    var min = tileLayer.getLevel() + minZoomAdjust;
+                    var max = tileLayer.getLevel() + maxZoomAdjust;
+                    zoom.max = Math.min(mMaxZoom, max);  //prevent errors by setting the tile layer floor
+                    zoom.min = Math.max(mMinZoom, min);   //prevent errors by setting the tile layer ceiling
+
+                    return zoom;
+                }
+
+                function panLeft(){
+                    map.panLeft();
+                }
+
+            });
+
+</script>
 
 <!-- Bootstrap core JavaScript
 ================================================== -->
