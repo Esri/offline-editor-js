@@ -1,5 +1,8 @@
 # offline-editor-js - Changelog
 
+## Version 2.2.1 - Oct 1, 2014
+Added a Getting Started for Tiles tutorial.
+
 ## Version 2.2.0.1 - Oct 1, 2014
 Force update of submodules for IndexedDB and offline.js. Didn't take the 1st time. Submodule updates can be tricky.
 
