@@ -240,13 +240,14 @@
             Offline.check();
             Offline.on('up down', updateState );
 
+            // Initialize Esri.Map
             map = new Map("map", {
                 //basemap: "topo", // comment out this basemap!
                 center: [-122.45, 37.75], // longitude, latitude
                 zoom: 13
             });
 
-            // Now we initialize the basemap to be offline-enabled
+            // Now we initialize a topo tiled basemap service to be offline-enabled.
             tileLayer = O.esri.Tiles.OfflineTileEnablerLayer(
                             "http://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer",
                             function(evt){
@@ -281,7 +282,7 @@
 
                 <div class="tab-pane" id="Step4">
                     <h3>Step 4: Configure tiles download.</h3>
-                    <p>Now we enable the ability to download tiles as well as toggling the app between online and offline.</p>
+                    <p>Enable the ability to download tiles as well the ability to toggle online and offline.</p>
                     <br>
 
                     <ul id="myTab" class="nav nav-tabs">
@@ -347,7 +348,7 @@
     &lt;!-- Create two buttons -->
     &lt;button class="basic-btn" id="btn-get-tiles">1. Download Tiles&lt;/button>
     &lt;button class="basic-btn" id="btn-online-offline">2. Go Offline&lt;/button>
-    &lt;button class="basic-btn" id="btn-pan" onclick="panLeft()">3. Pan left&lt;/button>
+    &lt;button class="basic-btn" id="btn-pan-left">3. Pan left&lt;/button>
 
     &lt;div id="map">&lt;/div>
 
@@ -377,13 +378,14 @@
             on(btnOnlineOffline,"click",goOnlineOffline);
             on(btnPanLeft,"click",panLeft);
 
+            // Initialize Esri.Map
             map = new Map("map", {
                 //basemap: "topo", // comment out this basemap!
                 center: [-122.45, 37.75], // longitude, latitude
                 zoom: 13
             });
 
-            // Now we initialize the basemap to be offline-enabled
+            // Now we initialize a topo tiled basemap service to be offline-enabled.
             tileLayer = O.esri.Tiles.OfflineTileEnablerLayer(
                             "http://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer",
                             function(evt){
