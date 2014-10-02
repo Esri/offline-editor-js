@@ -3,7 +3,7 @@ API Doc for TPKLayer
 
 ##O.esri.TPK.TPKLayer
 
-Extends a tiled map service and provides the ability to display tiles from a .tpk (ArcGIS Tile Page).
+The `offline-tpk-min.js` library extends a tiled map service and provides the following tools for working with and displaying tiles from a .tpk file (ArcGIS Tile Package). 
 
 ###Constructor
 
