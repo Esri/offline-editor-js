@@ -35,22 +35,7 @@ __Attachment Support__: Attachments are supported with some limitations. See doc
 
 #API Doc
 
-##Offline Editing of Geographic Features
-Extends and overrides an ArcGIS Feature Layer. This library allows you to extend esri.layers.FeatureLayer with offline capabilities and to manage the resync process.
-
-* __Click [here](doc/offlinefeaturesmanager.md) to see the full API doc for `offline-edit-min.js`__
-
- 
-##Offline Mapping Tiles
-Extends and overrides a tiled map service. Provides the ability to customize the extent used to cut the tiles. See the detailed description of basemap.prepareForOffline() in the "How To Use" section to learn different options.
-
-* __Click [here](doc/offlinetilesenabler.md) to see the full API doc for `offline-tiles-basic-min.js and offline-tiles-advanced-min.js`__ 
-
-##TPKLayer
-
-You can display TPK files with this library. TPK's are binary tile package files. Extends TileMapServiceLayer. Go [here](http://resources.arcgis.com/en/help/main/10.1/index.html#//00170000017w000000) for more information on how to create a TPK file.
-
-* __Click [here](doc/tpklayer.md) to see the full API doc for `offline-tpk-min.js`__ 
+Go __[here](demo/api-doc.html)__ for a listing of the API docs.
 
 ##How to use
 
