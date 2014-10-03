@@ -255,4 +255,18 @@ describe("offline enabler library", function()
        })
     });
 
+    async.it("getMaxZoom", function(done){
+        g_basemapLayer.getMaxZoom(function(result){
+            expect(result).toBe(16);
+            done();
+        })
+    });
+
+    async.it("getMinZoom", function(done){
+        g_basemapLayer.getMinZoom(function(result){
+            expect(result).toBe(0);
+            done();
+        })
+    });
+
 });
