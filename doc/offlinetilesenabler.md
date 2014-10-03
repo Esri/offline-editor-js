@@ -30,6 +30,9 @@ Methods | Returns | Description
 `loadFromFile(filename, callback)` | `callback( boolean, error)` | Reads a csv file into local tile cache.
 `estimateTileSize(callback)` | `callback(number)` | Retrieves one tile from a layer and then returns its size.
 `prepareForOffline(` `minLevel, maxLevel, extent,  ` `reportProgress)`  | `callback(number)` | Retrieves tiles and stores them in the local cache. See the "How To Use" section below to learn more about customizing the use of this method.
+`getMinZoom(callback)` | `callback(number)` | Returns the minimum zoom level of the layer. This is the zoom level farther away from the earth.
+`getMaxZoom(callback)` | `callback(number)` | Returns the maximum zoom level of the layer. This is the zoom level closest to the earth.
+
 
 ###Properties
 Property  | Description
