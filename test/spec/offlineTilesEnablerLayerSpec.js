@@ -205,6 +205,14 @@ describe("offline enabler custom layer library", function()
         })
     });
 
+    async.it("getMinMaxLOD", function(done){
+        var object = g_basemapLayer.getMinMaxLOD(-1,1);
+        console.log("OBJECT " + JSON.stringify(object));
+        expect(object.min).toBe(13);
+        expect(object.max).toBe(15);
+        done();
+    })
+
     async.it("verifies ability to retrieve layer info",function(done){
        g_basemapLayer._getTileInfoPrivate("http://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer",function(result){
            var fixedResponse = result.replace(/\\'/g, "'");

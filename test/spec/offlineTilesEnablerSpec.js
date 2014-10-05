@@ -269,4 +269,12 @@ describe("offline enabler library", function()
         })
     });
 
+    async.it("getMinMaxLOD", function(done){
+        var object = g_basemapLayer.getMinMaxLOD(-1,1);
+        console.log("OBJECT " + JSON.stringify(object));
+        expect(object.min).toBe(13);
+        expect(object.max).toBe(15);
+        done();
+    })
+
 });
