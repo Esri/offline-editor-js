@@ -239,10 +239,10 @@ require([
                 </div>
                 <div class="tab-pane" id="Step3">
                     <h3>Step 3: Configure modal popup</h3>
-                    <p>This initializes and configures the modal popup. Test to make sure map loads and popup displays.&lt;/p>
-                    &lt;br>
+                    <p>This initializes and configures the modal popup. Test to make sure map loads and popup displays.</p>
+                    <br>
 
-                    &lt;pre class="prettyprint">
+                    <pre class="prettyprint">
                         <code>
 &lt;!DOCTYPE html>
 &lt;html>
@@ -721,7 +721,8 @@ require([
                 // IMPORTANT!!!
                 // A proxy page may be required to upload attachments.
                 // If you are using a CORS enabled server you may be able to set the proxyPath to null.
-                // Refer to "Using the Proxy Page" for more information:  https://developers.arcgis.com/en/javascript/jshelp/ags_proxy.html
+                // Refer to "Using the Proxy Page" for more information:
+                //https://developers.arcgis.com/en/javascript/jshelp/ags_proxy.html
                 offlineFeaturesManager.proxyPath = null;
 
                 offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_ENQUEUED, updatePendingEditStatus);
