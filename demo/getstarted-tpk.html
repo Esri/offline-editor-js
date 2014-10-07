@@ -43,10 +43,6 @@
             border: 1px solid #cccccc !important;
         }
 
-        #img-offline-indicator {
-            padding: 8px;
-            position: relative; float: right;
-        }
     </style>
 </head>
 
@@ -56,30 +52,7 @@
     <img style="position: absolute; top: 50; right: 0; border: 0; width:150px;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_green_007200.png" alt="Fork me on GitHub">
 </a>
 
-<div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
-    <div class="container">
-        <div class="navbar-header">
-            <a class="navbar-brand-title" href="index.html">Offline-editor-js</a>
-        </div>
-        <div class="collapse navbar-collapse">
-            <ul class="nav navbar-nav">
-                <li class="active dropdown" id="basemapList">
-                    <a href="" class="dropdown-toggle" data-toggle="dropdown">Get Started <span class="caret"></span></a>
-                    <ul class="dropdown-menu" role="menu" id="myDropdown">
-                        <li><a href="getstarted-tiles.html">Tiled Maps</a></li>
-                        <li class="divider"></li>
-                        <li><a href="getstarted-agol.html">ArcGIS.com Maps</a></li>
-                        <li class="divider"></li>
-                        <li><a href="getstarted-editing.html">Editing</a></li>
-                        <li class="divider"></li>
-                        <li><a href="getstarted-tpk.html">TPKs</a></li>
-                    </ul>
-                </li>
-                <li><a href="api-doc.html">API Docs</a></li>
-            </ul>
-        </div>
-    </div>
-</div>
+<header id="header"></header>
 
 <!-- Main jumbotron for a primary marketing message or call to action -->
 <div class="jumbotron">
@@ -556,14 +529,23 @@
 
 <!-- Include a reference to IndexedDBShim for library to work on Safari 7.x -->
 <script src="../vendor/IndexedDBShim/dist/IndexedDBShim.js"></script>
-
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js" async="true"></script>
 <script src="http://js.arcgis.com/3.10/"></script>
 
 <script>
+
+    $(document).ready(function() {
+        $("#header").load("../demo/header.html");
+    });
+
     var map;
 
     // Make sure to reference the offline tiles library within the require statement!
-    require(["esri/map","dojo/on","//esri.github.com/bootstrap-map-js/src/js/bootstrapmap.js","../dist/offline-tpk-min.js", "dojo/domReady!"],
+    require(
+            ["esri/map",
+            "dojo/on",
+            "//esri.github.com/bootstrap-map-js/src/js/bootstrapmap.js",
+            "../dist/offline-tpk-min.js", "dojo/domReady!"],
             function(Map,on,Bootstrapmap){
 
                 var map, tpkLayer;
@@ -644,7 +626,6 @@
 <!-- Bootstrap core JavaScript
 ================================================== -->
 <!-- Placed at the end of the document so the pages load faster -->
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
 <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
 <!-- add syntax highlighting to code snippts -->
 <script src="https://google-code-prettify.googlecode.com/svn/loader/run_prettify.js"></script>
