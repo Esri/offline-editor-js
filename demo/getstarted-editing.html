@@ -10,8 +10,8 @@
 
     <!-- Bootstrap core CSS -->
     <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" rel="stylesheet">
-
-    <link rel="stylesheet" href="http://js.arcgis.com/3.10/js/esri/css/esri.css">
+    <link rel="stylesheet" href="http://js.arcgis.com/3.11/esri/css/esri.css"">
+    <link rel="stylesheet" href="../samples/widgets/modal/css/modal-popup.css">
     <link rel="stylesheet" type="text/css" href="http://esri.github.io/bootstrap-map-js/src/css/bootstrapmap.css">
 
     <!-- Custom styles for this template -->
@@ -47,6 +47,13 @@
             padding: 8px;
             position: relative; float: right;
         }
+
+        /* Override mod-popup default */
+        .mod-popup-stop-input {color: black;}
+        .span-pending {color: blue; padding-left: 1em;}
+        .voffset20px { margin-top: 20px; }
+        .floatRight { float: right}
+
     </style>
 </head>
 
@@ -56,30 +63,7 @@
     <img style="position: absolute; top: 50; right: 0; border: 0; width:150px;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_green_007200.png" alt="Fork me on GitHub">
 </a>
 
-<div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
-    <div class="container">
-        <div class="navbar-header">
-            <a class="navbar-brand-title" href="index.html">Offline-editor-js</a>
-        </div>
-        <div class="collapse navbar-collapse">
-            <ul class="nav navbar-nav">
-                <li class="active dropdown" id="basemapList">
-                    <a href="" class="dropdown-toggle" data-toggle="dropdown">Get Started <span class="caret"></span></a>
-                    <ul class="dropdown-menu" role="menu" id="myDropdown">
-                        <li><a href="getstarted-tiles.html">Tiled Maps</a></li>
-                        <li class="divider"></li>
-                        <li><a href="getstarted-agol.html">ArcGIS.com Maps</a></li>
-                        <li class="divider"></li>
-                        <li><a href="getstarted-editing.html">Editing</a></li>
-                        <li class="divider"></li>
-                        <li><a href="getstarted-tpk.html">TPKs</a></li>
-                    </ul>
-                </li>
-                <li><a href="api-doc.html">API Docs</a></li>
-            </ul>
-        </div>
-    </div>
-</div>
+<header id="header"></header>
 
 <!-- Main jumbotron for a primary marketing message or call to action -->
 <div class="jumbotron">
@@ -116,7 +100,7 @@
                 </div>
                 <div class="tab-pane" id="Step2">
                     <h3>Step 2: Fill in the basics</h3>
-                    <p>Add the basic library references. Then test to make sure map loads.</p>
+                    <p>Add library references and build basic layout. Then test to make sure map loads.</p>
                     <br>
                     <pre class="prettyprint">
                         <code>
@@ -125,25 +109,44 @@
 &lt;head>
     &lt;meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     &lt;meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no"/>
-    &lt;title>Simple Map&lt;/title>
-    &lt;link rel="stylesheet" href="http://js.arcgis.com/3.10/js/esri/css/esri.css">
+    &lt;title>Offline Features&lt;/title>
+    &lt;link href="//netdna.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" rel="stylesheet" media="screen">
+    &lt;link rel="stylesheet" href="http://js.arcgis.com/3.11/esri/css/esri.css"">
+    &lt;link rel="stylesheet" href="widgets/css/modal-popup.css">
+    &lt;link rel="stylesheet" type="text/css" href="http://esri.github.io/bootstrap-map-js/src/css/bootstrapmap.css">
     &lt;style>
-        html, body, #map {
-            height: 100%;
-            width: 100%;
-            margin: 0;
-            padding: 0;
+        #mapDiv {
+            min-height: 500px;
+            max-height: 1000px;
         }
-        body {
-            background-color: #000000;
-            overflow: hidden;
-            font-family: "Trebuchet MS";
+
+        #img-offline-indicator {
+            padding: 8px;
+            position: relative; float: right;
         }
+
+        /* Override mod-popup default */
+        .mod-popup-stop-input {color: black;}
+        .span-pending {color: blue; padding-left: 1em;}
+        .voffset20px { margin-top: 20px; }
+        .floatRight { float: right}
     &lt;/style>
 
     &lt;!-- Include a reference to offline.js which detects online/offline conditions -->
     &lt;script src="../vendor/offline/offline.min.js">&lt;/script>
     &lt;script>
+        // Set how we pull in custom AMD modules
+        var path = location.pathname.replace(/[^\/]+$/, '');
+        var dojoConfig =
+        {
+            debug: true,
+            packages:[
+                {
+                    name: "widgets",
+                    location: path + "widgets/"
+                }]
+        }
+
         // Set the online/offline detection options.
         // More info at: http://github.hubspot.com/offline/docs/welcome/
         Offline.options = {
@@ -151,7 +154,7 @@
                 image: {
                     url: function() {
                         return 'http://esri.github.io/offline-editor-js/tiny-image.png?_=' +
-                            (Math.floor(Math.random() * 1000000000));
+                                (Math.floor(Math.random() * 1000000000));
                     }
                 },
                 active: 'image'
@@ -159,27 +162,74 @@
         }
     &lt;/script>
 
-    &lt;!-- Include a reference to IndexedDBShim for library to work on Safari 7.x -->
-    &lt;script src="../vendor/IndexedDBShim/dist/IndexedDBShim.js">&lt;/script>
-
-    &lt;script src="http://js.arcgis.com/3.10/">&lt;/script>
+    &lt;script src="https://code.jquery.com/jquery-2.1.1.min.js">&lt;/script>
+    &lt;script src="http://js.arcgis.com/3.11/">&lt;/script>
 &lt;/head>
 
 &lt;body>
-    &lt;div id="map">&lt;/div>
 
-    &lt;script>
-        var map;
+&lt;div class="container voffset20px">
+    &lt;div class="row">
+        &lt;div class="col-xs-8">
+            &lt;button class="btn btn-success" id="btn-online-offline">Go Offline&lt;/button>
+            &lt;span class="span-pending">Pending Edits &lt;span id="span-pending-edits" class="badge">0&lt;/span>&lt;/span>
+        &lt;/div>
+        &lt;div class="col-xs-4">
+            &lt;button id="btn-state" class="btn btn-success btn-large floatRight">
+                &lt;span id="state-span" class="glyphicon glyphicon-link"> Up&lt;/span>
+            &lt;/button>
+        &lt;/div>
+    &lt;/div>
+    &lt;div class="row voffset20px">
+        &lt;div class="col-xs-12">
+            &lt;div id="mapDiv">&lt;/div>
+        &lt;/div>
+    &lt;/div>
+&lt;/div>
+&lt;!-- Stub for modal popup -->
+&lt;div id="modal-popup">&lt;/div>
 
-        // Make sure to reference the tiles library within the require statement!
-        require(["esri/map","../dist/offline-tiles-advanced-min.js", "dojo/domReady!"], function(Map) {
-            map = new Map("map", {
-                basemap: "topo",
-                center: [-122.45, 37.75], // longitude, latitude
-                zoom: 13
-            });
-        });
-    &lt;&#47;script&gt;
+&lt;script>
+
+require([
+        "esri/map","esri/tasks/query",
+        "dojo/on","dojo/parser", "esri/renderers/SimpleRenderer",
+        "esri/symbols/SimpleMarkerSymbol","esri/Color",
+        "widgets/popup","esri/layers/FeatureLayer",
+        "//esri.github.com/bootstrap-map-js/src/js/bootstrapmap.js",
+        "../dist/offline-edit-src.js",
+        "dojo/domReady!"],
+        function(Map,Query,on,parser,SimpleRenderer,SimpleMarkerSymbol,
+            Color,ModalPopup,FeatureLayer,BootstrapMap){
+
+            var map, popup, editsStore;
+            var defaultSymbol;
+            var offlineFeaturesManager;
+            var btnOnlineOffline, btnState, pendingEdits;
+            var imgOfflineIndicator;
+            var closeBtn,saveBtn,deleteBtn,stopMainID,stopID,stopRoutes,stopNames;
+
+            initMap();
+
+            function initMap(){
+                if(map){
+                    map.destroy();
+                }
+
+                map = BootstrapMap.create("mapDiv",{
+                    basemap: "topo",
+                    center: [-104.99,39.75], // longitude, latitude
+                    zoom: 15
+                });
+            }
+        }
+);
+
+&lt;/script>
+&lt;!-- Bootstrap core JavaScript
+================================================== -->
+&lt;!-- Placed at the end of the document so the pages load faster -->
+&lt;script src="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js">&lt;/script>
 &lt;/body>
 &lt;/html>
 
@@ -188,36 +238,55 @@
                     <div class="alert alert-info">NOTE: Replace paths with your references.</div>
                 </div>
                 <div class="tab-pane" id="Step3">
-                    <h3>Step 3: Configure tiled basemap to work offline</h3>
-                    <p>This initializes the offline-editor-js library. Test to make sure map loads.</p>
-                    <br>
+                    <h3>Step 3: Configure modal popup</h3>
+                    <p>This initializes and configures the modal popup. Test to make sure map loads and popup displays.&lt;/p>
+                    &lt;br>
 
-                    <pre class="prettyprint">
+                    &lt;pre class="prettyprint">
                         <code>
 &lt;!DOCTYPE html>
 &lt;html>
 &lt;head>
     &lt;meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     &lt;meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no"/>
-    &lt;title>Simple Map&lt;/title>
-    &lt;link rel="stylesheet" href="http://js.arcgis.com/3.10/js/esri/css/esri.css">
+    &lt;title>Offline Features&lt;/title>
+    &lt;link href="//netdna.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" rel="stylesheet" media="screen">
+    &lt;link rel="stylesheet" href="http://js.arcgis.com/3.11/esri/css/esri.css"">
+    &lt;link rel="stylesheet" href="../samples/widgets/modal/css/modal-popup.css">
+    &lt;link rel="stylesheet" type="text/css" href="http://esri.github.io/bootstrap-map-js/src/css/bootstrapmap.css">
     &lt;style>
-        html, body, #map {
-            height: 100%;
-            width: 100%;
-            margin: 0;
-            padding: 0;
+        #mapDiv {
+            min-height: 500px;
+            max-height: 1000px;
         }
-        body {
-            background-color: #000000;
-            overflow: hidden;
-            font-family: "Trebuchet MS";
+
+        #img-offline-indicator {
+            padding: 8px;
+            position: relative; float: right;
         }
+
+        /* Override mod-popup default */
+        .mod-popup-stop-input {color: black;}
+        .span-pending {color: blue; padding-left: 1em;}
+        .voffset20px { margin-top: 20px; }
+        .floatRight { float: right}
     &lt;/style>
 
     &lt;!-- Include a reference to offline.js which detects online/offline conditions -->
     &lt;script src="../vendor/offline/offline.min.js">&lt;/script>
     &lt;script>
+        // Set how we pull in custom AMD modules
+        var path = location.pathname.replace(/[^\/]+$/, '');
+        var dojoConfig =
+        {
+            debug: true,
+            packages:[
+                {
+                    name: "widgets",
+                    location: path + "../samples/widgets/"
+                }]
+        }
+
         // Set the online/offline detection options.
         // More info at: http://github.hubspot.com/offline/docs/welcome/
         Offline.options = {
@@ -225,7 +294,7 @@
                 image: {
                     url: function() {
                         return 'http://esri.github.io/offline-editor-js/tiny-image.png?_=' +
-                            (Math.floor(Math.random() * 1000000000));
+                                (Math.floor(Math.random() * 1000000000));
                     }
                 },
                 active: 'image'
@@ -233,56 +302,194 @@
         }
     &lt;/script>
 
-    &lt;!-- Include a reference to IndexedDBShim for library to work on Safari 7.x -->
-    &lt;script src="../vendor/IndexedDBShim/dist/IndexedDBShim.js">&lt;/script>
-
-    &lt;script src="http://js.arcgis.com/3.10/">&lt;/script>
+    &lt;script src="https://code.jquery.com/jquery-2.1.1.min.js">&lt;/script>
+    &lt;script src="http://js.arcgis.com/3.11/">&lt;/script>
 &lt;/head>
 
 &lt;body>
-    &lt;div id="map">&lt;/div>
 
-    &lt;script>
-        var map;
+&lt;div class="container voffset20px">
+    &lt;div class="row">
+        &lt;div class="col-xs-8">
+            &lt;button class="btn btn-success" id="btn-online-offline">Go Offline&lt;/button>
+            &lt;span class="span-pending">Pending Edits &lt;span id="span-pending-edits" class="badge">0&lt;/span>&lt;/span>
+        &lt;/div>
+        &lt;div class="col-xs-4">
+            &lt;button id="btn-state" class="btn btn-success btn-large floatRight">
+                &lt;span id="state-span" class="glyphicon glyphicon-link"> Up&lt;/span>
+            &lt;/button>
+        &lt;/div>
+    &lt;/div>
+    &lt;div class="row voffset20px">
+        &lt;div class="col-xs-12">
+            &lt;div id="mapDiv">&lt;/div>
+        &lt;/div>
+    &lt;/div>
+&lt;/div>
+&lt;!-- Stub for modal popup -->
+&lt;div id="modal-popup">&lt;/div>
 
-        // Make sure to reference the offline tiles library within the require statement!
-        require(["esri/map","../dist/offline-tiles-advanced-min.js", "dojo/domReady!"], function(Map) {
+&lt;script>
 
-            // Check if browser state is online or offline
-            Offline.check();
-            Offline.on('up down', updateState );
+require([
+        "esri/map","esri/tasks/query",
+        "dojo/on","dojo/parser", "esri/renderers/SimpleRenderer",
+        "esri/symbols/SimpleMarkerSymbol","esri/Color",
+        "widgets/modal/popup","esri/layers/FeatureLayer",
+        "//esri.github.com/bootstrap-map-js/src/js/bootstrapmap.js",
+        "../dist/offline-edit-src.js",
+        "dojo/domReady!"],
+        function(Map,Query,on,parser,SimpleRenderer,SimpleMarkerSymbol,
+             Color,ModalPopup,FeatureLayer,BootstrapMap) {
 
-            // Initialize Esri.Map
-            map = new Map("map", {
-                //basemap: "topo", // comment out this basemap!
-                center: [-122.45, 37.75], // longitude, latitude
-                zoom: 13
-            });
+            var map, popup, editsStore;
+            var defaultSymbol;
+            var offlineFeaturesManager;
+            var btnOnlineOffline, btnState, pendingEdits;
+            var imgOfflineIndicator;
+            var closeBtn,saveBtn,deleteBtn,stopMainID,stopID,stopRoutes,stopNames;
 
-            // Now we initialize a topo tiled basemap service to be offline-enabled.
-            tileLayer = O.esri.Tiles.OfflineTileEnablerLayer(
-                            "http://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer",
-                            function(evt){
-                                console.log("Offline tile lib enabled. App is: " + Offline.state);
-                            },
-                            true);
+            initVars();
+            initMap();
 
-            // Add our offline tile layer to the map instead of using the default basemap!
-            map.addLayer(tileLayer);
+            function initMap(){
+                if(map){
+                    map.destroy();
+                }
 
-            // Set the tileLayer online or offline.
-            // When set to offline, the map will look for tiles in the tiles database
-            function updateState(){
-                if(Offline.state === 'up'){
-                    if(typeof tileLayer != "undefined") tileLayer.goOnline();
+                map = BootstrapMap.create("mapDiv",{
+                    basemap: "topo",
+                    center: [-104.99,39.75], // longitude, latitude
+                    zoom: 15
+                });
+
+                map.on("load",function(evt){
+                    console.log("Map is loaded. Loading popup...")
+                    window.setTimeout(function(){
+                        popup.show();
+                    },2000);
+                });
+            }
+
+
+            function initVars(){
+
+                editsStore = new O.esri.Edit.EditStore();
+                popup = new ModalPopup({animation: true, animationDuration: 1},"modal-popup");
+                popup.startup();
+
+                parser.parse();
+
+                // Check if browser state is online or offline
+                Offline.check();
+                Offline.on('up down', updateState );
+
+
+                btnOnlineOffline = document.getElementById("btn-online-offline");
+                imgOfflineIndicator = document.getElementById("state-span");
+                btnState = document.getElementById("btn-state");
+                pendingEdits = document.getElementById("span-pending-edits");
+
+                // Modify symbol size based on screen size.
+                // Bigger screens get smaller symbols. Smaller screens get larger symbols.
+                var width = window.innerWidth
+                        || document.documentElement.clientWidth
+                        || document.body.clientWidth;
+
+                var height = window.innerHeight
+                        || document.documentElement.clientHeight
+                        || document.body.clientHeight;
+
+                if (height >= 768 || width >= 1024) {
+                    defaultSymbol= new SimpleMarkerSymbol().setStyle(
+                            SimpleMarkerSymbol.STYLE_DIAMOND).setColor(
+                            new Color([255,0,0,0.5])).setSize(20);
                 }
                 else{
-                    if(typeof tileLayer != "undefined") tileLayer.goOffline();
+                    defaultSymbol= new SimpleMarkerSymbol().setStyle(
+                            SimpleMarkerSymbol.STYLE_DIAMOND).setColor(
+                            new Color([255,0,0,0.5])).setSize(35);
+                }
+
+                // Variables for modal popup
+                closeBtn = document.getElementById("mod-popup-close-btn");
+                saveBtn = document.getElementById("mod-popup-save-btn");
+                deleteBtn = document.getElementById("mod-popup-delete-btn");
+                stopMainID = document.getElementById("stop-main-id");
+                stopID = document.getElementById("stop-id");
+                stopRoutes = document.getElementById("stop-routes");
+                stopNames = document.getElementById("stop-names");
+
+            }
+
+            function setModalPopupClickListeners(){
+                closeBtn.onclick = function(evt){
+                    hideModalPopup();
+                }
+
+                saveBtn.onclick = function(evt) {
+                    //TO-DO
+                }
+
+            }
+
+            function showModalPopup(graphic){
+                popup.graphic = graphic; // assign graphic to modPopup as a property.
+                popup.show();
+            }
+
+            function hideModalPopup(){
+                popup.hide();
+            }
+
+            // Force feature service offline
+            function goOnlineOffline(){
+
+                if(btnOnlineOffline.innerHTML == "Go Offline"){
+                    toggleStateUp(false);
+                    console.log("Map is offline");
+                }
+                else{
+                    toggleStateUp(true);
+                    console.log("Map is online");
                 }
             }
 
-        });
-    &lt;&#47;script&gt;
+            // Set the UX to online or offline state
+            function toggleStateUp(state){
+                if(state){
+                    btnOnlineOffline.innerHTML = "Go Offline";
+                    offlineFeaturesManager.goOnline();
+                    imgOfflineIndicator.className = "glyphicon glyphicon-link";
+                    imgOfflineIndicator.innerHTML = " Up";
+                    btnState.className = "btn btn-success btn-large floatRight";
+                }
+                else{
+                    btnOnlineOffline.innerHTML = "Go Online";
+                    offlineFeaturesManager.goOffline();
+                    imgOfflineIndicator.className = "glyphicon glyphicon-thumbs-down";
+                    imgOfflineIndicator.innerHTML = " Down";
+                    btnState.className = "btn btn-danger btn-large floatRight";
+                }
+            }
+
+            // Automatically set the feature service online or offline.
+            function updateState(){
+                if(Offline.state === 'up'){
+                    toggleStateUp(true);
+                }
+                else{
+                    toggleStateUp(false);
+                }
+            }
+        }
+);
+
+&lt;/script>
+&lt;!-- Bootstrap core JavaScript
+================================================== -->
+&lt;!-- Placed at the end of the document so the pages load faster -->
+&lt;script src="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js">&lt;/script>
 &lt;/body>
 &lt;/html>
 
@@ -293,8 +500,8 @@
                 </div>
 
                 <div class="tab-pane" id="Step4">
-                    <h3>Step 4: Configure tiles download.</h3>
-                    <p>Enable the ability to download tiles as well the ability to toggle online and offline.</p>
+                    <h3>Step 4: Configure offline editing.</h3>
+                    <p>Enable the ability to store features (points, lines and polygons) while offline, and resync features when internet is restored.</p>
                     <br>
 
                     <ul id="myTab" class="nav nav-tabs">
@@ -315,25 +522,44 @@
 &lt;head>
     &lt;meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     &lt;meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no"/>
-    &lt;title>Simple Map&lt;/title>
-    &lt;link rel="stylesheet" href="http://js.arcgis.com/3.10/js/esri/css/esri.css">
+    &lt;title>Offline Features&lt;/title>
+    &lt;link href="//netdna.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" rel="stylesheet" media="screen">
+    &lt;link rel="stylesheet" href="http://js.arcgis.com/3.11/esri/css/esri.css"">
+    &lt;link rel="stylesheet" href="../samples/widgets/modal/css/modal-popup.css">
+    &lt;link rel="stylesheet" type="text/css" href="http://esri.github.io/bootstrap-map-js/src/css/bootstrapmap.css">
     &lt;style>
-        html, body, #map {
-            height: 100%;
-            width: 100%;
-            margin: 0;
-            padding: 0;
+        #mapDiv {
+            min-height: 500px;
+            max-height: 1000px;
         }
-        body {
-            background-color: #000000;
-            overflow: hidden;
-            font-family: "Trebuchet MS";
+
+        #img-offline-indicator {
+            padding: 8px;
+            position: relative; float: right;
         }
+
+        /* Override mod-popup default */
+        .mod-popup-stop-input {color: black;}
+        .span-pending {color: blue; padding-left: 1em;}
+        .voffset20px { margin-top: 20px; }
+        .floatRight { float: right}
     &lt;/style>
 
     &lt;!-- Include a reference to offline.js which detects online/offline conditions -->
     &lt;script src="../vendor/offline/offline.min.js">&lt;/script>
     &lt;script>
+        // Set how we pull in custom AMD modules
+        var path = location.pathname.replace(/[^\/]+$/, '');
+        var dojoConfig =
+        {
+            debug: true,
+            packages:[
+                {
+                    name: "widgets",
+                    location: path + "../samples/widgets/"
+                }]
+        }
+
         // Set the online/offline detection options.
         // More info at: http://github.hubspot.com/offline/docs/welcome/
         Offline.options = {
@@ -341,7 +567,7 @@
                 image: {
                     url: function() {
                         return 'http://esri.github.io/offline-editor-js/tiny-image.png?_=' +
-                            (Math.floor(Math.random() * 1000000000));
+                                (Math.floor(Math.random() * 1000000000));
                     }
                 },
                 active: 'image'
@@ -349,158 +575,304 @@
         }
     &lt;/script>
 
-    &lt;!-- Include a reference to IndexedDBShim for library to work on Safari 7.x -->
-    &lt;script src="../vendor/IndexedDBShim/dist/IndexedDBShim.js">&lt;/script>
-
-    &lt;script src="http://js.arcgis.com/3.10/">&lt;/script>
+    &lt;script src="https://code.jquery.com/jquery-2.1.1.min.js">&lt;/script>
+    &lt;script src="http://js.arcgis.com/3.11/">&lt;/script>
 &lt;/head>
 
 &lt;body>
 
-    &lt;!-- Create two buttons -->
-    &lt;button class="basic-btn" id="btn-get-tiles">1. Download Tiles&lt;/button>
-    &lt;button class="basic-btn" id="btn-online-offline">2. Go Offline&lt;/button>
-    &lt;button class="basic-btn" id="btn-pan-left">3. Pan left&lt;/button>
+&lt;div class="container voffset20px">
+    &lt;div class="row">
+        &lt;div class="col-xs-8">
+            &lt;button class="btn btn-success" id="btn-online-offline">Go Offline&lt;/button>
+            &lt;span class="span-pending">Pending Edits &lt;span id="span-pending-edits" class="badge">0&lt;/span>&lt;/span>
+        &lt;/div>
+        &lt;div class="col-xs-4">
+            &lt;button id="btn-state" class="btn btn-success btn-large floatRight">
+                &lt;span id="state-span" class="glyphicon glyphicon-link"> Up&lt;/span>
+            &lt;/button>
+        &lt;/div>
+    &lt;/div>
+    &lt;div class="row voffset20px">
+        &lt;div class="col-xs-12">
+            &lt;div id="mapDiv">&lt;/div>
+        &lt;/div>
+    &lt;/div>
+&lt;/div>
+&lt;!-- Stub for modal popup -->
+&lt;div id="modal-popup">&lt;/div>
 
-    &lt;div id="map">&lt;/div>
+&lt;script>
 
-    &lt;script>
-        var map;
+require([
+        "esri/map","esri/tasks/query",
+        "dojo/on","dojo/parser", "esri/renderers/SimpleRenderer",
+        "esri/symbols/SimpleMarkerSymbol","esri/Color",
+        "widgets/modal/popup","esri/layers/FeatureLayer",
+        "//esri.github.com/bootstrap-map-js/src/js/bootstrapmap.js",
+        "../dist/offline-edit-src.js",
+        "dojo/domReady!"],
+        function(Map,Query,on,parser,SimpleRenderer,SimpleMarkerSymbol,
+             Color,ModalPopup,FeatureLayer,BootstrapMap) {
 
-        // Make sure to reference the offline tiles library within the require statement!
-        require(["esri/map","dojo/on","../dist/offline-tiles-advanced-min.js", "dojo/domReady!"],
-        function(Map,on){
+            var map, popup, editsStore;
+            var defaultSymbol;
+            var offlineFeaturesManager;
+            var btnOnlineOffline, btnState, pendingEdits;
+            var imgOfflineIndicator;
+            var closeBtn,saveBtn,deleteBtn,stopMainID,stopID,stopRoutes,stopNames;
 
-            // Check if browser state is online or offline
-            Offline.check();
-            Offline.on('up down', updateState );
+            initVars();
+            initMap();
 
-            // For cancelling the download of tiles
-            var _wantToCancel;
+            function initMap(){
+                if(map){
+                    map.destroy();
+                }
 
-            // Set up min and max boundaries for retrieving tiles
-            var minZoomAdjust = -1, maxZoomAdjust = 1, mMinZoom, mMaxZoom;
-
-            // Set up button click listeners.
-            var btnGetTiles = document.getElementById("btn-get-tiles");
-            var btnOnlineOffline = document.getElementById("btn-online-offline");
-            var btnPanLeft = document.getElementById("btn-pan-left");
-
-            on(btnGetTiles,"click",downloadTiles);
-            on(btnOnlineOffline,"click",goOnlineOffline);
-            on(btnPanLeft,"click",panLeft);
-
-            // Initialize Esri.Map
-            map = new Map("map", {
-                //basemap: "topo", // comment out this basemap!
-                center: [-122.45, 37.75], // longitude, latitude
-                zoom: 13
-            });
-
-            // Now we initialize a topo tiled basemap service to be offline-enabled.
-            tileLayer = O.esri.Tiles.OfflineTileEnablerLayer(
-                            "http://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer",
-                            function(evt){
-                                console.log("Offline tile lib enabled. App is: " + Offline.state);
-                            },
-                            true);
-
-            // Set the min and max zoom levels for when retrieving tiles
-            // This helps manage the amount of database space used.
-            map.on("load",function(evt){
-                tileLayer.getMaxZoom(function(result){
-                    mMaxZoom = result;
+                map = BootstrapMap.create("mapDiv",{
+                    basemap: "topo",
+                    center: [-104.99,39.75], // longitude, latitude
+                    zoom: 15
                 });
-                tileLayer.getMinZoom(function(result){
-                    mMinZoom = result;
+
+
+                busStopFeatureLayer = new FeatureLayer("http://services.arcgis.com/IZtlGBUe4KTzLOl4/arcgis/rest/services/BPX_RTD_BusStops2/FeatureServer/0", {
+                    mode: FeatureLayer.MODE_SNAPSHOT,
+                    outFields: ["OBJECTID","BSID","ROUTES","STOPNAME"]
                 });
-            })
 
-            // Add our offline tile layer to the map instead of using the default basemap!
-            map.addLayer(tileLayer);
+                //Set the graphics to red boxes to make it easy to click on them
+                //on a mobile device.
+                busStopFeatureLayer.setRenderer(new SimpleRenderer(defaultSymbol));
+                busStopFeatureLayer.on("update-end",function(evt){
 
-            function downloadTiles(){
+                    // Now we can enable the button click listener
+                    on(btnOnlineOffline,"click",goOnlineOffline);
 
-                // First we need to empty the database.
-                tileLayer.deleteAllTiles(function(success,err){
-
-                    var zoom = getMinMaxZoom();
-                    var extent = tileLayer.getExtentBuffer(0,map.extent);
-
-                    // Begin downloading tiles
-                    tileLayer.prepareForOffline(zoom.min, zoom.max, extent, function(progress){
-                        console.log("downloading tiles...");
-                        if(progress.hasOwnProperty("countNow")){
-                            var percent = Math.floor(progress.countNow / progress.countMax * 100);
-                            btnGetTiles.innerHTML = 'Saving to phone ' + percent + "% - Tap to Cancel";
-                        }
-
-                        if( progress.finishedDownloading )
-                        {
-                            btnGetTiles.innerHTML = "Saving to phone 100% - Tap to Cancel";
-
-                            if( progress.cancelRequested )
-                            {
-                                alert("Tile download was cancelled");
-                            }
-                            else
-                            {
-                                alert("Tile download complete");
-                            }
-
-                            btnGetTiles.innerHTML = '1. Download Tiles';
-                        }
-                        return _wantToCancel; //determines if a cancel request has been issued
-                    });
+                    initOfflineFeaturesMgr();
+                    setFeatureLayerClickHandler();
+                    setModalPopupClickListeners();
                 });
+
+                map.addLayer(busStopFeatureLayer);
             }
 
-            // Force the tileLayer between online and offline
-            function goOnlineOffline(){
-                if(btnOnlineOffline.innerHTML == "2. Go Offline"){
-                    btnOnlineOffline.innerHTML = "2. Go Online";
-                    tileLayer.goOffline();
-                    document.body.style.backgroundColor = "red";
-                    console.log("tileLayer is offline");
+
+            function initVars(){
+
+                editsStore = new O.esri.Edit.EditStore();
+                popup = new ModalPopup({animation: true, animationDuration: 1},"modal-popup");
+                popup.startup();
+
+                parser.parse();
+
+                // Check if browser state is online or offline
+                Offline.check();
+                Offline.on('up down', updateState );
+
+
+                btnOnlineOffline = document.getElementById("btn-online-offline");
+                imgOfflineIndicator = document.getElementById("state-span");
+                btnState = document.getElementById("btn-state");
+                pendingEdits = document.getElementById("span-pending-edits");
+
+                // Modify symbol size based on screen size.
+                // Bigger screens get smaller symbols. Smaller screens get larger symbols.
+                var width = window.innerWidth
+                        || document.documentElement.clientWidth
+                        || document.body.clientWidth;
+
+                var height = window.innerHeight
+                        || document.documentElement.clientHeight
+                        || document.body.clientHeight;
+
+                if (height >= 768 || width >= 1024) {
+                    defaultSymbol= new SimpleMarkerSymbol().setStyle(
+                            SimpleMarkerSymbol.STYLE_DIAMOND).setColor(
+                            new Color([255,0,0,0.5])).setSize(20);
                 }
                 else{
-                    btnOnlineOffline.innerHTML = "2. Go Offline";
-                    tileLayer.goOnline();
-                    document.body.style.backgroundColor = "black";
-                    console.log("tileLayer is online");
+                    defaultSymbol= new SimpleMarkerSymbol().setStyle(
+                            SimpleMarkerSymbol.STYLE_DIAMOND).setColor(
+                            new Color([255,0,0,0.5])).setSize(35);
+                }
+
+                // Variables for modal popup
+                closeBtn = document.getElementById("mod-popup-close-btn");
+                saveBtn = document.getElementById("mod-popup-save-btn");
+                deleteBtn = document.getElementById("mod-popup-delete-btn");
+                stopMainID = document.getElementById("stop-main-id");
+                stopID = document.getElementById("stop-id");
+                stopRoutes = document.getElementById("stop-routes");
+                stopNames = document.getElementById("stop-names");
+
+            }
+
+            /**
+             * ************************************
+             * OFFLINE FEATURE SERVICE HANDLER CODE
+             * ************************************
+             */
+
+            function initOfflineFeaturesMgr(){
+                offlineFeaturesManager = new O.esri.Edit.OfflineFeaturesManager();
+
+                // IMPORTANT!!!
+                // A proxy page may be required to upload attachments.
+                // If you are using a CORS enabled server you may be able to set the proxyPath to null.
+                // Refer to "Using the Proxy Page" for more information:  https://developers.arcgis.com/en/javascript/jshelp/ags_proxy.html
+                offlineFeaturesManager.proxyPath = null;
+
+                offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_ENQUEUED, updatePendingEditStatus);
+                offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_SENT, updatePendingEditStatus);
+                offlineFeaturesManager.on(offlineFeaturesManager.events.ALL_EDITS_SENT, updatePendingEditStatus);
+
+                offlineFeaturesManager.extend(busStopFeatureLayer);
+                console.log("offlineFeaturesManager initialized.");
+
+                Offline.check();
+                Offline.on('up down', updateState);
+            }
+
+            // Display modal popup when someone clicks on a feature
+            // and load the fields with data from the feature service.
+            function setFeatureLayerClickHandler(){
+                busStopFeatureLayer.on("click", function(evt) {
+                    currentFeature = evt.graphic
+
+                    var query = new Query();
+                    query.objectIds = [evt.graphic.attributes.OBJECTID];
+                    busStopFeatureLayer.selectFeatures(query,FeatureLayer.SELECTION_NEW,
+                            function(evt){
+                                console.log("Success: " + JSON.stringify(evt[0].attributes));
+                                showModalPopup(evt[0]);
+                                var atts = evt[0].attributes
+                                stopID.value = atts.OBJECTID;
+                                stopMainID.value = atts.BSID;
+                                stopNames.value = atts.STOPNAME;
+                                stopRoutes.value = atts.ROUTES;
+                            },function(err){
+                                console.log("ERROR " + JSON.stringify(err));
+                            });
+                }.bind(this));
+            }
+
+            function updatePendingEditStatus(){
+                if( editsStore.hasPendingEdits())
+                {
+                    var edits = editsStore.retrieveEditsQueue();
+                    pendingEdits.innerHTML = edits.length;
+                }
+                else
+                {
+                    pendingEdits.innerHTML = 0;
                 }
             }
 
+            /**
+             * ************************************
+             * MODAL POPUP HANDLER CODE
+             * ************************************
+             */
 
-            // Set the tileLayer online or offline.
-            // When set to offline, the map will look for tiles in the tiles database
+            function setModalPopupClickListeners(){
+                closeBtn.onclick = function(evt){
+                    hideModalPopup();
+                }
+
+                saveBtn.onclick = function(evt){
+
+                    popup.graphic.attributes.ROUTES = stopRoutes.value;
+                    popup.graphic.attributes.STOPNAME = stopNames.value;
+
+                    busStopFeatureLayer.applyEdits(null,[popup.graphic],null,function(result){
+                                console.log("Successfully saved changes to: " +
+                                    popup.graphic.attributes.STOPNAME);
+                                hideModalPopup();
+                            },
+                            function(err){
+                                alert("There was a problem while trying to save: " +
+                                    popup.graphic.attributes.STOPNAME);
+                            })
+                }
+
+                deleteBtn.onclick = function(evt){
+                    busStopFeatureLayer.applyEdits(null,null,[popup.graphic],function(result){
+                                console.log("Successfully deleted: " + popup.graphic.attributes.STOPNAME);
+                                hideModalPopup();
+                            },
+                            function(err){
+                                alert("There was a problem while trying to delete: " +
+                                    popup.graphic.attributes.STOPNAME);
+                            })
+                }
+
+            }
+
+            function showModalPopup(graphic){
+                popup.graphic = graphic; // assign graphic to modPopup as a property.
+                popup.show();
+            }
+
+            function hideModalPopup(){
+                popup.hide();
+            }
+
+            /**
+             * ************************************
+             * GO OFFLINE/ONLINE HANDLER CODE
+             * ************************************
+             */
+
+            // Force feature service offline
+            function goOnlineOffline(){
+
+                if(btnOnlineOffline.innerHTML == "Go Offline"){
+                    toggleStateUp(false);
+                    console.log("Map is offline");
+                }
+                else{
+                    toggleStateUp(true);
+                    console.log("Map is online");
+                }
+            }
+
+            // Set the UX to online or offline state
+            function toggleStateUp(state){
+                if(state){
+                    btnOnlineOffline.innerHTML = "Go Offline";
+                    offlineFeaturesManager.goOnline();
+                    imgOfflineIndicator.className = "glyphicon glyphicon-link";
+                    imgOfflineIndicator.innerHTML = " Up";
+                    btnState.className = "btn btn-success btn-large floatRight";
+                }
+                else{
+                    btnOnlineOffline.innerHTML = "Go Online";
+                    offlineFeaturesManager.goOffline();
+                    imgOfflineIndicator.className = "glyphicon glyphicon-thumbs-down";
+                    imgOfflineIndicator.innerHTML = " Down";
+                    btnState.className = "btn btn-danger btn-large floatRight";
+                }
+            }
+
+            // Automatically set the feature service online or offline.
             function updateState(){
                 if(Offline.state === 'up'){
-                    if(typeof tileLayer != "undefined") tileLayer.goOnline();
+                    toggleStateUp(true);
                 }
                 else{
-                    if(typeof tileLayer != "undefined") tileLayer.goOffline();
+                    toggleStateUp(false);
                 }
             }
+        }
+);
 
-            // Utility function to validate min and max zoom settings of the map
-            function getMinMaxZoom(){
-
-                var zoom = {};
-                var min = tileLayer.getLevel() + minZoomAdjust;
-                var max = tileLayer.getLevel() + maxZoomAdjust;
-                zoom.max = Math.min(mMaxZoom, max);  //prevent errors by setting the tile layer floor
-                zoom.min = Math.max(mMinZoom, min);   //prevent errors by setting the tile layer ceiling
-
-                return zoom;
-            }
-
-            function panLeft(){
-                map.panLeft();
-            }
-
-        });
-    &lt;&#47;script&gt;
+&lt;/script>
+&lt;!-- Bootstrap core JavaScript
+================================================== -->
+&lt;!-- Placed at the end of the document so the pages load faster -->
+&lt;script src="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js">&lt;/script>
 &lt;/body>
 &lt;/html>
 
@@ -511,21 +883,20 @@
 
                         <div class="tab-pane fade in" id="mapTab">
                             <div class="row">
-                                <div class="col-xs-12">
-                                    <div class="form form-group btn-group" data-toggle="buttons">
-                                        <button class="btn btn-success" id="btn-get-tiles">1. Download Tiles</button>
-                                        <button class="btn btn-success" disabled id="btn-online-offline">2. Go Offline</button>
-                                        <button class="btn btn-success" disabled id="btn-pan-left">3. Pan left</button>
-                                    </div>
-                                    <img id="img-offline-indicator"  src="../samples/images/blue-pin.png"/>
+                                <div class="col-xs-8">
+                                    <button class="btn btn-success" id="btn-online-offline">Go Offline</button>
+                                    <span class="span-pending">Pending Edits <span id="span-pending-edits" class="badge">0</span></span>
+                                </div>
+                                <div class="col-xs-4">
+                                    <button id="btn-state" class="btn btn-success btn-large floatRight"><span id="state-span" class="glyphicon glyphicon-link"> Up</span></button>
                                 </div>
                             </div>
-                            <div class="row">
+                            <div class="row voffset20px">
                                 <div class="col-xs-12">
                                     <div id="mapDiv"></div>
                                 </div>
                             </div>
-
+                            <div id="modal-popup"></div>
                         </div>
                     </div><!-- id="code" -->
                 </div><!-- id="myTabContent" -->
@@ -540,6 +911,19 @@
 <!-- mapping code -->
 <script src="../vendor/offline/offline.min.js"></script>
 <script>
+
+    // Set how we pull in custom AMD modules
+    var path = location.pathname.replace(/[^\/]+$/, '');
+    var dojoConfig =
+    {
+        debug: true,
+        packages:[
+            {
+                name: "widgets",
+                location: path + "../samples/widgets/"
+            }]
+    }
+
     // Set the online/offline detection options.
     // More info at: http://github.hubspot.com/offline/docs/welcome/
     Offline.options = {
@@ -555,180 +939,264 @@
     }
 </script>
 
-<!-- Include a reference to IndexedDBShim for library to work on Safari 7.x -->
-<script src="../vendor/IndexedDBShim/dist/IndexedDBShim.js"></script>
-
-<script src="http://js.arcgis.com/3.10/"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+<script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+<script src="http://js.arcgis.com/3.11/"></script>
 
 <script>
-    var map;
 
-    // Make sure to reference the offline tiles library within the require statement!
-    require(["esri/map","dojo/on","//esri.github.com/bootstrap-map-js/src/js/bootstrapmap.js","../dist/offline-tiles-advanced-min.js", "dojo/domReady!"],
-            function(Map,on,Bootstrapmap){
+    $(document).ready(function() {
+        $("#header").load("../demo/header.html");
+    });
 
-                // Check if browser state is online or offline
-                Offline.check();
-                Offline.on('up down', updateState );
 
-                // For cancelling the download of tiles
-                var _wantToCancel;
+    require([
+                "esri/map","esri/tasks/query",
+                "dojo/on","dojo/parser", "esri/renderers/SimpleRenderer",
+                "esri/symbols/SimpleMarkerSymbol","esri/Color",
+                "widgets/modal/popup","esri/layers/FeatureLayer",
+                "//esri.github.com/bootstrap-map-js/src/js/bootstrapmap.js",
+                "../dist/offline-edit-src.js",
+                "dojo/domReady!"],
+            function(Map,Query,on,parser,SimpleRenderer,SimpleMarkerSymbol,Color,ModalPopup,FeatureLayer,BootstrapMap) {
 
-                // Set up min and max boundaries for retrieving tiles
-                var minZoomAdjust = -1, maxZoomAdjust = 1, mMinZoom, mMaxZoom;
+                var map, popup, editsStore;
+                var defaultSymbol;
+                var offlineFeaturesManager;
+                var btnOnlineOffline, btnState, pendingEdits;
+                var imgOfflineIndicator;
+                var closeBtn,saveBtn,deleteBtn,stopMainID,stopID,stopRoutes,stopNames;
 
-                // Set up button click listeners.
-                var btnGetTiles = document.getElementById("btn-get-tiles");
-                var btnOnlineOffline = document.getElementById("btn-online-offline");
-                var btnPanLeft = document.getElementById("btn-pan-left");
-                var imgOfflineIndicator = document.getElementById("img-offline-indicator");
+                initVars();
+                initMap();
 
-                var redPinPath = "../samples/images/red-pin.png";
-                var bluePinPath = "../samples/images/blue-pin.png"
-
-                on(btnGetTiles,"click",downloadTiles);
-                on(btnOnlineOffline,"click",goOnlineOffline);
-                on(btnPanLeft,"click",panLeft);
-
-                $(document).ready(function () {
-                    $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
-                        if (e.target.text === "Map") {
-                            showMap("mapDiv");
-                        }
-                    });
-                });
-
-                function showMap(){
-
+                function initMap(){
                     if(map){
                         map.destroy();
                     }
 
-                    map = Bootstrapmap.create("mapDiv",{
-                        //basemap: "topo", // comment out this basemap!
-                        center: [-122.45, 37.75], // longitude, latitude
+                    map = BootstrapMap.create("mapDiv",{
+                        basemap: "topo", // comment out this basemap!
+                        center: [-104.99,39.75], // longitude, latitude
                         zoom: 15
                     });
 
-                    // Now we initialize the basemap to be offline-enabled. This is out new basemap.
-                    tileLayer = O.esri.Tiles.OfflineTileEnablerLayer(
-                            "http://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer",
-                            function(evt){
-                                console.log("Offline tile lib enabled. App is: " + Offline.state);
-                            },
-                            true);
-
-                    // Set the min and max zoom for when retrieving tiles
-                    map.on("load",function(evt){
-                        tileLayer.getMaxZoom(function(result){
-                            mMaxZoom = result;
-                        });
-                        tileLayer.getMinZoom(function(result){
-                            mMinZoom = result;
-                        });
-                    })
-
-
-                    // Add our offline tile layer to the map instead of using the default basemap!
-                    map.addLayer(tileLayer);
-                }
-
-                function downloadTiles(){
-
-                    // First we need to empty the database.
-                    tileLayer.deleteAllTiles(function(success,err){
-
-                        var zoom = getMinMaxZoom();
-                        var extent = tileLayer.getExtentBuffer(0,map.extent);
-
-                        // Begin downloading tiles
-                        tileLayer.prepareForOffline(zoom.min, zoom.max, extent, function(progress){
-                            console.log("downloading tiles...");
-                            if(progress.hasOwnProperty("countNow")){
-                                var percent = Math.floor(progress.countNow / progress.countMax * 100);
-                                btnGetTiles.innerHTML = 'Saving to phone ' + percent + "% - Tap to Cancel";
-                            }
-
-                            if( progress.finishedDownloading )
-                            {
-                                btnGetTiles.innerHTML = "Saving to phone 100% - Tap to Cancel";
-
-                                if( progress.cancelRequested )
-                                {
-                                    alert("Tile download was cancelled");
-                                }
-                                else
-                                {
-                                    alert("Tile download complete");
-                                }
-
-                                btnGetTiles.innerHTML = '1. Download Tiles';
-
-                                btnOnlineOffline.disabled = false;
-                                btnGetTiles.disabled = true;
-                            }
-                            return _wantToCancel; //determines if a cancel request has been issued
-                        });
+                    busStopFeatureLayer = new FeatureLayer("http://services.arcgis.com/IZtlGBUe4KTzLOl4/arcgis/rest/services/BPX_RTD_BusStops2/FeatureServer/0", {
+                        mode: FeatureLayer.MODE_SNAPSHOT,
+                        outFields: ["OBJECTID","BSID","ROUTES","STOPNAME"]
                     });
+
+                    //Set the graphics to red boxes to make it easy to click on them
+                    //on a mobile device.
+                    busStopFeatureLayer.setRenderer(new SimpleRenderer(defaultSymbol));
+                    busStopFeatureLayer.on("update-end",function(evt){
+
+                        // Now we can enable the button click listener
+                        on(btnOnlineOffline,"click",goOnlineOffline);
+
+                        initOfflineFeaturesMgr();
+                        setFeatureLayerClickHandler();
+                        setModalPopupClickListeners();
+                    });
+
+                    map.addLayer(busStopFeatureLayer);
                 }
 
-                // Force the tileLayer between online and offline
+                function initVars(){
+
+                    editsStore = new O.esri.Edit.EditStore();
+                    popup = new ModalPopup({animation: true, animationDuration: 1},"modal-popup");
+                    popup.startup();
+
+                    parser.parse();
+
+                    // Check if browser state is online or offline
+                    Offline.check();
+                    Offline.on('up down', updateState );
+
+
+                    btnOnlineOffline = document.getElementById("btn-online-offline");
+                    imgOfflineIndicator = document.getElementById("state-span");
+                    btnState = document.getElementById("btn-state");
+                    pendingEdits = document.getElementById("span-pending-edits");
+
+                    // Modify symbol size based on screen size.
+                    // Bigger screens get smaller symbols. Smaller screens get larger symbols.
+                    var width = window.innerWidth
+                            || document.documentElement.clientWidth
+                            || document.body.clientWidth;
+
+                    var height = window.innerHeight
+                            || document.documentElement.clientHeight
+                            || document.body.clientHeight;
+
+                    if (height >= 768 || width >= 1024) {
+                        defaultSymbol= new SimpleMarkerSymbol().setStyle(
+                                SimpleMarkerSymbol.STYLE_DIAMOND).setColor(
+                                new Color([255,0,0,0.5])).setSize(20);
+                    }
+                    else{
+                        defaultSymbol= new SimpleMarkerSymbol().setStyle(
+                                SimpleMarkerSymbol.STYLE_DIAMOND).setColor(
+                                new Color([255,0,0,0.5])).setSize(35);
+                    }
+
+                    // Variables for modal popup
+                    closeBtn = document.getElementById("mod-popup-close-btn");
+                    saveBtn = document.getElementById("mod-popup-save-btn");
+                    deleteBtn = document.getElementById("mod-popup-delete-btn");
+                    stopMainID = document.getElementById("stop-main-id");
+                    stopID = document.getElementById("stop-id");
+                    stopRoutes = document.getElementById("stop-routes");
+                    stopNames = document.getElementById("stop-names");
+
+                }
+
+                function initOfflineFeaturesMgr(){
+                    offlineFeaturesManager = new O.esri.Edit.OfflineFeaturesManager();
+
+                    // IMPORTANT!!!
+                    // A proxy page may be required to upload attachments.
+                    // If you are using a CORS enabled server you may be ablew to set the proxyPath to null.
+                    // Refer to "Using the Proxy Page" for more information:  https://developers.arcgis.com/en/javascript/jshelp/ags_proxy.html
+                    offlineFeaturesManager.proxyPath = null;
+
+                    offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_ENQUEUED, updatePendingEditStatus);
+                    offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_SENT, updatePendingEditStatus);
+                    offlineFeaturesManager.on(offlineFeaturesManager.events.ALL_EDITS_SENT, updatePendingEditStatus);
+
+                    offlineFeaturesManager.extend(busStopFeatureLayer);
+                    console.log("offlineFeaturesManager initialized.");
+
+                    Offline.check();
+                    Offline.on('up down', updateState);
+                }
+
+                /**
+                 * Display modal popup when someone clicks on a feature
+                 */
+                function setFeatureLayerClickHandler(){
+                    busStopFeatureLayer.on("click", function(evt) {
+                        currentFeature = evt.graphic
+
+                        var query = new Query();
+                        query.objectIds = [evt.graphic.attributes.OBJECTID];
+                        busStopFeatureLayer.selectFeatures(query,FeatureLayer.SELECTION_NEW,
+                                function(evt){
+                                    console.log("Success: " + JSON.stringify(evt[0].attributes));
+                                    showModalPopup(evt[0]);
+                                    var atts = evt[0].attributes
+                                    stopID.value = atts.OBJECTID;
+                                    stopMainID.value = atts.BSID;
+                                    stopNames.value = atts.STOPNAME;
+                                    stopRoutes.value = atts.ROUTES;
+                                },function(err){
+                                    console.log("ERROR " + JSON.stringify(err));
+                                });
+                    }.bind(this));
+                }
+
+                function setModalPopupClickListeners(){
+                    closeBtn.onclick = function(evt){
+                        hideModalPopup();
+                    }
+
+                    saveBtn.onclick = function(evt){
+
+                        popup.graphic.attributes.ROUTES = stopRoutes.value;
+                        popup.graphic.attributes.STOPNAME = stopNames.value;
+
+                        busStopFeatureLayer.applyEdits(null,[popup.graphic],null,function(result){
+                                    console.log("Successfully saved changes to: " + popup.graphic.attributes.STOPNAME);
+                                    hideModalPopup();
+                                },
+                                function(err){
+                                    alert("There was a problem while trying to save: " + popup.graphic.attributes.STOPNAME);
+                                })
+                    }
+
+                    deleteBtn.onclick = function(evt){
+                        busStopFeatureLayer.applyEdits(null,null,[popup.graphic],function(result){
+                                    console.log("Successfully deleted: " + popup.graphic.attributes.STOPNAME);
+                                    hideModalPopup();
+                                },
+                                function(err){
+                                    alert("There was a problem while trying to delete: " + popup.graphic.attributes.STOPNAME);
+                                })
+                    }
+                }
+
+                function showModalPopup(graphic){
+                    popup.graphic = graphic; // assign graphic to modPopup as a property.
+                    popup.show();
+                }
+
+                function hideModalPopup(){
+                    popup.hide();
+                }
+
+                function updatePendingEditStatus(){
+                    if( editsStore.hasPendingEdits())
+                    {
+                        var edits = editsStore.retrieveEditsQueue();
+                        pendingEdits.innerHTML = edits.length;
+                    }
+                    else
+                    {
+                        pendingEdits.innerHTML = 0;
+                    }
+                }
+
+                /**
+                 * Force the tileLayer between online and offline
+                 */
                 function goOnlineOffline(){
 
-                    btnPanLeft.disabled = false;
-
-                    if(btnOnlineOffline.innerHTML == "2. Go Offline"){
-                        btnOnlineOffline.innerHTML = "2. Go Online";
-                        tileLayer.goOffline();
-                        imgOfflineIndicator.src = redPinPath;
-                        console.log("tileLayer is offline");
+                    if(btnOnlineOffline.innerHTML == "Go Offline"){
+                        toggleStateUp(false);
+                        console.log("Map is offline");
                     }
                     else{
-                        btnOnlineOffline.innerHTML = "2. Go Offline";
-                        tileLayer.goOnline();
-                        imgOfflineIndicator.src = bluePinPath;
-                        console.log("tileLayer is online");
+                        toggleStateUp(true);
+                        console.log("Map is online");
                     }
                 }
 
+                function toggleStateUp(state){
+                    if(state){
+                        btnOnlineOffline.innerHTML = "Go Offline";
+                        offlineFeaturesManager.goOnline();
+                        imgOfflineIndicator.className = "glyphicon glyphicon-link";
+                        imgOfflineIndicator.innerHTML = " Up";
+                        btnState.className = "btn btn-success btn-large floatRight";
+                    }
+                    else{
+                        btnOnlineOffline.innerHTML = "Go Online";
+                        offlineFeaturesManager.goOffline();
+                        imgOfflineIndicator.className = "glyphicon glyphicon-thumbs-down";
+                        imgOfflineIndicator.innerHTML = " Down";
+                        btnState.className = "btn btn-danger btn-large floatRight";
+                    }
+                }
 
-                // Set the tileLayer online or offline.
-                // When set to offline, the map will look for tiles in the tiles database
+                /**
+                 * Set the map online or offline.
+                 */
                 function updateState(){
                     if(Offline.state === 'up'){
-                        if(typeof tileLayer != "undefined") tileLayer.goOnline();
-                        imgOfflineIndicator.src = bluePinPath;
+                        toggleStateUp(true);
                     }
                     else{
-                        if(typeof tileLayer != "undefined") tileLayer.goOffline();
-                        imgOfflineIndicator.src = redPinPath;
+                        toggleStateUp(false);
                     }
                 }
-
-                // Utility function to validate min and max zoom settings of the map
-                function getMinMaxZoom(){
-
-                    var zoom = {};
-                    var min = tileLayer.getLevel() + minZoomAdjust;
-                    var max = tileLayer.getLevel() + maxZoomAdjust;
-                    zoom.max = Math.min(mMaxZoom, max);  //prevent errors by setting the tile layer floor
-                    zoom.min = Math.max(mMinZoom, min);   //prevent errors by setting the tile layer ceiling
-
-                    return zoom;
-                }
-
-                function panLeft(){
-                    map.panLeft();
-                }
-
-            });
-
+            }
+    );
 </script>
 
 <!-- Bootstrap core JavaScript
 ================================================== -->
 <!-- Placed at the end of the document so the pages load faster -->
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
 <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
 <!-- add syntax highlighting to code snippts -->
 <script src="https://google-code-prettify.googlecode.com/svn/loader/run_prettify.js"></script>
