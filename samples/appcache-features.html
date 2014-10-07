@@ -174,7 +174,9 @@
 <script>
     require(["esri/map","esri/layers/FeatureLayer",
          "utils/appCacheManager",
-        "esri/renderers/SimpleRenderer","esri/symbols/SimpleMarkerSymbol","esri/Color","esri/tasks/query",
+        "esri/renderers/SimpleRenderer","esri/symbols/SimpleMarkerSymbol",
+        "esri/Color",
+        "esri/tasks/query",
         "dojo/on",
         "esri/graphic",
         "../dist/offline-tiles-advanced-min.js",
@@ -193,7 +195,6 @@
                 var currentFeature;
                 var busStopFeatureLayer;
                 var offlineFeaturesManager;
-                var modPopup = document.getElementById("popup");
                 var pendingEdits = document.getElementById("pending-edits");
                 var imgOfflineIndicator = document.getElementById("img-offline-indicator");
 
@@ -223,15 +224,22 @@
 
                 // Symbols and images
                 var redPinPath = "../samples/images/red-pin.png";
-                var redPinImage = new Image().src = redPinPath;
                 var bluePinPath = "../samples/images/blue-pin.png";
 
                 // Modify symbol size based on screen size.
                 // Bigger screens get smaller symbols. Smaller screens get larger symbols.
-                if (document.documentElement.clientHeight > 768 || document.documentElement.clientWidth > 1024) {
+                var width = window.innerWidth
+                        || document.documentElement.clientWidth
+                        || document.body.clientWidth;
+
+                var height = window.innerHeight
+                        || document.documentElement.clientHeight
+                        || document.body.clientHeight;
+
+                if (height > 768 || width > 1024) {
                     defaultSymbol= new SimpleMarkerSymbol().setStyle(
                             SimpleMarkerSymbol.STYLE_DIAMOND).setColor(
-                            new Color([255,0,0,0.5])).setSize(20);    // scripts
+                            new Color([255,0,0,0.5])).setSize(20);
                 }
                 else{
                     defaultSymbol= new SimpleMarkerSymbol().setStyle(
@@ -239,7 +247,7 @@
                             new Color([255,0,0,0.5])).setSize(35);
                 }
 
-                var editsStore = new O.esri.Edit.EditStore(Graphic);
+                var editsStore = new O.esri.Edit.EditStore();
 
                 /**
                  * There have been a few bugs in the offline detection library (offline.min.js)
