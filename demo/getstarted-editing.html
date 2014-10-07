@@ -969,9 +969,15 @@ require([
                 var closeBtn,saveBtn,deleteBtn,stopMainID,stopID,stopRoutes,stopNames;
 
                 initVars();
-                initMap();
+                $(document).ready(function () {
+                    $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+                        if (e.target.text === "Map") {
+                            showMap();
+                        }
+                    });
+                });
 
-                function initMap(){
+                function showMap(){
                     if(map){
                         map.destroy();
                     }
