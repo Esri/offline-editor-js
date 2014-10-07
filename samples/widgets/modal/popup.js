@@ -7,7 +7,7 @@
 define([
     "dojo/_base/declare", "dojo/parser", "dojo/ready",
     "dijit/_WidgetBase", "dijit/_TemplatedMixin","dojo/query",
-    "dojo/text!../widgets/template/popup.html","dojo/NodeList-manipulate"
+    "dojo/text!../modal/template/popup.html","dojo/NodeList-manipulate"
 ], function(declare, parser, ready, _WidgetBase, _TemplatedMixin,query,template){
 
     return declare("ModalPopup", [_WidgetBase, _TemplatedMixin], {
