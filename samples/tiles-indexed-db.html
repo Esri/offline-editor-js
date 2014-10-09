@@ -337,6 +337,9 @@ require(
 					on(map,"load",function()
 					{
 						basemapLayer = map.getLayer( map.layerIds[0] );
+                        initMapParts();
+                        initEvents();
+                        initOffline();
 					});
 				}
 
