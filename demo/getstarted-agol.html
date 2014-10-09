@@ -11,7 +11,7 @@
     <!-- Bootstrap core CSS -->
     <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" rel="stylesheet">
 
-    <link rel="stylesheet" href="http://js.arcgis.com/3.10/js/esri/css/esri.css">
+    <link rel="stylesheet" href="http://js.arcgis.com/3.11/esri/css/esri.css"">
     <link rel="stylesheet" type="text/css" href="http://esri.github.io/bootstrap-map-js/src/css/bootstrapmap.css">
 
     <!-- Custom styles for this template -->
@@ -43,10 +43,7 @@
             border: 1px solid #cccccc !important;
         }
 
-        #img-offline-indicator {
-            padding: 8px;
-            position: relative; float: right;
-        }
+        .floatRight {float: right;}
     </style>
 </head>
 
@@ -90,20 +87,25 @@
 &lt;head>
     &lt;meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     &lt;meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no"/>
-    &lt;title>Simple Map&lt;/title>
-    &lt;link rel="stylesheet" href="http://js.arcgis.com/3.11/esri/css/esri.css">
+    &lt;title>Offline ArcGIS.com&lt;/title>
+
+    &lt;!-- Bootstrap core CSS -->
+    &lt;link href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" rel="stylesheet">
+
+    &lt;link rel="stylesheet" href="http://js.arcgis.com/3.11/esri/css/esri.css"">
+    &lt;link rel="stylesheet" type="text/css" href="http://esri.github.io/bootstrap-map-js/src/css/bootstrapmap.css">
     &lt;style>
-        html, body, #map {
-            height: 100%;
-            width: 100%;
-            margin: 0;
-            padding: 0;
+        #mapDiv {
+            min-height: 500px;
+            max-height: 1000px;
         }
         body {
-            background-color: #000000;
+            background-color: #ffffff;
             overflow: hidden;
             font-family: "Trebuchet MS";
         }
+        .floatRight {float: right;}
+        .container { padding: 20px;}
     &lt;/style>
 
     &lt;!-- Include a reference to offline.js which detects online/offline conditions -->
@@ -116,7 +118,7 @@
                 image: {
                     url: function() {
                         return 'http://esri.github.io/offline-editor-js/tiny-image.png?_=' +
-                            (Math.floor(Math.random() * 1000000000));
+                                (Math.floor(Math.random() * 1000000000));
                     }
                 },
                 active: 'image'
@@ -131,36 +133,59 @@
 &lt;/head>
 
 &lt;body>
-    &lt;div id="map">&lt;/div>
 
-    &lt;script>
-        var map;
+&lt;div class="container">
+    &lt;div class="row">
+        &lt;div class="col-xs-12">
+            &lt;div id="mapDiv">&lt;/div>
+        &lt;/div>
+    &lt;/div>
+&lt;/div>
 
-        // Make sure to reference the tiles library within the require statement!
-        require([
-            "esri/map",
-            "dojo/on",
-            "esri/arcgis/utils",
-            "../offline-editor-js-3/dist/offline-tiles-basic-src.js",
-            "dojo/domReady!"],
-            function(Map,on,arcgisUtils) {
+&lt;script>
 
-                // Load the map
-                arcgisUtils.createMap("bbc1a04a3eca4430be144d7a08b43a17","map").then(function(response){
-                    var map = response.map;
-                });
+    // Make sure to reference the tiles library within the require statement!
+    require([
+        "esri/map",
+        "dojo/on",
+        "esri/arcgis/utils",
+        "//esri.github.com/bootstrap-map-js/src/js/bootstrapmap.js",
+        "../dist/offline-tiles-basic-src.js",
+        "dojo/domReady!"],
+        function(Map,on,arcgisUtils,BootstrapMap) {
+
+            var map;
+
+            // Load the map
+            arcgisUtils.createMap("bbc1a04a3eca4430be144d7a08b43a17","mapDiv").then(function(response){
+                var map = response.map;
+
+                map = response.map;
+
+                // Initialize BootstrapMap to make the map responsive
+                BootstrapMap.create(map);
+
+            });
         });
-    &lt;&#47;script&gt;
+&lt;/script>
+
+
+&lt;!-- Bootstrap core JavaScript
+================================================== -->
+&lt;!-- Placed at the end of the document so the pages load faster -->
+&lt;script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js">&lt;/script>
+&lt;script src="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js">&lt;/script>
+
 &lt;/body>
 &lt;/html>
 
                         </code>
                     </pre>
-                    <div class="alert alert-info">NOTE: Replace paths with your references.</div>
+                    <div class="alert alert-info">NOTE: Replace paths with your references. Or build your app in the /demo directory</div>
                 </div>
                 <div class="tab-pane" id="Step2">
                     <h3>Step 2: Extend basemap using the offline library</h3>
-                    <p>This initializes the offline-tiles-basic library and tells it which tiled map service layer to use for offline. Test to make sure map loads.</p>
+                    <p>This initializes the OfflineTilesEnabler library and tells it which tiled map service layer to use for offline. Test to make sure map loads.</p>
                     <br>
 
                     <pre class="prettyprint">
@@ -170,8 +195,13 @@
 &lt;head>
     &lt;meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     &lt;meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no"/>
-    &lt;title>Simple Map&lt;/title>
-    &lt;link rel="stylesheet" href="http://js.arcgis.com/3.10/js/esri/css/esri.css">
+    &lt;title>Offline ArcGIS.com&lt;/title>
+
+    &lt;!-- Bootstrap core CSS -->
+    &lt;link href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" rel="stylesheet">
+
+    &lt;link rel="stylesheet" href="http://js.arcgis.com/3.11/esri/css/esri.css">
+    &lt;link rel="stylesheet" type="text/css" href="http://esri.github.io/bootstrap-map-js/src/css/bootstrapmap.css">
     &lt;style>
         html, body, #map {
             height: 100%;
@@ -184,6 +214,8 @@
             overflow: hidden;
             font-family: "Trebuchet MS";
         }
+        .floatRight {float: right;}
+        .container { padding: 20px;}
     &lt;/style>
 
     &lt;!-- Include a reference to offline.js which detects online/offline conditions -->
@@ -196,7 +228,7 @@
                 image: {
                     url: function() {
                         return 'http://esri.github.io/offline-editor-js/tiny-image.png?_=' +
-                            (Math.floor(Math.random() * 1000000000));
+                                (Math.floor(Math.random() * 1000000000));
                     }
                 },
                 active: 'image'
@@ -207,51 +239,86 @@
     &lt;!-- Include a reference to IndexedDBShim for library to work on Safari 7.x -->
     &lt;script src="../vendor/IndexedDBShim/dist/IndexedDBShim.js">&lt;/script>
 
-    &lt;script src="http://js.arcgis.com/3.10/">&lt;/script>
+    &lt;script src="http://js.arcgis.com/3.11/">&lt;/script>
 &lt;/head>
 
 &lt;body>
-    &lt;div id="map">&lt;/div>
 
-    &lt;script>
-        var map;
+&lt;div class="row">
+    &lt;div class="col-xs-12">
+        &lt;div id="mapDiv">&lt;/div>
+    &lt;/div>
+&lt;/div>
 
-        // Make sure to reference the tiles library within the require statement!
-        require([
-            "esri/map",
-            "dojo/on",
-            "esri/arcgis/utils",
-            "../offline-editor-js-3/dist/offline-tiles-basic-src.js",
-            "dojo/domReady!"],
-            function(Map,on,arcgisUtils) {
+&lt;script>
 
-                var basemapLayer;
+    // Make sure to reference the tiles library within the require statement!
+    require([
+        "esri/map",
+        "dojo/on",
+        "esri/arcgis/utils",
+        "//esri.github.com/bootstrap-map-js/src/js/bootstrapmap.js",
+        "../dist/offline-tiles-basic-src.js",
+        "dojo/domReady!"],
+        function(Map,on,arcgisUtils,BootstrapMap) {
 
-                // Initialize the offline tiles library.
-                var offlineTilesEnabler = new O.esri.Tiles.OfflineTilesEnabler();
+            var map, basemapLayer;
+            var offlineTilesEnabler = new O.esri.Tiles.OfflineTilesEnabler();
 
+            showMap();
+
+
+            function showMap(){
                 // Load the map
-                arcgisUtils.createMap("bbc1a04a3eca4430be144d7a08b43a17","map").then(function(response){
-                    var map = response.map;
+                arcgisUtils.createMap("bbc1a04a3eca4430be144d7a08b43a17","mapDiv").then(function(response){
+                    map = response.map;
 
-                    // Get a reference to the primary tiled basemap layer
-                    basemapLayer = map.getLayer( map.layerIds[0] );
+                    // Initialize BootstrapMap to make the map responsive
+                    BootstrapMap.create(map);
 
-                    // Extend the tiled basemap layer for offline use
-                    offlineTilesEnabler.extend(basemapLayer,function(success) {
-                        if (success) {
-                            console.log("SUCCESS")
-                        }
-                    })
+                    // Get the ArcGIS.com basemap that we want to use offline.
+                    // And then extend it for offline use.
+                    if(map.loaded)
+                    {
+                        basemapLayer = map.getLayer( map.layerIds[0] );
+                        initializeOfflineTiles();
+
+                    }
+                    else
+                    {
+                        map.on("load",function()
+                        {
+                            basemapLayer = map.getLayer( map.layerIds[0] );
+                            initializeOfflineTiles();
+                        });
+                    }
+
                 });
+            }
+
+            function initializeOfflineTiles(){
+                offlineTilesEnabler.extend(basemapLayer,function(success) {
+                    if (success) {
+                        console.log("ArcGIS.com map extended for offline!")
+                    }
+                })
+            }
         });
-    &lt;&#47;script&gt;
+&lt;/script>
+
+
+&lt;!-- Bootstrap core JavaScript
+================================================== -->
+&lt;!-- Placed at the end of the document so the pages load faster -->
+&lt;script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js">&lt;/script>
+&lt;script src="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js">&lt;/script>
+
 &lt;/body>
 &lt;/html>
 
                         </code>
                     </pre>
-                    <div class="alert alert-info">NOTE: Replace paths with your references.</div>
+                    <div class="alert alert-info">NOTE: Replace paths with your references. Or build your app in the /demo directory</div>
 
                 </div>
 
@@ -278,20 +345,26 @@
 &lt;head>
     &lt;meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     &lt;meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no"/>
-    &lt;title>Simple Map&lt;/title>
-    &lt;link rel="stylesheet" href="http://js.arcgis.com/3.10/js/esri/css/esri.css">
+    &lt;title>Offline ArcGIS.com&lt;/title>
+
+    &lt;!-- Bootstrap core CSS -->
+    &lt;link href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" rel="stylesheet">
+
+    &lt;link rel="stylesheet" href="http://js.arcgis.com/3.11/esri/css/esri.css">
+    &lt;link rel="stylesheet" type="text/css" href="http://esri.github.io/bootstrap-map-js/src/css/bootstrapmap.css">
     &lt;style>
-        html, body, #map {
-            height: 100%;
-            width: 100%;
-            margin: 0;
-            padding: 0;
+        #mapDiv {
+            min-height: 500px;
+            max-height: 1000px;
         }
         body {
-            background-color: #000000;
+            background-color: #ffffff;
             overflow: hidden;
             font-family: "Trebuchet MS";
         }
+
+        .floatRight {float: right;}
+        .container { padding: 20px;}
     &lt;/style>
 
     &lt;!-- Include a reference to offline.js which detects online/offline conditions -->
@@ -304,7 +377,7 @@
                 image: {
                     url: function() {
                         return 'http://esri.github.io/offline-editor-js/tiny-image.png?_=' +
-                            (Math.floor(Math.random() * 1000000000));
+                                (Math.floor(Math.random() * 1000000000));
                     }
                 },
                 active: 'image'
@@ -315,111 +388,240 @@
     &lt;!-- Include a reference to IndexedDBShim for library to work on Safari 7.x -->
     &lt;script src="../vendor/IndexedDBShim/dist/IndexedDBShim.js">&lt;/script>
 
-    &lt;script src="http://js.arcgis.com/3.10/">&lt;/script>
+    &lt;script src="http://js.arcgis.com/3.11/">&lt;/script>
 &lt;/head>
 
 &lt;body>
-    &lt;button class="basic-btn" id="btn-get-tiles">1. Download Tiles&lt;/button>
-    &lt;button class="basic-btn" id="btn-online-offline">2. Go Offline&lt;/button>
-    &lt;button class="basic-btn" id="btn-pan-left">3. Pan left&lt;/button>
-    &lt;div id="map">&lt;/div>
 
-    &lt;script>
-        var map;
+&lt;div class="container">
+    &lt;div class="row">
+        &lt;div class="col-xs-10">
+            &lt;div class="form form-group btn-group" data-toggle="buttons">
+                &lt;button class="btn btn-success" id="btn-get-tiles">1. Download Tiles&lt;/button>
+                &lt;button class="btn btn-success" disabled id="btn-online-offline">2. Go Offline&lt;/button>
+                &lt;button class="btn btn-success" disabled id="btn-pan-left">3. Pan left&lt;/button>
+            &lt;/div>
+        &lt;/div>
+        &lt;div class="col-xs-2">
+            &lt;!-- this indicates whether app is offline (down) or online (up) -->
+            &lt;button id="btn-state" class="btn btn-success btn-large floatRight">
+                &lt;span id="state-span" class="glyphicon glyphicon-link"> Up&lt;/span>
+            &lt;/button>
+        &lt;/div>
+    &lt;/div>
+    &lt;div class="row">
+        &lt;div class="col-xs-12">
+            &lt;div id="mapDiv">&lt;/div>
+        &lt;/div>
+    &lt;/div>
+&lt;/div>
 
-        // Make sure to reference the tiles library within the require statement!
-        require([
-            "esri/map",
-            "dojo/on",
-            "esri/arcgis/utils",
-            "../offline-editor-js-3/dist/offline-tiles-basic-src.js",
-            "dojo/domReady!"],
-            function(Map,on,arcgisUtils) {
+&lt;script>
 
-                var basemapLayer;
+    // Make sure to reference the tiles library within the require statement!
+    require([
+        "esri/map",
+        "dojo/on",
+        "esri/arcgis/utils",
+        "//esri.github.com/bootstrap-map-js/src/js/bootstrapmap.js",
+        "../dist/offline-tiles-basic-src.js",
+        "dojo/domReady!"],
+        function(Map,on,arcgisUtils,BootstrapMap) {
 
-                // Check if browser state is online or offline
-                Offline.check();
-                Offline.on('up down', updateState );
+            var map, basemapLayer;
+            var offlineTilesEnabler = new O.esri.Tiles.OfflineTilesEnabler();
 
-                // Set up button click listeners.
-                var btnGetTiles = document.getElementById("btn-get-tiles");
-                var btnOnlineOffline = document.getElementById("btn-online-offline");
-                var btnPanLeft = document.getElementById("btn-pan-left");
+            // Check if browser state is online or offline
+            Offline.check();
+            Offline.on('up down', updateState );
 
-                on(btnGetTiles,"click",downloadTiles);
-                on(btnOnlineOffline,"click",goOnlineOffline);
-                on(btnPanLeft,"click",panLeft);
+            // For cancelling the download of tiles
+            var _wantToCancel;
+            var _downloadState = "downloaded";
 
-                // Initialize the offline tiles library.
-                var offlineTilesEnabler = new O.esri.Tiles.OfflineTilesEnabler();
+            // Set up min and max boundaries for retrieving tiles
+            var minZoomAdjust = -1, maxZoomAdjust = 1, mMinZoom, mMaxZoom;
 
+            // Set up button click listeners.
+            var btnGetTiles = document.getElementById("btn-get-tiles");
+            var btnOnlineOffline = document.getElementById("btn-online-offline");
+            var btnPanLeft = document.getElementById("btn-pan-left");
+
+            var imgOfflineIndicator = document.getElementById("state-span");
+            var btnState = document.getElementById("btn-state");
+
+            on(btnGetTiles,"click",downloadTiles);
+            on(btnOnlineOffline,"click",goOnlineOffline);
+            on(btnPanLeft,"click",panLeft);
+
+            showMap();
+
+
+            function showMap(){
                 // Load the map
-                arcgisUtils.createMap("bbc1a04a3eca4430be144d7a08b43a17","map").then(function(response){
-                    var map = response.map;
+                arcgisUtils.createMap("bbc1a04a3eca4430be144d7a08b43a17","mapDiv").then(function(response){
+                    map = response.map;
 
-                    // Get a reference to the primary tiled basemap layer
-                    basemapLayer = map.getLayer( map.layerIds[0] );
+                    // Initialize BootstrapMap to make the map responsive
+                    BootstrapMap.create(map);
 
-                    // Extend the tiled basemap layer for offline use
-                    offlineTilesEnabler.extend(basemapLayer,function(success) {
-                        if (success) {
-                            console.log("SUCCESS")
-                        }
-                    })
+                    // Get the ArcGIS.com basemap that we want to use offline.
+                    // And then extend it for offline use.
+                    if(map.loaded)
+                    {
+                        basemapLayer = map.getLayer( map.layerIds[0] );
+                        initializeOfflineTiles();
+
+                    }
+                    else
+                    {
+                        map.on("load",function()
+                        {
+                            basemapLayer = map.getLayer( map.layerIds[0] );
+                            initializeOfflineTiles();
+                        });
+                    }
+
                 });
+            }
 
-                // Force the tileLayer between online and offline
-                function goOnlineOffline(){
-                    if(btnOnlineOffline.innerHTML == "2. Go Offline"){
-                        btnOnlineOffline.innerHTML = "2. Go Online";
-                        basemapLayer.goOffline();
-                        document.body.style.backgroundColor = "red";
-                        console.log("Map is offline");
+            function initializeOfflineTiles(){
+                offlineTilesEnabler.extend(basemapLayer,function(success) {
+                    if (success) {
+                        console.log("ArcGIS.com map extended for offline!")
                     }
-                    else{
-                        btnOnlineOffline.innerHTML = "2. Go Offline";
-                        basemapLayer.goOnline();
-                        document.body.style.backgroundColor = "black";
-                        console.log("Map is online");
-                    }
+                })
+            }
+
+            function downloadTiles(){
+
+                if(_downloadState == "downloading"){
+                    _wantToCancel = true;
                 }
+                else{
+                    _wantToCancel = false;
 
-                // Set the ArcGIS.com map online or offline.
-                // When set offline it will look for tiles in the tiles database
-                function updateState(){
-                    if(Offline.state === 'up'){
-                        if(typeof basemapLayer != "undefined") basemapLayer.goOnline();
-                    }
-                    else{
-                        if(typeof basemapLayer != "undefined") basemapLayer.goOffline();
-                    }
+                    // First delete any existing tiles from database
+                    basemapLayer.deleteAllTiles(function(success,err){
+                        var zoom = basemapLayer.getMinMaxLOD(minZoomAdjust,maxZoomAdjust);
+
+                        // Now download tiles
+                        basemapLayer.prepareForOffline(zoom.min, zoom.max, map.extent, function(progress){
+                            console.log("downloading tiles...");
+
+                            if(progress.hasOwnProperty("countNow")){
+                                var percent = Math.floor(progress.countNow / progress.countMax * 100);
+                                btnGetTiles.innerHTML = 'Saving to phone ' + percent + "% - Tap to Cancel";
+                            }
+
+                            if( progress.finishedDownloading )
+                            {
+                                btnGetTiles.innerHTML = "Saving to phone 100% - Tap to Cancel";
+
+                                if( progress.cancelRequested )
+                                {
+                                    alert("Tile download was cancelled");
+                                    _downloadState = "cancelled";
+                                }
+                                else
+                                {
+                                    alert("Tile download complete");
+                                    _downloadState = "downloaded";
+                                    btnOnlineOffline.disabled = false;
+                                }
+
+                                btnGetTiles.innerHTML = '1. Download Tiles';
+                            }
+                            return _wantToCancel; //determines if a cancel request has been issued
+                        });
+
+                        _downloadState = "downloading";
+
+                    });
                 }
+            }
 
-                function panLeft(){
-                    map.panLeft();
+            // Force the tileLayer between online and offline
+            function goOnlineOffline(){
+
+                btnPanLeft.disabled = false;
+
+                if(btnOnlineOffline.innerHTML == "2. Go Offline"){
+                    toggleStateUp(false);
+                    console.log("Map is offline");
                 }
+                else{
+                    toggleStateUp(true);
+                    console.log("Map is online");
+                }
+            }
 
-            } // main function
-        );
-    &lt;&#47;script&gt;
+            function toggleStateUp(state){
+                if(state){
+                    btnOnlineOffline.innerHTML = "2. Go Offline";
+                    basemapLayer.goOnline();
+                    imgOfflineIndicator.className = "glyphicon glyphicon-link";
+                    imgOfflineIndicator.innerHTML = " Up";
+                    btnState.className = "btn btn-success btn-large floatRight";
+                }
+                else{
+                    btnOnlineOffline.innerHTML = "2. Go Online";
+                    basemapLayer.goOffline();
+                    imgOfflineIndicator.className = "glyphicon glyphicon-thumbs-down";
+                    imgOfflineIndicator.innerHTML = " Down";
+                    btnState.className = "btn btn-danger btn-large floatRight";
+                }
+            }
+
+            // Set the ArcGIS.com map online or offline.
+            // When set offline it will look for tiles in the tiles database
+            function updateState(){
+                if(Offline.state === 'up'){
+                    if(typeof basemapLayer != "undefined") basemapLayer.goOnline();
+                    toggleStateUp(true);
+                }
+                else{
+                    if(typeof basemapLayer != "undefined") basemapLayer.goOffline();
+                    toggleStateUp(false);
+                }
+            }
+
+            // Pan left when "offline" to view only tiles that have been stored locally
+            function panLeft(){
+                map.panLeft();
+            }
+        });
+&lt;/script>
+
+
+&lt;!-- Bootstrap core JavaScript
+================================================== -->
+&lt;!-- Placed at the end of the document so the pages load faster -->
+&lt;script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js">&lt;/script>
+&lt;script src="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js">&lt;/script>
+
 &lt;/body>
 &lt;/html>
 
                             </code>
                         </pre>
-                        <div class="alert alert-info">NOTE: Replace paths with your references.</div>
+                        <div class="alert alert-info">NOTE: Replace paths with your references. Or build your app in the /demo directory</div>
                         </div>
 
                         <div class="tab-pane fade in" id="mapTab">
                             <div class="row">
-                                <div class="col-xs-12">
+                                <div class="col-xs-10">
                                     <div class="form form-group btn-group" data-toggle="buttons">
                                         <button class="btn btn-success" id="btn-get-tiles">1. Download Tiles</button>
                                         <button class="btn btn-success" disabled id="btn-online-offline">2. Go Offline</button>
                                         <button class="btn btn-success" disabled id="btn-pan-left">3. Pan left</button>
                                     </div>
-                                    <img id="img-offline-indicator"  src="../samples/images/blue-pin.png"/>
+                                </div>
+                                <div class="col-xs-2">
+                                    <!-- this indicates whether app is offline (down) or online (up) -->
+                                    <button id="btn-state" class="btn btn-success btn-large floatRight">
+                                        <span id="state-span" class="glyphicon glyphicon-link"> Up</span>
+                                    </button>
                                 </div>
                             </div>
                             <div class="row">
@@ -427,7 +629,6 @@
                                     <div id="mapDiv"></div>
                                 </div>
                             </div>
-
                         </div>
                     </div><!-- id="code" -->
                 </div><!-- id="myTabContent" -->
@@ -460,7 +661,7 @@
 <!-- Include a reference to IndexedDBShim for library to work on Safari 7.x -->
 <script src="../vendor/IndexedDBShim/dist/IndexedDBShim.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
-<script src="http://js.arcgis.com/3.10/"></script>
+<script src="http://js.arcgis.com/3.11/"></script>
 
 <script>
 
@@ -468,11 +669,18 @@
         $("#header").load("../demo/header.html");
     });
 
-    var map;
+    // Make sure to reference the tiles library within the require statement!
+    require([
+                "esri/map",
+                "dojo/on",
+                "esri/arcgis/utils",
+                "//esri.github.com/bootstrap-map-js/src/js/bootstrapmap.js",
+                "../dist/offline-tiles-basic-src.js",
+                "dojo/domReady!"],
+            function(Map,on,arcgisUtils,BootstrapMap) {
 
-    // Make sure to reference the offline tiles library within the require statement!
-    require(["esri/map","dojo/on","//esri.github.com/bootstrap-map-js/src/js/bootstrapmap.js","../dist/offline-tiles-advanced-min.js", "dojo/domReady!"],
-            function(Map,on,Bootstrapmap){
+                var map, basemapLayer;
+                var offlineTilesEnabler = new O.esri.Tiles.OfflineTilesEnabler();
 
                 // Check if browser state is online or offline
                 Offline.check();
@@ -480,6 +688,7 @@
 
                 // For cancelling the download of tiles
                 var _wantToCancel;
+                var _downloadState = "downloaded";
 
                 // Set up min and max boundaries for retrieving tiles
                 var minZoomAdjust = -1, maxZoomAdjust = 1, mMinZoom, mMaxZoom;
@@ -488,10 +697,9 @@
                 var btnGetTiles = document.getElementById("btn-get-tiles");
                 var btnOnlineOffline = document.getElementById("btn-online-offline");
                 var btnPanLeft = document.getElementById("btn-pan-left");
-                var imgOfflineIndicator = document.getElementById("img-offline-indicator");
 
-                var redPinPath = "../samples/images/red-pin.png";
-                var bluePinPath = "../samples/images/blue-pin.png"
+                var imgOfflineIndicator = document.getElementById("state-span");
+                var btnState = document.getElementById("btn-state");
 
                 on(btnGetTiles,"click",downloadTiles);
                 on(btnOnlineOffline,"click",goOnlineOffline);
@@ -505,78 +713,90 @@
                     });
                 });
 
+
+
                 function showMap(){
+                    // Load the map
+                    arcgisUtils.createMap("bbc1a04a3eca4430be144d7a08b43a17","mapDiv").then(function(response){
+                        map = response.map;
 
-                    if(map){
-                        map.destroy();
-                    }
+                        // Initialize BootstrapMap to make the map responsive
+                        BootstrapMap.create(map);
 
-                    map = Bootstrapmap.create("mapDiv",{
-                        //basemap: "topo", // comment out this basemap!
-                        center: [-122.45, 37.75], // longitude, latitude
-                        zoom: 15
+                        // Get the ArcGIS.com basemap that we want to use offline.
+                        // And then extend it for offline use.
+                        if(map.loaded)
+                        {
+                            basemapLayer = map.getLayer( map.layerIds[0] );
+                            initializeOfflineTiles();
+
+                        }
+                        else
+                        {
+                            map.on("load",function()
+                            {
+                                basemapLayer = map.getLayer( map.layerIds[0] );
+                                initializeOfflineTiles();
+                            });
+                        }
+
                     });
+                }
 
-                    // Now we initialize the basemap to be offline-enabled. This is out new basemap.
-                    tileLayer = O.esri.Tiles.OfflineTileEnablerLayer(
-                            "http://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer",
-                            function(evt){
-                                console.log("Offline tile lib enabled. App is: " + Offline.state);
-                            },
-                            true);
-
-                    // Set the min and max zoom for when retrieving tiles
-                    map.on("load",function(evt){
-                        tileLayer.getMaxZoom(function(result){
-                            mMaxZoom = result;
-                        });
-                        tileLayer.getMinZoom(function(result){
-                            mMinZoom = result;
-                        });
+                function initializeOfflineTiles(){
+                    offlineTilesEnabler.extend(basemapLayer,function(success) {
+                        if (success) {
+                            console.log("ArcGIS.com map extended for offline!")
+                        }
                     })
-
-
-                    // Add our offline tile layer to the map instead of using the default basemap!
-                    map.addLayer(tileLayer);
                 }
 
                 function downloadTiles(){
 
-                    // First we need to empty the database.
-                    tileLayer.deleteAllTiles(function(success,err){
+                    if(_downloadState == "downloading"){
+                        _wantToCancel = true;
+                    }
+                    else{
+                        _wantToCancel = false;
 
-                        var zoom = getMinMaxZoom();
-                        var extent = tileLayer.getExtentBuffer(0,map.extent);
+                        // First delete any existing tiles from database
+                        basemapLayer.deleteAllTiles(function(success,err){
+                            var zoom = basemapLayer.getMinMaxLOD(minZoomAdjust,maxZoomAdjust);
 
-                        // Begin downloading tiles
-                        tileLayer.prepareForOffline(zoom.min, zoom.max, extent, function(progress){
-                            console.log("downloading tiles...");
-                            if(progress.hasOwnProperty("countNow")){
-                                var percent = Math.floor(progress.countNow / progress.countMax * 100);
-                                btnGetTiles.innerHTML = 'Saving to phone ' + percent + "% - Tap to Cancel";
-                            }
+                            // Now download tiles
+                            basemapLayer.prepareForOffline(zoom.min, zoom.max, map.extent, function(progress){
+                                console.log("downloading tiles...");
 
-                            if( progress.finishedDownloading )
-                            {
-                                btnGetTiles.innerHTML = "Saving to phone 100% - Tap to Cancel";
-
-                                if( progress.cancelRequested )
-                                {
-                                    alert("Tile download was cancelled");
-                                }
-                                else
-                                {
-                                    alert("Tile download complete");
+                                if(progress.hasOwnProperty("countNow")){
+                                    var percent = Math.floor(progress.countNow / progress.countMax * 100);
+                                    btnGetTiles.innerHTML = 'Saving to phone ' + percent + "% - Tap to Cancel";
                                 }
 
-                                btnGetTiles.innerHTML = '1. Download Tiles';
+                                if( progress.finishedDownloading )
+                                {
+                                    btnGetTiles.innerHTML = "Saving to phone 100% - Tap to Cancel";
 
-                                btnOnlineOffline.disabled = false;
-                                btnGetTiles.disabled = true;
-                            }
-                            return _wantToCancel; //determines if a cancel request has been issued
+                                    if( progress.cancelRequested )
+                                    {
+                                        alert("Tile download was cancelled");
+                                        _downloadState = "cancelled";
+                                    }
+                                    else
+                                    {
+                                        alert("Tile download complete");
+                                        _downloadState = "downloaded";
+                                        btnOnlineOffline.disabled = false;
+                                    }
+
+                                    btnGetTiles.innerHTML = '1. Download Tiles';
+                                }
+                                return _wantToCancel; //determines if a cancel request has been issued
+                            });
+
+                            _downloadState = "downloading";
+
                         });
-                    });
+                    }
                 }
 
                 // Force the tileLayer between online and offline
@@ -585,49 +805,48 @@
                     btnPanLeft.disabled = false;
 
                     if(btnOnlineOffline.innerHTML == "2. Go Offline"){
-                        btnOnlineOffline.innerHTML = "2. Go Online";
-                        tileLayer.goOffline();
-                        imgOfflineIndicator.src = redPinPath;
-                        console.log("tileLayer is offline");
+                        toggleStateUp(false);
+                        console.log("Map is offline");
                     }
                     else{
-                        btnOnlineOffline.innerHTML = "2. Go Offline";
-                        tileLayer.goOnline();
-                        imgOfflineIndicator.src = bluePinPath;
-                        console.log("tileLayer is online");
+                        toggleStateUp(true);
+                        console.log("Map is online");
                     }
                 }
 
+                function toggleStateUp(state){
+                    if(state){
+                        btnOnlineOffline.innerHTML = "2. Go Offline";
+                        basemapLayer.goOnline();
+                        imgOfflineIndicator.className = "glyphicon glyphicon-link";
+                        imgOfflineIndicator.innerHTML = " Up";
+                        btnState.className = "btn btn-success btn-large floatRight";
+                    }
+                    else{
+                        btnOnlineOffline.innerHTML = "2. Go Online";
+                        basemapLayer.goOffline();
+                        imgOfflineIndicator.className = "glyphicon glyphicon-thumbs-down";
+                        imgOfflineIndicator.innerHTML = " Down";
+                        btnState.className = "btn btn-danger btn-large floatRight";
+                    }
+                }
 
-                // Set the tileLayer online or offline.
-                // When set to offline, the map will look for tiles in the tiles database
+                // Set the ArcGIS.com map online or offline.
+                // When set offline it will look for tiles in the tiles database
                 function updateState(){
                     if(Offline.state === 'up'){
-                        if(typeof tileLayer != "undefined") tileLayer.goOnline();
-                        imgOfflineIndicator.src = bluePinPath;
+                        if(typeof basemapLayer != "undefined") basemapLayer.goOnline();
+                        toggleStateUp(true);
                     }
                     else{
-                        if(typeof tileLayer != "undefined") tileLayer.goOffline();
-                        imgOfflineIndicator.src = redPinPath;
+                        if(typeof basemapLayer != "undefined") basemapLayer.goOffline();
+                        toggleStateUp(false);
                     }
-                }
-
-                // Utility function to validate min and max zoom settings of the map
-                function getMinMaxZoom(){
-
-                    var zoom = {};
-                    var min = tileLayer.getLevel() + minZoomAdjust;
-                    var max = tileLayer.getLevel() + maxZoomAdjust;
-                    zoom.max = Math.min(mMaxZoom, max);  //prevent errors by setting the tile layer floor
-                    zoom.min = Math.max(mMinZoom, min);   //prevent errors by setting the tile layer ceiling
-
-                    return zoom;
                 }
 
                 function panLeft(){
                     map.panLeft();
                 }
-
             });
 
 </script>

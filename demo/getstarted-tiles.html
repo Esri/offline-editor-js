@@ -43,10 +43,7 @@
             border: 1px solid #cccccc !important;
         }
 
-        #img-offline-indicator {
-            padding: 8px;
-            position: relative; float: right;
-        }
+        .floatRight {float: right;}
     </style>
 </head>
 
@@ -99,7 +96,7 @@
     &lt;link rel="stylesheet" type="text/css" href="http://esri.github.io/bootstrap-map-js/src/css/bootstrapmap.css">
     &lt;style>
         #mapDiv {
-            min-height: 300px;
+            min-height: 500px;
             max-height: 1000px;
         }
 
@@ -108,6 +105,9 @@
             overflow: hidden;
             font-family: "Trebuchet MS";
         }
+
+        .floatRight {float: right;}
+        .container { padding: 20px;}
     &lt;/style>
 
     &lt;!-- Include a reference to offline.js which detects online/offline conditions -->
@@ -167,7 +167,7 @@
 
                         </code>
                     </pre>
-                    <div class="alert alert-info">NOTE: Replace paths with your references.</div>
+                    <div class="alert alert-info">NOTE: Replace paths with your references. Or build your app in the /demo directory</div>
                 </div>
                 <div class="tab-pane" id="Step2">
                     <h3>Step 2: Configure tiled basemap to work offline</h3>
@@ -190,7 +190,7 @@
     &lt;link rel="stylesheet" type="text/css" href="http://esri.github.io/bootstrap-map-js/src/css/bootstrapmap.css">
     &lt;style>
         #mapDiv {
-            min-height: 300px;
+            min-height: 500px;
             max-height: 1000px;
         }
 
@@ -199,6 +199,9 @@
             overflow: hidden;
             font-family: "Trebuchet MS";
         }
+
+       .floatRight {float: right;}
+        .container { padding: 20px;}
     &lt;/style>
 
     &lt;!-- Include a reference to offline.js which detects online/offline conditions -->
@@ -284,7 +287,7 @@
 
                         </code>
                     </pre>
-                    <div class="alert alert-info">NOTE: Replace paths with your references.</div>
+                    <div class="alert alert-info">NOTE: Replace paths with your references. Or build your app in the /demo directory</div>
 
                 </div>
 
@@ -320,7 +323,7 @@
     &lt;link rel="stylesheet" type="text/css" href="http://esri.github.io/bootstrap-map-js/src/css/bootstrapmap.css">
     &lt;style>
         #mapDiv {
-            min-height: 300px;
+            min-height: 500px;
             max-height: 1000px;
         }
 
@@ -331,6 +334,7 @@
         }
 
         .floatRight { float: right;}
+        .container { padding: 20px;}
     &lt;/style>
 
     &lt;!-- Include a reference to offline.js which detects online/offline conditions -->
@@ -542,6 +546,7 @@
                 }
             }
 
+            // Pan left when "offline" to view only tiles that have been stored locally
             function panLeft(){
                 map.panLeft();
             }
@@ -559,7 +564,7 @@
 
                             </code>
                         </pre>
-                        <div class="alert alert-info">NOTE: Replace paths with your references.</div>
+                        <div class="alert alert-info">NOTE: Replace paths with your references. Or build your app in the /demo directory</div>
                         </div>
 
                         <div class="tab-pane fade in" id="mapTab">
