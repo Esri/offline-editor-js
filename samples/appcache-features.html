@@ -6,6 +6,30 @@
     <!--The viewport meta tag is used to improve the presentation and behavior of the samples 
       on iOS devices-->
     <meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no">
+
+    <!--
+
+    This sample demonstrates using an application manifest to store features and tiles locally.
+
+    The use cases for using this sample are to ensure you can reload and restart you application
+    one it is offline.
+
+    It is strongly recommended that you use your own optimized build of the ArcGIS API for JavaScript
+    using the Web Optimizer: http://jso.arcgis.com/. You can reference the CDN or host it on your
+    own web server.
+
+    Use the Grunt task in the /samples diretory to help generate the manifest file. There is manual
+    work involved in determining which files need to go into the manifest. The included manifest
+    file should work with this sample to give you an idea of what goes into the manifest.
+
+    A few things to know about manifest files:
+    - You cannot load an online url that has a redirect.
+    - If there is an error encountered, the manifest file will stop loading
+    - The /utils/appCacheManager.js library will auto detect if the manifest changed and
+    ask if you want to reload the application.
+
+    -->
+
     <title>AppCache Tiles and Features</title>
 
     <!-- Bootstrap core CSS -->
