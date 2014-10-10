@@ -40,7 +40,17 @@ module.exports = function(grunt) {
                         "#",
 						"//services.arcgisonline.com/ArcGIS/rest/info?f=json",
                         "//static.arcgis.com/attribution/World_Topo_Map?f=json",
+                        "//server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer?f=pjson",
 						"//services.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer?f=json&callback=dojo.io.script.jsonp_dojoIoScript1._jsonpCallback",
+                        "#",
+                        "# Bootstrap files",
+                        "//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css",
+                        "//esri.github.io/bootstrap-map-js/src/css/bootstrapmap.css",
+                        "//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js",
+                        "https://code.jquery.com/jquery-2.1.1.min.js",
+                        "",
+                        "# Custom feature service",
+                        "http://services.arcgis.com/IZtlGBUe4KTzLOl4/arcgis/rest/services/BPX_RTD_BusStops2/FeatureServer/0?f=json",
                         "#",
 						"# required local html",
 						"# /xyz/style.css",
@@ -65,7 +75,10 @@ module.exports = function(grunt) {
                     "../utils/*.js",
                     "../dist/offline-edit-src.js",
                     "../dist/offline-tiles-advanced-src.js",
-                    "../dist/offline-tiles-basic-src.js"
+                    "../dist/offline-tiles-basic-src.js",
+                    "../samples/widgets/modal/css/*.css",
+                    "../samples/widgets/modal/template/*.html",
+                    "../samples/widgets/modal/popup.js"
                     /*
                     "images/*",
                     "css/*.css"

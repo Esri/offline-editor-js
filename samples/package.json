@@ -9,7 +9,7 @@
   "appHomePage": "appcache-features.html",
   "optimizedApiURL": "http://js.arcgis.com/o/agup_hack4co/appcacheFeatures2",
   "arcGISBaseURL": "http://js.arcgis.com/3.11",
-  "version": "0.0.1",
+  "version": "2.3",
   "private": true,
   "description": "manifest generator project",
   "repository": {

@@ -9,11 +9,11 @@
     <title>AppCache Tiles and Features</title>
 
     <!-- Bootstrap core CSS -->
-    <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
     <link rel="stylesheet" href="../samples/widgets/modal/css/modal-popup.css">
     <link rel="stylesheet" href="http://js.arcgis.com/3.10/js/dojo/dijit/themes/claro/claro.css">
-    <link rel="stylesheet" href="http://js.arcgis.com/3.11/esri/css/esri.css"">
-    <link rel="stylesheet" type="text/css" href="http://esri.github.io/bootstrap-map-js/src/css/bootstrapmap.css">
+    <link rel="stylesheet" href="http://js.arcgis.com/3.11/esri/css/esri.css">
+    <link rel="stylesheet" href="http://esri.github.io/bootstrap-map-js/src/css/bootstrapmap.css">
 
     <style>
         #mapDiv {
@@ -63,7 +63,6 @@
     </script>
     <!-- Required when using the offline-editor-js library with Safari -->
     <script src="../vendor/IndexedDBShim/dist/IndexedDBShim.js"></script>
-    <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
     <script src="http://js.arcgis.com/o/agup_hack4co/appcacheFeatures2/dojo/dojo.js" data-dojo-config="async: true"></script>
     <!-- Use this tag below if you are hosting your ArcGIS API for JavaScript files locally -->
     <!--<script src="libs/dojo/dojo/dojo.js" data-dojo-config="async: true"></script>-->
@@ -261,6 +260,7 @@
 
                         _currentExtent = evt.map.extent;
                         updateOfflineUsage();
+                        updateStatus();
 
                         if(_isOnline == false){
 
@@ -617,6 +617,7 @@
 <!-- Bootstrap core JavaScript
 ================================================== -->
 <!-- Placed at the end of the document so the pages load faster -->
+<script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
 <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
 </body>
 </html>
