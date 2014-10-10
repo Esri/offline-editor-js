@@ -405,7 +405,7 @@
             var _downloadState = "downloaded";
 
             // Set up min and max boundaries for retrieving tiles
-            var minZoomAdjust = -1, maxZoomAdjust = 1, mMinZoom, mMaxZoom;
+            var minZoomAdjust = -1, maxZoomAdjust = 1;
 
             // Set up button click listeners.
             var btnGetTiles = document.getElementById("btn-get-tiles");
@@ -437,17 +437,6 @@
                             console.log("Offline tile lib enabled. App is: " + Offline.state);
                         },
                         true);
-
-                // Set the min and max zoom for when retrieving tiles
-                map.on("load",function(evt){
-                    basemapLayer.getMaxZoom(function(result){
-                        mMaxZoom = result;
-                    });
-                    basemapLayer.getMinZoom(function(result){
-                        mMinZoom = result;
-                    });
-                })
-
 
                 // Add our offline tile layer to the map instead of using the default basemap!
                 map.addLayer(basemapLayer);
@@ -642,7 +631,7 @@
                 var _downloadState = "downloaded";
 
                 // Set up min and max boundaries for retrieving tiles
-                var minZoomAdjust = -1, maxZoomAdjust = 1, mMinZoom, mMaxZoom;
+                var minZoomAdjust = -1, maxZoomAdjust = 1;
 
                 // Set up button click listeners.
                 var btnGetTiles = document.getElementById("btn-get-tiles");
@@ -680,17 +669,6 @@
                                 console.log("Offline tile lib enabled. App is: " + Offline.state);
                             },
                             true);
-
-                    // Set the min and max zoom for when retrieving tiles
-                    map.on("load",function(evt){
-                        basemapLayer.getMaxZoom(function(result){
-                            mMaxZoom = result;
-                        });
-                        basemapLayer.getMinZoom(function(result){
-                            mMinZoom = result;
-                        });
-                    })
-
 
                     // Add our offline tile layer to the map instead of using the default basemap!
                     map.addLayer(basemapLayer);
