@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html manifest="appcache-tiles.appcache">
+<!--<html manifest="appcache-tiles.appcache">-->
+<html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no"/>
@@ -28,36 +29,21 @@ ask if you want to reload the application.
 -->
 
 <title>Cache Tiles</title>
-<link rel="stylesheet" href="http://js.arcgis.com/3.9/js/esri/css/esri.css">
+
+<!-- Bootstrap core CSS -->
+<link href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="http://js.arcgis.com/3.11/esri/css/esri.css">
+<link rel="stylesheet" type="text/css" href="http://esri.github.io/bootstrap-map-js/src/css/bootstrapmap.css">
+
 <style>
-    html, body, #map {
-        height: 100%;
-        width: 100%;
-        margin: 0;
-        padding: 0;
+    #mapDiv {
+        min-height: 500px;
+        max-height: 1000px;
     }
     body {
         background-color: #FFF;
         overflow: hidden;
         font-family: "Trebuchet MS";
-    }
-    #button-div1{
-        position: relative;
-        background: #000000;
-        color: #ffffff;
-        width: 100%;
-        height: 50px;
-    }
-    .basic-btn{
-        background-color: #000000;
-        border-color: #ffffff 1px;
-        color: #ffffff;
-        padding: 8px;
-        position: relative; float: left;
-    }
-    #img-offline-indicator{
-        padding: 8px;
-        position: relative; float: right;
     }
     #tile-info{
         background-color: #000000;
@@ -65,6 +51,9 @@ ask if you want to reload the application.
         padding: 8px;
         position: relative; float: right;
     }
+    .floatRight { float: right;}
+    .container { padding: 20px;}
+    .span-dbsize {color: blue; padding-left: 1em;}
 </style>
 <script>
     var locationPath = location.pathname.replace(/\/[^/]+$/, "");
@@ -76,7 +65,7 @@ ask if you want to reload the application.
     }
 </script>
 <!-- This is a custom build of the ArcGIS API for JavaScript using the new Web Optimizer Tool -->
-<script src="http://js.arcgis.com/o/agup_hack4co/appcacheFeatures/dojo/dojo.js" data-dojo-config="async: true"></script>
+<script src="http://js.arcgis.com/o/agup_hack4co/appcacheFeatures2/dojo/dojo.js" data-dojo-config="async: true"></script>
 <!-- Use this tag below if you are hosting your ArcGIS API for JavaScript files locally -->
 <!--<script src="libs/dojo/dojo/dojo.js" data-dojo-config="async: true"></script>-->
 <script src="../vendor/IndexedDBShim/dist/IndexedDBShim.min.js"></script>
@@ -96,37 +85,63 @@ ask if you want to reload the application.
 </head>
 
 <body>
-<div id="button-div1">
-    <img id="img-offline-indicator"  src="../samples/images/blue-pin.png"/>
-    <textarea contenteditable="false" id="tile-info"></textarea>
-    <button class="basic-btn" id="btn-get-tiles">1. Download Tiles</button>
-    <button class="basic-btn" id="btn-online-offline">2. Go Offline</button>
-    <button class="basic-btn" id="btn-zoom-out" onclick="panLeft()">3. Pan left</button>
+
+<!-- Our buttons and online/offline indicator -->
+<div class="container">
+    <div class="row">
+        <div class="col-xs-10">
+            <div class="form form-group btn-group" data-toggle="buttons">
+                <button class="btn btn-success" id="btn-get-tiles">1. Download Tiles</button>
+                <button class="btn btn-success" disabled id="btn-online-offline">2. Go Offline</button>
+                <button class="btn btn-success" disabled id="btn-pan-left">3. Pan left</button>
+            </div>
+            <span class="span-dbsize">Database Size (MBs) <span id="span-dbsize-value" class="badge">0</span></span>
+        </div>
+        <div class="col-xs-2">
+            <!-- this indicates whether app is offline (down) or online (up) -->
+            <button id="btn-state" class="btn btn-success btn-large floatRight">
+                <span id="state-span" class="glyphicon glyphicon-link"> Up</span>
+            </button>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-xs-12">
+            <div id="mapDiv"></div>
+        </div>
+    </div>
 </div>
-<div id="map"></div>
 
 <script>
 
-var map;
+require([
+    "esri/map",
+    "utils/appCacheManager",
+    "dojo/on",
+    "//esri.github.com/bootstrap-map-js/src/js/bootstrapmap.js",
+    "../dist/offline-tiles-advanced-min.js",
+    "dojo/domReady!"],
+        function(Map,AppCacheManager,on,BootstrapMap) {
 
-require(["esri/map","utils/appCacheManager","dojo/on","../dist/offline-tiles-advanced-min.js","dojo/domReady!"],
-        function(Map,AppCacheManager,on) {
-
+            var map;
             var tileLayer = null;
 
             var zoom = 18;
             var globalState = {};
             var _wantToCancel;
             var _isOnline = true;
-            var minZoomAdjust = -1, maxZoomAdjust = 1, mMinZoom, mMaxZoom;
-            var imgOfflineIndicator,btnGetTiles,btnOnlineOffline,btnZoom;
+            var minZoomAdjust = -1, maxZoomAdjust = 1;
+
             var tiles,appCacheManager,tileInfo;
             var redPinPath = "../samples/images/red-pin.png";
             var bluePinPath = "../samples/images/blue-pin.png"
             var EXTENT_BUFFER = 0; //buffers the map extent in meters
+            var dbsize = document.getElementById("span-dbsize-value");
 
-            imgOfflineIndicator = document.getElementById("img-offline-indicator");
-            imgOfflineIndicator.offlineColor = "blue";
+            var btnGetTiles = document.getElementById("btn-get-tiles");
+            var btnOnlineOffline = document.getElementById("btn-online-offline");
+            var imgOfflineIndicator = document.getElementById("img-offline-indicator");
+            var btnState = document.getElementById("btn-state");
+            var btnPanLeft = document.getElementById("btn-pan-left");
 
             Offline.check();
             Offline.on('up down', updateState );
@@ -155,8 +170,8 @@ require(["esri/map","utils/appCacheManager","dojo/on","../dist/offline-tiles-adv
                 //Make sure map shows up after a browser refresh
                 Offline.state === 'up' ? zoom = 18 : zoom = 17;
 
-                map = new Map("map", {
-                    center: [-122.45,37.75], // long, lat
+                map = BootstrapMap.create("mapDiv", {
+                    center: [-104.99,39.75], // long, lat
                     zoom: zoom,
                     sliderStyle: "small"
                 });
@@ -177,17 +192,11 @@ require(["esri/map","utils/appCacheManager","dojo/on","../dist/offline-tiles-adv
 
                     on(btnOnlineOffline,"click",goOnlineOffline);
                     on(btnGetTiles,"click",downloadTiles);
+                    on(btnPanLeft,"click",panLeft);
 
                     updateOfflineUsage();
 
-                    tileLayer.getMaxZoom(function(result){
-                        mMaxZoom = result;
-                    });
-                    tileLayer.getMinZoom(function(result){
-                        mMinZoom = result;
-                    });
-
-                    console.log("level: " + tileLayer.getLevel() + ", maxZoom: " + mMaxZoom);
+                    console.log("level: " + tileLayer.getLevel());
                 })
 
                 map.addLayer(tileLayer);
@@ -199,54 +208,100 @@ require(["esri/map","utils/appCacheManager","dojo/on","../dist/offline-tiles-adv
                     console.log("Zoom level = " + tileLayer.getLevel())
                 });
 
-                btnGetTiles = document.getElementById("btn-get-tiles");
-                btnOnlineOffline = document.getElementById("btn-online-offline");
-
-                btnZoom = document.getElementById("btn-zoom-out");
-
-                tileInfo = document.getElementById("tile-info")
-                tileInfo.innerHTML = "Tile count: 0\r\nBytes: 0";
-
                 map.reposition();
                 map.resize();
-            }
-
-            function updateState(){
-                if(Offline.state === 'up'){
-                    updateOfflineUsage();
-                    imgOfflineIndicator.src = bluePinPath;
-                    if(typeof tileLayer != "undefined") tileLayer.goOnline();
-                }
-                else{
-                    imgOfflineIndicator.src = redPinPath;
-                    if(typeof tileLayer != "undefined") tileLayer.goOffline();
-                }
             }
 
             function updateOfflineUsage()
             {
                 tileLayer.offline.store.usedSpace(function(result,err){
                     if(result != null){
-                        tileInfo.innerHTML = "DB Tile count: " + result.tileCount + "\r\nDB Bytes: " +  result.sizeBytes;
+                        var mb = (result.sizeBytes >>> 20 ) + '.' + ( result.sizeBytes & (2*0x3FF ) );
+                        dbsize.innerHTML = mb;
                     }
                     else{
-                        tileInfo.innerHTML = "DB Tile count: " + count + "\r\nDB Bytes: Error";
+                        dbsize.innerHTML = "??";
                     }
                 })
             }
 
+            function updateState(){
+                if(Offline.state === 'up'){
+                    updateOfflineUsage();
+                    toggleStateUp(true);
+                    if(typeof tileLayer != "undefined") tileLayer.goOnline();
+                }
+                else{
+                    toggleStateUp(false);
+                    if(typeof tileLayer != "undefined") tileLayer.goOffline();
+                }
+            }
+
+            function toggleStateUp(state){
+                if(state){
+                    btnOnlineOffline.innerHTML = "2. Go Offline";
+                    tileLayer.goOnline();
+                    imgOfflineIndicator.className = "glyphicon glyphicon-link";
+                    imgOfflineIndicator.innerHTML = " Up";
+                    btnState.className = "btn btn-success btn-large floatRight";
+                }
+                else{
+                    btnOnlineOffline.innerHTML = "2. Go Online";
+                    tileLayer.goOffline();
+                    imgOfflineIndicator.className = "glyphicon glyphicon-thumbs-down";
+                    imgOfflineIndicator.innerHTML = " Down";
+                    btnState.className = "btn btn-danger btn-large floatRight";
+                }
+            }
+
             /**
-             * Utility function to validate min and max zoom settings of the map
+             * Forces offlineTileEnabler to go online or offline.
+             * If it is offline it will try to find a tile in the local database.
              */
-            function getMinMaxZoom(){
+            function goOnlineOffline(){
 
-                var zoom = {};
-                var min = tileLayer.getLevel() + minZoomAdjust;
-                var max = tileLayer.getLevel() + maxZoomAdjust;
-                zoom.max = Math.min(mMaxZoom, max);  //prevent errors by setting the tile layer floor
-                zoom.min = Math.max(mMinZoom, min);   //prevent errors by setting the tile layer ceiling
+                btnPanLeft.disabled = false;
 
-                return zoom;
+                if(btnOnlineOffline.innerHTML == "2. Go Offline"){
+                    toggleStateUp(false);
+                    console.log("Map is offline");
+                }
+                else{
+                    toggleStateUp(true);
+                    console.log("Map is online");
+                }
+            }
+
+            /**
+             * Manually starts the process to download and store tiles
+             * in the local database
+             */
+            function downloadTiles(){
+                tileLayer.deleteAllTiles(function(success,err){
+                    if(success == false){
+                        alert("There was a problem deleting the tile cache");
+                    }
+                    else{
+                        console.log("success deleting tile cache");
+                        var self = this.data;
+
+                        if( globalState.downloadState == 'downloading')
+                        {
+                            console.log("cancel!");
+                            _wantToCancel = true;
+                            btnGetTiles.innerHTML = "cancelling..";
+                        }
+                        else
+                        {
+                            var zoom = tileLayer.getMinMaxLOD(minZoomAdjust,maxZoomAdjust);
+
+                            var extent = tileLayer.getExtentBuffer(EXTENT_BUFFER,map.extent);
+                            _wantToCancel = false;
+                            tileLayer.prepareForOffline(zoom.min, zoom.max, extent, reportProgress.bind(this));
+                            globalState.downloadState = 'downloading';
+                        }
+                    }
+                }.bind(this))
             }
 
             /**
@@ -273,63 +328,13 @@ require(["esri/map","utils/appCacheManager","dojo/on","../dist/offline-tiles-adv
                     else
                     {
                         globalState.downloadState = 'downloaded';
+                        btnOnlineOffline.disabled = false;
                         alert("Tile download complete");
                     }
 
                     btnGetTiles.innerHTML = '1. Download Tiles';
                 }
                 return _wantToCancel; //determines if a cancel request has been issued
-            }
-
-            /**
-             * Forces offlineTileEnabler to go online or offline.
-             * If it is offline it will try to find a tile in the local database.
-             */
-            function goOnlineOffline(){
-                if(imgOfflineIndicator.offlineColor == "blue"){
-                    btnOnlineOffline.innerHTML = "2. Go Online";
-                    imgOfflineIndicator.src = redPinPath;
-                    imgOfflineIndicator.offlineColor = "red";
-                    tileLayer.goOffline();
-                }
-                else{
-                    btnOnlineOffline.innerHTML = "2. Go Offline";
-                    imgOfflineIndicator.src = bluePinPath;
-                    imgOfflineIndicator.offlineColor = "blue";
-                    tileLayer.goOnline();
-                }
-            }
-
-            /**
-             * Manually starts the process to download and store tiles
-             * in the local database
-             */
-            function downloadTiles(){
-                tileLayer.deleteAllTiles(function(success,err){
-                    if(success == false){
-                        alert("There was a problem deleting the tile cache");
-                    }
-                    else{
-                        console.log("success deleting tile cache");
-                        var self = this.data;
-
-                        if( globalState.downloadState == 'downloading')
-                        {
-                            console.log("cancel!");
-                            _wantToCancel = true;
-                            btnGetTiles.innerHTML = "cancelling..";
-                        }
-                        else
-                        {
-                            var zoom = getMinMaxZoom();
-
-                            var extent = tileLayer.getExtentBuffer(EXTENT_BUFFER,map.extent);
-                            _wantToCancel = false;
-                            tileLayer.prepareForOffline(zoom.min, zoom.max, extent, reportProgress.bind(this));
-                            globalState.downloadState = 'downloading';
-                        }
-                    }
-                }.bind(this))
             }
 
             /**
@@ -371,12 +376,19 @@ require(["esri/map","utils/appCacheManager","dojo/on","../dist/offline-tiles-adv
             function cacheErrorHandler(evt){
                 console.log("CACHE ERROR: " + JSON.stringify(evt));
             }
+
+            function panLeft(){
+                map.panLeft();
+            }
         }
 );
 
-function panLeft(){
-    map.panLeft();
-}
 </script>
 
+<!-- Bootstrap core JavaScript
+================================================== -->
+<!-- Placed at the end of the document so the pages load faster -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+<script src="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
 </body>
+</html>
