@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-<!--<html>-->
 <html manifest="appcache-features.appcache">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -63,6 +62,16 @@
         .container { padding: 20px;}
     </style>
 
+    <!--<script>-->
+        <!--// If you need to catch AppCache errors as early as possible to troubleshoot errors.-->
+        <!--window.applicationCache.addEventListener("error",function(err){-->
+            <!--console.log("ApplicationCache listener: " + err.toString());-->
+            <!--if (confirm('There was a problem setting this app up for offline. Reload?')) {-->
+                <!--window.location.reload();-->
+                <!--console.log("App cache reloaded");-->
+            <!--}-->
+        <!--},false)-->
+    <!--</script>-->
     <script src="../vendor/offline/offline.min.js"></script>
     <script>
         Offline.options = {
@@ -87,9 +96,12 @@
     </script>
     <!-- Required when using the offline-editor-js library with Safari -->
     <script src="../vendor/IndexedDBShim/dist/IndexedDBShim.js"></script>
-    <script src="http://js.arcgis.com/o/agup_hack4co/appcacheFeatures2/dojo/dojo.js" data-dojo-config="async: true"></script>
-    <!-- Use this tag below if you are hosting your ArcGIS API for JavaScript files locally -->
-    <!--<script src="libs/dojo/dojo/dojo.js" data-dojo-config="async: true"></script>-->
+
+    <!--
+        This is a locally hosted optimized build of the ArcGIS JS API
+        To create your own optimized build go to: http://http://jso.arcgis.com/
+    -->
+    <script src="../samples/jsolib/dojo.js" data-dojo-config="async: true"></script>
 </head>
 <body>
 
@@ -130,12 +142,13 @@
         "dojo/on",
         "esri/graphic",
         "widgets/modal/popup",
+        "//esri.github.io/bootstrap-map-js/src/js/bootstrapmap.js",
         "../dist/offline-tiles-advanced-min.js",
         "../dist/offline-edit-min.js",
         "dojo/domReady!"],
             function(Map,FeatureLayer,AppCacheManager,
                 SimpleRenderer,SimpleMarkerSymbol,Color,Query,
-                on,Graphic,ModalPopup) {
+                on,Graphic,ModalPopup,BootstrapMap) {
 
                 initAppCacheManager();
 
@@ -222,12 +235,12 @@
                     Offline.state === 'up' ? resetZoom = 18 : resetZoom = 17;
 
                     tileLayer = new O.esri.Tiles.OfflineTileEnablerLayer("http://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer",function(evt){
-                        console.log("Tile Layer Loaded.");
+                        console.log("Tile Layer initialized for offline. App state is: " + Offline.state);
                     },_isOnline);
 
                     tileLayer.offline.proxyPath = null;
 
-                    var map = new Map("mapDiv",{
+                    var map = BootstrapMap.create("mapDiv",{
                         center: [-104.99,39.75], // long, lat
                         zoom: 17,
                         sliderStyle: "small"
@@ -449,7 +462,7 @@
                             }
                             else
                             {
-                                var zoom = getMinMaxZoom();
+                                var zoom = tileLayer.getMinMaxLOD(minZoomAdjust,maxZoomAdjust);
 
                                 var extent = tileLayer.getExtentBuffer(EXTENT_BUFFER,_currentExtent);
                                 _wantToCancel = false;
@@ -491,28 +504,6 @@
                         btnGetTiles.innerHTML = '1. Download Tiles';
                     }
                     return _wantToCancel; //determines if a cancel request has been issued
-                }
-
-                /**
-                 * Utility function to validate min and max zoom settings of the map
-                 */
-                function getMinMaxZoom(){
-
-                    var zoom = {};
-                    var min = tileLayer.getLevel() + minZoomAdjust;
-                    var max = tileLayer.getLevel() + maxZoomAdjust;
-                    var mMaxZoom;
-                    tileLayer.getMaxZoom(function(result){
-                        mMaxZoom = result;
-                    });
-                    var mMinZoom;
-                    tileLayer.getMinZoom(function(result){
-                        mMinZoom = result;
-                    });
-                    zoom.max = Math.min(mMaxZoom, max);  //prevent errors by setting the tile layer floor
-                    zoom.min = Math.max(mMinZoom, min);   //prevent errors by setting the tile layer ceiling
-
-                    return zoom;
                 }
 
                 /**
