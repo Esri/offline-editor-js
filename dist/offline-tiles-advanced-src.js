@@ -1,4 +1,4 @@
-/*! offline-editor - v2.2 - 2014-09-30
+/*! offline-editor-js - v2.3 - 2014-10-13
 *   Copyright (c) 2014 Environmental Systems Research Institute, Inc.
 *   Apache License*/
 define([
@@ -193,22 +193,9 @@ define([
         getMaxZoom: function(callback){
 
             if(this._maxZoom == null){
-                var lods = this.tileInfo.lods;
-                var length = this.tileInfo.lods.length;
-                var tempArr = [];
-                for(var i=0; i < length; i++){
-                    tempArr.push(lods[i].level);
-                    if(i == length -1){
-                        tempArr.sortNumber();
-                        this._maxZoom = tempArr[i];
-                        callback(tempArr[i]);
-                    }
-                }
+                this._maxZoom = this.tileInfo.lods[this.tileInfo.lods.length-1].level;
             }
-            else{
-                callback(this._maxZoom);
-            }
-
+            callback(this._maxZoom);
         },
 
         /**
@@ -218,21 +205,38 @@ define([
         getMinZoom: function(callback){
 
             if(this._minZoom == null){
-                var lods = this.tileInfo.lods;
-                var length = this.tileInfo.lods.length;
-                var tempArr = [];
-                for(var i=0; i < length; i++){
-                    tempArr.push(lods[i].level);
-                    if(i == length -1){
-                        tempArr.sortNumber();
-                        this._minZoom = tempArr[0];
-                        callback(tempArr[0]);
-                    }
-                }
+                this._minZoom = this.tileInfo.lods[0].level;
+            }
+            callback(this._minZoom);
+        },
+
+        /**
+         * Utility method for bracketing above and below your current Level of Detail. Use
+         * this in conjunction with setting the minLevel and maxLevel in prepareForOffline().
+         * @param minZoomAdjust An Integer specifying how far above the current layer you want to retrieve tiles
+         * @param maxZoomAdjust An Integer specifying how far below (closer to earth) the current layer you want to retrieve tiles
+         */
+        getMinMaxLOD: function(minZoomAdjust,maxZoomAdjust){
+            var zoom = {};
+            var map = this.getMap();
+            var min = map.getLevel() + minZoomAdjust;
+            var max = map.getLevel() + maxZoomAdjust;
+            if(this._maxZoom != null && this._minZoom != null){
+                zoom.max = Math.min(this._maxZoom, max);  //prevent errors by setting the tile layer floor
+                zoom.min = Math.max(this._minZoom, min);   //prevent errors by setting the tile layer ceiling
             }
             else{
-                callback(this._minZoom);
+                this.getMinZoom(function(result){
+                    zoom.min = Math.max(result, min);   //prevent errors by setting the tile layer ceiling
+                });
+
+                this.getMaxZoom(function(result){
+                    zoom.max = Math.min(result, max);  //prevent errors by setting the tile layer floor
+                });
             }
+
+            return zoom;
+
         },
 
         /**
@@ -805,7 +809,7 @@ O.esri.Tiles.TilesCore = function(){
      */
     this._getTiles = function(image,imageType,url,tileid,store,query){
         store.retrieve(url, function(success, offlineTile)
-        { console.log("TILE RETURN " + success + ", " + offlineTile)
+        { console.log("TILE RETURN " + success + ", " + offlineTile.url)
             /* when the .getTileUrl() callback is triggered we replace the temporary URL originally returned by the data:image url */
             // search for the img with src="void:"+level+"-"+row+"-"+col and replace with actual url
             image = query("img[src="+tileid+"]")[0];

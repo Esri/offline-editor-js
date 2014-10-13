@@ -3,136 +3,160 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no"/>
-    <title>TPKLayer</title>
-    <link rel="stylesheet" href="http://js.arcgis.com/3.10/js/esri/css/esri.css">
+    <title>Offline TPK</title>
+    <link href="//netdna.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" rel="stylesheet" media="screen">
+    <link rel="stylesheet" href="http://js.arcgis.com/3.11/esri/css/esri.css">
+    <link rel="stylesheet" type="text/css" href="http://esri.github.io/bootstrap-map-js/src/css/bootstrapmap.css">
     <style>
-        html, body, #map {
-            height: 100%;
-            width: 100%;
-            margin: 0;
-            padding: 0;
-        }
         body {
-            background-color: #FFF;
+            background-color: #000000;
+        }
+
+        #mapDiv {
+            min-height: 300px;
+            max-height: 1000px;
+        }
+
+        .btn-file {
+            position: relative;
             overflow: hidden;
-            font-family: "Trebuchet MS";
         }
-        #header-div{
-            font-family: helvetica, serif;
-            background: #000000;
-            color: #ffffff;
-            width: 100%;
-            height: 90px;
-            display:inline-block;
-            vertical-align:middle;
-            line-height: 50px;
-            padding-left: 8px;
-        }
-        #input-container{
+        .btn-file input[type=file] {
             position: absolute;
-        }
-        #file-input{
-            margin-top: 10px;
-            margin-left: 10px;
-            position: absolute;
-            float: left;
-            margin-bottom: 15px;
-        }
-        #url-input{
-            position: relative;
-            /* float: left; */
-            padding-left: 10px;
-            margin-left: 10px;
-            margin-top: 40px;
-            width: 250px;
-        }
-        #url-btn{
-            position: relative;
-            /*float: left;*/
-        }
-        #header-title{
-            position: relative;
-            float: right;
-            padding-right: 15px;
-        }
-        #loader-gif{
+            top: 0;
+            right: 0;
+            min-width: 100%;
+            min-height: 100%;
+            font-size: 100px;
+            text-align: right;
+            filter: alpha(opacity=0);
+            opacity: 0;
+            background: red;
+            cursor: inherit;
             display: block;
-            visibility: hidden;
-            position: relative;
-            float: left;
-            padding-left: 50%;
-            padding-top: 25%;
-            z-index: 10;
         }
-        #map{
-            position: absolute;
-            left: 0;
-            z-index: 1;
-        }
-        /* Portrait */
-        @media screen and (orientation:portrait) {
-            #loader-gif{
-                display: block;
-                visibility: hidden;
-                position: relative;
-                float: left;
-                padding-left: 50%;
-                padding-top: 25%;
-                z-index: 10;
-            }
+        input[readonly] {
+            background-color: white !important;
+            cursor: text !important;
         }
 
-        /* Landscape */
-        @media screen and (orientation:landscape) {
-            #loader-gif{
-                display: block;
-                visibility: hidden;
-                position: relative;
-                float: left;
-                padding-left: 50%;
-                padding-top: 25%;
-                z-index: 10;
-            }
-        }
-
+        .container { padding: 20px;}
+        .blackBack { color: #ffffff; background-color: #000000;}
+        .pad-top-20px { padding-top: 20px;}
     </style>
+
+    <!-- Include a reference to IndexedDBShim for library to work on Safari 7.x -->
+    <script src="../vendor/IndexedDBShim/dist/IndexedDBShim.js"></script>
+
+    <script src="http://js.arcgis.com/3.11/"></script>
 </head>
 
 <body>
-<div id="header-div">
-    <div id="input-container">
-        <input type="file" id="file-input" name="files[]" accept="application/zip"/>
-        <input type="text" id="url-input" value="tpks/Beirut.zip" />
-        <button id="url-btn">Get file via url</button>
+<div class="container">
+
+    <div class="well blackBack">
+        <h4>Browse for a zipped .TPK file locally or retrieve a URL</h4>
     </div>
-    <div id="header-title">TPKLayer demo</div>
+    <!-- We provide two input types for demonstration purposes. Choose whichever one you want. -->
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="input-group">
+                <span class="input-group-btn">
+                    <span class="btn btn-primary btn-file">
+                        Browse... <input type="file" id="file-input" name="files[]"  accept="application/zip">
+                    </span>
+                </span>
+                <input id="file-input-field" type="text" class="form-control" readonly>
+            </div>
+        </div>
+    </div>
+    <div class="row pad-top-20px">
+        <div class="col-lg-12">
+            <div class="form form-group input-group">
+                <span class="input-group-btn">
+                    <button id="url-btn" class="btn btn-success" type="button">Go!</button>
+                </span>
+                <input id="url-input" type="text" class="form-control"
+                       value="../samples/tpks/Beirut.zip">
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-xs-12">
+            <div id="mapDiv"></div>
+        </div>
+    </div>
 </div>
-<img id="loader-gif" src="images/loading.gif"/>
 
-<div id="map"></div>
-
-<script src="../vendor/IndexedDBShim/dist/IndexedDBShim.min.js"></script>
-<script src="http://js.arcgis.com/3.10/"></script>
 <script>
-    require(["esri/map","dojo/on","dojo/_base/window","../dist/offline-tpk-min.js","dojo/domReady!"],
-            function(Map,on,win) {
-                var map;
-                var fileInput,tpkLayer, urlInputBtn;
 
-                var loading = dojo.byId("loader-gif");
-                var getFileBtn = dojo.byId("url-btn");
+    // Make sure to reference the tpk library within the require statement!
+    require([
+                "esri/map",
+                "dojo/on",
+                "//esri.github.com/bootstrap-map-js/src/js/bootstrapmap.js",
+                "../dist/offline-tpk-src.js", "dojo/domReady!"],
+            function(Map,on,BootstrapMap) {
+
+                var map, tpkLayer;
+                var fileInput, fileInputField;
+
+                var url = document.getElementById("url-input");
+                var urlInputBtn = document.getElementById("url-btn");
+                urlInputBtn.onclick = function(){
+                    getTPK();
+                };
 
                 initChooseLocalFile();
-                initGetRemoteFile();
 
                 /**
-                 * Parse zipped TPK file and get the individual files.
+                 * Choose a TPK file from your local filesystem
                  */
+                function initChooseLocalFile(){
+                    fileInputField = document.getElementById("file-input-field");
+                    fileInput = document.getElementById("file-input");
+                    fileInput.addEventListener('change', function() {
+                        console.log("File success");
+                        fileInputField.value = fileInput.files[0].name;
+                        zipParser(fileInput.files[0]);
+                    },false);
+                }
+
+                // Retrieve the TPK file via an HTTP request
+                function getTPK(){
+                    urlInputBtn.innerHTML = "Get file via url";
+
+                    var xhrRequest = new XMLHttpRequest();
+                    xhrRequest.open("GET", url.value, true);
+                    xhrRequest.responseType = "blob";
+                    xhrRequest.onprogress = function(evt){
+                        var percent = (parseFloat(evt.loaded / evt.totalSize) * 100).toFixed(0);
+                        urlInputBtn.innerHTML = "Get file via url " + percent + "%";
+                        console.log("Begin downloading remote tpk file...")
+                    }
+
+                    xhrRequest.error = function(err){console.log("ERROR")}
+
+                    xhrRequest.onload = function(oEvent) {
+                        if(this.status == 200) {
+                            console.log("Remote tpk download finished.")
+                            zipParser(this.response);
+                        }
+                        else{
+                            alert("There was a problem loading the file. " + this.status + ": " + this.statusText )
+                        }
+                    };
+
+                    xhrRequest.send();
+                }
+
+                // Parse the zip file contents into a zip.Entries object
                 function zipParser(blob){
 
                     O.esri.zip.createReader(new O.esri.zip.BlobReader(blob), function (zipReader) {
                         zipReader.getEntries(function (entries) {
                             initMap(entries);
+                            //if(entries)alert("TPK downloaded and unzipped!");
                             zipReader.close(function(evt){
                                 console.log("Done reading zip file.")
                             })
@@ -142,68 +166,27 @@
                     })
                 }
 
-                /**
-                 * Initialize the Map and the TPKLayer
-                 */
+                // Initialize the Map and the TPKLayer
                 function initMap(entries){
+
+                    map = BootstrapMap.create("mapDiv",{});
+
                     tpkLayer = new O.esri.TPK.TPKLayer();
                     tpkLayer.on("progress", function (evt) {
-                        evt == "start" ? loading.style.visibility = "visible" : loading.style.visibility = "hidden";
+                        console.log("TPK loading...");
                     })
                     tpkLayer.extend(entries);
 
-                    map = new Map("map");
                     map.addLayer(tpkLayer);
                 }
 
-                /**
-                 * Choose a TPK file from your local filesystem
-                 */
-                function initChooseLocalFile(){
-                    fileInput = document.getElementById("file-input");
-                    fileInput.addEventListener('change', function() {
-                        console.log("File success");
-                        zipParser(fileInput.files[0]);
-                    },false);
-                }
-
-                /**
-                 * Get a TPK file from a remote server via a URL
-                 */
-                function initGetRemoteFile(){
-                    getFileBtn.innerHTML = "Get file via url";
-                    var url = document.getElementById("url-input");
-                    urlInputBtn = document.getElementById("url-btn");
-                    urlInputBtn.onclick = function(){
-                        var xhrRequest = new XMLHttpRequest();
-                        xhrRequest.open("GET", url.value, true);
-                        xhrRequest.responseType = "blob";
-                        xhrRequest.onprogress = function(evt){
-                            loading.style.visibility = "visible";
-                            var percent = (parseFloat(evt.loaded / evt.totalSize) * 100).toFixed(0);
-                            getFileBtn.innerHTML = "Get file via url " + percent + "%";
-                            console.log("Begin downloading remote tpk file...")
-                        }
-
-                        xhrRequest.error = function(err){console.log("ERRROR")}
-
-                        xhrRequest.onload = function(oEvent) {
-                            if(this.status == 200) {
-                                loading.style.visibility = "hidden";
-                                console.log("Remote tpk download finished.")
-                                zipParser(this.response)
-                            }
-                            else{
-                                loading.style.visibility = "hidden";
-                                alert("There was a problem loading the file. " + this.status + ": " + this.statusText )
-                            }
-                        };
-
-                        xhrRequest.send();
-                    }
-                }
             }
     );
 </script>
+<!-- Bootstrap core JavaScript
+================================================== -->
+<!-- Placed at the end of the document so the pages load faster -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+<script src="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
 </body>
 </html>

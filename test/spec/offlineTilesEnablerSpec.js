@@ -255,4 +255,26 @@ describe("offline enabler library", function()
        })
     });
 
+    async.it("getMaxZoom", function(done){
+        g_basemapLayer.getMaxZoom(function(result){
+            expect(result).toBe(16);
+            done();
+        })
+    });
+
+    async.it("getMinZoom", function(done){
+        g_basemapLayer.getMinZoom(function(result){
+            expect(result).toBe(0);
+            done();
+        })
+    });
+
+    async.it("getMinMaxLOD", function(done){
+        var object = g_basemapLayer.getMinMaxLOD(-1,1);
+        console.log("OBJECT " + JSON.stringify(object));
+        expect(object.min).toBe(13);
+        expect(object.max).toBe(15);
+        done();
+    })
+
 });

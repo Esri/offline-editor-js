@@ -1,98 +1,77 @@
 <!DOCTYPE html>
-<!--<html>-->
 <html manifest="appcache-features.appcache">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <!--The viewport meta tag is used to improve the presentation and behavior of the samples 
       on iOS devices-->
     <meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no">
+
+    <!--
+
+    This sample demonstrates using an application manifest to store features and tiles locally.
+
+    The use cases for using this sample are to ensure you can reload and restart you application
+    one it is offline.
+
+    It is strongly recommended that you use your own optimized build of the ArcGIS API for JavaScript
+    using the Web Optimizer: http://jso.arcgis.com/. You can reference the CDN or host it on your
+    own web server.
+
+    Use the Grunt task in the /samples diretory to help generate the manifest file. There is manual
+    work involved in determining which files need to go into the manifest. The included manifest
+    file should work with this sample to give you an idea of what goes into the manifest.
+
+    A few things to know about manifest files:
+    - You cannot load an online url that has a redirect.
+    - If there is an error encountered, the manifest file will stop loading
+    - The /utils/appCacheManager.js library will auto detect if the manifest changed and
+    ask if you want to reload the application.
+
+    -->
+
     <title>AppCache Tiles and Features</title>
 
-    <link rel="stylesheet" href="../samples/css/modular-popup.css">
+    <!-- Bootstrap core CSS -->
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../samples/widgets/modal/css/modal-popup.css">
     <link rel="stylesheet" href="http://js.arcgis.com/3.10/js/dojo/dijit/themes/claro/claro.css">
-    <link rel="stylesheet" href="http://js.arcgis.com/3.10/js/esri/css/esri.css">
+    <link rel="stylesheet" href="http://js.arcgis.com/3.11/esri/css/esri.css">
+    <link rel="stylesheet" href="http://esri.github.io/bootstrap-map-js/src/css/bootstrapmap.css">
 
     <style>
-        html, body, #map {
-            height: 100%;
-            width: 100%;
-            margin: 0;
-            padding: 0;
+        #mapDiv {
+            min-height: 500px;
+            max-height: 1000px;
         }
+
         body {
-            background-color: #FFF;
+            background-color: #ffffff;
             overflow: hidden;
             font-family: "Trebuchet MS";
         }
-        #map {
-            z-index: 1;
-            position: absolute;
-            top: 50px;
-            left: 0;
-        }
-        #button-div1{
-            position: absolute;
-            top: 0;
-            z-index: 2;
-            background: #000000;
-            color: #ffffff;
-            width: 100%;
-            height: 50px;
-        }
-        #right-div{
-            height: 50px;
-            position: relative; float: right;
-        }
-        #img-offline-indicator{
-            /*padding: 8px;*/
-            position: relative; float: right;
-            position: relative; float: right;
 
+        #loader-gif{
+            visibility: hidden;
         }
-        #popup {
-            height: 100%;
-            width: 100%;
-            z-index: 98;
-            font-size: x-large;
-            position: absolute;
-            top: -9999px !important;
-            left: -9999px !important;
-        }
-        #popup-body {
-            position: relative;
-            top: 10%;
-            left: 10%;
-            z-index: 100;
-            height: 80%;
-            width: 80%;
-            border-radius: 10px;
-            background-color: black;
-            display: table;
-            opacity: 0.7;
-        }
-        .basic-btn{
-            background-color: #000000;
-            border-color: #ffffff 1px;
-            color: #ffffff;
-            padding: 8px;
-            position: relative; float: left;
-        }
-        #pending-edits{
-            padding: 8px;
-            position: relative; float: right;
-        }
-        @media (max-width: 500px) {
-            #pending-edits {
-                font-size: small;
-            }
-        }
-        @media (max-width: 450px) {
-            #pending-edits {
-                font-size: x-small;
-            }
-        }
+
+        /* Override mod-popup default */
+        .mod-popup-stop-input {color: black;}
+        .span-pending {color: blue; padding-left: 1em;}
+
+        .floatRight { float: right;}
+        .container { padding: 20px;}
     </style>
 
+    <!--<script>-->
+        <!--// If you need to catch AppCache errors as early as possible to troubleshoot errors.-->
+        <!--window.applicationCache.addEventListener("error",function(err){-->
+            <!--console.log("ApplicationCache listener: " + err.toString());-->
+            <!--if (confirm('There was a problem setting this app up for offline. Reload?')) {-->
+                <!--window.location.reload();-->
+                <!--console.log("App cache reloaded");-->
+            <!--}-->
+        <!--},false)-->
+    <!--</script>-->
     <script src="../vendor/offline/offline.min.js"></script>
     <script>
         Offline.options = {
@@ -110,79 +89,66 @@
         var dojoConfig = {
             paths: {
                 vendor: locationPath + "/../vendor",
-                utils: locationPath + "/../utils"
+                utils: locationPath + "/../utils",
+                widgets: locationPath + "/widgets"
             }
         }
     </script>
     <!-- Required when using the offline-editor-js library with Safari -->
     <script src="../vendor/IndexedDBShim/dist/IndexedDBShim.js"></script>
-    <script src="http://js.arcgis.com/o/agup_hack4co/appcacheFeatures/dojo/dojo.js" data-dojo-config="async: true"></script>
-    <!-- Use this tag below if you are hosting your ArcGIS API for JavaScript files locally -->
-    <!--<script src="libs/dojo/dojo/dojo.js" data-dojo-config="async: true"></script>-->
+
+    <!--
+        This is a locally hosted optimized build of the ArcGIS JS API
+        To create your own optimized build go to: http://http://jso.arcgis.com/
+    -->
+    <script src="../samples/jsolib/dojo.js" data-dojo-config="async: true"></script>
 </head>
 <body>
-<div id="button-div1">
-    <button class="basic-btn" id="btn-get-tiles">1. Download Tiles</button>
-    <button class="basic-btn" data-dojo-type="dijit/form/ToggleButton" id="btn-online-offline">2. Go Offline</button>
-    <div id="right-div">
-        <img id="img-offline-indicator" src="../samples/images/blue-pin.png"/>
-        <div id="pending-edits">Pending edits: 0</div>
+
+<!-- Our buttons and online/offline indicator -->
+<div class="container">
+    <div class="row">
+        <div class="col-xs-10">
+            <div class="form form-group btn-group" data-toggle="buttons">
+                <button class="btn btn-success" id="btn-get-tiles">1. Download Tiles</button>
+                <button class="btn btn-success" disabled id="btn-online-offline">2. Go Offline</button>
+            </div>
+            <span class="span-pending">Pending Edits <span id="span-pending-edits" class="badge">0</span></span>
+            <img id="loader-gif" src="images/loading.gif"/>
+        </div>
+        <div class="col-xs-2">
+            <!-- this indicates whether app is offline (down) or online (up) -->
+            <button id="btn-state" class="btn btn-success btn-large floatRight">
+                <span id="state-span" class="glyphicon glyphicon-link"> Up</span>
+            </button>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-xs-12">
+            <div id="mapDiv"></div>
+        </div>
     </div>
 </div>
 
-<div id="popup">
-    <div id="popup-body">
-        <div id="row1" class="mod-popup-table-row">
-            <div class="mod-popup-label-top-left">ID</div>
-            <div class="mod-popup-input">
-                <input id="stop-main-id" type="text" disabled class="mod-popup-stop-input-disabled" value="test"/>
-            </div>
-        </div>
-        <div id="row2" class="mod-popup-table-row">
-            <div class="mod-popup-label">Bustop ID</div>
-            <div class="mod-popup-input">
-                <input id="stop-id" disabled class="mod-popup-stop-input-disabled" value="test"/>
-            </div>
-        </div>
-        <div id="row3" class="mod-popup-table-row">
-            <div class="mod-popup-label">Routes</div>
-            <div class="mod-popup-input">
-                <input id="stop-routes" class="mod-popup-stop-input" value="test"/>
-            </div>
-        </div>
-        <div id="row4" class="mod-popup-table-row">
-            <div class="mod-popup-label">Stopnames</div>
-            <div class="mod-popup-input">
-                <input id="stop-names" class="mod-popup-stop-input" value="test"/>
-            </div>
-        </div>
-        <div id="row5" class="mod-popup-table-row">
-            <div class="mod-popup-button-div-bottom-left">
-                <button id="mod-popup-close-btn" class="mod-popup-button-cancel" >Close</button>
-            </div>
-            <div class="mod-popup-button-div">
-                <button id="mod-popup-save-btn" class="mod-popup-button" style="margin-right: 10px;">Save</button>
-                <button id="mod-popup-delete-btn" disabled class="mod-popup-button" style="background-color: grey; text-decoration:line-through;">Delete</button>
-            </div>
-        </div>
-    </div>
-    <div id="modal-background" class="mod-popup-modal-background"></div>
-</div>
-
-<div id="map"></div>
+<!-- Stub for modal popup -->
+<div id="modal-popup"></div>
 
 <script>
     require(["esri/map","esri/layers/FeatureLayer",
          "utils/appCacheManager",
-        "esri/renderers/SimpleRenderer","esri/symbols/SimpleMarkerSymbol","esri/Color","esri/tasks/query",
+        "esri/renderers/SimpleRenderer","esri/symbols/SimpleMarkerSymbol",
+        "esri/Color",
+        "esri/tasks/query",
         "dojo/on",
         "esri/graphic",
+        "widgets/modal/popup",
+        "//esri.github.io/bootstrap-map-js/src/js/bootstrapmap.js",
         "../dist/offline-tiles-advanced-min.js",
         "../dist/offline-edit-min.js",
         "dojo/domReady!"],
             function(Map,FeatureLayer,AppCacheManager,
                 SimpleRenderer,SimpleMarkerSymbol,Color,Query,
-                on,Graphic) {
+                on,Graphic,ModalPopup,BootstrapMap) {
 
                 initAppCacheManager();
 
@@ -190,12 +156,10 @@
                 var defaultSymbol;
 
                 // Variables for editing handling
-                var currentFeature;
-                var busStopFeatureLayer;
-                var offlineFeaturesManager;
-                var modPopup = document.getElementById("popup");
-                var pendingEdits = document.getElementById("pending-edits");
-                var imgOfflineIndicator = document.getElementById("img-offline-indicator");
+                var currentFeature, busStopFeatureLayer, offlineFeaturesManager;
+                var pendingEdits = document.getElementById("span-pending-edits");
+                var imgOfflineIndicator = document.getElementById("state-span");
+                var btnState = document.getElementById("btn-state");
 
                 // Variables for handling tiles
                 var tileLayer;
@@ -203,35 +167,33 @@
                 var _wantToCancel;
                 var globalState = {};
                 var btnGetTiles = document.getElementById("btn-get-tiles");
+                var btnOnlineOffline = document.getElementById("btn-online-offline");
+
                 // Important settings for determining which tile layers gets stored for offline use.
                 var minZoomAdjust = -1, maxZoomAdjust = 1, resetZoom = 18;
                 var EXTENT_BUFFER = 0; //buffers the map extent in meters
 
                 // Misc.
                 var appCacheManager;
-                var btnOnlineOffline = document.getElementById("btn-online-offline");
+                var loading = document.getElementById("loader-gif");
 
                 // Variables for modal popup
-                var modPopup = document.getElementById("popup");
-                var closeBtn = document.getElementById("mod-popup-close-btn");
-                var saveBtn = document.getElementById("mod-popup-save-btn");
-                var deleteBtn = document.getElementById("mod-popup-delete-btn");
-                var stopMainID = document.getElementById("stop-main-id");
-                var stopID = document.getElementById("stop-id");
-                var stopRoutes = document.getElementById("stop-routes");
-                var stopNames = document.getElementById("stop-names");
-
-                // Symbols and images
-                var redPinPath = "../samples/images/red-pin.png";
-                var redPinImage = new Image().src = redPinPath;
-                var bluePinPath = "../samples/images/blue-pin.png";
+                var popup,closeBtn,saveBtn,deleteBtn,stopMainID,stopID,stopRoutes,stopNames;
 
                 // Modify symbol size based on screen size.
                 // Bigger screens get smaller symbols. Smaller screens get larger symbols.
-                if (document.documentElement.clientHeight > 768 || document.documentElement.clientWidth > 1024) {
+                var width = window.innerWidth
+                        || document.documentElement.clientWidth
+                        || document.body.clientWidth;
+
+                var height = window.innerHeight
+                        || document.documentElement.clientHeight
+                        || document.body.clientHeight;
+
+                if (height > 768 || width > 1024) {
                     defaultSymbol= new SimpleMarkerSymbol().setStyle(
                             SimpleMarkerSymbol.STYLE_DIAMOND).setColor(
-                            new Color([255,0,0,0.5])).setSize(20);    // scripts
+                            new Color([255,0,0,0.5])).setSize(20);
                 }
                 else{
                     defaultSymbol= new SimpleMarkerSymbol().setStyle(
@@ -239,7 +201,9 @@
                             new Color([255,0,0,0.5])).setSize(35);
                 }
 
-                var editsStore = new O.esri.Edit.EditStore(Graphic);
+                var editsStore = new O.esri.Edit.EditStore();
+
+                initModalPopup();
 
                 /**
                  * There have been a few bugs in the offline detection library (offline.min.js)
@@ -249,7 +213,20 @@
                 verifyOnline(function(result){ console.log("VERIFY ONLINE " + result)
                     result == true ? _isOnline = true : _isOnline = false;
                     startMap();
-                })
+                });
+
+                function initModalPopup(){
+                    popup = new ModalPopup({animation: true, animationDuration: 1},"modal-popup");
+
+                    // Variables for modal popup
+                    closeBtn = document.getElementById("mod-popup-close-btn");
+                    saveBtn = document.getElementById("mod-popup-save-btn");
+                    deleteBtn = document.getElementById("mod-popup-delete-btn");
+                    stopMainID = document.getElementById("stop-main-id");
+                    stopID = document.getElementById("stop-id");
+                    stopRoutes = document.getElementById("stop-routes");
+                    stopNames = document.getElementById("stop-names");
+                }
 
                 function startMap(){
 
@@ -258,14 +235,14 @@
                     Offline.state === 'up' ? resetZoom = 18 : resetZoom = 17;
 
                     tileLayer = new O.esri.Tiles.OfflineTileEnablerLayer("http://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer",function(evt){
-                        console.log("Tile Layer Loaded.");
+                        console.log("Tile Layer initialized for offline. App state is: " + Offline.state);
                     },_isOnline);
 
                     tileLayer.offline.proxyPath = null;
 
-                    var map = new Map("map",{
-                        center: [-104.98,39.74], // long, lat
-                        zoom: 8,
+                    var map = BootstrapMap.create("mapDiv",{
+                        center: [-104.99,39.75], // long, lat
+                        zoom: 17,
                         sliderStyle: "small"
                     });
 
@@ -282,6 +259,7 @@
 
                     busStopFeatureLayer.on("update-end",function(evt){
 
+                        // Set click listeners
                         on(btnGetTiles,"click",downloadTiles);
                         on(btnOnlineOffline, 'click', goOnlineOffline);
 
@@ -319,6 +297,7 @@
 
                         _currentExtent = evt.map.extent;
                         updateOfflineUsage();
+                        updateStatus();
 
                         if(_isOnline == false){
 
@@ -386,11 +365,11 @@
                     if( editsStore.hasPendingEdits())
                     {
                         var edits = editsStore.retrieveEditsQueue();
-                        pendingEdits.innerHTML = "Pending edits: " + edits.length;
+                        pendingEdits.innerHTML = edits.length;
                     }
                     else
                     {
-                        pendingEdits.innerHTML = "Pending edits: 0";
+                        pendingEdits.innerHTML = "0";
                     }
                 }
 
@@ -425,36 +404,36 @@
 
                     saveBtn.onclick = function(evt){
 
-                        modPopup.graphic.attributes.ROUTES = stopRoutes.value;
-                        modPopup.graphic.attributes.STOPNAME = stopNames.value;
+                        popup.graphic.attributes.ROUTES = stopRoutes.value;
+                        popup.graphic.attributes.STOPNAME = stopNames.value;
 
-                        busStopFeatureLayer.applyEdits(null,[modPopup.graphic],null,function(result){
-                                    console.log("Successfully saved changes to: " + modPopup.graphic.attributes.STOPNAME);
+                        busStopFeatureLayer.applyEdits(null,[popup.graphic],null,function(result){
+                                    console.log("Successfully saved changes to: " + popup.graphic.attributes.STOPNAME);
                                     hideModalPopup();
                                 },
                                 function(err){
-                                    alert("There was a problem while trying to save: " + modPopup.graphic.attributes.STOPNAME);
+                                    alert("There was a problem while trying to save: " + popup.graphic.attributes.STOPNAME);
                                 })
                     }
 
                     deleteBtn.onclick = function(evt){
-                        busStopFeatureLayer.applyEdits(null,null,[modPopup.graphic],function(result){
-                                    console.log("Successfully deleted: " + modPopup.graphic.attributes.STOPNAME);
+                        busStopFeatureLayer.applyEdits(null,null,[popup.graphic],function(result){
+                                    console.log("Successfully deleted: " + popup.graphic.attributes.STOPNAME);
                                     hideModalPopup();
                                 },
                                 function(err){
-                                    alert("There was a problem while trying to delete: " + modPopup.graphic.attributes.STOPNAME);
+                                    alert("There was a problem while trying to delete: " + popup.graphic.attributes.STOPNAME);
                                 })
                     }
                 }
 
                 function showModalPopup(graphic){
-                    modPopup.style.position = "static";
-                    modPopup.graphic = graphic; // assign graphic to modPopup as a property.
+                    popup.graphic = graphic; // assign graphic to popup as a property.
+                    popup.show();
                 }
 
                 function hideModalPopup(){
-                    modPopup.style.position = "absolute";
+                    popup.hide();
                 }
 
                 /**
@@ -483,7 +462,7 @@
                             }
                             else
                             {
-                                var zoom = getMinMaxZoom();
+                                var zoom = tileLayer.getMinMaxLOD(minZoomAdjust,maxZoomAdjust);
 
                                 var extent = tileLayer.getExtentBuffer(EXTENT_BUFFER,_currentExtent);
                                 _wantToCancel = false;
@@ -518,6 +497,7 @@
                         else
                         {
                             globalState.downloadState = 'downloaded';
+                            btnOnlineOffline.disabled = false;
                             alert("Tile download complete");
                         }
 
@@ -527,44 +507,29 @@
                 }
 
                 /**
-                 * Utility function to validate min and max zoom settings of the map
-                 */
-                function getMinMaxZoom(){
-
-                    var zoom = {};
-                    var min = tileLayer.getLevel() + minZoomAdjust;
-                    var max = tileLayer.getLevel() + maxZoomAdjust;
-                    var mMaxZoom;
-                    tileLayer.getMaxZoom(function(result){
-                        mMaxZoom = result;
-                    });
-                    var mMinZoom;
-                    tileLayer.getMinZoom(function(result){
-                        mMinZoom = result;
-                    });
-                    zoom.max = Math.min(mMaxZoom, max);  //prevent errors by setting the tile layer floor
-                    zoom.min = Math.max(mMinZoom, min);   //prevent errors by setting the tile layer ceiling
-
-                    return zoom;
-                }
-
-                /**
                  * ************************************
-                 * MISC. CODE
+                 * HANDLE GOING ONLINE/OFFLINE
                  * ************************************
                  */
 
                 function goOnline(){
                     console.log("Going online...");
+
+                    loading.style.visibility = "visible";
+
                     offlineFeaturesManager.goOnline(function(success,error){
                         if(error === undefined){
                             btnOnlineOffline.innerHTML = "2. Go Offline";
-                            imgOfflineIndicator.src = bluePinPath;
+                            imgOfflineIndicator.className = "glyphicon glyphicon-link";
+                            imgOfflineIndicator.innerHTML = " Up";
+                            btnState.className = "btn btn-success btn-large floatRight";
                             console.log("offlineFeatureManager is online.");
                         }
                         else{
                             alert("There was a problem syncing offline edits: " + JSON.stringify(error));
                         }
+
+                        loading.style.visibility = "hidden";
                     });
 
                     updateOfflineUsage();
@@ -574,7 +539,9 @@
                 function goOffline(){
                     console.log("Going offline...");
                     btnOnlineOffline.innerHTML = "2. Go Online";
-                    imgOfflineIndicator.src = redPinPath;
+                    imgOfflineIndicator.className = "glyphicon glyphicon-thumbs-down";
+                    imgOfflineIndicator.innerHTML = " Down";
+                    btnState.className = "btn btn-danger btn-large floatRight";
                     offlineFeaturesManager.goOffline();
                     if(typeof tileLayer != "undefined") tileLayer.goOffline();
                 }
@@ -604,29 +571,6 @@
                 }
 
                 /**
-                 * Listen for app cache events.
-                 */
-                function initAppCacheManager(){
-                    appCacheManager = new AppCacheManager(true,true);
-                    appCacheManager.on(appCacheManager.CACHE_EVENT,cacheEventHandler);
-                    appCacheManager.on(appCacheManager.CACHE_ERROR,cacheErrorHandler);
-                    appCacheManager.on(appCacheManager.CACHE_LOADED,cacheLoadedHandler);
-                }
-
-                function cacheLoadedHandler(evt){
-                    if(evt == appCacheManager.CACHE_LOADED) console.log("Application cache successfully loaded!")
-                }
-
-                function cacheEventHandler(evt){
-                    if(evt.hasOwnProperty("total")) console.log("CACHE EVENT loaded #:" + evt.loaded + ", out of " + evt.total);
-                }
-
-                function cacheErrorHandler(evt){
-                    console.log("CACHE ERROR: " + JSON.stringify(evt));
-                    alert("There was a problem loading the cache. Try reloading the app. ")
-                }
-
-                /**
                  * Attempts an http request to verify if app is online or offline.
                  * Use this in conjunction with the offline checker library: offline.min.js
                  * @param callback
@@ -653,8 +597,42 @@
                     };
                     req.send(null);
                 }
+
+                /**
+                 * ************************************
+                 * APPCACHE MANAGEMENT CODE
+                 * ************************************
+                 */
+
+                /**
+                 * Listen for app cache events.
+                 */
+                function initAppCacheManager(){
+                    appCacheManager = new AppCacheManager(true,true);
+                    appCacheManager.on(appCacheManager.CACHE_EVENT,cacheEventHandler);
+                    appCacheManager.on(appCacheManager.CACHE_ERROR,cacheErrorHandler);
+                    appCacheManager.on(appCacheManager.CACHE_LOADED,cacheLoadedHandler);
+                }
+
+                function cacheLoadedHandler(evt){
+                    if(evt == appCacheManager.CACHE_LOADED) console.log("Application cache successfully loaded!")
+                }
+
+                function cacheEventHandler(evt){
+                    if(evt.hasOwnProperty("total")) console.log("CACHE EVENT loaded #:" + evt.loaded + ", out of " + evt.total);
+                }
+
+                function cacheErrorHandler(evt){
+                    console.log("CACHE ERROR: " + JSON.stringify(evt));
+                    alert("There was a problem loading the cache. Try reloading the app. ")
+                }
             });
 </script>
 
+<!-- Bootstrap core JavaScript
+================================================== -->
+<!-- Placed at the end of the document so the pages load faster -->
+<script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+<script src="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
 </body>
 </html>
