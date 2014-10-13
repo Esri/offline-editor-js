@@ -1,6 +1,6 @@
 <!DOCTYPE html>
-<!--<html manifest="appcache-tiles.appcache">-->
-<html>
+<html manifest="appcache-tiles.appcache">
+<!--<html>-->
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no"/>
@@ -65,7 +65,7 @@ ask if you want to reload the application.
     }
 </script>
 <!-- This is a custom build of the ArcGIS API for JavaScript using the new Web Optimizer Tool -->
-<script src="http://js.arcgis.com/o/agup_hack4co/appcacheFeatures2/dojo/dojo.js" data-dojo-config="async: true"></script>
+<script src="../samples/jsolib/dojo.js" data-dojo-config="async: true"></script>
 <!-- Use this tag below if you are hosting your ArcGIS API for JavaScript files locally -->
 <!--<script src="libs/dojo/dojo/dojo.js" data-dojo-config="async: true"></script>-->
 <script src="../vendor/IndexedDBShim/dist/IndexedDBShim.min.js"></script>
@@ -117,8 +117,8 @@ require([
     "esri/map",
     "utils/appCacheManager",
     "dojo/on",
-    "//esri.github.com/bootstrap-map-js/src/js/bootstrapmap.js",
-    "../dist/offline-tiles-advanced-min.js",
+    "//esri.github.io/bootstrap-map-js/src/js/bootstrapmap.js",
+    "../dist/offline-tiles-advanced-src.js",
     "dojo/domReady!"],
         function(Map,AppCacheManager,on,BootstrapMap) {
 
@@ -131,15 +131,13 @@ require([
             var _isOnline = true;
             var minZoomAdjust = -1, maxZoomAdjust = 1;
 
-            var tiles,appCacheManager,tileInfo;
-            var redPinPath = "../samples/images/red-pin.png";
-            var bluePinPath = "../samples/images/blue-pin.png"
+            var tiles,appCacheManager;
             var EXTENT_BUFFER = 0; //buffers the map extent in meters
             var dbsize = document.getElementById("span-dbsize-value");
 
             var btnGetTiles = document.getElementById("btn-get-tiles");
             var btnOnlineOffline = document.getElementById("btn-online-offline");
-            var imgOfflineIndicator = document.getElementById("img-offline-indicator");
+            var imgOfflineIndicator = document.getElementById("state-span");
             var btnState = document.getElementById("btn-state");
             var btnPanLeft = document.getElementById("btn-pan-left");
 

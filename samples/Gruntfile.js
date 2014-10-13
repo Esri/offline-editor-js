@@ -25,12 +25,14 @@ module.exports = function(grunt) {
                         "<%= pkg.appHomePage %>",
                         "#",
 						"# ArcGIS API for JavaScript files",
-						"<%= pkg.optimizedApiURL %>/dojo/dojo.js",
-                        "<%= pkg.optimizedApiURL %>/dojo/selector/acme.js",
+						"<%= pkg.optimizedApiURL %>/dojo.js",
+                        "<%= pkg.optimizedApiURL %>/selector/acme.js",
+                        "<%= pkg.optimizedApiURL %>/nls/dojo_en.js",
+                        "<%= pkg.optimizedApiURL %>/resources/blank.gif",
                         "#",
                         "#<%= pkg.arcGISBaseURL %>/esri/dijit/images/popup-sprite.png",
                         "<%= pkg.arcGISBaseURL %>/esri/dijit/images/attribute_inspector_sprite.png",
-						"<%= pkg.arcGISBaseURL %>/dojo/resources/blank.gif",
+						"#<%= pkg.arcGISBaseURL %>/dojo/resources/blank.gif",
 						"<%= pkg.arcGISBaseURL %>/esri/dijit/images/ajax-loader.gif",
                         "<%= pkg.arcGISBaseURL %>/esri/images/map/logo-sm.png",
                         "<%= pkg.arcGISBaseURL %>/esri/images/map/logo-med.png",
@@ -47,6 +49,7 @@ module.exports = function(grunt) {
                         "//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css",
                         "//esri.github.io/bootstrap-map-js/src/css/bootstrapmap.css",
                         "//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js",
+                        "//esri.github.io/bootstrap-map-js/src/js/bootstrapmap.js",
                         "https://code.jquery.com/jquery-2.1.1.min.js",
                         "",
                         "# Custom feature service",
@@ -78,7 +81,11 @@ module.exports = function(grunt) {
                     "../dist/offline-tiles-basic-src.js",
                     "../samples/widgets/modal/css/*.css",
                     "../samples/widgets/modal/template/*.html",
-                    "../samples/widgets/modal/popup.js"
+                    "../samples/widgets/modal/popup.js",
+                    "<%= pkg.optimizedApiURL %>/nls/*.js",
+                    "<%= pkg.optimizedApiURL %>/resources/*.gif",
+                    "<%= pkg.optimizedApiURL %>/dojo.js",
+                    "<%= pkg.optimizedApiURL %>/selector/*.js"
                     /*
                     "images/*",
                     "css/*.css"

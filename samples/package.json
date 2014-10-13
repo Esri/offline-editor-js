@@ -5,9 +5,9 @@
     "https://www.npmjs.org/doc/cli/npm-init.html"
   ],
   "name": "manifest-generator",
-  "manifestName": "appcache-features.appcache",
-  "appHomePage": "appcache-features.html",
-  "optimizedApiURL": "http://js.arcgis.com/o/agup_hack4co/appcacheFeatures2",
+  "manifestName": "appcache-tiles.appcache",
+  "appHomePage": "appcache-tiles.html",
+  "optimizedApiURL": "../samples/jsolib",
   "arcGISBaseURL": "http://js.arcgis.com/3.11",
   "version": "2.3",
   "private": true,
