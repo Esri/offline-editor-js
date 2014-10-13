@@ -3,7 +3,7 @@ Tips on using application cache
 
 If you have a requirement to reload your application or restart the browser while offline then you will need to use the [application cache](http://appcachefacts.info/). Some developers also use application caches to speed up page reload performance. For example, Google uses an application cache when load their main web page.
 
-The application cache, also sometimes referred to as the 'manifest file', will allow you to store any file that is required for offline use. The list of acceptable files includes html, JavaScript libraries, CSS and images. Any file that your application requires to run normally will have to be referenced in the application cache. 
+The application cache, also sometimes referred to as the 'manifest file', will allow you to store any file that is required for offline use. The list of acceptable files that you can store includes html, JavaScript libraries, CSS and images. Any file that your application requires to run normally will have to be referenced in the application cache. This is not to be confused with the Local Storage API. 
 
 Once an application and its associated files are stored in the application cache it will be available from the cache the next time an application restarts.
 
@@ -35,6 +35,27 @@ NOTE: You cannot use the regular CDN for the ArcGIS API for JavaScript because t
 
 In the `/samples` directory there are two examples, `appcache-features.html` and `appcache-tiles.html` that demonstrate how to use tiles, features and the appCacheManager with the application cache. 
 
+### IMPORTANT Usage Tips
+
+The application cache isn't ready until the `CACHE_LOADED` event fires. After that event a user can safely take the application offline. Sometimes files can load very slowwwwwly, and sometimes they can timeout. Be sure to take this into account.
+
+If ANY file specified in the application cache fails to load for any reason, then the entire load will be rejected by the browser. The entire application cache will fail to load and no files will from the loading process will be cached.
+
+There may be differences in the amount of application cache storage available between desktop browsers, mobile browsers and browsers that use WebView (e.g. PhoneGap). If this is mission critical for you, we strongly recommend that you do your own testing to verify the facts.
+
+Use an application cache validator, for example: [http://manifest-validator.com/](http://manifest-validator.com/)
+
+Too large of an application can cause a mobile browser to run slugglishly or crash frequently. Be aware of how large the application cache is. To check the size:
+
+* Chrome - [chrome://appcache-internals/](chrome://appcache-internals/). This gives you access to all files stored for each application, and the total size of each cache.
+* Firefox - Menu (or on Mac go to Firefox > preferences) > advanced > Network. 
+	* For firefox Mobile user will be prompted after first 5MBs have been consumed.
+	* Note, you can also increase the amount of storage here by checking 'Override automatic cache manage' and enter a new limit value. Or, type about:config in address bar > modify the value field for `browser.cache.disk.capacity`.
+	* Note: firefox has a theoretical upper bound of [1GB](http://mxr.mozilla.org/mozilla-central/source/netwerk/cache/nsCacheService.cpp#607) and apparently a tested/verified(?) upper bound of [500MB](http://www.html5rocks.com/en/tutorials/offline/quota-research/) on Android.
+
+* Safari - Developer Tools > Show Web Inspector > Application Cache (click on the cookie crumbs at the top left of the console window). this won't give you the total size, but you can at least see what is in the cache and each objects size. 
+
+
 ###Configuring your web server
 Your web server must be able to serve up the MIME TYPE `TEXT/cache-manifest`. If this is missing there's a really good chance that the application cache file won't be served up to your app. 
 
@@ -65,8 +86,12 @@ Most modern browsers support application cache including IE v10 and v11, Firefox
 
 ### References
 
+[Offline web applications - Quota Research](http://www.html5rocks.com/en/tutorials/offline/quota-research/)
+
 [Support for application cache](http://caniuse.com/#search=appcache)
 
 [Appcache Facts](http://appcachefacts.info/) 
 
 [Using the application cache - Mozilla Developer Network](https://developer.mozilla.org/en-US/docs/Web/HTML/Using_the_application_cache)
+
+[Safari Client-side Storage and Offline Applications](https://developer.apple.com/library/safari/documentation/iPhone/Conceptual/SafariJSDatabaseGuide/OfflineApplicationCache/OfflineApplicationCache.html)

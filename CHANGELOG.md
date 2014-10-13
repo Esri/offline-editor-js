@@ -1,5 +1,22 @@
 # offline-editor-js - Changelog
 
+## Version 2.3 - Oct 13, 2014
+- Closes #74 - Build sample with nice UX for editing
+- Closes #257 - Build getting started pages for AGOL, editing and TPK. All samples show basic functionality and are responsive. Also integrated a new launch page for the API and How To Use docs.
+- Closes #258 - Convert modal popup to widget
+- The following samples were updated to be responsive: 
+	- appcache-features.html
+	- appcache-tiles.html
+	- tpk-layer.html
+
+New functionality:
+
+- Closes #256 - Add getMaxZoom and getMinZoom to offlineTilesEnabler
+- Added getMinMaxLOD() to offlineTilesEnabler and OfflineTilesEnablerLayer
+
+Breaking Changes - None.
+
+
 ## Version 2.2.1 - Oct 1, 2014
 Added a Getting Started for Tiles tutorial.
 

@@ -1,8 +1,8 @@
 API OfflineFeaturesManager
-==================================
+==========================
 
 ##O.esri.Edit.OfflineFeaturesManager
-Extends and overrides a feature layer. This library allows you to extend esri.layers.FeatureLayer objects with offline capability and manage the resync process.
+The `offline-edit-min.js` library provides the following tools for working with esri.layers.FeatureLayer objects while partially or fully offline. 
 
 
 ###Constructor
