@@ -1,5 +1,8 @@
 # offline-editor-js - Changelog
 
+## Version 2.3.1.1 - Oct 14, 2014
+- Minor wording change in tpk-layer.html sample to better describe changing TPK file type to .zip in order for it to work correctly.
+
 ## Version 2.3.1 - Oct 14, 2014
 - Fixes NPM version for current NPM (requires patch version)
 - Fixes issue with JPEG-based TPKs where tiles were not completely read from the TPK buffer, resulting in an incomplete image.
