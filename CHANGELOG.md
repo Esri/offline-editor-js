@@ -1,5 +1,9 @@
 # offline-editor-js - Changelog
 
+## Version 2.3.1 - Oct 14, 2014
+- Fixes NPM version for current NPM (requires patch version)
+- Fixes issue with JPEG-based TPKs where tiles were not completely read from the TPK buffer, resulting in an incomplete image.
+
 ## Version 2.3 - Oct 13, 2014
 - Closes #74 - Build sample with nice UX for editing
 - Closes #257 - Build getting started pages for AGOL, editing and TPK. All samples show basic functionality and are responsive. Also integrated a new launch page for the API and How To Use docs.
