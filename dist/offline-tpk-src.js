@@ -1,4 +1,4 @@
-/*! offline-editor-js - v2.3 - 2014-10-13
+/*! offline-editor-js - v2.3.1 - 2014-10-14
 *   Copyright (c) 2014 Environmental Systems Research Institute, Inc.
 *   Apache License*/
 /**
@@ -632,7 +632,7 @@ define([
             _buffer2Base64: function(/* ArrayBuffer */arrayBuffer,/* int */ position,callback){
                 var view = new DataView(arrayBuffer,position);
                 var chunk = view.getInt32(0,true);
-                var buffer = view.buffer.slice(position + 4,position + chunk);
+                var buffer = view.buffer.slice(position + 4,position + 4 + chunk);
                 var string = this._base64ArrayBuffer(buffer);
                 callback(string);
             },
