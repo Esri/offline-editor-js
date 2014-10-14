@@ -55,7 +55,8 @@
 <div class="container">
 
     <div class="well blackBack">
-        <h4>Browse for a zipped .TPK file locally or retrieve a URL</h4>
+        <h4>Browse for a .TPK file locally or retrieve one via URL</h4>
+        <p>You'll need to rename the file type from .tpk to .zip</p>
     </div>
     <!-- We provide two input types for demonstration purposes. Choose whichever one you want. -->
     <div class="row">
@@ -135,7 +136,10 @@
                         console.log("Begin downloading remote tpk file...")
                     }
 
-                    xhrRequest.error = function(err){console.log("ERROR")}
+                    xhrRequest.error = function(err){
+                        console.log("ERROR retrieving TPK file: " + err.toString());
+                        alert("There was a problem retrieve the file.");
+                    }
 
                     xhrRequest.onload = function(oEvent) {
                         if(this.status == 200) {
