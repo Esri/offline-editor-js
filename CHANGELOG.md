@@ -1,5 +1,8 @@
 # offline-editor-js - Changelog
 
+## Version 2.3.1.2 - Oct 21, 2014
+- Closes #267 can't host markdown on gh-pages
+
 ## Version 2.3.1.1 - Oct 14, 2014
 - Minor wording change in tpk-layer.html sample to better describe changing TPK file type to .zip in order for it to work correctly.
 
