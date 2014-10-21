@@ -7,6 +7,8 @@ The `tiles` library allows a developer to extend a tiled layer with offline supp
 
 There are two approaches to using this set of libraries. The first approach is if you are using an ArcGIS.com Web Map, and the second approach is if you need to be able to restart or reload your application offline.
 
+You should also be aware that there are storage limitations imposed by the browser and the device operating system. 
+
 
 ## Approach 1 - ArcGIS.com Map
 
@@ -172,3 +174,9 @@ To get the current extent you will need to monitor the `zoom-end` and `pan-end` 
     });
 
 ```
+
+## Browser storage limitations
+
+Our general guideline for the amount of total storage you can use on a device is be between 50MBs and 100MBs. If you need greater storage than that you'll need to either switch to a hybrid model (e.g. PhoneGap) or use one of our native ArcGIS Runtime SDKs. The Runtime SDKs have fully supported and robust offline capabilities that go beyond what JavaScript is currently capable of.
+
+Some developers have mentioned that they have stored alot more than 100MBs. How much you can store varies between devices and browsers. Every mobile operating system sets a limit on how much memory a single application can use. Since web apps are dependant on the browser, which is a web app, if it consumes too much memory the operating system will simply kill the browser. Poof and it's gone. So, web apps are dependant on a variety of things including how many other browser tabs are open, browser memory leakage especially if it's been running for a long time, other storage being used such as feature edits, the application cache and the general browser cache.
