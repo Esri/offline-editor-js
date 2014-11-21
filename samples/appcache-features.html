@@ -404,6 +404,8 @@
 
                     saveBtn.onclick = function(evt){
 
+                        forceInternalOfflineCheck();
+
                         popup.graphic.attributes.ROUTES = stopRoutes.value;
                         popup.graphic.attributes.STOPNAME = stopNames.value;
 
@@ -417,6 +419,9 @@
                     }
 
                     deleteBtn.onclick = function(evt){
+
+                        forceInternalOfflineCheck();
+
                         busStopFeatureLayer.applyEdits(null,null,[popup.graphic],function(result){
                                     console.log("Successfully deleted: " + popup.graphic.attributes.STOPNAME);
                                     hideModalPopup();
@@ -568,6 +573,16 @@
                             console.log("DB Tile count: " + count + ", DB Bytes: Error");
                         }
                     })
+                }
+
+                function forceInternalOfflineCheck(){
+                    Offline.check();
+                    if(Offline.state == "up"){
+                        goOnline();
+                    }
+                    if(Offline.state == "down"){
+                        goOffline();
+                    }
                 }
 
                 /**
