@@ -359,6 +359,13 @@
                     Offline.check();
                     Offline.on('up', goOnline);
                     Offline.on('down', goOffline);
+
+                    // If the app is online then set offlineFeaturesManager to its online state
+                    // This will force the library to check for pending edits and attempt to
+                    // resend them to the Feature Service.
+                    if(_isOnline == true){
+                        offlineFeaturesManager.goOnline();
+                    }
                 }
 
                 function updateStatus(){
