@@ -524,6 +524,9 @@
                  * ************************************
                  */
 
+                /**
+                 * Forces offlineFeaturesManager online
+                 */
                 function goOnline(){
                     console.log("Going online...");
 
@@ -548,6 +551,9 @@
                     if(typeof tileLayer != "undefined") tileLayer.goOnline();
                 }
 
+                /**
+                 * Forces offlineFeaturesManager offline
+                 */
                 function goOffline(){
                     console.log("Going offline...");
                     btnOnlineOffline.innerHTML = "2. Go Online";
@@ -558,6 +564,9 @@
                     if(typeof tileLayer != "undefined") tileLayer.goOffline();
                 }
 
+                /**
+                 * Toggles offlineFeaturesManager online/offline
+                 */
                 function goOnlineOffline(){
                     if(offlineFeaturesManager.getOnlineStatus() == offlineFeaturesManager.ONLINE){
                         goOffline();
@@ -582,6 +591,9 @@
                     })
                 }
 
+                /**
+                 * Forces a check of the Offline.js state
+                 */
                 function forceInternalOfflineCheck(){
                     Offline.check();
                     if(Offline.state == "up"){
