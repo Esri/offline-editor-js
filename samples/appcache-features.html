@@ -59,7 +59,7 @@
         .span-pending {color: blue; padding-left: 1em;}
 
         .floatRight { float: right;}
-        .container { padding: 20px;}
+        .container { padding: 20px; width: 100%;}
     </style>
 
     <!--<script>-->
@@ -180,29 +180,8 @@
                 // Variables for modal popup
                 var popup,closeBtn,saveBtn,deleteBtn,stopMainID,stopID,stopRoutes,stopNames;
 
-                // Modify symbol size based on screen size.
-                // Bigger screens get smaller symbols. Smaller screens get larger symbols.
-                var width = window.innerWidth
-                        || document.documentElement.clientWidth
-                        || document.body.clientWidth;
-
-                var height = window.innerHeight
-                        || document.documentElement.clientHeight
-                        || document.body.clientHeight;
-
-                if (height > 768 || width > 1024) {
-                    defaultSymbol= new SimpleMarkerSymbol().setStyle(
-                            SimpleMarkerSymbol.STYLE_DIAMOND).setColor(
-                            new Color([255,0,0,0.5])).setSize(20);
-                }
-                else{
-                    defaultSymbol= new SimpleMarkerSymbol().setStyle(
-                            SimpleMarkerSymbol.STYLE_DIAMOND).setColor(
-                            new Color([255,0,0,0.5])).setSize(35);
-                }
-
                 var editsStore = new O.esri.Edit.EditStore();
-
+                mediaQueries();
                 initModalPopup();
 
                 /**
@@ -226,6 +205,27 @@
                     stopID = document.getElementById("stop-id");
                     stopRoutes = document.getElementById("stop-routes");
                     stopNames = document.getElementById("stop-names");
+                }
+
+                /**
+                 * Modify symbol size to devices. Make them easier to touch on.
+                 * Feel free to tweak this based on your requirements
+                 */
+                function mediaQueries(){
+                    var widthQuery = window.matchMedia("(max-width: 768px)");
+                    var orientation = window.matchMedia("(orientation:portrait)");
+
+                    if(widthQuery.matches && orientation.matches){
+                        defaultSymbol= new SimpleMarkerSymbol().setStyle(
+                                SimpleMarkerSymbol.STYLE_DIAMOND).setColor(
+                                new Color([255,0,0,0.5])).setSize(35);
+                    }
+                    else{
+                        defaultSymbol= new SimpleMarkerSymbol().setStyle(
+                                SimpleMarkerSymbol.STYLE_DIAMOND).setColor(
+                                new Color([255,0,0,0.5])).setSize(20);
+                    }
+
                 }
 
                 function startMap(){
