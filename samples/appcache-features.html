@@ -304,6 +304,15 @@
                         updateOfflineUsage();
                         updateStatus();
 
+                        //**************************************************
+                        //
+                        // This is where we detect an offline condition
+                        // within the lifecycle of the "mapping" application.
+                        // If we are offline then run our offline
+                        // specific code for reconstituting our map.
+                        //
+                        //**************************************************
+
                         if(_isOnline == false){
 
                             // Set the map to the
@@ -316,6 +325,7 @@
 
                             busStopFeatureLayer.getFeatureDefinition(featureLayer,featuresArray,geometryType,function(featureDef){
 
+                                // Use the feature layer returns from getFeatureDefinition() to reconstitute the layer
                                 busStopFeatureLayer = new FeatureLayer(featureDef,{
                                     mode: FeatureLayer.MODE_SNAPSHOT,
                                     outFields: ["OBJECTID","BSID","ROUTES","STOPNAME"]
@@ -445,7 +455,8 @@
 
                     saveBtn.onclick = function(evt){
 
-                        forceInternalOfflineCheck();
+                        // Best practice is to uncomment these for production use.
+                        //forceInternalOfflineCheck();
 
                         popup.graphic.attributes.ROUTES = stopRoutes.value;
                         popup.graphic.attributes.STOPNAME = stopNames.value;
@@ -466,7 +477,8 @@
 
                     deleteBtn.onclick = function(evt){
 
-                        forceInternalOfflineCheck();
+                        // Best practice is to uncomment these for production use
+                        //forceInternalOfflineCheck();
 
                         busStopFeatureLayer.applyEdits(null,null,[popup.graphic],function(result){
                                     updateFeatureLayerJSON(
@@ -518,22 +530,6 @@
 
                         }
                     }
-
-//                    var jsonArray = [];
-//                    for(var i=0; i < length; i++){
-//                        var jsonGraphic = features[i].toJson();
-//                        jsonArray.push(jsonGraphic);
-//                        if(i == (length - 1)) {
-//                            var featureJSON = JSON.stringify(jsonArray);
-//                            if(typeof(Storage) !== "undefined") {
-//                                localStorage.offlineFeature = featureJSON;
-//                                console.log("Done pushing layerDef and features to localStorage.");
-//                            } else {
-//                                alert("convertFeatureLayerToJSON: Unable to update Local Storage.");
-//                            }
-//                            break;
-//                        }
-//                    }
                 }
 
                 /**
