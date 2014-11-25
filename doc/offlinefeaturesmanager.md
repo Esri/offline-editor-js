@@ -64,7 +64,7 @@ Methods | Returns | Description
 
 ##O.esri.Edit.EditStore
 
-Provides a number of public methods that are used by `OfflineFeaturesManager` library. They provide a low-level storage mechanism using indexedDb browser functions. Instiantiate this library using a `new` statement. 
+Provides a number of public methods that are used by `OfflineFeaturesManager` library for storing edits in the browser. Instiantiate this library using a `new` statement. 
 
 ###Constructor
 Constructor | Description
@@ -81,5 +81,3 @@ Methods | Returns | Description
 `pendingEditsCount()` | int | The total number of edits that are queued in the local cache.
 `getEditsStoreSizeBytes()` | Number | Returns the total size of all pending edits in bytes.
 `getLocalStorageSizeBytes()` | Number | Returns the total size in bytes of all items for local storage cached using the current domain name. 
-
- 
