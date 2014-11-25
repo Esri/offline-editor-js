@@ -140,7 +140,7 @@
         "esri/Color",
         "esri/tasks/query",
         "dojo/on",
-        "esri/graphic",
+        "esri/graphic","esri/geometry/Extent", "esri/SpatialReference",
         "widgets/modal/popup",
         "//esri.github.io/bootstrap-map-js/src/js/bootstrapmap.js",
         "../dist/offline-tiles-advanced-src.js",
@@ -148,10 +148,11 @@
         "dojo/domReady!"],
             function(Map,FeatureLayer,AppCacheManager,
                 SimpleRenderer,SimpleMarkerSymbol,Color,Query,
-                on,Graphic,ModalPopup,BootstrapMap) {
+                on,Graphic,Extent,SpatialReference,ModalPopup,BootstrapMap) {
 
                 initAppCacheManager();
 
+                var map = null;
                 var _isOnline = true;
                 var defaultSymbol;
 
@@ -240,7 +241,7 @@
 
                     tileLayer.offline.proxyPath = null;
 
-                    var map = BootstrapMap.create("mapDiv",{
+                    map = BootstrapMap.create("mapDiv",{
                         center: [-104.99,39.75], // long, lat
                         zoom: 17,
                         sliderStyle: "small"
@@ -275,6 +276,8 @@
                         // Just be aware of the localStorage limitations.
                         busStopFeatureLayer.convertGraphicLayerToJSON(features,evt,function(features,layerDef){
 
+                            updateLocalStorage();
+
                             if(typeof(Storage) !== "undefined") {
                                 localStorage.offlineLayerDef = layerDef;
                                 localStorage.offlineFeature = features;
@@ -287,10 +290,12 @@
 
                     map.on("zoom-end",function(evt){
                         _currentExtent = evt.extent;
+                        updateLocalStorage();
                     });
 
                     map.on("pan-end",function(evt){
                        _currentExtent = evt.extent;
+                        updateLocalStorage();
                     });
 
                     map.on("load",function(evt){
@@ -300,6 +305,8 @@
                         updateStatus();
 
                         if(_isOnline == false){
+
+                            // Set the map to the
 
                             var featureLayer = JSON.parse(localStorage.offlineLayerDef);
                             var featuresArray = JSON.parse(localStorage.offlineFeature);
@@ -324,6 +331,19 @@
 
                                     setFeatureLayerClickHandler();
                                     setModalPopupClickListeners();
+
+                                    var e = JSON.parse(localStorage.offlineExtent);
+                                    var extent = new Extent({
+                                        "xmin": e.xmin,
+                                        "ymin": e.ymin,
+                                        "xmax": e.xmax,
+                                        "xmin": e.xmin,
+                                        "spatialReference":{"wkid": e.spatialReference}
+                                    })
+                                    var zoom = parseInt(localStorage.offlineZoom);
+                                    map.setExtent(extent);
+                                    map.setZoom(zoom);
+
                                     mapListen.remove();
                                 })
                                 map.addLayer(busStopFeatureLayer);
@@ -365,6 +385,20 @@
                     // resend them to the Feature Service.
                     if(_isOnline == true){
                         offlineFeaturesManager.goOnline();
+                    }
+                }
+
+                // Keep latest extent and zoom level available in case of an offline browser restart
+                function updateLocalStorage(){
+                    var zoom = map.getZoom();
+                    var extent = JSON.stringify(map.extent);
+
+                    if(typeof(Storage) !== "undefined") {
+                        localStorage.offlineZoom = zoom;
+                        localStorage.offlineExtent = extent;
+                        console.log("Done updating zoom and extent to localStorage.")
+                    } else {
+                        alert("The offline library is not supported on this browser.")
                     }
                 }
 
@@ -417,6 +451,11 @@
                         popup.graphic.attributes.STOPNAME = stopNames.value;
 
                         busStopFeatureLayer.applyEdits(null,[popup.graphic],null,function(result){
+                                    updateFeatureLayerJSON(
+                                            busStopFeatureLayer.graphics,
+                                            popup.graphic.attributes.OBJECTID,
+                                            stopRoutes.value,
+                                            stopNames.value);
                                     console.log("Successfully saved changes to: " + popup.graphic.attributes.STOPNAME);
                                     hideModalPopup();
                                 },
@@ -430,6 +469,11 @@
                         forceInternalOfflineCheck();
 
                         busStopFeatureLayer.applyEdits(null,null,[popup.graphic],function(result){
+                                    updateFeatureLayerJSON(
+                                            busStopFeatureLayer.graphics,
+                                            popup.graphic.attributes.OBJECTID,
+                                            stopRoutes.value,
+                                            stopNames.value);
                                     console.log("Successfully deleted: " + popup.graphic.attributes.STOPNAME);
                                     hideModalPopup();
                                 },
@@ -446,6 +490,50 @@
 
                 function hideModalPopup(){
                     popup.hide();
+                }
+
+                //Temporary test - this should be added to offlineFeaturesManager
+                //Provide a callback of the stringified JSON.
+                //Upon restart allows feature layer to show latest edits.
+                //Still need to wire this up to phantom symbols somehow.
+                //Maybe serialize Phantom graphic layer as well and reconstitute it on restart?
+                function updateFeatureLayerJSON(features,id,routes,stopnames){
+                    var length = features.length;
+
+                    var f = JSON.parse(localStorage.offlineFeature);
+                    var arrLength = f.length;
+
+                    for(var a = 0; a < arrLength; a++){
+                        if(f[a].attributes.OBJECTID == id){
+                            f[a].attributes.ROUTES = routes;
+                            f[a].attributes.STOPNAME = stopnames;
+                            var fJson = JSON.stringify(f);
+                            if(typeof(Storage) !== "undefined") {
+                                localStorage.offlineFeature = fJson;
+                                console.log("Done pushing layerDef and features to localStorage.");
+                            } else {
+                                alert("convertFeatureLayerToJSON: Unable to update Local Storage.");
+                            }
+                            break;
+
+                        }
+                    }
+
+//                    var jsonArray = [];
+//                    for(var i=0; i < length; i++){
+//                        var jsonGraphic = features[i].toJson();
+//                        jsonArray.push(jsonGraphic);
+//                        if(i == (length - 1)) {
+//                            var featureJSON = JSON.stringify(jsonArray);
+//                            if(typeof(Storage) !== "undefined") {
+//                                localStorage.offlineFeature = featureJSON;
+//                                console.log("Done pushing layerDef and features to localStorage.");
+//                            } else {
+//                                alert("convertFeatureLayerToJSON: Unable to update Local Storage.");
+//                            }
+//                            break;
+//                        }
+//                    }
                 }
 
                 /**
