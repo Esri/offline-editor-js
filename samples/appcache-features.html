@@ -40,7 +40,7 @@
 
     <style>
         #mapDiv {
-            min-height: 500px;
+            min-height: 400px;
             max-height: 1000px;
         }
 
@@ -157,7 +157,7 @@
                 var defaultSymbol;
 
                 // Variables for editing handling
-                var currentFeature, busStopFeatureLayer, offlineFeaturesManager;
+                var currentFeature, busStopFeatureLayer = null, offlineFeaturesManager;
                 var pendingEdits = document.getElementById("span-pending-edits");
                 var imgOfflineIndicator = document.getElementById("state-span");
                 var btnState = document.getElementById("btn-state");
@@ -341,7 +341,9 @@
 
                                     setFeatureLayerClickHandler();
                                     setModalPopupClickListeners();
+                                    updatePhantomGraphicsLayer();
 
+                                    // Restore our map to its last extent before the browser restarted!
                                     var e = JSON.parse(localStorage.offlineExtent);
                                     var extent = new Extent({
                                         "xmin": e.xmin,
@@ -400,6 +402,7 @@
 
                 // Keep latest extent and zoom level available in case of an offline browser restart
                 function updateLocalStorage(){
+
                     var zoom = map.getZoom();
                     var extent = JSON.stringify(map.extent);
 
@@ -417,10 +420,24 @@
                     {
                         var edits = editsStore.retrieveEditsQueue();
                         pendingEdits.innerHTML = edits.length;
+
+                        if(busStopFeatureLayer != null && typeof busStopFeatureLayer.getPhantomLayerGraphics !== "undefined") {
+                            var graphics = busStopFeatureLayer.getPhantomLayerGraphics(function(result){
+                                localStorage.offlinePhantomGraphics = result;
+                            });
+                        }
                     }
                     else
                     {
                         pendingEdits.innerHTML = "0";
+                    }
+                }
+
+                function updatePhantomGraphicsLayer(){
+                    var phantomLocalGraphics = localStorage.offlinePhantomGraphics;
+                    if(phantomLocalGraphics != ""){
+                        var graphics = JSON.parse(phantomLocalGraphics);
+                        busStopFeatureLayer.setPhantomLayerGraphics(graphics);
                     }
                 }
 
