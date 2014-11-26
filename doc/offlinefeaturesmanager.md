@@ -56,11 +56,15 @@ Event | Value |  Description
 `events.ATTACHMENT_ENQUEUED` | "attachment-enqueued" | An attachment is in the queue to be sent to the server.
 `events.ATTACHMENTS_SENT` | "attachments-sent" | When any attachment is actually sent to the server.
 
-###FeatureLayer Overrides
+###FeatureLayer Extends
+
+This library extends a FeatureLayer and provides this additional functionality. 
 
 Methods | Returns | Description
 --- | --- | ---
 `applyEdits(`  `adds, updates, deletes,`  `callback, errback)` | `deferred`| applyEdits() method is replaced by this library. It's behaviour depends upon online state of the manager. You need to pass the same arguments as to the original applyEdits() method and it returns a deferred object, that will be resolved in the same way as the original, as well as the callbacks will be called under the same conditions. This method looks the same as the original to calling code, the only difference is internal.
+`convertGraphicLayerToJSON(` `features` `updateEndEvent` `callback)` | `callback( featureJSON, layerDefJSON)` | Used with offline browser restarts. In order to reconstitute the feature layer and map you'll need to store the featureJSON and layerDefJSON in local storage and then it read back upon an offline restart. The `updateEndEvent` is the Feature Layer's `update-end` event. The appcache-features.html sample demonstrates this pattern.
+`getFeatureDefinition(` `featureLayer, featuresArr` `geometryType, callback)` | Object | Used with offline browser restarts. Pass it a FeatureLayer instance, an array of features and specify the Esri geometry type. It will return a FeatureLayer Definition object that can be used to reconstitute a Feature Layer from scratch. The appcache-features.html sample demonstrates this pattern.
 
 ##O.esri.Edit.EditStore
 
