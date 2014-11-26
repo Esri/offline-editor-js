@@ -40,7 +40,7 @@
 
     <style>
         #mapDiv {
-            min-height: 500px;
+            min-height: 400px;
             max-height: 1000px;
         }
 
@@ -59,7 +59,7 @@
         .span-pending {color: blue; padding-left: 1em;}
 
         .floatRight { float: right;}
-        .container { padding: 20px;}
+        .container { padding: 20px; width: 100%;}
     </style>
 
     <!--<script>-->
@@ -140,23 +140,24 @@
         "esri/Color",
         "esri/tasks/query",
         "dojo/on",
-        "esri/graphic",
+        "esri/graphic","esri/geometry/Extent", "esri/SpatialReference",
         "widgets/modal/popup",
         "//esri.github.io/bootstrap-map-js/src/js/bootstrapmap.js",
-        "../dist/offline-tiles-advanced-min.js",
-        "../dist/offline-edit-min.js",
+        "../dist/offline-tiles-advanced-src.js",
+        "../dist/offline-edit-src.js",
         "dojo/domReady!"],
             function(Map,FeatureLayer,AppCacheManager,
                 SimpleRenderer,SimpleMarkerSymbol,Color,Query,
-                on,Graphic,ModalPopup,BootstrapMap) {
+                on,Graphic,Extent,SpatialReference,ModalPopup,BootstrapMap) {
 
                 initAppCacheManager();
 
+                var map = null;
                 var _isOnline = true;
                 var defaultSymbol;
 
                 // Variables for editing handling
-                var currentFeature, busStopFeatureLayer, offlineFeaturesManager;
+                var currentFeature, busStopFeatureLayer = null, offlineFeaturesManager;
                 var pendingEdits = document.getElementById("span-pending-edits");
                 var imgOfflineIndicator = document.getElementById("state-span");
                 var btnState = document.getElementById("btn-state");
@@ -180,29 +181,8 @@
                 // Variables for modal popup
                 var popup,closeBtn,saveBtn,deleteBtn,stopMainID,stopID,stopRoutes,stopNames;
 
-                // Modify symbol size based on screen size.
-                // Bigger screens get smaller symbols. Smaller screens get larger symbols.
-                var width = window.innerWidth
-                        || document.documentElement.clientWidth
-                        || document.body.clientWidth;
-
-                var height = window.innerHeight
-                        || document.documentElement.clientHeight
-                        || document.body.clientHeight;
-
-                if (height > 768 || width > 1024) {
-                    defaultSymbol= new SimpleMarkerSymbol().setStyle(
-                            SimpleMarkerSymbol.STYLE_DIAMOND).setColor(
-                            new Color([255,0,0,0.5])).setSize(20);
-                }
-                else{
-                    defaultSymbol= new SimpleMarkerSymbol().setStyle(
-                            SimpleMarkerSymbol.STYLE_DIAMOND).setColor(
-                            new Color([255,0,0,0.5])).setSize(35);
-                }
-
                 var editsStore = new O.esri.Edit.EditStore();
-
+                mediaQueries();
                 initModalPopup();
 
                 /**
@@ -228,6 +208,27 @@
                     stopNames = document.getElementById("stop-names");
                 }
 
+                /**
+                 * Modify symbol size to devices. Make them easier to touch on.
+                 * Feel free to tweak this based on your requirements
+                 */
+                function mediaQueries(){
+                    var widthQuery = window.matchMedia("(max-width: 768px)");
+                    var orientation = window.matchMedia("(orientation:portrait)");
+
+                    if(widthQuery.matches && orientation.matches){
+                        defaultSymbol= new SimpleMarkerSymbol().setStyle(
+                                SimpleMarkerSymbol.STYLE_DIAMOND).setColor(
+                                new Color([255,0,0,0.5])).setSize(35);
+                    }
+                    else{
+                        defaultSymbol= new SimpleMarkerSymbol().setStyle(
+                                SimpleMarkerSymbol.STYLE_DIAMOND).setColor(
+                                new Color([255,0,0,0.5])).setSize(20);
+                    }
+
+                }
+
                 function startMap(){
 
                     //Make sure map shows up after a browser refresh
@@ -240,7 +241,7 @@
 
                     tileLayer.offline.proxyPath = null;
 
-                    var map = BootstrapMap.create("mapDiv",{
+                    map = BootstrapMap.create("mapDiv",{
                         center: [-104.99,39.75], // long, lat
                         zoom: 17,
                         sliderStyle: "small"
@@ -275,6 +276,8 @@
                         // Just be aware of the localStorage limitations.
                         busStopFeatureLayer.convertGraphicLayerToJSON(features,evt,function(features,layerDef){
 
+                            updateLocalStorage();
+
                             if(typeof(Storage) !== "undefined") {
                                 localStorage.offlineLayerDef = layerDef;
                                 localStorage.offlineFeature = features;
@@ -287,10 +290,12 @@
 
                     map.on("zoom-end",function(evt){
                         _currentExtent = evt.extent;
+                        updateLocalStorage();
                     });
 
                     map.on("pan-end",function(evt){
                        _currentExtent = evt.extent;
+                        updateLocalStorage();
                     });
 
                     map.on("load",function(evt){
@@ -299,7 +304,18 @@
                         updateOfflineUsage();
                         updateStatus();
 
+                        //**************************************************
+                        //
+                        // This is where we detect an offline condition
+                        // within the lifecycle of the "mapping" application.
+                        // If we are offline then run our offline
+                        // specific code for reconstituting our map.
+                        //
+                        //**************************************************
+
                         if(_isOnline == false){
+
+                            // Set the map to the
 
                             var featureLayer = JSON.parse(localStorage.offlineLayerDef);
                             var featuresArray = JSON.parse(localStorage.offlineFeature);
@@ -309,6 +325,7 @@
 
                             busStopFeatureLayer.getFeatureDefinition(featureLayer,featuresArray,geometryType,function(featureDef){
 
+                                // Use the feature layer returns from getFeatureDefinition() to reconstitute the layer
                                 busStopFeatureLayer = new FeatureLayer(featureDef,{
                                     mode: FeatureLayer.MODE_SNAPSHOT,
                                     outFields: ["OBJECTID","BSID","ROUTES","STOPNAME"]
@@ -324,6 +341,21 @@
 
                                     setFeatureLayerClickHandler();
                                     setModalPopupClickListeners();
+                                    updatePhantomGraphicsLayer();
+
+                                    // Restore our map to its last extent before the browser restarted!
+                                    var e = JSON.parse(localStorage.offlineExtent);
+                                    var extent = new Extent({
+                                        "xmin": e.xmin,
+                                        "ymin": e.ymin,
+                                        "xmax": e.xmax,
+                                        "xmin": e.xmin,
+                                        "spatialReference":{"wkid": e.spatialReference}
+                                    })
+                                    var zoom = parseInt(localStorage.offlineZoom);
+                                    map.setExtent(extent);
+                                    map.setZoom(zoom);
+
                                     mapListen.remove();
                                 })
                                 map.addLayer(busStopFeatureLayer);
@@ -349,9 +381,9 @@
                     // Refer to "Using the Proxy Page" for more information:  https://developers.arcgis.com/en/javascript/jshelp/ags_proxy.html
                     offlineFeaturesManager.proxyPath = null;
 
-                    offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_ENQUEUED, updateStatus);
+                    offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_ENQUEUED, editsEnqueued);
                     offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_SENT, updateStatus);
-                    offlineFeaturesManager.on(offlineFeaturesManager.events.ALL_EDITS_SENT, updateStatus);
+                    offlineFeaturesManager.on(offlineFeaturesManager.events.ALL_EDITS_SENT, allEditsSent);
 
                     offlineFeaturesManager.extend(busStopFeatureLayer);
                     console.log("offlineFeaturesManager initialized.");
@@ -359,17 +391,27 @@
                     Offline.check();
                     Offline.on('up', goOnline);
                     Offline.on('down', goOffline);
+
+                    // If the app is online then set offlineFeaturesManager to its online state
+                    // This will force the library to check for pending edits and attempt to
+                    // resend them to the Feature Service.
+                    if(_isOnline == true){
+                        offlineFeaturesManager.goOnline();
+                    }
                 }
 
-                function updateStatus(){
-                    if( editsStore.hasPendingEdits())
-                    {
-                        var edits = editsStore.retrieveEditsQueue();
-                        pendingEdits.innerHTML = edits.length;
-                    }
-                    else
-                    {
-                        pendingEdits.innerHTML = "0";
+                // Keep latest extent and zoom level available in case of an offline browser restart
+                function updateLocalStorage(){
+
+                    var zoom = map.getZoom();
+                    var extent = JSON.stringify(map.extent);
+
+                    if(typeof(Storage) !== "undefined") {
+                        localStorage.offlineZoom = zoom;
+                        localStorage.offlineExtent = extent;
+                        console.log("Done updating zoom and extent to localStorage.")
+                    } else {
+                        alert("The offline library is not supported on this browser.")
                     }
                 }
 
@@ -404,10 +446,18 @@
 
                     saveBtn.onclick = function(evt){
 
+                        // Best practice is to uncomment these for production use.
+                        //forceInternalOfflineCheck();
+
                         popup.graphic.attributes.ROUTES = stopRoutes.value;
                         popup.graphic.attributes.STOPNAME = stopNames.value;
 
                         busStopFeatureLayer.applyEdits(null,[popup.graphic],null,function(result){
+                                    updateFeatureLayerJSON(
+                                            busStopFeatureLayer.graphics,
+                                            popup.graphic.attributes.OBJECTID,
+                                            stopRoutes.value,
+                                            stopNames.value);
                                     console.log("Successfully saved changes to: " + popup.graphic.attributes.STOPNAME);
                                     hideModalPopup();
                                 },
@@ -417,7 +467,16 @@
                     }
 
                     deleteBtn.onclick = function(evt){
+
+                        // Best practice is to uncomment these for production use
+                        //forceInternalOfflineCheck();
+
                         busStopFeatureLayer.applyEdits(null,null,[popup.graphic],function(result){
+                                    updateFeatureLayerJSON(
+                                            busStopFeatureLayer.graphics,
+                                            popup.graphic.attributes.OBJECTID,
+                                            stopRoutes.value,
+                                            stopNames.value);
                                     console.log("Successfully deleted: " + popup.graphic.attributes.STOPNAME);
                                     hideModalPopup();
                                 },
@@ -434,6 +493,34 @@
 
                 function hideModalPopup(){
                     popup.hide();
+                }
+
+                //Temporary test - this should be added to offlineFeaturesManager
+                //Provide a callback of the stringified JSON.
+                //Upon restart allows feature layer to show latest edits.
+                //Still need to wire this up to phantom symbols somehow.
+                //Maybe serialize Phantom graphic layer as well and reconstitute it on restart?
+                function updateFeatureLayerJSON(features,id,routes,stopnames){
+                    var length = features.length;
+
+                    var f = JSON.parse(localStorage.offlineFeature);
+                    var arrLength = f.length;
+
+                    for(var a = 0; a < arrLength; a++){
+                        if(f[a].attributes.OBJECTID == id){
+                            f[a].attributes.ROUTES = routes;
+                            f[a].attributes.STOPNAME = stopnames;
+                            var fJson = JSON.stringify(f);
+                            if(typeof(Storage) !== "undefined") {
+                                localStorage.offlineFeature = fJson;
+                                console.log("Done pushing layerDef and features to localStorage.");
+                            } else {
+                                alert("convertFeatureLayerToJSON: Unable to update Local Storage.");
+                            }
+                            break;
+
+                        }
+                    }
                 }
 
                 /**
@@ -512,6 +599,9 @@
                  * ************************************
                  */
 
+                /**
+                 * Forces offlineFeaturesManager online
+                 */
                 function goOnline(){
                     console.log("Going online...");
 
@@ -536,6 +626,9 @@
                     if(typeof tileLayer != "undefined") tileLayer.goOnline();
                 }
 
+                /**
+                 * Forces offlineFeaturesManager offline
+                 */
                 function goOffline(){
                     console.log("Going offline...");
                     btnOnlineOffline.innerHTML = "2. Go Online";
@@ -546,6 +639,9 @@
                     if(typeof tileLayer != "undefined") tileLayer.goOffline();
                 }
 
+                /**
+                 * Toggles offlineFeaturesManager online/offline
+                 */
                 function goOnlineOffline(){
                     if(offlineFeaturesManager.getOnlineStatus() == offlineFeaturesManager.ONLINE){
                         goOffline();
@@ -568,6 +664,19 @@
                             console.log("DB Tile count: " + count + ", DB Bytes: Error");
                         }
                     })
+                }
+
+                /**
+                 * Forces a check of the Offline.js state
+                 */
+                function forceInternalOfflineCheck(){
+                    Offline.check();
+                    if(Offline.state == "up"){
+                        goOnline();
+                    }
+                    if(Offline.state == "down"){
+                        goOffline();
+                    }
                 }
 
                 /**
@@ -599,6 +708,65 @@
                 }
 
                 /**
+                 * ***********************************************
+                 * OFFLINE FEATURE MANAGER - EVENT MANAGEMENT CODE
+                 * ***********************************************å
+                 */
+
+                function editsEnqueued(){
+                    if( editsStore.hasPendingEdits())
+                    {
+                        var edits = editsStore.retrieveEditsQueue();
+                        pendingEdits.innerHTML = edits.length;
+
+                        //Make sure we store phantom layer graphics so that we have them if the browser is restarted
+                        if(busStopFeatureLayer != null && typeof busStopFeatureLayer.getPhantomLayerGraphics !== "undefined") {
+                            var graphics = busStopFeatureLayer.getPhantomLayerGraphics(function(result){
+                                localStorage.offlinePhantomGraphics = result;
+                            });
+                        }
+                    }
+                    else
+                    {
+                        pendingEdits.innerHTML = "0";
+                    }
+                }
+
+                function allEditsSent(){
+                    if( editsStore.hasPendingEdits())
+                    {
+                        var edits = editsStore.retrieveEditsQueue();
+                        pendingEdits.innerHTML = edits.length;
+                    }
+                    else
+                    {
+                        pendingEdits.innerHTML = "0";
+                        // Clear out the phantom layer
+                        localStorage.setItem("offlinePhantomGraphics","");
+                    }
+                }
+
+                function updateStatus(){
+                    if( editsStore.hasPendingEdits())
+                    {
+                        var edits = editsStore.retrieveEditsQueue();
+                        pendingEdits.innerHTML = edits.length;
+                    }
+                    else
+                    {
+                        pendingEdits.innerHTML = "0";
+                    }
+                }
+
+                function updatePhantomGraphicsLayer(){
+                    var phantomLocalGraphics = localStorage.offlinePhantomGraphics;
+                    if(phantomLocalGraphics){
+                        var graphics = JSON.parse(phantomLocalGraphics);
+                        busStopFeatureLayer.setPhantomLayerGraphics(graphics);
+                    }
+                }
+
+                /**
                  * ************************************
                  * APPCACHE MANAGEMENT CODE
                  * ************************************
@@ -624,7 +792,7 @@
 
                 function cacheErrorHandler(evt){
                     console.log("CACHE ERROR: " + JSON.stringify(evt));
-                    alert("There was a problem loading the cache. Try reloading the app. ")
+                    //alert("There was a problem loading the cache. ");
                 }
             });
 </script>
