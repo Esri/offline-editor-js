@@ -5,6 +5,7 @@
 	- Updated offlineFeaturesManager.js
 	- Updated API docs to reflect new functionality.
 - Updated appcache-features.html sample to incorporate new functionality.
+- Updated modular-popup CSS media queries
 
 New functionality:
 
