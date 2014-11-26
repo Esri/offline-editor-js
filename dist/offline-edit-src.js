@@ -447,6 +447,42 @@ define([
             }
 
             /**
+             * Sets the phantom layer with a new features.
+             * @param graphicsArray an array of Graphics
+             */
+            layer.setPhantomLayerGraphics = function(graphicsArray){
+                //layer._phantomLayer.graphics = graphicsArray;
+
+                var length = graphicsArray.length;
+                for(var i=0; i < length; i++){
+                    var graphic = new Graphic(graphicsArray[i]);
+                    this._phantomLayer.add(graphic);
+                }
+            }
+
+            /**
+             * Returns the array of graphics from the phantom graphics layer.
+             * This layer identifies features that have been modified
+             * while offline.
+             * @returns {array}
+             */
+            layer.getPhantomLayerGraphics = function(callback){
+                //return layer._phantomLayer.graphics;
+                var graphics = layer._phantomLayer.graphics;
+                var length = layer._phantomLayer.graphics.length;
+                var jsonArray = [];
+                for(var i=0; i < length; i++){
+                    var jsonGraphic = graphics[i].toJson();
+                    jsonArray.push(jsonGraphic);
+                    if(i == (length - 1)) {
+                        var graphicsJSON = JSON.stringify(jsonArray);
+                        callback(graphicsJSON);
+                        break;
+                    }
+                }
+            }
+
+            /**
              * Create a featureDefinition
              * @param featureLayer
              * @param featuresArr
