@@ -1,5 +1,18 @@
 # offline-editor-js - Changelog
 
+## Version 2.4 - Nov 26, 2014
+- Closes #274 phantom symbols not working correctly
+	- Updated offlineFeaturesManager.js
+	- Updated API docs to reflect new functionality.
+- Updated appcache-features.html sample to incorporate new functionality.
+
+New functionality:
+
+- Added setPhantomLayerGraphics() - for use with offline browser restarts. Allows you to restore the phantom graphics layer. This layer is used to highlight any points that have been modified while offline.
+- Added getPhantomLayerGraphics() - for use with offline browser restarts. Allows you to get a JSON copy of the current phantom graphics layers so that you can save it to a local database such as localStorage.
+
+Breaking changes: none
+
 ## Version 2.3.1.2 - Oct 21, 2014
 - Closes #267 can't host markdown on gh-pages
 
