@@ -381,9 +381,9 @@
                     // Refer to "Using the Proxy Page" for more information:  https://developers.arcgis.com/en/javascript/jshelp/ags_proxy.html
                     offlineFeaturesManager.proxyPath = null;
 
-                    offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_ENQUEUED, updateStatus);
+                    offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_ENQUEUED, editsEnqueued);
                     offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_SENT, updateStatus);
-                    offlineFeaturesManager.on(offlineFeaturesManager.events.ALL_EDITS_SENT, updateStatus);
+                    offlineFeaturesManager.on(offlineFeaturesManager.events.ALL_EDITS_SENT, allEditsSent);
 
                     offlineFeaturesManager.extend(busStopFeatureLayer);
                     console.log("offlineFeaturesManager initialized.");
@@ -412,32 +412,6 @@
                         console.log("Done updating zoom and extent to localStorage.")
                     } else {
                         alert("The offline library is not supported on this browser.")
-                    }
-                }
-
-                function updateStatus(){
-                    if( editsStore.hasPendingEdits())
-                    {
-                        var edits = editsStore.retrieveEditsQueue();
-                        pendingEdits.innerHTML = edits.length;
-
-                        if(busStopFeatureLayer != null && typeof busStopFeatureLayer.getPhantomLayerGraphics !== "undefined") {
-                            var graphics = busStopFeatureLayer.getPhantomLayerGraphics(function(result){
-                                localStorage.offlinePhantomGraphics = result;
-                            });
-                        }
-                    }
-                    else
-                    {
-                        pendingEdits.innerHTML = "0";
-                    }
-                }
-
-                function updatePhantomGraphicsLayer(){
-                    var phantomLocalGraphics = localStorage.offlinePhantomGraphics;
-                    if(phantomLocalGraphics != ""){
-                        var graphics = JSON.parse(phantomLocalGraphics);
-                        busStopFeatureLayer.setPhantomLayerGraphics(graphics);
                     }
                 }
 
@@ -734,6 +708,65 @@
                 }
 
                 /**
+                 * ***********************************************
+                 * OFFLINE FEATURE MANAGER - EVENT MANAGEMENT CODE
+                 * ***********************************************å
+                 */
+
+                function editsEnqueued(){
+                    if( editsStore.hasPendingEdits())
+                    {
+                        var edits = editsStore.retrieveEditsQueue();
+                        pendingEdits.innerHTML = edits.length;
+
+                        //Make sure we store phantom layer graphics so that we have them if the browser is restarted
+                        if(busStopFeatureLayer != null && typeof busStopFeatureLayer.getPhantomLayerGraphics !== "undefined") {
+                            var graphics = busStopFeatureLayer.getPhantomLayerGraphics(function(result){
+                                localStorage.offlinePhantomGraphics = result;
+                            });
+                        }
+                    }
+                    else
+                    {
+                        pendingEdits.innerHTML = "0";
+                    }
+                }
+
+                function allEditsSent(){
+                    if( editsStore.hasPendingEdits())
+                    {
+                        var edits = editsStore.retrieveEditsQueue();
+                        pendingEdits.innerHTML = edits.length;
+                    }
+                    else
+                    {
+                        pendingEdits.innerHTML = "0";
+                        // Clear out the phantom layer
+                        localStorage.setItem("offlinePhantomGraphics","");
+                    }
+                }
+
+                function updateStatus(){
+                    if( editsStore.hasPendingEdits())
+                    {
+                        var edits = editsStore.retrieveEditsQueue();
+                        pendingEdits.innerHTML = edits.length;
+                    }
+                    else
+                    {
+                        pendingEdits.innerHTML = "0";
+                    }
+                }
+
+                function updatePhantomGraphicsLayer(){
+                    var phantomLocalGraphics = localStorage.offlinePhantomGraphics;
+                    if(phantomLocalGraphics){
+                        var graphics = JSON.parse(phantomLocalGraphics);
+                        busStopFeatureLayer.setPhantomLayerGraphics(graphics);
+                    }
+                }
+
+                /**
                  * ************************************
                  * APPCACHE MANAGEMENT CODE
                  * ************************************
@@ -759,7 +792,7 @@
 
                 function cacheErrorHandler(evt){
                     console.log("CACHE ERROR: " + JSON.stringify(evt));
-                    alert("There was a problem loading the cache. Try reloading the app. ")
+                    alert("There was a problem loading the cache. ")
                 }
             });
 </script>
