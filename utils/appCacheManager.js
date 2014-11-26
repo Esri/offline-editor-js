@@ -119,7 +119,7 @@ define([
             },
 
             _handleCacheErrors:function(evt){
-                this.emit(this.CACHE_EVENT,evt);
+                this.emit(this.CACHE_ERROR,evt);
             }
         })
     }

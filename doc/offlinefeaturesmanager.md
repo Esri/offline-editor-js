@@ -26,6 +26,9 @@ Property | Value | Description
 `RECONNECTING` | "reconnecting" | Sending stored edits to the server
 
 ###Methods
+
+The offline-editor-js library provides the following functionality.
+
 Methods | Returns | Description
 --- | --- | ---
 `extend(layer)`|nothing|Overrides a feature layer, by replacing the `applyEdits()` method of the layer. You can use the FeatureLayer as always, but it's behaviour will be different according to the online status of the manager.
@@ -56,15 +59,34 @@ Event | Value |  Description
 `events.ATTACHMENT_ENQUEUED` | "attachment-enqueued" | An attachment is in the queue to be sent to the server.
 `events.ATTACHMENTS_SENT` | "attachments-sent" | When any attachment is actually sent to the server.
 
-###FeatureLayer Overrides
+###FeatureLayer Extends
+
+This library extends a FeatureLayer and adds the following additional functionality. Example usage:
+
+
+```js
+
+	// Extend the FeatureLayer
+	var offlineFeaturesManager = new O.esri.Edit.OfflineFeaturesManager();
+	offlineFeaturesManager.extent(myCustomFeatureLayer);
+	
+	// Access additional functionality
+	myCustomFeatureLayer.getPhantomGraphicsLayer(function(json){...});
+
+```
+ 
 
 Methods | Returns | Description
 --- | --- | ---
 `applyEdits(`  `adds, updates, deletes,`  `callback, errback)` | `deferred`| applyEdits() method is replaced by this library. It's behaviour depends upon online state of the manager. You need to pass the same arguments as to the original applyEdits() method and it returns a deferred object, that will be resolved in the same way as the original, as well as the callbacks will be called under the same conditions. This method looks the same as the original to calling code, the only difference is internal.
+`convertGraphicLayerToJSON(` `features, updateEndEvent, callback)` | `callback( featureJSON, layerDefJSON)` | Used with offline browser restarts. In order to reconstitute the feature layer and map you'll need to store the featureJSON and layerDefJSON in local storage and then it read back upon an offline restart. The `updateEndEvent` is the Feature Layer's `update-end` event. The appcache-features.html sample demonstrates this pattern.
+`getFeatureDefinition(` `featureLayer, featuresArr` `geometryType, callback)` | Object | Used with offline browser restarts. Pass it a FeatureLayer instance, an array of features and specify the Esri geometry type. It will return a FeatureLayer Definition object that can be used to reconstitute a Feature Layer from scratch. The appcache-features.html sample demonstrates this pattern. Go here for more info on the ArcGIS REST API [layerDefinition](http://resources.arcgis.com/en/help/arcgis-rest-api/index.html#//02r30000004v000000), and [Layer](http://resources.arcgis.com/en/help/arcgis-rest-api/index.html#/Layer/02r30000004q000000/).
+`setPhantomLayerGraphics( graphicsArray) ` | nothing | Used with offline browser restarts. Adds the graphics in the `graphicsArray` to the internal phantom graphics layer. This layer is designed to indicate to the user any graphic that has been modified while offline. The appcache-features.html sample demonstrates this pattern.
+`getPhantomLayerGraphics( callback) ` | `callback( graphicsLayerJSON)` | Used with offline browser restarts. Returns a JSON representation of the internal phantom graphics layer. This layer is designed to indicate to the user any graphic that has been modified while offline. The appcache-features.html sample demonstrates this pattern.
 
 ##O.esri.Edit.EditStore
 
-Provides a number of public methods that are used by `OfflineFeaturesManager` library. They provide a low-level storage mechanism using indexedDb browser functions. Instiantiate this library using a `new` statement. 
+Provides a number of public methods that are used by `OfflineFeaturesManager` library for storing edits in the browser. Instiantiate this library using a `new` statement. 
 
 ###Constructor
 Constructor | Description
@@ -81,5 +103,3 @@ Methods | Returns | Description
 `pendingEditsCount()` | int | The total number of edits that are queued in the local cache.
 `getEditsStoreSizeBytes()` | Number | Returns the total size of all pending edits in bytes.
 `getLocalStorageSizeBytes()` | Number | Returns the total size in bytes of all items for local storage cached using the current domain name. 
-
- 
