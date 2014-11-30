@@ -37,6 +37,9 @@ __Attachment Support__: Attachments are supported with some limitations. See doc
 
 Go __[here](demo/api-doc.html)__ to get links to the API docs and How to use docs.
 
+## Architecture
+
+![Architecture](demo/images/offline_arch.png)
 
 ## Migrating from v1 to v2
 
