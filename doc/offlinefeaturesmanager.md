@@ -59,16 +59,16 @@ Event | Value |  Description
 `events.ATTACHMENT_ENQUEUED` | "attachment-enqueued" | An attachment is in the queue to be sent to the server.
 `events.ATTACHMENTS_SENT` | "attachments-sent" | When any attachment is actually sent to the server.
 
-###FeatureLayer Extends
+###FeatureLayer 
 
-This library extends a FeatureLayer and adds the following additional functionality. Example usage:
+A FeatureLayer that has been extended using OfflineFeaturesManager.extend() will gain access to the following additional functionality. Example usage:
 
 
 ```js
 
 	// Extend the FeatureLayer
 	var offlineFeaturesManager = new O.esri.Edit.OfflineFeaturesManager();
-	offlineFeaturesManager.extent(myCustomFeatureLayer);
+	offlineFeaturesManager.extend(myCustomFeatureLayer);
 	
 	// Access additional functionality
 	myCustomFeatureLayer.getPhantomGraphicsLayer(function(json){...});
