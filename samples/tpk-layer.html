@@ -178,9 +178,11 @@
                 // Initialize the Map and the TPKLayer
                 function initMap(entries){
 
+                    //Destroy the old map so we can reload a new map
                     if(tpkLayer != null){
                         map.removeLayer(tpkLayer);
-                        BootstrapMap.destroy(map);
+                        map.destroy();
+                        tpkLayer = null;
                     }
 
                     map = BootstrapMap.create("mapDiv",{});
