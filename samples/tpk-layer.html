@@ -99,7 +99,7 @@
                 "../dist/offline-tpk-src.js", "dojo/domReady!"],
             function(Map,on,BootstrapMap) {
 
-                var map, tpkLayer;
+                var map, tpkLayer = null;
                 var fileInput, fileInputField;
 
                 var url = document.getElementById("url-input");
@@ -131,7 +131,12 @@
                     xhrRequest.open("GET", url.value, true);
                     xhrRequest.responseType = "blob";
                     xhrRequest.onprogress = function(evt){
-                        var percent = (parseFloat(evt.loaded / evt.totalSize) * 100).toFixed(0);
+                        if(evt.hasOwnProperty("total")){
+                            var percent = (parseFloat(evt.loaded / evt.total) * 100).toFixed(0);
+                        }
+                        else{
+                            var percent = (parseFloat(evt.loaded / evt.totalSize) * 100).toFixed(0);
+                        }
                         urlInputBtn.innerHTML = "Get file via url " + percent + "%";
                         console.log("Begin downloading remote tpk file...")
                     }
@@ -172,6 +177,11 @@
 
                 // Initialize the Map and the TPKLayer
                 function initMap(entries){
+
+                    if(tpkLayer != null){
+                        map.removeLayer(tpkLayer);
+                        BootstrapMap.destroy(map);
+                    }
 
                     map = BootstrapMap.create("mapDiv",{});
 
