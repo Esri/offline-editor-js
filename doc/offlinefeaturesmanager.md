@@ -93,13 +93,51 @@ Constructor | Description
 --- | ---
 `O.esri.Edit.EditStore()` | Creates an instance of the EditStore class. This library is responsible for managing the storage, reading, writing, serialization, deserialization of geometric features. 
 
+###ENUMs
+
+Property | Value | Description
+--- | --- | ---
+`ADD` | "add" | Represents a FeatureLayer.add() operation.
+`UPDATE` | "update" | Represents a FeatureLayer.update() operation.
+`DELETE` | "delete" | Represents a FeatureLayer.delete() operation.
+
 ###Public Methods
 Methods | Returns | Description
 --- | --- | ---
 `isSupported()` | boolean | Determines if local storage is available. If it is not available then the storage cache will not work. It's a best practice to verify this before attempting to write to the local cache.
+`pushEdit(` `operation, layer, graphic, callback)` | `callback(` `true, edit)` or  `callback(` `false, message)`| Pushes an edit into storage. Operation is the corresponding enum. Layer is a reference to the feature layer, and the graphic is the graphic object associated with the edit.
 `hasPendingEdits()` | boolean | Determines if there are any queued edits in the local cache.
 `resetEditsQueue()` | nothing | Empties the edits queue and replaces it with an empty string.
 `retrieveEditsQueue()` | Array | returns an array of all pending edits.
 `pendingEditsCount()` | int | The total number of edits that are queued in the local cache.
 `getEditsStoreSizeBytes()` | Number | Returns the total size of all pending edits in bytes.
 `getLocalStorageSizeBytes()` | Number | Returns the total size in bytes of all items for local storage cached using the current domain name. 
+
+##O.esri.Edit.AttachmentsStore
+
+Provides a number of public methods that are used by `OfflineFeaturesManager` library for storing attachments in the browser. Instiantiate this library using a `new` statement. 
+
+###Constructor
+Constructor | Description
+--- | ---
+`O.esri.Edit.AttachmentsStore()` | Creates an instance of the AttachmentsStore class. This library is responsible for managing the storage of attachments. 
+
+###Properties
+
+Property | Value | Description
+--- | --- | ---
+`DB_NAME` | "attachments_store" | Represents a FeatureLayer.add() operation.
+`OBJECT_STORE_NAME` | "attachments" | Represents a FeatureLayer.update() operation.
+
+###Public Methods
+Methods | Returns | Description
+--- | --- | ---
+`store(` `featureLayerUrl, attachmentId,` `objectId, attachmentFile, callback)` |  `callback(` `true, edit)` or  `callback(` `false, message)` | Stores attachment. AttachmentId is temporary. For more information on `objectId` see the [FeatureLayer.addAttachments()](https://developers.arcgis.com/javascript/jsapi/featurelayer-amd.html#addattachment) doc.
+`retrieve(attachmentId, callback)` | `callback(` `true, result)` or  `callback(` `false, message)` | Retrieves an attachment by its unique `attachmentId`. 
+`getAttachmentsByFeatureId(featureLayerUrl,`  `objectId, callback)` | `callback([attachments])` | Retrieves all attachments having the unique `objectId`. For more information on `objectId` see the [FeatureLayer.addAttachments()](https://developers.arcgis.com/javascript/jsapi/featurelayer-amd.html#addattachment) doc 
+`getAttachmentsByFeatureLayer(featureLayerUrl, callback)` | `callback([attachments])` | Retrieves all attachments in the specified feature layer. 
+`getAllAttachments(callback)` | `callback([attachments])` | Retrieves all attachments in the database. 
+`deleteAttachmentsByFeatureId(featureLayerUrl,` `objectId, callback)` | `callback(int)` | Deletes all attachments having the unique `objectId`. Callback provides the number of attachments deleted. 
+`deleteAll(callback)` | `callback(` `true)` or  `callback(` `false, message)`  | Deletes all attachments in the database. 
+`replaceFeatureId(featureLayerUrl,` `oldId, newId, callback)` | `callback(int)`  | Gives an attachment a new objectId. Returns the number of attachments that were updated. 
+`getUsage(callback)` | `callback({sizeBytes: int,` `attachmentCount: int})`  | Returns an approximation of how much data is stored in the database. 
