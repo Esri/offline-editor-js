@@ -121,7 +121,7 @@
 	) {
 		var editor;
 		var basemapLayer;
-        var editStore = new O.esri.Edit.EditStore(Graphic); // include esri/graphic reference for serialization/deserialization
+        var editStore = new O.esri.Edit.EditStore(); 
 
 		parser.parse();
 		dojo.fadeOut({node:'loader-cloak', onEnd: function(n){n.style.display="none"}}).play();
