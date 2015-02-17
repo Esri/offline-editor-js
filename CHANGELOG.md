@@ -1,5 +1,8 @@
 # offline-editor-js - Changelog
 
+## Version 2.5 - ?
+- Update samples to JS API v3.12
+
 ## Version 2.4 - Nov 26, 2014
 - Closes #274 phantom symbols not working correctly
 	- Updated offlineFeaturesManager.js
