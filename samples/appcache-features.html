@@ -34,8 +34,8 @@
     <!-- Bootstrap core CSS -->
     <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
     <link rel="stylesheet" href="../samples/widgets/modal/css/modal-popup.css">
-    <link rel="stylesheet" href="http://js.arcgis.com/3.10/js/dojo/dijit/themes/claro/claro.css">
-    <link rel="stylesheet" href="http://js.arcgis.com/3.11/esri/css/esri.css">
+    <link rel="stylesheet" href="http://js.arcgis.com/3.12/dijit/themes/claro/claro.css">
+    <link rel="stylesheet" href="http://js.arcgis.com/3.12/esri/css/esri.css">
     <link rel="stylesheet" href="http://esri.github.io/bootstrap-map-js/src/css/bootstrapmap.css">
 
     <style>
@@ -248,10 +248,9 @@
                     });
 
                     map.addLayer(tileLayer);
-
-                    busStopFeatureLayer = new FeatureLayer("http://services.arcgis.com/IZtlGBUe4KTzLOl4/arcgis/rest/services/BPX_RTD_BusStops2/FeatureServer/0", {
+                    busStopFeatureLayer = new FeatureLayer("http://services1.arcgis.com/M8KJPUwAXP8jhtnM/arcgis/rest/services/Denver_Bus_Stops/FeatureServer/0", {
                         mode: FeatureLayer.MODE_SNAPSHOT,
-                        outFields: ["OBJECTID","BSID","ROUTES","STOPNAME"]
+                        outFields: ["GlobalID","BSID","ROUTES","STOPNAME"]
                     });
 
                     //Set the graphics to red boxes to make it easy to click on them
@@ -281,6 +280,10 @@
                             if(typeof(Storage) !== "undefined") {
                                 localStorage.offlineLayerDef = layerDef;
                                 localStorage.offlineFeature = features;
+                                if(typeof localStorage.offlineDefaultSymbol === "undefined"){
+                                    var featureLayerDefaultSymbol = busStopFeatureLayer.renderer.getSymbol(busStopFeatureLayer.graphics[0]);
+                                    localStorage.offlineDefaultSymbol = JSON.stringify(featureLayerDefaultSymbol);
+                                }
                                 console.log("Done pushing layerDef and features to localStorage.")
                             } else {
                                 alert("The offline library is not supported on this browser.")
@@ -328,12 +331,15 @@
                                 // Use the feature layer returns from getFeatureDefinition() to reconstitute the layer
                                 busStopFeatureLayer = new FeatureLayer(featureDef,{
                                     mode: FeatureLayer.MODE_SNAPSHOT,
-                                    outFields: ["OBJECTID","BSID","ROUTES","STOPNAME"]
+                                    outFields: ["GlobalID","BSID","ROUTES","STOPNAME"]
                                 });
+
+                                var temp = JSON.parse( localStorage.offlineDefaultSymbol);
+                                var symbol = new SimpleMarkerSymbol(temp);
 
                                 // Set the graphic symbols to red diamond to make it easy to click on them
                                 // on a mobile device.
-                                busStopFeatureLayer.setRenderer(new SimpleRenderer(defaultSymbol));
+                                busStopFeatureLayer.setRenderer(new SimpleRenderer(symbol));
                                 var mapListen = map.on("update-end",function(evt){
                                     console.log("Feature has been added back to the map while offline.");
                                     on(btnGetTiles,"click",downloadTiles);
@@ -420,22 +426,28 @@
                  */
                 function setFeatureLayerClickHandler(){
                     busStopFeatureLayer.on("click", function(evt) {
-                        currentFeature = evt.graphic
+                        currentFeature = evt.graphic;
+                        showModalPopup(currentFeature);
+                        var atts = currentFeature.attributes
+                        stopID.value = atts.GlobalID;
+                        stopMainID.value = atts.BSID;
+                        stopNames.value = atts.STOPNAME;
+                        stopRoutes.value = atts.ROUTES;
 
-                        var query = new Query();
-                        query.objectIds = [evt.graphic.attributes.OBJECTID];
-                        busStopFeatureLayer.selectFeatures(query,FeatureLayer.SELECTION_NEW,
-                                function(evt){
-                                    console.log("Success: " + JSON.stringify(evt[0].attributes));
-                                    showModalPopup(evt[0]);
-                                    var atts = evt[0].attributes
-                                    stopID.value = atts.OBJECTID;
-                                    stopMainID.value = atts.BSID;
-                                    stopNames.value = atts.STOPNAME;
-                                    stopRoutes.value = atts.ROUTES;
-                                },function(err){
-                                    console.log("ERROR " + JSON.stringify(err));
-                                });
+//                        var query = new Query();
+//                        query.objectIds = [evt.graphic.attributes.GlobalID];
+//                        busStopFeatureLayer.selectFeatures(query,FeatureLayer.SELECTION_NEW,
+//                                function(evt){
+//                                    console.log("Success: " + JSON.stringify(evt[0].attributes));
+//                                    showModalPopup(evt[0]);
+//                                    var atts = evt[0].attributes
+//                                    stopID.value = atts.GlobalID;
+//                                    stopMainID.value = atts.BSID;
+//                                    stopNames.value = atts.STOPNAME;
+//                                    stopRoutes.value = atts.ROUTES;
+//                                },function(err){
+//                                    console.log("ERROR " + JSON.stringify(err));
+//                                });
                     }.bind(this));
                 }
 
@@ -455,7 +467,7 @@
                         busStopFeatureLayer.applyEdits(null,[popup.graphic],null,function(result){
                                     updateFeatureLayerJSON(
                                             busStopFeatureLayer.graphics,
-                                            popup.graphic.attributes.OBJECTID,
+                                            popup.graphic.attributes.GlobalID,
                                             stopRoutes.value,
                                             stopNames.value);
                                     console.log("Successfully saved changes to: " + popup.graphic.attributes.STOPNAME);
@@ -474,7 +486,7 @@
                         busStopFeatureLayer.applyEdits(null,null,[popup.graphic],function(result){
                                     updateFeatureLayerJSON(
                                             busStopFeatureLayer.graphics,
-                                            popup.graphic.attributes.OBJECTID,
+                                            popup.graphic.attributes.GlobalID,
                                             stopRoutes.value,
                                             stopNames.value);
                                     console.log("Successfully deleted: " + popup.graphic.attributes.STOPNAME);
@@ -507,7 +519,7 @@
                     var arrLength = f.length;
 
                     for(var a = 0; a < arrLength; a++){
-                        if(f[a].attributes.OBJECTID == id){
+                        if(f[a].attributes.GlobalID == id){
                             f[a].attributes.ROUTES = routes;
                             f[a].attributes.STOPNAME = stopnames;
                             var fJson = JSON.stringify(f);
