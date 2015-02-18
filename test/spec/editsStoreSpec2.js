@@ -266,6 +266,17 @@ describe("Public Interface", function()
                 });
             });
 
+            async.it("update existing edit in the queue", function(done)
+            {
+                require(["esri/graphic"],function(Graphic){
+                    g_test.lineFeature = new Graphic( g_test.line, g_test.lineSymbol, {"nombre": "America","objectid":5});
+                    g_editsStore.updateExistingEdit(g_editsStore.DELETE,2, g_test.lineFeature, function(result){
+                        expect(result).toEqual(true);
+                        done();
+                    });
+                });
+            });
+
 //            it("pending edits", function()
 //            {
 //                expect(g_editsStore.hasPendingEdits()).toBeTruthy();
