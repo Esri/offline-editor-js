@@ -277,6 +277,23 @@ describe("Public Interface", function()
                 });
             });
 
+            async.it("does edit already exist", function(done)
+            {
+
+                var edit = {
+                    id: g_test.lineFeature.attributes.objectid,
+                    operation: g_editsStore.DELETE,
+                    layer: 2,
+                    graphic: g_test.lineFeature.toJson()
+                };
+
+                g_editsStore.editExists(edit).then(function(result){
+                    console.log("RESULT " + JSON.stringify(result));
+                    expect(result.success).toBe(true);
+                    done();
+                })
+            });
+
 //            it("pending edits", function()
 //            {
 //                expect(g_editsStore.hasPendingEdits()).toBeTruthy();
