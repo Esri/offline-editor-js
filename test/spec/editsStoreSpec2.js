@@ -194,46 +194,78 @@ describe("Internal Methods", function()
     });
 });
 
-//describe("Public Interface", function()
-//{
-//    describe("Support detection", function()
-//    {
-//        it("detect local storage support", function()
-//        {
-//            expect(g_editsStore.isSupported()).toBeTruthy();
-//        })
-//    });
-//
-//    describe("Edit queue management", function()
-//    {
-//        describe("Normal edits", function()
-//        {
-//            it("reset edits queue", function()
-//            {
-//                for( var key in window.localStorage )
-//                {
-//                    if( key.indexOf(KEY_PREFIX)==0 )
-//                        window.localStorage.removeItem(key);
-//                }
-//
-//                g_editsStore.resetEditsQueue();
-//                expect(g_editsStore.pendingEditsCount()).toBe(0);
-//            });
-//
-//            it("add edits to edits queue", function()
-//            {
-//                var result;
-//                result = g_editsStore.pushEdit(g_editsStore.ADD, 6, g_test.pointFeature);
-//                expect(result.success).toBeTruthy();
-//                expect(g_editsStore.pendingEditsCount()).toBe(1);
-//                result = g_editsStore.pushEdit(g_editsStore.UPDATE, 3, g_test.polygonFeature);
-//                expect(result.success).toBeTruthy();
-//                expect(g_editsStore.pendingEditsCount()).toBe(2);
-//                result = g_editsStore.pushEdit(g_editsStore.DELETE, 2, g_test.lineFeature);
-//                expect(result.success).toBeTruthy();
-//                expect(g_editsStore.pendingEditsCount()).toBe(3);
-//            });
-//
+var async = new AsyncSpec(this);
+
+describe("Public Interface", function()
+{
+    describe("Support detection", function() {
+        it("detect IndexedDB support", function () {
+            expect(g_editsStore.isSupported()).toBeTruthy();
+        });
+    });
+
+    describe("Initialize database", function(){
+
+        async.it("initialize database", function (done) {
+            g_editsStore.init(function (success) {
+                expect(success).toEqual(true);
+                done();
+            })
+        });
+
+        async.it("reset edits queue", function (done) {
+            g_editsStore.resetEditsQueue(function (result) {
+                expect(result).toEqual(true);
+
+                g_editsStore.pendingEditsCount(function (count) {
+                    expect(count).toBe(0);
+                    done();
+                });
+
+            });
+        });
+    });
+
+    describe("Edit queue management", function()
+    {
+        describe("Normal edits", function()
+        {
+            async.it("add edits to edits queue", function(done)
+            {
+                g_editsStore.pushEdit(g_editsStore.ADD, 6, g_test.pointFeature, function(result){
+                    expect(result).toEqual(true);
+
+                    g_editsStore.pendingEditsCount(function(count){
+                        expect(count).toBe(1);
+                        done();
+                    });
+                });
+            });
+
+            async.it("update edits to edits queue", function(done)
+            {
+                g_editsStore.pushEdit(g_editsStore.UPDATE, 3, g_test.polygonFeature, function(result){
+                    expect(result).toEqual(true);
+
+                    g_editsStore.pendingEditsCount(function(count){
+                        expect(count).toBe(2);
+                        done();
+                    });
+                });
+            });
+
+            async.it("delete edits to edits queue", function(done)
+            {
+                g_editsStore.pushEdit(g_editsStore.DELETE, 2, g_test.lineFeature, function(result){
+                    expect(result).toEqual(true);
+
+                    g_editsStore.pendingEditsCount(function(count){
+                        expect(count).toBe(3);
+                        done();
+                    });
+                });
+            });
+
 //            it("pending edits", function()
 //            {
 //                expect(g_editsStore.hasPendingEdits()).toBeTruthy();
@@ -281,7 +313,7 @@ describe("Internal Methods", function()
 //            });
 //        });
 //
-//    });
+    });
 //
 //    describe("Local Storage size", function()
 //    {
@@ -398,8 +430,8 @@ describe("Internal Methods", function()
 //            {
 //            });
 //        }
-//    })
-//});
+    })
+});
 //
 //describe("Reset store", function()
 //{
