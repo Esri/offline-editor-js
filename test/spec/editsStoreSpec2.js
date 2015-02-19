@@ -277,21 +277,90 @@ describe("Public Interface", function()
                 });
             });
 
-            async.it("does edit already exist", function(done)
+            async.it("check yes edit already exists", function(done)
             {
 
                 var edit = {
-                    id: g_test.lineFeature.attributes.objectid,
-                    operation: g_editsStore.DELETE,
-                    layer: 2,
-                    graphic: g_test.lineFeature.toJson()
+                    id: 6 + "/" + g_test.pointFeature.attributes.objectid,
+                    operation: g_editsStore.ADD,
+                    layer: 6,
+                    graphic: g_test.pointFeature.toJson()
                 };
 
                 g_editsStore.editExists(edit).then(function(result){
-                    console.log("RESULT " + JSON.stringify(result));
+                    console.log("RESULT does edit exist " + JSON.stringify(result));
                     expect(result.success).toBe(true);
                     done();
+                },function(err){
+                    expect(err.success).toBe(true);
+                    done();
                 })
+            });
+
+            async.it("check no edit does not exist", function(done)
+            {
+
+                var edit = {
+                    id: 62 + "/" + g_test.pointFeature.attributes.objectid,
+                    operation: g_editsStore.ADD,
+                    layer: 62,
+                    graphic: g_test.pointFeature.toJson()
+                };
+
+                g_editsStore.editExists(edit).then(function(result){
+                    console.log("RESULT does edit exist " + JSON.stringify(result));
+                    expect(result.success).toBe(false);
+                    done();
+                },function(err){
+                    expect(err.success).toBe(false);
+                    done();
+                })
+            });
+
+            async.it("get all edits recursively", function(done)
+            {
+                g_editsStore.getAllEdits(function(value,message){
+                    if(message ==="end")
+                    {
+                        expect(value).toBe(null);
+                        done();
+                    }
+                    else{
+                        console.log("VALUE: " + JSON.stringify(value));
+                    }
+                })
+            });
+
+            async.it("delete an non-existing record from the database", function(done){
+
+                //Then let's delete that new entry
+                g_editsStore.delete(21,g_test.pointFeature,function(result){
+                    expect(result).toBe(false); console.log("LKJ:LKJ " + result)
+
+                    g_editsStore.pendingEditsCount(function(counts){
+                        expect(counts).toBe(3);
+                        done();
+                    });
+                })
+            });
+
+            async.it("delete an existing record from the database", function(done){
+
+                //First we add a new entry
+                g_editsStore.pushEdit(g_editsStore.ADD, 22, g_test.pointFeature, function(result){
+                    expect(result).toEqual(true);
+
+                    //Then let's delete that new entry
+                    g_editsStore.delete(22,g_test.pointFeature,function(result){
+                        expect(result).toBe(true);
+
+                        g_editsStore.pendingEditsCount(function(counts){
+                            expect(counts).toBe(3);
+                            done();
+                        });
+                    })
+                });
+
             });
 
 //            it("pending edits", function()
@@ -343,8 +412,18 @@ describe("Public Interface", function()
 //
     });
 //
-//    describe("Local Storage size", function()
-//    {
+    describe("Database storage size", function()
+    {
+        async.it("get size", function(done){
+            g_editsStore.getUsage(function(result,error){
+                console.log("RESULT IS " + result.sizeBytes);
+                expect(result).toEqual(jasmine.any(Object));
+                expect(result.sizeBytes).toEqual(1142);
+                expect(result.editCount).toEqual(3);
+                done();
+            })
+        })
+    });
 //        var usedBytes, totalBytes;
 //
 //        it("reset edits queue", function()
