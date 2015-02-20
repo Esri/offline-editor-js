@@ -19,9 +19,9 @@
 		}
 	</script>
 
-		<link rel="stylesheet" href="http://js.arcgis.com/3.10/js/dojo/dijit/themes/claro/claro.css">
-		<link rel="stylesheet" href="http://js.arcgis.com/3.10/js/esri/css/esri.css">
-		<script src="http://js.arcgis.com/3.10/"></script>
+		<link rel="stylesheet" href="http://js.arcgis.com/3.12/dijit/themes/claro/claro.css">
+		<link rel="stylesheet" href="http://js.arcgis.com/3.12/esri/css/esri.css">
+		<script src="http://js.arcgis.com/3.12/"></script>
 
 	<!-- include spec files here... -->
 	<script type="text/javascript" src="spec/offlineFeaturesManagerSpec.js"></script>
@@ -39,7 +39,7 @@
 		"esri/layers/FeatureLayer", "esri/geometry", "esri/request",
 		"dojo/dom", "dojo/on", "dojo/query",
 		"dojo/dom-construct",
-        "../dist/offline-edit-min.js",
+        "../dist/offline-edit-src.js",
         "dojo/domReady!"],
 		function(Map, 
 			GraphicsLayer, Graphic, 
@@ -61,8 +61,10 @@
 			});
 
 			var fsUrl = "http://services2.arcgis.com/CQWCKwrSm5dkM28A/arcgis/rest/services/Military/FeatureServer/";
-			// var layersIds = [0,1,2,3,4,5,6];
-			var layersIds = [1,2,3,6];
+			// Layer 1 = points
+            // Layer 2 = lines
+            // Layer 3 = polygons
+			var layersIds = [1,2,3];
 
 			layersIds.forEach(function(layerId)
 			{
@@ -83,7 +85,9 @@
 				{
 					g_featureLayers.forEach(function(layer)
 					{
-						g_offlineFeaturesManager.extend(layer);
+						g_offlineFeaturesManager.extend(layer,function(result){
+                            if(result == false) alert("Unable to initialize database");
+                        });
 					});		
 				}
 				catch(err)
