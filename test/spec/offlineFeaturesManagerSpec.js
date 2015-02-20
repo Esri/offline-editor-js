@@ -81,85 +81,83 @@ describe("Normal online editing - Exercise the feature services", function()
 				g_featureLayers[2].refresh();
 			});
 		});
-//
-//		async.it("add test features", function(done)
-//		{
-//			expect(g_featureLayers[0].graphics.length).toBe(0);
-//
-//			g1 = new g_modules.Graphic({"geometry":{"x":-105400,"y":5137000,"spatialReference":{"wkid":102100}},"attributes":{"symbolname":"Ground Zero","z":null,"additionalinformation":null,"eny":null,"datetimevalid":null,"datetimeexpired":null,"distance":null,"azimuth":null,"uniquedesignation":null,"x":null,"y":null}});
-//			g2 = new g_modules.Graphic({"geometry":{"x":-105600,"y":5137000,"spatialReference":{"wkid":102100}},"attributes":{"symbolname":"Ground Zero","z":null,"additionalinformation":null,"eny":null,"datetimevalid":null,"datetimeexpired":null,"distance":null,"azimuth":null,"uniquedesignation":null,"x":null,"y":null}});
-//			g3 = new g_modules.Graphic({"geometry":{"x":-105800,"y":5137000,"spatialReference":{"wkid":102100}},"attributes":{"symbolname":"Ground Zero","z":null,"additionalinformation":null,"eny":null,"datetimevalid":null,"datetimeexpired":null,"distance":null,"azimuth":null,"uniquedesignation":null,"x":null,"y":null}});
-//
-//			var adds = [g1,g2,g3];
-//			g_featureLayers[0]._applyEdits(adds,null,null,function(addResults,updateResults,deleteResults)
-//			{
-//				expect(addResults.length).toBe(3);
-//				expect(addResults[0].success).toBeTruthy();
-//				expect(addResults[1].success).toBeTruthy();
-//				expect(addResults[2].success).toBeTruthy();
-//				g1.attributes.objectid = addResults[0].objectId;
-//				g2.attributes.objectid = addResults[1].objectId;
-//				g3.attributes.objectid = addResults[2].objectId;
-//				expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2,g3]));
-//				expect(g_featureLayers[0].graphics.length).toBe(3);
-//				countFeatures(g_featureLayers[0], function(success,result)
-//				{
-//					expect(success).toBeTruthy();
-//					expect(result.count).toBe(3);
-//					done();
-//				});
-//			},
-//			function(error)
-//			{
-//				expect(true).toBeFalsy();
-//				done();
-//			});
-//		});
-//
-//		async.it("update test features", function(done)
-//		{
-//			expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2,g3]));
-//			expect(g_featureLayers[0].graphics.length).toBe(3);
-//
-//			g1.geometry.y += 300;
-//			g2.geometry.y += 100;
-//			g3.geometry.y -= 200;
-//			var updates = [g1,g2,g3];
-//			g_featureLayers[0]._applyEdits(null,updates,null,function(addResults,updateResults,deleteResults)
-//			{
-//				expect(updateResults.length).toBe(3);
-//				expect(updateResults[0].success).toBeTruthy();
-//				expect(updateResults[1].success).toBeTruthy();
-//				expect(updateResults[2].success).toBeTruthy();
-//				expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2,g3]));
-//				expect(g_featureLayers[0].graphics.length).toBe(3);
-//				done();
-//			},
-//			function(error)
-//			{
-//				expect(true).toBeFalsy();
-//				done();
-//			});
-//		});
-//
-//		async.it("delete test features", function(done)
-//		{
-//			expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2,g3]));
-//			expect(g_featureLayers[0].graphics.length).toBe(3);
-//
-//			var deletes = [g3];
-//			g_featureLayers[0]._applyEdits(null,null,deletes,function(addResults,updateResults,deleteResults)
-//			{
-//				expect(deleteResults.length).toBe(1);
-//				expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2]));
-//				expect(g_featureLayers[0].graphics.length).toBe(2);
-//				done();
-//			},
-//			function(error)
-//			{
-//				expect(true).toBeFalsy();
-//				done();
-//			});
+
+		async.it("add test features", function(done)
+		{
+			expect(g_featureLayers[0].graphics.length).toBe(0);
+
+			g1 = new g_modules.Graphic({"geometry":{"x":-105400,"y":5137000,"spatialReference":{"wkid":102100}},"attributes":{"symbolname":"Ground Zero","z":null,"additionalinformation":null,"eny":null,"datetimevalid":null,"datetimeexpired":null,"distance":null,"azimuth":null,"uniquedesignation":null,"x":null,"y":null}});
+			g2 = new g_modules.Graphic({"geometry":{"x":-105600,"y":5137000,"spatialReference":{"wkid":102100}},"attributes":{"symbolname":"Ground Zero","z":null,"additionalinformation":null,"eny":null,"datetimevalid":null,"datetimeexpired":null,"distance":null,"azimuth":null,"uniquedesignation":null,"x":null,"y":null}});
+			g3 = new g_modules.Graphic({"geometry":{"x":-105800,"y":5137000,"spatialReference":{"wkid":102100}},"attributes":{"symbolname":"Ground Zero","z":null,"additionalinformation":null,"eny":null,"datetimevalid":null,"datetimeexpired":null,"distance":null,"azimuth":null,"uniquedesignation":null,"x":null,"y":null}});
+
+			var adds = [g1,g2,g3];
+			g_featureLayers[0]._applyEdits(adds,null,null,function(addResults,updateResults,deleteResults)
+			{
+				expect(addResults.length).toBe(3);
+				expect(addResults[0].success).toBeTruthy();
+				expect(addResults[1].success).toBeTruthy();
+				expect(addResults[2].success).toBeTruthy();
+				g1.attributes.objectid = addResults[0].objectId;
+				g2.attributes.objectid = addResults[1].objectId;
+				g3.attributes.objectid = addResults[2].objectId;
+				expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2,g3]));
+				expect(g_featureLayers[0].graphics.length).toBe(3);
+				countFeatures(g_featureLayers[0], function(success,result)
+				{
+					expect(success).toBeTruthy();
+					expect(result.count).toBe(3);
+					done();
+				});
+			},
+			function(error)
+			{
+				expect(true).toBeFalsy();
+				done();
+			});
+		});
+
+		async.it("update test features", function(done)
+		{
+			expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2,g3]));
+			expect(g_featureLayers[0].graphics.length).toBe(3);
+
+			g1.geometry.y += 300;
+			g2.geometry.y += 100;
+			g3.geometry.y -= 200;
+			var updates = [g1,g2,g3];
+			g_featureLayers[0]._applyEdits(null,updates,null,function(addResults,updateResults,deleteResults)
+			{
+				expect(updateResults.length).toBe(3);
+				expect(updateResults[0].success).toBeTruthy();
+				expect(updateResults[1].success).toBeTruthy();
+				expect(updateResults[2].success).toBeTruthy();
+				expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2,g3]));
+				expect(g_featureLayers[0].graphics.length).toBe(3);
+				done();
+			},
+			function(error)
+			{
+				expect(true).toBeFalsy();
+				done();
+			});
+		});
+
+		async.it("delete test features", function(done) {
+            expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1, g2, g3]));
+            expect(g_featureLayers[0].graphics.length).toBe(3);
+
+            var deletes = [g3];
+            g_featureLayers[0]._applyEdits(null, null, deletes, function (addResults, updateResults, deleteResults) {
+                    expect(deleteResults.length).toBe(1);
+                    expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1, g2]));
+                    expect(g_featureLayers[0].graphics.length).toBe(2);
+                    done();
+                },
+                function (error) {
+                    expect(true).toBeFalsy();
+                    done();
+                });
+        });
 		});
 	});
 //
@@ -284,36 +282,6 @@ describe("Offline Editing", function()
 	var g4,g5,g6;
 	var l1,l2,l3;
 
-	async.it("clear feature Layers - points - lines", function(done)
-	{
-		var count = 0;
-		function completedOne()
-		{
-			count += 1;
-			if(count==3)
-				done();
-		}
-		clearFeatureLayer( g_featureLayers[0], function(success,response)
-		{
-			expect(success).toBeTruthy();
-			var listener = g_featureLayers[0].on('update-end', function(){ listener.remove(); completedOne();})
-			g_featureLayers[0].refresh();
-			
-		});
-		clearFeatureLayer( g_featureLayers[1], function(success,response)
-		{
-			expect(success).toBeTruthy();
-			var listener = g_featureLayers[1].on('update-end', function(){ listener.remove(); completedOne();})
-			g_featureLayers[1].refresh();
-		});
-		clearFeatureLayer( g_featureLayers[2], function(success,response)
-		{
-			expect(success).toBeTruthy();
-			var listener = g_featureLayers[2].on('update-end', function(){ listener.remove(); completedOne();})
-			g_featureLayers[2].refresh();
-		});
-	});
-
     async.it("detect IndexedDB support", function (done) {
         expect(g_editsStore.isSupported()).toBeTruthy();
         done();
@@ -326,7 +294,7 @@ describe("Offline Editing", function()
         })
     });
 
-	async.it("clear database",function(done)
+	async.it("Prepare feature service. Clear database",function(done)
 	{
         g_editsStore.resetEditsQueue(function (result) {
             expect(result).toEqual(true);
@@ -339,7 +307,37 @@ describe("Offline Editing", function()
         });
 	});
 
-	async.it("add some features online - points", function(done)
+    async.it("Prepare feature service. Clear feature Layers - points - lines", function(done)
+    {
+        var count = 0;
+        function completedOne()
+        {
+            count += 1;
+            if(count==3)
+                done();
+        }
+        clearFeatureLayer( g_featureLayers[0], function(success,response)
+        {
+            expect(success).toBeTruthy();
+            var listener = g_featureLayers[0].on('update-end', function(){ listener.remove(); completedOne();})
+            g_featureLayers[0].refresh();
+
+        });
+        clearFeatureLayer( g_featureLayers[1], function(success,response)
+        {
+            expect(success).toBeTruthy();
+            var listener = g_featureLayers[1].on('update-end', function(){ listener.remove(); completedOne();})
+            g_featureLayers[1].refresh();
+        });
+        clearFeatureLayer( g_featureLayers[2], function(success,response)
+        {
+            expect(success).toBeTruthy();
+            var listener = g_featureLayers[2].on('update-end', function(){ listener.remove(); completedOne();})
+            g_featureLayers[2].refresh();
+        });
+    });
+
+	async.it("Prepare feature service. Add some features online - points", function(done)
 	{
 		expect(g_offlineFeaturesManager.getOnlineStatus()).toBe(g_offlineFeaturesManager.ONLINE);
 
@@ -366,7 +364,7 @@ describe("Offline Editing", function()
 		});
 	});
 
-	async.it("add some features online - lines", function(done)
+	async.it("Prepare feature service. Add some features online - lines", function(done)
 	{
 		expect(g_offlineFeaturesManager.getOnlineStatus()).toBe(g_offlineFeaturesManager.ONLINE);
 
@@ -419,8 +417,10 @@ describe("Offline Editing", function()
 			expect(updateResults[2].success).toBeTruthy();
 			expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2,g3]));
 			expect(g_featureLayers[0].graphics.length).toBe(3);
-			//expect(g_editsStore.pendingEditsCount()).toBe(3);
-			done();
+			g_editsStore.pendingEditsCount(function(result){
+                expect(result).toBe(3);
+                done();
+            });
 		},
 		function(error)
 		{
@@ -428,37 +428,39 @@ describe("Offline Editing", function()
 			done();
 		});
 	});
-	//
-	//async.it("update existing features - lines", function(done)
-	//{
-	//	expect(getObjectIds(g_featureLayers[1].graphics)).toEqual(getObjectIds([l1,l2,l3]));
-	//	expect(g_featureLayers[1].graphics.length).toBe(3);
-	//	expect(g_offlineFeaturesManager.getOnlineStatus()).toBe(g_offlineFeaturesManager.OFFLINE);
-    //
-	//	/*
-	//	l1.geometry.y += 300; // jabadia: change
-	//	l2.geometry.y += 100;
-	//	l3.geometry.y -= 200;
-	//	*/
-	//	var updates = [l1,l2,l3];
-	//	g_featureLayers[1].applyEdits(null,updates,null,function(addResults,updateResults,deleteResults)
-	//	{
-	//		expect(updateResults.length).toBe(3);
-	//		expect(updateResults[0].success).toBeTruthy();
-	//		expect(updateResults[1].success).toBeTruthy();
-	//		expect(updateResults[2].success).toBeTruthy();
-	//		expect(getObjectIds(g_featureLayers[1].graphics)).toEqual(getObjectIds([l1,l2,l3]));
-	//		expect(g_featureLayers[1].graphics.length).toBe(3);
-	//		expect(g_editsStore.pendingEditsCount()).toBe(6);
-	//		done();
-	//	},
-	//	function(error)
-	//	{
-	//		expect(true).toBeFalsy();
-	//		done();
-	//	});
-	//});
-	//
+
+	async.it("update existing features - lines", function(done)
+	{
+		expect(getObjectIds(g_featureLayers[1].graphics)).toEqual(getObjectIds([l1,l2,l3]));
+		expect(g_featureLayers[1].graphics.length).toBe(3);
+		expect(g_offlineFeaturesManager.getOnlineStatus()).toBe(g_offlineFeaturesManager.OFFLINE);
+
+		/*
+		l1.geometry.y += 300; // jabadia: change
+		l2.geometry.y += 100;
+		l3.geometry.y -= 200;
+		*/
+		var updates = [l1,l2,l3];
+		g_featureLayers[1].applyEdits(null,updates,null,function(addResults,updateResults,deleteResults)
+		{
+			expect(updateResults.length).toBe(3);
+			expect(updateResults[0].success).toBeTruthy();
+			expect(updateResults[1].success).toBeTruthy();
+			expect(updateResults[2].success).toBeTruthy();
+			expect(getObjectIds(g_featureLayers[1].graphics)).toEqual(getObjectIds([l1,l2,l3]));
+			expect(g_featureLayers[1].graphics.length).toBe(3);
+            g_editsStore.pendingEditsCount(function(result){
+                expect(result).toBe(6);
+                done();
+            });
+		},
+		function(error)
+		{
+			expect(true).toBeFalsy();
+			done();
+		});
+	});
+
 	//async.it("update existing features again - points", function(done)
 	//{
 	//	expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2,g3]));
@@ -492,67 +494,80 @@ describe("Offline Editing", function()
 	//	});
 	//});
 	//
-	//async.it("delete existing features - points", function(done)
-	//{
-	//	expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2,g3]));
-	//	expect(g_featureLayers[0].graphics.length).toBe(3);
-    //
-	//	var deletes = [g3];
-	//	g_featureLayers[0].applyEdits(null,null,deletes,function(addResults,updateResults,deleteResults)
-	//	{
-	//		expect(deleteResults.length).toBe(1);
-	//		expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2]));
-	//		expect(g_featureLayers[0].graphics.length).toBe(2);
-	//		expect(g_editsStore.pendingEditsCount()).toBe(10);
-	//		countFeatures(g_featureLayers[0], function(success,result)
-	//		{
-	//			expect(success).toBeTruthy();
-	//			expect(result.count).toBe(3); // still 3, the delete is still offline
-	//			done();
-	//		});
-	//	},
-	//	function(error)
-	//	{
-	//		expect(true).toBeFalsy();
-	//		done();
-	//	});
-	//});
-    //
-	//async.it("add new features offline - points", function(done)
-	//{
-	//	expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2]));
-	//	expect(g_featureLayers[0].graphics.length).toBe(2);
-	//	expect(g_offlineFeaturesManager.getOnlineStatus()).toBe(g_offlineFeaturesManager.OFFLINE);
-    //
-	//	g4 = new g_modules.Graphic({"geometry":{"x":-109100,"y":5137000,"spatialReference":{"wkid":102100}},"attributes":{"symbolname":"Reference Point DLRP","z":null,"additionalinformation":null,"eny":null,"datetimevalid":null,"datetimeexpired":null,"distance":null,"azimuth":null,"uniquedesignation":null,"x":null,"y":null}} );
-	//	g5 = new g_modules.Graphic({"geometry":{"x":-109500,"y":5137000,"spatialReference":{"wkid":102100}},"attributes":{"symbolname":"Reference Point DLRP","z":null,"additionalinformation":null,"eny":null,"datetimevalid":null,"datetimeexpired":null,"distance":null,"azimuth":null,"uniquedesignation":null,"x":null,"y":null}} );
-	//	g6 = new g_modules.Graphic({"geometry":{"x":-109900,"y":5137000,"spatialReference":{"wkid":102100}},"attributes":{"symbolname":"Reference Point DLRP","z":null,"additionalinformation":null,"eny":null,"datetimevalid":null,"datetimeexpired":null,"distance":null,"azimuth":null,"uniquedesignation":null,"x":null,"y":null}} );
-    //
-	//	var adds = [g4,g5,g6];
-	//	g_featureLayers[0].applyEdits(adds,null,null,function(addResults,updateResults,deleteResults)
-	//	{
-	//		expect(addResults.length).toBe(3);
-	//		expect(g_editsStore.pendingEditsCount()).toBe(13);
-	//		expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2,g4,g5,g6]));
-	//		expect(g_featureLayers[0].graphics.length).toBe(5);
-	//		g4.attributes.objectid = addResults[0].objectId;
-	//		g5.attributes.objectid = addResults[1].objectId;
-	//		g6.attributes.objectid = addResults[2].objectId;
-	//		expect(g4.attributes.objectid).toBeLessThan(0);
-	//		expect(g5.attributes.objectid).toBeLessThan(g4.attributes.objectid);
-	//		expect(g6.attributes.objectid).toBeLessThan(g5.attributes.objectid);
-	//		countFeatures(g_featureLayers[0], function(success,result)
-	//		{
-	//			expect(success).toBeTruthy();
-	//			expect(result.count).toBe(3); // still 3
-	//			done();
-	//		});
-	//	},
-	//	function(error)
-	//	{
-	//		expect(true).toBeFalsy();
-	//	});
-	//});
+	async.it("delete existing features - points", function(done)
+	{
+		expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2,g3]));
+		expect(g_featureLayers[0].graphics.length).toBe(3);
+
+		var deletes = [g3]; console.log("Graphic " + JSON.stringify(g3.toJson()));
+		g_featureLayers[0].applyEdits(null,null,deletes,function(addResults,updateResults,deleteResults)
+		{
+			expect(deleteResults.length).toBe(1);
+			expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2]));
+			expect(g_featureLayers[0].graphics.length).toBe(2);
+            g_editsStore.pendingEditsCount(function(result){
+
+                // Expected count will stil be 6! This record is the database gets overwritten
+                // with the latest edit request. Last edit wins.
+                expect(result).toBe(6);
+                done();
+            });
+			countFeatures(g_featureLayers[0], function(success,result)
+			{
+				expect(success).toBeTruthy();
+				expect(result.count).toBe(3); // still 3, the delete is still offline
+				done();
+			});
+		},
+		function(error)
+		{
+			expect(true).toBeFalsy();
+			done();
+		});
+	});
+
+	async.it("add new features offline - points", function(done)
+	{
+		expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2]));
+		expect(g_featureLayers[0].graphics.length).toBe(2);
+		expect(g_offlineFeaturesManager.getOnlineStatus()).toBe(g_offlineFeaturesManager.OFFLINE);
+
+		g4 = new g_modules.Graphic({"geometry":{"x":-109100,"y":5137000,"spatialReference":{"wkid":102100}},"attributes":{"symbolname":"Reference Point DLRP","z":null,"additionalinformation":null,"eny":null,"datetimevalid":null,"datetimeexpired":null,"distance":null,"azimuth":null,"uniquedesignation":null,"x":null,"y":null}} );
+		g5 = new g_modules.Graphic({"geometry":{"x":-109500,"y":5137000,"spatialReference":{"wkid":102100}},"attributes":{"symbolname":"Reference Point DLRP","z":null,"additionalinformation":null,"eny":null,"datetimevalid":null,"datetimeexpired":null,"distance":null,"azimuth":null,"uniquedesignation":null,"x":null,"y":null}} );
+		g6 = new g_modules.Graphic({"geometry":{"x":-109900,"y":5137000,"spatialReference":{"wkid":102100}},"attributes":{"symbolname":"Reference Point DLRP","z":null,"additionalinformation":null,"eny":null,"datetimevalid":null,"datetimeexpired":null,"distance":null,"azimuth":null,"uniquedesignation":null,"x":null,"y":null}} );
+
+		var adds = [g4,g5,g6];
+		g_featureLayers[0].applyEdits(adds,null,null,function(addResults,updateResults,deleteResults)
+		{
+			expect(addResults.length).toBe(3);
+
+            g_editsStore.pendingEditsCount(function(result){
+
+                // Should be 9 since we added 3 three edits and we had 6 edits in the previous test
+                expect(result).toBe(9);
+                done();
+            });
+
+			expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2,g4,g5,g6]));
+			expect(g_featureLayers[0].graphics.length).toBe(5);
+			g4.attributes.objectid = addResults[0].objectId;
+			g5.attributes.objectid = addResults[1].objectId;
+			g6.attributes.objectid = addResults[2].objectId;
+			expect(g4.attributes.objectid).toBeLessThan(0);
+			expect(g5.attributes.objectid).toBeLessThan(g4.attributes.objectid);
+			expect(g6.attributes.objectid).toBeLessThan(g5.attributes.objectid);
+			countFeatures(g_featureLayers[0], function(success,result)
+			{
+				expect(success).toBeTruthy();
+				expect(result.count).toBe(3); // still 3
+				done();
+			});
+		},
+		function(error)
+		{
+			expect(true).toBeFalsy();
+		});
+	});
     //
 	//async.it("update new features - points", function(done)
 	//{
@@ -619,78 +634,91 @@ describe("Offline Editing", function()
 	//	});
 	//});
     //
-	//async.it("go Online", function(done)
-	//{
-	//	expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2,g4,g6]));
-	//	expect(getObjectIds(g_featureLayers[1].graphics)).toEqual(getObjectIds([l1,l2,l3]));
-	//	expect(g_featureLayers[0].graphics.length).toBe(4);
-	//	expect(g_featureLayers[1].graphics.length).toBe(3);
-    //
-	//	var listener = jasmine.createSpy('event listener');
-	//	g_offlineFeaturesManager.on(g_offlineFeaturesManager.events.ALL_EDITS_SENT, listener);
-	//
-	//	g_offlineFeaturesManager.goOnline(function(results)
-	//	{
-	//		console.log("went online");
-	//		expect(g_offlineFeaturesManager.getOnlineStatus()).toBe(g_offlineFeaturesManager.ONLINE);
-	//		expect(listener).toHaveBeenCalled();
-	//		expect(results.features.success).toBeTruthy();
-	//		expect(Object.keys(results.features.responses).length).toBe(2);
-	//		for(var layerUrl in results.features.responses)
-	//		{
-	//			if( !results.features.responses.hasOwnProperty(layerUrl))
-	//				continue;
-	//
-	//			var layerResponses = results.features.responses[layerUrl];
-	//			var layerId = layerUrl.substring(layerUrl.lastIndexOf('/')+1);
-	//			console.log(layerId, layerResponses);
-	//			if( layerId == "1")
-	//			{
-	//				expect(layerResponses.addResults.length).toBe(2); // two adds (three offline adds minus one delete)
-	//				expect(layerResponses.updateResults.length).toBe(2); // two updates (three updates to existing features minus one delete)
-	//				expect(layerResponses.deleteResults.length).toBe(1); // one delete (one delete to an already existing feature)
-    //
-	//				expect(layerResponses.addResults.filter(function(r){return !r.success;})).toEqual([]);
-	//				expect(layerResponses.updateResults.filter(function(r){return !r.success;})).toEqual([]);
-	//				expect(layerResponses.deleteResults.filter(function(r){return !r.success;})).toEqual([]);
-	//			}
-	//			else if( layerId == "2")
-	//			{
-	//				expect(layerResponses.addResults.length).toBe(0); // no adds
-	//				expect(layerResponses.updateResults.length).toBe(3); // three updates
-	//				expect(layerResponses.deleteResults.length).toBe(0); // no deletes
-    //
-	//				expect(layerResponses.addResults.filter(function(r){return !r.success;})).toEqual([]);
-	//				expect(layerResponses.updateResults.filter(function(r){return !r.success;})).toEqual([]);
-	//				expect(layerResponses.deleteResults.filter(function(r){return !r.success;})).toEqual([]);
-	//			}
-	//		}
-	//		expect(g_editsStore.pendingEditsCount()).toBe(0);
-    //
-     //       var queue = g_editsStore.retrieveEditsQueue();
-     //       expect(queue.length).toBe(0);
-    //
-	//		// how to get the final id of g4 and g6 ?
-	//		//expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2,g4,g6]));
-	//		// all of them are positive
-	//		expect(getObjectIds(g_featureLayers[0].graphics).filter(function(id){ return id<0; })).toEqual([]);
-	//		expect(getObjectIds(g_featureLayers[1].graphics).filter(function(id){ return id<0; })).toEqual([]);
-	//		expect(g_featureLayers[0].graphics.length).toBe(4);
-	//		expect(g_featureLayers[1].graphics.length).toBe(3);
-	//		countFeatures(g_featureLayers[0], function(success,result)
-	//		{
-	//			expect(success).toBeTruthy();
-	//			expect(result.count).toBe(4);
-	//			countFeatures(g_featureLayers[1], function(success,result)
-	//			{
-	//				expect(success).toBeTruthy();
-	//				expect(result.count).toBe(3);
-	//				done();
-	//			});
-	//		});
-	//	});;
-	//	expect(g_offlineFeaturesManager.getOnlineStatus()).toBe(g_offlineFeaturesManager.RECONNECTING);
-	//});
+	async.it("go Online", function(done)
+	{
+		// Remember we deleted g3! So our total count is 8 not 9. HOWEVER, there should be 9 records in the database!
+        expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2,g4,g5,g6]));
+		expect(getObjectIds(g_featureLayers[1].graphics)).toEqual(getObjectIds([l1,l2,l3]));
+		expect(g_featureLayers[0].graphics.length).toBe(5);
+		expect(g_featureLayers[1].graphics.length).toBe(3);
+
+		var listener = jasmine.createSpy('event listener');
+		g_offlineFeaturesManager.on(g_offlineFeaturesManager.events.ALL_EDITS_SENT, listener);
+
+		g_offlineFeaturesManager.goOnline(function(results) {
+            console.log("went online");
+            expect(g_offlineFeaturesManager.getOnlineStatus()).toBe(g_offlineFeaturesManager.ONLINE);
+            expect(listener).toHaveBeenCalled();
+            expect(results.features.success).toBeTruthy();
+            expect(Object.keys(results.features.responses).length).toBe(2);
+            for (var layerUrl in results.features.responses) {
+                if (!results.features.responses.hasOwnProperty(layerUrl))
+                    continue;
+
+                var layerResponses = results.features.responses[layerUrl];
+                var layerId = layerUrl.substring(layerUrl.lastIndexOf('/') + 1);
+                console.log(layerId, layerResponses);
+                if (layerId == "1") {
+                    expect(layerResponses.addResults.length).toBe(2); // two adds (three offline adds minus one delete)
+                    expect(layerResponses.updateResults.length).toBe(2); // two updates (three updates to existing features minus one delete)
+                    expect(layerResponses.deleteResults.length).toBe(1); // one delete (one delete to an already existing feature)
+
+                    expect(layerResponses.addResults.filter(function (r) {
+                        return !r.success;
+                    })).toEqual([]);
+                    expect(layerResponses.updateResults.filter(function (r) {
+                        return !r.success;
+                    })).toEqual([]);
+                    expect(layerResponses.deleteResults.filter(function (r) {
+                        return !r.success;
+                    })).toEqual([]);
+                }
+                else if (layerId == "2") {
+                    expect(layerResponses.addResults.length).toBe(0); // no adds
+                    expect(layerResponses.updateResults.length).toBe(3); // three updates
+                    expect(layerResponses.deleteResults.length).toBe(0); // no deletes
+
+                    expect(layerResponses.addResults.filter(function (r) {
+                        return !r.success;
+                    })).toEqual([]);
+                    expect(layerResponses.updateResults.filter(function (r) {
+                        return !r.success;
+                    })).toEqual([]);
+                    expect(layerResponses.deleteResults.filter(function (r) {
+                        return !r.success;
+                    })).toEqual([]);
+                }
+            }
+
+            g_editsStore.pendingEditsCount(function(result){
+                expect(result).toBe(0);
+            });
+
+            //var queue = g_editsStore.retrieveEditsQueue();
+            //expect(queue.length).toBe(0);
+
+			// how to get the final id of g4 and g6 ?
+			//expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2,g4,g6]));
+			// all of them are positive
+			expect(getObjectIds(g_featureLayers[0].graphics).filter(function(id){ return id<0; })).toEqual([]);
+			expect(getObjectIds(g_featureLayers[1].graphics).filter(function(id){ return id<0; })).toEqual([]);
+			expect(g_featureLayers[0].graphics.length).toBe(4);
+			expect(g_featureLayers[1].graphics.length).toBe(3);
+			countFeatures(g_featureLayers[0], function(success,result)
+			{
+				expect(success).toBeTruthy();
+				expect(result.count).toBe(4);
+				countFeatures(g_featureLayers[1], function(success,result)
+				{
+					expect(success).toBeTruthy();
+					expect(result.count).toBe(3);
+					done();
+				});
+			});
+		});
+		expect(g_offlineFeaturesManager.getOnlineStatus()).toBe(g_offlineFeaturesManager.RECONNECTING);
+        done();
+	});
 });
 
 //describe("Offline edits optimized in zero edits", function()
