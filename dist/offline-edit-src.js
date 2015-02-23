@@ -1,10 +1,11 @@
-/*! offline-editor-js - v2.4 - 2014-11-26
-*   Copyright (c) 2014 Environmental Systems Research Institute, Inc.
+/*! offline-editor-js - v2.5 - 2015-02-23
+*   Copyright (c) 2015 Environmental Systems Research Institute, Inc.
 *   Apache License*/
 
 define([
     "dojo/Evented",
     "dojo/_base/Deferred",
+        "dojo/DeferredList",
     "dojo/promise/all",
     "dojo/_base/declare",
     "dojo/_base/array",
@@ -19,7 +20,7 @@ define([
     "esri/symbols/SimpleFillSymbol",
     "esri/urlUtils"],
 	function(
-		Evented,Deferred,all,declare,array,domAttr,domStyle,query,
+		Evented,Deferred,DeferredList,all,declare,array,domAttr,domStyle,query,
 		esriConfig,GraphicsLayer,Graphic,SimpleMarkerSymbol,SimpleLineSymbol,SimpleFillSymbol,urlUtils)
 {
     "use strict";
@@ -124,9 +125,15 @@ define([
          * @param layer
          * @returns deferred
          */
-        extend: function(layer)
+        extend: function(layer,callback)
         {
             var self = this;
+
+            // Attempt to initialize the database
+            self._editStore.init(function(result){
+                callback(result);
+                return;
+            });
 
             // we keep track of the FeatureLayer object
             this._featureLayers[ layer.url ] = layer;
@@ -321,6 +328,8 @@ define([
                 // inside this method, 'this' will be the FeatureLayer
                 // and 'self' will be the offlineFeatureLayer object
 
+                var promises = [];
+
                 if( self.getOnlineStatus() === self.ONLINE)
                 {
                     var def = this._applyEdits(adds,updates,deletes,
@@ -342,63 +351,76 @@ define([
                 adds = adds || [];
                 adds.forEach(function(addEdit)
                 {
+                    var deferred = new Deferred();
+
                     var objectId = this._getNextTempId();
                     addEdit.attributes[ this.objectIdField ] = objectId;
-                    var result = self._editStore.pushEdit(self._editStore.ADD, this.url, addEdit);
-                    results.addResults.push({ success:result.success, error: result.error, objectId: objectId});
-                    if(result.success)
-                    {
-                        var phantomAdd = new Graphic(
-                            addEdit.geometry,
-                            self._getPhantomSymbol(addEdit.geometry, self._editStore.ADD),
-                            {
-                                objectId: objectId
-                            });
-                        this._phantomLayer.add(phantomAdd);
-						domAttr.set(phantomAdd.getNode(),"stroke-dasharray","10,4");
-						domStyle.set(phantomAdd.getNode(), "pointer-events","none");
-                    }
+
+                    self._editStore.pushEdit(self._editStore.ADD, this.url, addEdit,function(result,error){
+                        result == true ? deferred.resolve(result) : deferred.reject(error);
+                    });
+                    results.addResults.push({ success:true, error: null, objectId: objectId});
+
+                    var phantomAdd = new Graphic(
+                        addEdit.geometry,
+                        self._getPhantomSymbol(addEdit.geometry, self._editStore.ADD),
+                        {
+                            objectId: objectId
+                        });
+                    this._phantomLayer.add(phantomAdd);
+                    domAttr.set(phantomAdd.getNode(),"stroke-dasharray","10,4");
+                    domStyle.set(phantomAdd.getNode(), "pointer-events","none");
+
+                    promises.push(deferred);
                 },this);
 
                 updates = updates || [];
                 updates.forEach(function(updateEdit)
                 {
+                    var deferred = new Deferred();
+
                     var objectId = updateEdit.attributes[ this.objectIdField ];
-                    var result = self._editStore.pushEdit(self._editStore.UPDATE, this.url, updateEdit);
-                    results.updateResults.push({success:result.success, error: result.error, objectId: objectId});
                     updatesMap[ objectId ] = updateEdit;
-                    if(result.success)
-                    {
-                        var phantomUpdate = new Graphic(
-                            updateEdit.geometry,
-                            self._getPhantomSymbol(updateEdit.geometry, self._editStore.UPDATE),
-                            {
-                                objectId: objectId
-                            });
-                        this._phantomLayer.add(phantomUpdate);
-						domAttr.set(phantomUpdate.getNode(),"stroke-dasharray","5,2");
-						domStyle.set(phantomUpdate.getNode(), "pointer-events","none");
-                    }
+
+                    self._editStore.pushEdit(self._editStore.UPDATE, this.url, updateEdit,function(result,error){
+                        result == true ? deferred.resolve(result) : deferred.reject(error);
+                    });
+                    results.updateResults.push({success:true, error: null, objectId: objectId});
+
+                    var phantomUpdate = new Graphic(
+                        updateEdit.geometry,
+                        self._getPhantomSymbol(updateEdit.geometry, self._editStore.UPDATE),
+                        {
+                            objectId: objectId
+                        });
+                    this._phantomLayer.add(phantomUpdate);
+                    domAttr.set(phantomUpdate.getNode(),"stroke-dasharray","5,2");
+                    domStyle.set(phantomUpdate.getNode(), "pointer-events","none");
+
+                    promises.push(deferred);
                 },this);
 
                 deletes = deletes || [];
                 deletes.forEach(function(deleteEdit)
                 {
+                    var deferred = new Deferred();
+
                     var objectId = deleteEdit.attributes[ this.objectIdField ];
-                    var result = self._editStore.pushEdit(self._editStore.DELETE, this.url, deleteEdit);
-                    results.deleteResults.push({success:result.success, error: result.error, objectId: objectId});
-                    if(result.success)
-                    {
-                        var phantomDelete = new Graphic(
-                            deleteEdit.geometry,
-                            self._getPhantomSymbol(deleteEdit.geometry, self._editStore.DELETE),
-                            {
-                                objectId: objectId
-                            });
-                        this._phantomLayer.add(phantomDelete);
-						domAttr.set(phantomDelete.getNode(),"stroke-dasharray","4,4");
-						domStyle.set(phantomDelete.getNode(), "pointer-events","none");
-                    }
+                    self._editStore.pushEdit(self._editStore.DELETE, this.url, deleteEdit,function(result,error){
+                        result == true ? deferred.resolve(result) : deferred.reject(error);
+                    });
+                    results.deleteResults.push({success:true, error: null, objectId: objectId});
+
+                    var phantomDelete = new Graphic(
+                        deleteEdit.geometry,
+                        self._getPhantomSymbol(deleteEdit.geometry, self._editStore.DELETE),
+                        {
+                            objectId: objectId
+                        });
+                    this._phantomLayer.add(phantomDelete);
+                    domAttr.set(phantomDelete.getNode(),"stroke-dasharray","4,4");
+                    domStyle.set(phantomDelete.getNode(), "pointer-events","none");
+
                     if( self.attachmentsStore )
                     {                    
                         // delete local attachments of this feature, if any... we just launch the delete and don't wait for it to complete
@@ -407,15 +429,23 @@ define([
                             console.log("deleted",deletedCount,"attachments of feature",objectId);
                         });
                     }
+
+                    promises.push(deferred);
                 },this);
 
-                /* we already pushed the edits into the local store, now we let the FeatureLayer to do the local updating of the layer graphics */
-                setTimeout(function()
-                {
-                    this._editHandler(results, adds, updatesMap, callback, errback, deferred);
-                    self.emit(self.events.EDITS_ENQUEUED, results);
-                }.bind(this),0);
-                return deferred;
+                all(promises).then( function(r)
+                {   console.log("DONE WITH DATABASE PUSH");
+                    //TO-DO - handle information related to any failed edits that didn't get stored
+
+                    /* we already pushed the edits into the database, now we let the FeatureLayer to do the local updating of the layer graphics */
+                    setTimeout(function()
+                    {
+                        this._editHandler(results, adds, updatesMap, callback, errback, deferred);
+                        self.emit(self.events.EDITS_ENQUEUED, results);
+                    }.bind(this),0);
+                    return deferred;
+                }.bind(this));
+
             }; // layer.applyEdits()
 
             /**
@@ -896,157 +926,227 @@ define([
             return optimizedEdits;
         },
 
+        _internalApplyEdits: function(layer,tempObjectIds,adds,updates,deletes)
+        {
+            // unfortunately we can't use the promise that is returned from layer._applyEdits()
+            // because it returns 3 result parameters (addResults,updateResults,deleteResults)
+            // and when we combine all promises in the dojo/promise/all() method below this only
+            // supports promises that return one value
+            var dfd = new Deferred();
+
+console.log("PRE APPLYEDITS " + adds + ", " + updates + ", " + deletes);
+
+            var internalLayer = layer;
+            internalLayer.dfd;
+
+            internalLayer._applyEdits(adds,updates,deletes,
+                function(addResults,updateResults,deleteResults)
+                {   console.log("RUNNNING APPLY EDITS")
+
+                    try {
+
+                        internalLayer._phantomLayer.clear();
+                        internalLayer.onEditsComplete = internalLayer.__onEditsComplete;
+                        delete internalLayer.__onEditsComplete;
+                        internalLayer.onBeforeApplyEdits = internalLayer.__onBeforeApplyEdits;
+                        delete internalLayer.__onBeforeApplyEdits;
+                        var newObjectIds = addResults.map(function (r) {
+                            return r.objectId;
+                        });
+                        console.log("INTERNAL " + addResults + ", update " + updateResults + ", delete " + deleteResults)
+                        // We use a different pattern if the attachmentsStore is valid and the layer has attachments
+                        if (internalLayer._attachmentsStore != null && internalLayer.hasAttachments && tempObjectIds.length > 0) {
+                            internalLayer._replaceFeatureIds(tempObjectIds, newObjectIds, function (success) {
+                                dfd.resolve({
+                                    addResults: addResults,
+                                    updateResults: updateResults,
+                                    deleteResults: deleteResults
+                                }); // wrap three arguments in a single object
+                            });
+                        }
+                        else {
+                            dfd.resolve({
+                                addResults: addResults,
+                                updateResults: updateResults,
+                                deleteResults: deleteResults
+                            }); // wrap three arguments in a single object
+                        }
+                    }catch(err){
+                        console.log("ERROR ERROR " + err);
+                    }
+                },
+                function(error)
+                {   console.log("INTERNAL ERROR  " + adds + ", update " + JSON.stringify(updates) + ", delete " + deletes + ", " + JSON.stringify(error))
+                    internalLayer.onEditsComplete = internalLayer.__onEditsComplete; delete internalLayer.__onEditsComplete;
+                    internalLayer.onBeforeApplyEdits = internalLayer.__onBeforeApplyEdits; delete internalLayer.__onBeforeApplyEdits;
+                    dfd.reject(error);
+                }
+            );
+            return dfd;
+        },
+
          _replayStoredEdits: function(callback)
         {
-            if( this._editStore.hasPendingEdits() )
-            {
-                //
-                // flatten the queue into unique edits for each feature, grouped by FeatureLayer
-                //
-                var optimizedEdits = this._optimizeEditsQueue();
-                var promises = {};
+            var promises = {};
+            var deferredListArr = [];
+            var that = this;
 
-                if( Object.keys(optimizedEdits).length === 0 )
-                {
-                    this.emit(this.events.ALL_EDITS_SENT);
-                    callback && callback(true, {});
-                    return;
-                }
+            //
+            // send edits for each of the layers
+            //
+            var layerUrl, layer, layerEdits;
+            var adds, updates, deletes;
+            var tempObjectIds;
+            var objectId, c= 1000;
+            var i,g;
+            var tempArray = [];
+            var featureLayers = this._featureLayers;
+            var attachmentsStore = this.attachmentsStore;
+            var editStore = this._editStore;
 
-                //
-                // send edits for each of the layers
-                //
-                var layerUrl, layer, layerEdits;
-                var adds, updates, deletes;
-                var tempObjectIds;
-                var objectId;
-                var edit;
-                var i,g;
+            this._editStore.getAllEditsArray(function(result,err){
+                if(result != null) {
+                    tempArray = result;
+                    //}
+                    //else {
 
-                for(layerUrl in optimizedEdits)
-                {
-                    if(optimizedEdits.hasOwnProperty(layerUrl))
-                    {
-                        layer = this._featureLayers[ layerUrl ];
+                    var length = tempArray.length;
+                    //length = 9;
+
+                    for(var n= 0;n < length;n++) {
+                        layer = featureLayers[tempArray[n].layer];
 
                         // If the layer has attachments then check to see if the attachmentsStore has been initialized
-                        if(this.attachmentsStore == null && layer.hasAttachments){
+                        if (attachmentsStore == null && layer.hasAttachments) {
                             console.log("ERROR: you need to run OfflineFeaturesManager.initAttachments(). Check the Attachments doc for more info.")
                             throw new Error("OfflineFeaturesManager: Attachments aren't initialized.");
                         }
 
                         // Assign the attachmentsStore to the layer as a private var so we can access it from
                         // the promises applyEdits() method.
-                        layer._attachmentsStore = this.attachmentsStore;
+                        layer._attachmentsStore = attachmentsStore;
 
-                        layerEdits = optimizedEdits[layerUrl];
-
-                        console.assert(Object.keys(layerEdits).length !== 0);
+                        //layerEdits = optimizedEdits[layerUrl];
+                        //
+                        //console.assert(Object.keys(layerEdits).length !== 0);
 
                         layer.__onEditsComplete = layer.onEditsComplete;
-                        layer.onEditsComplete = function() { console.log("intercepting events onEditsComplete"); };
+                        layer.onEditsComplete = function () {
+                            console.log("intercepting events onEditsComplete");
+                        };
                         layer.__onBeforeApplyEdits = layer.onBeforeApplyEdits;
-                        layer.onBeforeApplyEdits = function() { console.log("intercepting events onBeforeApplyEdits");};
+                        layer.onBeforeApplyEdits = function () {
+                            console.log("intercepting events onBeforeApplyEdits");
+                        };
 
-                        adds = []; updates = []; deletes = [];
-                        tempObjectIds = [];                    
+                        adds = [];
+                        updates = [];
+                        deletes = [];
+                        tempObjectIds = [];
 
-                        for(objectId in layerEdits)
-                        {
-                            if(layerEdits.hasOwnProperty(objectId))
-                            {
-                                edit = layerEdits[objectId];
-                                switch(edit.operation)
-                                {
-                                    case this._editStore.ADD:
-                                        for(i=0; i<layer.graphics.length; i++)
-                                        {
-                                            g = layer.graphics[i];
-                                            if( g.attributes[layer.objectIdField] === edit.graphic.attributes[layer.objectIdField] )
-                                            {
-                                                layer.remove(g);
-                                                break;
-                                            }
-                                        }
-                                        tempObjectIds.push(edit.graphic.attributes[ layer.objectIdField ]);
-                                        delete edit.graphic.attributes[ layer.objectIdField ];
-                                        adds.push(edit.graphic);
+                        // IMPORTANT: we have to reconstitute the graphic JSON into an actual esri.Graphic object
+                        var graphic = new Graphic(JSON.parse(tempArray[n].graphic));
+
+                        switch (tempArray[n].operation) {
+                            case editStore.ADD:
+                                for (i = 0; i < layer.graphics.length; i++) {
+                                    g = layer.graphics[i];
+                                    if (g.attributes[layer.objectIdField] === graphic.attributes[layer.objectIdField]) {
+                                        layer.remove(g);
                                         break;
-                                    case this._editStore.UPDATE:
-                                        updates.push(edit.graphic);
-                                        break;
-                                    case this._editStore.DELETE:
-                                        deletes.push(edit.graphic);
-                                        break;
+                                    }
                                 }
-                            }
+                                tempObjectIds.push(graphic.attributes[layer.objectIdField]);
+                                delete graphic.attributes[layer.objectIdField];
+                                adds.push(graphic);
+                                break;
+                            case editStore.UPDATE:
+                                updates.push(graphic);
+                                break;
+                            case editStore.DELETE:
+                                deletes.push(graphic);
+                                break;
                         }
+                        console.log("TEST " + layer + ", ids " + tempObjectIds + ", adds " + adds + ", updates " + updates + ", deletes " + deletes)
+                        console.log("COUNT " + n);
+                        //setTimeout(function()
+                        //{
+                        //    promises[n] = that._internalApplyEdits(layer, tempObjectIds, adds, updates, deletes);
+                        deferredListArr.push(that._internalApplyEdits(layer, tempObjectIds, adds, updates, deletes));
+                        //deferredListArr.push(test(layer, tempObjectIds, adds, updates, deletes));
+                        //}.bind(this),c++);
 
-                        // closure to keep layer and tempObjectIds values
-                        promises[layerUrl] = (function(layer,tempObjectIds)
-                        {
-                            // unfortunately we can't use the promise that is returned from layer._applyEdits()
-                            // because it returns 3 result parameters (addResults,updateResults,deleteResults)
-                            // and when we combine all promises in the dojo/promise/all() method below this only
-                            // supports promises that return one value
-                            var dfd = new Deferred();
-                            layer._applyEdits(adds,updates,deletes,
-                                function(addResults,updateResults,deleteResults)
-                                {
-                                    layer._phantomLayer.clear();
-                                    layer.onEditsComplete = layer.__onEditsComplete; delete layer.__onEditsComplete;
-                                    layer.onBeforeApplyEdits = layer.__onBeforeApplyEdits; delete layer.__onBeforeApplyEdits;
-                                    var newObjectIds = addResults.map(function(r){ return r.objectId; });
 
-                                    // We use a different pattern if the attachmentsStore is valid and the layer has attachments
-                                    if( layer._attachmentsStore != null && layer.hasAttachments && tempObjectIds.length > 0)
-                                    {
-                                        layer._replaceFeatureIds(tempObjectIds,newObjectIds,function(success)
-                                        {
-                                            dfd.resolve({addResults:addResults,updateResults:updateResults,deleteResults:deleteResults}); // wrap three arguments in a single object
-                                        });
-                                    }
-                                    else
-                                    {
-                                        dfd.resolve({addResults:addResults,updateResults:updateResults,deleteResults:deleteResults}); // wrap three arguments in a single object                                    
-                                    }
-                                },
-                                function(error)
-                                {
-                                    layer.onEditsComplete = layer.__onEditsComplete; delete layer.__onEditsComplete;
-                                    layer.onBeforeApplyEdits = layer.__onBeforeApplyEdits; delete layer.__onBeforeApplyEdits;
-                                    dfd.reject(error);
-                                }
-                            );
-                            return dfd;
-                        }(layer,tempObjectIds));
+
+                        //// closure to keep layer and tempObjectIds values
+                        //promises[n] = function(layer,tempObjectIds)
+                        //{
+                        //    // unfortunately we can't use the promise that is returned from layer._applyEdits()
+                        //    // because it returns 3 result parameters (addResults,updateResults,deleteResults)
+                        //    // and when we combine all promises in the dojo/promise/all() method below this only
+                        //    // supports promises that return one value
+                        //    var dfd = new Deferred();
+                        //    promises[n] = layer._applyEdits(adds,updates,deletes,
+                        //        function(addResults,updateResults,deleteResults)
+                        //        {
+                        //            layer._phantomLayer.clear();
+                        //            layer.onEditsComplete = layer.__onEditsComplete; delete layer.__onEditsComplete;
+                        //            layer.onBeforeApplyEdits = layer.__onBeforeApplyEdits; delete layer.__onBeforeApplyEdits;
+                        //            var newObjectIds = addResults.map(function(r){ return r.objectId; });
+                        //
+                        //            // We use a different pattern if the attachmentsStore is valid and the layer has attachments
+                        //            if( layer._attachmentsStore != null && layer.hasAttachments && tempObjectIds.length > 0)
+                        //            {
+                        //                layer._replaceFeatureIds(tempObjectIds,newObjectIds,function(success)
+                        //                {
+                        //                    dfd.resolve({addResults:addResults,updateResults:updateResults,deleteResults:deleteResults}); // wrap three arguments in a single object
+                        //                });
+                        //            }
+                        //            else
+                        //            {
+                        //                dfd.resolve({addResults:addResults,updateResults:updateResults,deleteResults:deleteResults}); // wrap three arguments in a single object
+                        //            }
+                        //        },
+                        //        function(error)
+                        //        {
+                        //            layer.onEditsComplete = layer.__onEditsComplete; delete layer.__onEditsComplete;
+                        //            layer.onBeforeApplyEdits = layer.__onBeforeApplyEdits; delete layer.__onBeforeApplyEdits;
+                        //            dfd.reject(error);
+                        //        }
+                        //    );
+                        //    return dfd;
+                        //}(layer,tempObjectIds);
+
+
+                        if(n == length - 1) console.log("DONE with loop " )
                     }
+
                 }
 
-                //
+                //return all(promises);
+
                 // wait for all requests to finish
                 //
                 var allPromises = all(promises);
-                allPromises.then(
+
+                var deferredList = new DeferredList(deferredListArr);
+
+                deferredList.then(
                     function(responses)
                     {
                         console.log("all responses are back");
-                        this.emit(this.events.EDITS_SENT);
-                        this.emit(this.events.ALL_EDITS_SENT);
+                        //this.emit(this.events.EDITS_SENT);
+                        //this.emit(this.events.ALL_EDITS_SENT);
                         callback && callback(true,responses);
-                    }.bind(this),
+                    }.bind(self),
                     function(errors)
                     {
                         console.log("ERROR!!");
                         console.log(errors);
                         callback && callback(false,errors);
-                    }.bind(this));
-            } // hasPendingEdits()
-            else
-            {
-                this.emit(this.events.ALL_EDITS_SENT);
-                callback && callback(true, {});
-            }
+                    }.bind(this)
+                );
+            });
         }
 
     }); // declare
@@ -1069,137 +1169,366 @@ else{
 
 "use strict";
 
-O.esri.Edit.EditStore = function(){
+/*global IDBKeyRange,indexedDB */
 
-	/* private consts */
-	var EDITS_QUEUE_KEY = "esriEditsQueue";
-	var SEPARATOR = "|@|";
+"use strict";
+O.esri.Edit.EditStore = function()
+{
+    this._db = null;
 
-    //
-    // public interface
-    //
+    // Public properties
 
-    // enum
+    var dbName = "features_store";
+    var objectStoreName = "features";
+    var dbIndex = "featureId";
+
+    // ENUMs
 
     this.ADD = "add";
     this.UPDATE = "update";
     this.DELETE = "delete";
 
-    // ERROR_DUPLICATE_EDIT: "Attempt to insert duplicated edit",
-    this.ERROR_LOCALSTORAGE_FULL = "LocalStorage capacity exceeded";
-
     this.isSupported = function()
     {
-        // http://stackoverflow.com/questions/11214404/how-to-detect-if-browser-supports-html5-local-storage
-        var mod = "esriLocalStorageTest";
-        try {
-            window.localStorage.setItem(mod, mod);
-            window.localStorage.removeItem(mod);
-            return true;
-        } catch(e) {
+        if(!window.indexedDB){
             return false;
         }
+        return true;
     };
 
-    this.pushEdit = function(operation,layer,graphic)
+    /**
+     * Commit an edit to the database
+     * @param operation add, update or delete
+     * @param layer the URL of the feature layer
+     * @param graphic esri/graphic. The method will serialize to JSON
+     * @param callback {true, edit} or {false, error}
+     */
+    this.pushEdit = function(operation,layer,graphic, callback)
     {
+
         var edit = {
-            operation: operation,
-            layer: layer,
-            graphic: this._serialize(graphic)
+                id: layer + "/" + graphic.attributes.objectid,
+                operation: operation,
+                layer: layer,
+                graphic: this._serialize(graphic)
+            };
+
+        var transaction = this._db.transaction([objectStoreName],"readwrite");
+
+        transaction.oncomplete = function(event){
+            callback(true);
         };
 
-        var edits = this.retrieveEditsQueue();
-        edits.push(edit);
-        var success = this._storeEditsQueue(edits);
-        return { success: success, error: success? undefined : {code: 1000, description:this.ERROR_LOCALSTORAGE_FULL} };
+        transaction.onerror = function(event){
+            callback(false,event.target.error.message);
+        };
+
+        var objectStore = transaction.objectStore(objectStoreName);
+        objectStore.put(edit);
     };
 
-    this.peekFirstEdit = function()
-    {
-        var edits = this.retrieveEditsQueue();
-        var firstEdit;
+    /**
+     * Returns all the edits recursively via the callback
+     * @param callback {value, message}
+     */
+    this.getAllEdits = function(callback){
 
-        if( edits )
-        {
-            firstEdit = edits[0];
-            firstEdit.graphic = this._deserialize(firstEdit.graphic);
-            return firstEdit;
-        }
-        return null;
-    };
+        console.assert(this._db !== null, "indexeddb not initialized");
 
-    this.popFirstEdit = function()
-    {
-        var edits = this.retrieveEditsQueue();
-        var firstEdit;
+        if(this._db !== null){
+            var transaction = this._db.transaction([objectStoreName])
+                .objectStore(objectStoreName)
+                .openCursor();
 
-        if( edits )
-        {
-            firstEdit = edits.shift();
-            this._storeEditsQueue(edits);
-            firstEdit.graphic = this._deserialize(firstEdit.graphic);
-            return firstEdit;
-        }
-        return null;
-    };
-
-    this.hasPendingEdits = function()
-    {
-        var storedValue = window.localStorage.getItem(EDITS_QUEUE_KEY) || "";
-        return ( storedValue !== "" );
-    };
-
-    this.pendingEditsCount = function()
-    {
-        var storedValue = window.localStorage.getItem(EDITS_QUEUE_KEY) || "";
-
-        if( storedValue === "" )
-        {
-            return 0;	// fast easy case
-        }
-
-        var editsArray = this._unpackArrayOfEdits(storedValue);
-        return editsArray.length;
-    };
-
-    this.resetEditsQueue = function()
-    {
-        window.localStorage.setItem(EDITS_QUEUE_KEY, "");
-    };
-
-    this.retrieveEditsQueue = function()
-    {
-        var storedValue = window.localStorage.getItem(EDITS_QUEUE_KEY) || "";
-        return this._unpackArrayOfEdits(storedValue);
-    };
-
-    this.getEditsStoreSizeBytes = function()
-    {
-        var editsQueueValue = window.localStorage.getItem(EDITS_QUEUE_KEY);
-
-        return (editsQueueValue? EDITS_QUEUE_KEY.length + editsQueueValue.length : 0);
-    }
-
-    this.getLocalStorageSizeBytes = function()
-    {
-        var bytes = 0,
-            key, value;
-
-        for(key in window.localStorage )
-        {
-            if( window.localStorage.hasOwnProperty(key))
+            transaction.onsuccess = function(event)
             {
-                value = window.localStorage.getItem(key);
-                bytes += key.length + value.length;
-            }
+                var cursor = event.target.result;
+                if(cursor){
+                    callback(cursor.value,null);
+                    cursor.continue();
+                }
+                else
+                {
+                    callback(null, "end");
+                }
+            }.bind(this);
+            transaction.onerror = function(err)
+            {
+                callback(null, err);
+            };
         }
-        return bytes;
+        else
+        {
+            callback(null, "no db");
+        }
     };
 
-    //
+    /**
+     * Returns all the edits as a single Array via the callback
+     * @param callback {value, message}
+     */
+    this.getAllEditsArray = function(callback){
+
+        console.assert(this._db !== null, "indexeddb not initialized");
+        var editsArray = [];
+
+        if(this._db !== null){
+            var transaction = this._db.transaction([objectStoreName])
+                .objectStore(objectStoreName)
+                .openCursor();
+
+            transaction.onsuccess = function(event)
+            {
+                var cursor = event.target.result;
+                if(cursor){
+                    editsArray.push(cursor.value);
+                    cursor.continue();
+                }
+                else
+                {
+                    callback(editsArray, "end");
+                }
+            }.bind(this);
+            transaction.onerror = function(err)
+            {
+                callback(null, err);
+            };
+        }
+        else
+        {
+            callback(null, "no db");
+        }
+    };
+
+    /**
+     * Update an edit already exists in the database
+     * @param operation add, update or delete
+     * @param layer the URL of the feature layer
+     * @param graphic esri/graphic. The method will serialize to JSON
+     * @param callback {true, edit} or {false, error}
+     */
+    this.updateExistingEdit = function(operation,layer,graphic, callback){
+
+        console.assert(this._db !== null, "indexeddb not initialized");
+
+        var objectStore = this._db.transaction([objectStoreName],"readwrite").objectStore(objectStoreName);
+
+        //Let's get the entry associated with the graphic
+        var objectStoreGraphicRequest = objectStore.get(graphic.attributes.objectid);
+        objectStoreGraphicRequest.onsuccess = function() {
+
+            //Grab the data object returned as a result
+            var data = objectStoreGraphicRequest.result;
+
+            //Create a new update object
+            var update = {
+                id: layer + "/" + graphic.attributes.objectid,
+                operation: operation,
+                layer: layer,
+                graphic: graphic.toJson()
+            };
+
+            // Insert the update into the database
+            var updateGraphicRequest = objectStore.put(update);
+
+            updateGraphicRequest.onsuccess = function(){
+                callback(true);
+            }
+
+            updateGraphicRequest.onerror = function(err){
+                callback(false,err);
+            };
+        }
+    };
+
+    /**
+     * Delete a pending edit's record from the database.
+     * IMPORTANT: Be aware of false negatives. See Step 4 in this function.
+     *
+     * @param layerUrl
+     * @param graphic Graphic
+     * @param callback {boolean}
+     */
+    this.delete = function(layerUrl, graphic, callback){
+
+        // NOTE: the implementation of the IndexedDB spec has a major failure with respect to
+        // handling deletes. The result of the operation is specified as undefined.
+        // What this means is that there is no way to tell if an operation was successful or not.
+        //
+        // In order to get around this we have to verify if after the attempted deletion operation
+        // if the record is or is not in the database. Kinda dumb, but that's how IndexedDB works.
+        //http://stackoverflow.com/questions/17137879/is-there-a-way-to-get-information-on-deleted-record-when-calling-indexeddbs-obj
+
+        var db = this._db;
+        var deferred = null;
+        var self = this;
+
+        var edit = {
+            id: layerUrl + "/" + graphic.attributes.objectid,
+            operation: null,
+            layer: layerUrl,
+            graphic: graphic.toJson()
+        };
+
+        require(["dojo/Deferred"], function(Deferred){
+            deferred = new Deferred();
+
+            // Step 1 - lets see if record exits. If it does then return callback.
+            self.editExists(edit).then(function(result){
+               if(result.success){
+                   // Step 4 - Then we check to see if the record actually exists or not.
+                   deferred.then(function(edit){
+
+                           // IF the delete was successful, then the record should return 'false' because it doesn't exist.
+                           self.editExists(edit).then(function(results){
+                                   results.success == false ? callback(true) : callback(false);
+                               },
+                               function(){
+                                   callback(true); //because we want this test to throw an error. That means item deleted.
+                               })
+                       },
+                       // There was a problem with the delete operation on the database
+                       function(err){
+                           callback(err);
+                       });
+
+                   var objectStore = db.transaction([objectStoreName],"readwrite").objectStore(objectStoreName);
+
+                   // Step 2 - go ahead and delete graphic
+                   var objectStoreDeleteRequest = objectStore.delete(edit.id);
+
+                   // Step 3 - We know that the onsuccess will always fire unless something serious goes wrong.
+                   // So we go ahead and resolve the deferred here.
+                   objectStoreDeleteRequest.onsuccess = function() {
+                       deferred.resolve(edit);
+                   };
+
+                   objectStoreDeleteRequest.onerror = function(msg){
+                       deferred.reject({success:false,error:msg});
+                   }
+               }
+            },
+            // If there is an error in editExists()
+            function(){
+                callback(false);
+            });
+        });
+    };
+
+    this.resetEditsQueue = function(callback)
+    {
+        console.assert(this._db !== null, "indexeddb not initialized");
+
+        var request = this._db.transaction([objectStoreName],"readwrite")
+            .objectStore(objectStoreName)
+            .clear();
+        request.onsuccess = function(event){
+            setTimeout(function(){callback(true);},0);
+        };
+        request.onerror = function(err){
+            callback(false,err);
+        };
+    };
+
+    this.pendingEditsCount = function(callback)
+    {
+        console.assert(this._db !== null, "indexeddb not initialized");
+
+        var count = 0;
+
+        var objectStore = this._db.transaction([objectStoreName]).objectStore(objectStoreName);
+        objectStore.openCursor().onsuccess = function(evt)
+        {
+            var cursor = evt.target.result;
+            if(cursor)
+            {
+                count++;
+                cursor.continue();
+            }
+            else
+            {
+                callback(count);
+            }
+        };
+    };
+
+    /**
+     * Verify is an edit already exists in the database. Checks the objectId and layerId.
+     * @param newEdit {id,operation,layerId,graphicJSON}
+     * @returns {deferred} {success: boolean, error: message}
+     * @private
+     */
+    this.editExists = function(newEdit){
+
+        var db = this._db;
+        var deferred = null;
+
+        require(["dojo/Deferred"], function(Deferred){
+            deferred = new Deferred();
+
+            var objectStore = db.transaction([objectStoreName],"readwrite").objectStore(objectStoreName);
+
+            //Get the entry associated with the graphic
+            var objectStoreGraphicRequest = objectStore.get(newEdit.id);
+
+            objectStoreGraphicRequest.onsuccess = function() {
+                var graphic = objectStoreGraphicRequest.result;
+                if(graphic && (graphic.id == newEdit.id)){
+                    deferred.resolve({success:true,error:null});
+                }
+                else{
+                    deferred.reject({success:false,error:"Layer id is not a match."});
+                }
+            };
+
+            objectStoreGraphicRequest.onerror = function(msg){
+                deferred.reject({success:false,error:msg});
+            }
+        });
+
+        //We return a deferred object so that when calling this function you can chain it with a then() statement.
+        return deferred;
+    };
+
+    /**
+     * Returns the approximate size of the database in bytes
+     * @param callback  {usage, error} Whereas, the usage Object is {sizeBytes: number, editCount: number}
+     */
+    this.getUsage = function(callback)
+    {
+        console.assert(this._db !== null, "indexeddb not initialized");
+
+        var usage = { sizeBytes: 0, editCount: 0 };
+
+        var transaction = this._db.transaction([objectStoreName])
+            .objectStore(objectStoreName)
+            .openCursor();
+
+        console.log("dumping keys");
+
+        transaction.onsuccess = function(event)
+        {
+            var cursor = event.target.result;
+            if(cursor)
+            {
+                var storedObject = cursor.value;
+                var json = JSON.stringify(storedObject);
+                usage.sizeBytes += json.length;
+                usage.editCount += 1;
+                cursor.continue();
+            }
+            else
+            {
+                callback(usage,null);
+            }
+        };
+        transaction.onerror = function(err)
+        {
+            callback(null,err);
+        };
+    };
+
     // internal methods
-    //
 
     //
     // graphic serialization/deserialization
@@ -1229,64 +1558,60 @@ O.esri.Edit.EditStore = function(){
         return graphic;
     };
 
-    this._storeEditsQueue = function(edits)
+    this.init = function(callback)
     {
-        try
-        {
-            var serializedEdits = this._packArrayOfEdits(edits);
-            window.localStorage.setItem(EDITS_QUEUE_KEY, serializedEdits);
-            return true;
-        }
-        catch(err)
-        {
-            return false;
-        }
-    };
+        console.log("init editsStore.js");
 
-    this._packArrayOfEdits = function(edits)
-    {
-        var serializedEdits = [];
-        edits.forEach(function(edit)
+        var request = indexedDB.open(dbName, 11);
+        callback = callback || function(success) { console.log("EditsStore::init() success:", success); }.bind(this);
+
+        request.onerror = function(event)
         {
-            serializedEdits.push( JSON.stringify(edit) );
-        });
-        return serializedEdits.join(SEPARATOR);
-    };
+            console.log("indexedDB error: " + event.target.errorCode);
+            callback(false,event.target.errorCode);
+        }.bind(this);
 
-    this._unpackArrayOfEdits = function(serializedEdits)
-    {
-        if( !serializedEdits )
+        request.onupgradeneeded = function(event)
         {
-            return [];
-        }
+            var db = event.target.result;
 
-        var edits = [];
-        serializedEdits.split(SEPARATOR).forEach( function(serializedEdit)
-        {
-            edits.push( JSON.parse(serializedEdit) );
-        });
-
-        return edits;
-    };
-
-    this._isEditDuplicated = function(newEdit,edits)
-    {
-        var i,
-            edit;
-
-        for(i=0; i<edits.length; i++)
-        {
-            edit = edits[i];
-            if( edit.operation === newEdit.operation &&
-                edit.layer     === newEdit.layer     &&
-                edit.graphic   === newEdit.graphic )
+            if( db.objectStoreNames.contains(objectStoreName))
             {
-                return true;
+                db.deleteObjectStore(objectStoreName);
             }
-        }
-        return false;
-    }
+
+            var objectStore = db.createObjectStore(objectStoreName, { keyPath: "id" });
+            objectStore.createIndex(dbIndex,dbIndex, {unique: false});
+        }.bind(this);
+
+        request.onsuccess = function(event)
+        {
+            this._db = event.target.result;
+            console.log("database opened successfully");
+            callback(true);
+        }.bind(this);
+    };
+
+    ///
+    /// DEPRECATED
+    ///
+
+    /**
+     * Deprecated @ v2.5. Use pendingEditsCount() instead.
+     */
+    this.hasPendingEdits = function()
+    {
+        return "DEPRECATED at v2.5!";
+    };
+
+    /**
+     * Deprecated @ v2.5. Use public function editExists() instead.
+     */
+    this._isEditDuplicated = function(newEdit,edits){
+        return "DEPRECATED at v2.5!";
+    };
 };
+
 
 
 /*global IDBKeyRange,indexedDB */

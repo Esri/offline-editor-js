@@ -1,5 +1,5 @@
-/*! offline-editor-js - v2.4 - 2014-11-26
-*   Copyright (c) 2014 Environmental Systems Research Institute, Inc.
+/*! offline-editor-js - v2.5 - 2015-02-23
+*   Copyright (c) 2015 Environmental Systems Research Institute, Inc.
 *   Apache License*/
 /**
  * Library for reading an ArcGIS Tile Package (.tpk) file and displaying the tiles
@@ -303,13 +303,11 @@ define([
                     if(indexCDI != -1 || indexXML != -1){
                         this._unzipConfFiles(files,i,deferred,function(/* deferred */ d, /* token */ t){ console.log("CONF FILE")
                             d.resolve(t);
-                            return d.promise;
                         });
                     }
                     else if(indexBUNDLE != -1 || indexBUNDLX != -1){
                         this._unzipTileFiles(files,i,deferred,function(/* deferred */ d, /* token */ t){
                             d.resolve(t);
-                            return d.promise;
                         });
                     }
                     else{
@@ -322,8 +320,6 @@ define([
                 {
                     callback && callback(results);
                 });
-
-                return promises;
             },
 
             /**
