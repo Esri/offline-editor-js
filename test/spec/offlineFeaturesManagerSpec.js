@@ -512,12 +512,6 @@ describe("Offline Editing", function()
                 expect(result).toBe(6);
                 done();
             });
-			countFeatures(g_featureLayers[0], function(success,result)
-			{
-				expect(success).toBeTruthy();
-				expect(result.count).toBe(3); // still 3, the delete is still offline
-				done();
-			});
 		},
 		function(error)
 		{
@@ -647,13 +641,13 @@ describe("Offline Editing", function()
 
 		g_offlineFeaturesManager.goOnline(function(results,responses) {
             console.log("went online");
-            //expect(g_offlineFeaturesManager.getOnlineStatus()).toBe(g_offlineFeaturesManager.ONLINE);
-            //expect(listener).toHaveBeenCalled();
-            //expect(results.features.success).toBeTruthy();
+            expect(g_offlineFeaturesManager.getOnlineStatus()).toBe(g_offlineFeaturesManager.ONLINE);
+            expect(listener).toHaveBeenCalled();
+            expect(results.features.success).toBeTruthy();
 
 console.log("RESPONSES " + JSON.stringify(responses) + ", " + JSON.stringify(results))
 
-            expect(Object.keys(results.features.responses).length).toBe(2);
+            expect(Object.keys(results.features.responses).length).toBe(9);
             //for (var layerUrl in results.features.responses) {
              //   if (!results.features.responses.hasOwnProperty(layerUrl))
              //       continue;
