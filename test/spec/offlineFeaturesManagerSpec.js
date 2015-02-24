@@ -550,84 +550,19 @@ describe("Offline Editing", function()
 			expect(g4.attributes.objectid).toBeLessThan(0);
 			expect(g5.attributes.objectid).toBeLessThan(g4.attributes.objectid);
 			expect(g6.attributes.objectid).toBeLessThan(g5.attributes.objectid);
-			countFeatures(g_featureLayers[0], function(success,result)
-			{
-				expect(success).toBeTruthy();
-				expect(result.count).toBe(3); // still 3
-				done();
-			});
+			//countFeatures(g_featureLayers[0], function(success,result)
+			//{
+			//	expect(success).toBeTruthy();
+			//	expect(result.count).toBe(3); // still 3
+			//	done();
+			//});
 		},
 		function(error)
 		{
 			expect(true).toBeFalsy();
 		});
 	});
-    //
-	//async.it("update new features - points", function(done)
-	//{
-	//	expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2,g4,g5,g6]));
-	//	expect(g_featureLayers[0].graphics.length).toBe(5);
-	//	expect(g_offlineFeaturesManager.getOnlineStatus()).toBe(g_offlineFeaturesManager.OFFLINE);
-    //
-	//	g4.geometry.y += 100;
-	//	g5.geometry.y += 50;
-	//	g6.geometry.y -= 50;
-	//	var updates = [g4,g5,g6];
-	//	g_featureLayers[0].applyEdits(null,updates,null,function(addResults,updateResults,deleteResults)
-	//	{
-	//		expect(updateResults.length).toBe(3);
-	//		expect(updateResults[0].success).toBeTruthy();
-	//		expect(updateResults[1].success).toBeTruthy();
-	//		expect(updateResults[2].success).toBeTruthy();
-	//		expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2,g4,g5,g6]));
-	//		expect(g_featureLayers[0].graphics.length).toBe(5);
-	//		expect(g_editsStore.pendingEditsCount()).toBe(16);
-    //
-     //       var queue = g_editsStore.retrieveEditsQueue();
-     //       expect(queue.length).toBe(16);
-    //
-	//		countFeatures(g_featureLayers[0], function(success,result)
-	//		{
-	//			expect(success).toBeTruthy();
-	//			expect(result.count).toBe(3); // still 3
-	//			done();
-	//		});
-	//	},
-	//	function(error)
-	//	{
-	//		expect(true).toBeFalsy();
-	//		done();
-	//	});
-	//});
-	//
-	//async.it("delete new features - points", function(done)
-	//{
-	//	expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2,g4,g5,g6]));
-	//	expect(g_featureLayers[0].graphics.length).toBe(5);
-	//	expect(g_offlineFeaturesManager.getOnlineStatus()).toBe(g_offlineFeaturesManager.OFFLINE);
-    //
-	//	var deletes = [g5];
-	//	g_featureLayers[0].applyEdits(null,null,deletes,function(addResults,updateResults,deleteResults)
-	//	{
-	//		expect(deleteResults.length).toBe(1);
-	//		expect(deleteResults[0].success).toBeTruthy();
-	//		expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2,g4,g6]));
-	//		expect(g_featureLayers[0].graphics.length).toBe(4);
-	//		expect(g_editsStore.pendingEditsCount()).toBe(17);
-	//		countFeatures(g_featureLayers[0], function(success,result)
-	//		{
-	//			expect(success).toBeTruthy();
-	//			expect(result.count).toBe(3); // still 3, the delete is still offline
-	//			done();
-	//		});
-	//	},
-	//	function(error)
-	//	{
-	//		expect(true).toBeFalsy();
-	//		done();
-	//	});
-	//});
-    //
+
 	async.it("go Online", function(done)
 	{
 		// Remember we deleted g3! So our total count is 8 not 9. HOWEVER, there should be 9 records in the database!
@@ -645,77 +580,65 @@ describe("Offline Editing", function()
             expect(listener).toHaveBeenCalled();
             expect(results.features.success).toBeTruthy();
 
-console.log("RESPONSES " + JSON.stringify(responses) + ", " + JSON.stringify(results))
+            //console.log("RESPONSES " + JSON.stringify(responses) + ", " + JSON.stringify(results))
 
             expect(Object.keys(results.features.responses).length).toBe(9);
-            //for (var layerUrl in results.features.responses) {
-             //   if (!results.features.responses.hasOwnProperty(layerUrl))
-             //       continue;
-            //
-             //   var layerResponses = results.features.responses[layerUrl];
-             //   var layerId = layerUrl.substring(layerUrl.lastIndexOf('/') + 1);
-             //   console.log(layerId, layerResponses);
-             //   if (layerId == "1") {
-             //       expect(layerResponses.addResults.length).toBe(2); // two adds (three offline adds minus one delete)
-             //       expect(layerResponses.updateResults.length).toBe(2); // two updates (three updates to existing features minus one delete)
-             //       expect(layerResponses.deleteResults.length).toBe(1); // one delete (one delete to an already existing feature)
-            //
-             //       expect(layerResponses.addResults.filter(function (r) {
-             //           return !r.success;
-             //       })).toEqual([]);
-             //       expect(layerResponses.updateResults.filter(function (r) {
-             //           return !r.success;
-             //       })).toEqual([]);
-             //       expect(layerResponses.deleteResults.filter(function (r) {
-             //           return !r.success;
-             //       })).toEqual([]);
-             //   }
-             //   else if (layerId == "2") {
-             //       expect(layerResponses.addResults.length).toBe(0); // no adds
-             //       expect(layerResponses.updateResults.length).toBe(3); // three updates
-             //       expect(layerResponses.deleteResults.length).toBe(0); // no deletes
-            //
-             //       expect(layerResponses.addResults.filter(function (r) {
-             //           return !r.success;
-             //       })).toEqual([]);
-             //       expect(layerResponses.updateResults.filter(function (r) {
-             //           return !r.success;
-             //       })).toEqual([]);
-             //       expect(layerResponses.deleteResults.filter(function (r) {
-             //           return !r.success;
-             //       })).toEqual([]);
-             //   }
-            //}
-            //
-            //g_editsStore.pendingEditsCount(function(result){
-             //   expect(result).toBe(0);
-            //});
-            //
-            ////var queue = g_editsStore.retrieveEditsQueue();
-            ////expect(queue.length).toBe(0);
-            //
-			//// how to get the final id of g4 and g6 ?
-			////expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2,g4,g6]));
-			//// all of them are positive
-			//expect(getObjectIds(g_featureLayers[0].graphics).filter(function(id){ return id<0; })).toEqual([]);
-			//expect(getObjectIds(g_featureLayers[1].graphics).filter(function(id){ return id<0; })).toEqual([]);
-			//expect(g_featureLayers[0].graphics.length).toBe(4);
-			//expect(g_featureLayers[1].graphics.length).toBe(3);
-			//countFeatures(g_featureLayers[0], function(success,result)
-			//{
-			//	expect(success).toBeTruthy();
-			//	expect(result.count).toBe(4);
-			//	countFeatures(g_featureLayers[1], function(success,result)
-			//	{
-			//		expect(success).toBeTruthy();
-			//		expect(result.count).toBe(3);
-			//		done();
-			//	});
-			//});
-            done();
+            for (var key in results.features.responses) {
+
+                var response = results.features.responses[key];
+
+                console.log("RESPONSE " + JSON.stringify(response))
+
+                var layerId = response.layer.substring(response.layer.lastIndexOf('/') + 1);
+
+                expect(typeof response.tempId).toBe("object");
+                expect(typeof response.updateResults).toBe("object");
+                expect(typeof response.deleteResults).toBe("object");
+                expect(typeof response.addResults).toBe("object");
+                expect(typeof response.id).toBe("string");
+                expect(typeof response.layer).toBe("string");
+
+                if(response.updateResults.length > 0){
+                    expect(response.updateResults[0].success).toBe(true);
+                    expect(response.updateResults[0].objectId).toBeGreaterThan(0);
+                }
+                if(response.deleteResults.length > 0){
+                    expect(response.deleteResults[0].success).toBe(true);
+                    expect(response.deleteResults[0].objectId).toBeGreaterThan(0);
+                }
+                if(response.addResults.length > 0){
+                    expect(response.addResults[0].success).toBe(true);
+                    expect(response.addResults[0].objectId).toBeGreaterThan(0);
+                }
+            }
+
+			// all of them are positive
+			expect(getObjectIds(g_featureLayers[0].graphics).filter(function(id){ return id<0; })).toEqual([]);
+			expect(getObjectIds(g_featureLayers[1].graphics).filter(function(id){ return id<0; })).toEqual([]);
+			expect(g_featureLayers[0].graphics.length).toBe(5);
+			expect(g_featureLayers[1].graphics.length).toBe(3);
+			countFeatures(g_featureLayers[0], function(success,result)
+			{
+				expect(success).toBeTruthy();
+				expect(result.count).toBe(5);
+				countFeatures(g_featureLayers[1], function(success,result)
+				{
+					expect(success).toBeTruthy();
+					expect(result.count).toBe(3);
+					done();
+				});
+			});
+
 		});
 		expect(g_offlineFeaturesManager.getOnlineStatus()).toBe(g_offlineFeaturesManager.RECONNECTING);
 	});
+
+    async.it("After online",function(done){
+        g_editsStore.pendingEditsCount(function(result){
+            expect(result).toBe(0);
+            done();
+        });
+    });
 });
 
 //describe("Offline edits optimized in zero edits", function()
