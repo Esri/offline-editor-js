@@ -563,6 +563,15 @@ describe("Offline Editing", function()
 		});
 	});
 
+    async.it("check db size", function(done){
+       g_editsStore.getUsage(function(usage,error){
+           expect(usage.sizeBytes).toBe(5343);
+           expect(usage.editCount).toBe(9);
+           expect(error).toBe(null);
+           done();
+       })
+    });
+
 	async.it("go Online", function(done)
 	{
 		// Remember we deleted g3! So our total count is 8 not 9. HOWEVER, there should be 9 records in the database!
