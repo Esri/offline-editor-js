@@ -572,52 +572,55 @@ describe("Offline Editing", function()
        })
     });
 
-    async.it("store FeatureLayer data", function(done){
-       var dataObject = {
-           graphics: {test:1},
-           renderer: {test:2}
-       }
-        g_editsStore.pushFeatureLayerData(dataObject,function(result){
-            expect(result).toBe(true);
-            done();
-        });
-    });
-
-    async.it("retrieve FeatureLayer data", function(done){
-        g_editsStore.getFeatureLayerData(function(success,data){
-            expect(success).toBe(true);
-            expect(data.id).toBe(g_editsStore.FEATURE_LAYER_DATAOBJECT);
-            expect(typeof data.graphics).toBe("object");
-            expect(typeof data.renderer).toBe("object");
-            done();
-        });
-    });
-
-    async.it("update FeatureLayer data", function(done){
-        var dataObject = {
-            graphics: {test: 2}
-        }
-        g_editsStore.updateFeatureLayerData(dataObject,function(success,result){
-            expect(success).toBe(true);
-            expect(result).toBe(null);
-
-            g_editsStore.getFeatureLayerData(function(success,data){
-                expect(success).toBe(true);
-                expect(data.id).toBe(g_editsStore.FEATURE_LAYER_DATAOBJECT);
-                expect(data.graphics.test).toBe(2);
+    describe("Test FeatureLayerData store", function()
+    {
+        async.it("store FeatureLayer data", function(done){
+            var dataObject = {
+                graphics: {test:1},
+                renderer: {test:2}
+            };
+            g_editsStore.pushFeatureLayerJSON(dataObject,function(result){
+                expect(result).toBe(true);
                 done();
             });
-        })
-    });
+        });
 
-    async.it("delete FeatureLayer data", function(done){
-       g_editsStore.deleteFeatureLayerData(function(success){
-           expect(success).toBe(true);
-           g_editsStore.getFeatureLayerData(function(success,data){ console.log("DATA BABY " + JSON.stringify(data))
-               expect(success).toBe(false);
-               done();
-           });
-       })
+        async.it("retrieve FeatureLayer data", function(done){
+            g_editsStore.getFeatureLayerJSON(function(success,data){
+                expect(success).toBe(true);
+                expect(data.id).toBe(g_editsStore.FEATURE_LAYER_JSON_ID);
+                expect(typeof data.graphics).toBe("object");
+                expect(typeof data.renderer).toBe("object");
+                done();
+            });
+        });
+
+        async.it("update FeatureLayer data", function(done){
+            var dataObject = {
+                graphics: {test: 2}
+            };
+            g_editsStore.updateFeatureLayerData(dataObject,function(success,result){
+                expect(success).toBe(true);
+                expect(result).toBe(null);
+
+                g_editsStore.getFeatureLayerJSON(function(success,data){
+                    expect(success).toBe(true);
+                    expect(data.id).toBe(g_editsStore.FEATURE_LAYER_JSON_ID);
+                    expect(data.graphics.test).toBe(2);
+                    done();
+                });
+            })
+        });
+
+        async.it("delete FeatureLayer data", function(done){
+            g_editsStore.deleteFeatureLayerData(function(success){
+                expect(success).toBe(true);
+                g_editsStore.getFeatureLayerJSON(function(success,data){ console.log("DATA BABY " + JSON.stringify(data))
+                    expect(success).toBe(false);
+                    done();
+                });
+            })
+        });
     });
 
 	async.it("go Online", function(done)
