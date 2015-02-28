@@ -610,6 +610,16 @@ describe("Offline Editing", function()
         })
     });
 
+    async.it("delete FeatureLayer data", function(done){
+       g_editsStore.deleteFeatureLayerData(function(success){
+           expect(success).toBe(true);
+           g_editsStore.getFeatureLayerData(function(success,data){ console.log("DATA BABY " + JSON.stringify(data))
+               expect(success).toBe(false);
+               done();
+           });
+       })
+    });
+
 	async.it("go Online", function(done)
 	{
 		// Remember we deleted g3! So our total count is 8 not 9. HOWEVER, there should be 9 records in the database!
