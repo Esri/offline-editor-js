@@ -572,9 +572,23 @@ describe("Offline Editing", function()
        })
     });
 
-    describe("Test FeatureLayerData store", function()
+    describe("Test FeatureLayerJSON store", function()
     {
-        async.it("store FeatureLayer data", function(done){
+
+        async.it("delete non-existent FeatureLayer data", function(done){
+            g_editsStore.deleteFeatureLayerJSON(function(success, msg){
+                expect(success).toBe(false);
+                expect(msg.message).toBe("id does not exist");
+
+                g_editsStore.getFeatureLayerJSON(function(success,msg){
+                    expect(success).toBe(false);
+                    expect(msg).toBe("nothing found");
+                    done();
+                });
+            })
+        });
+
+        async.it("store FeatureLayerJSON data", function(done){
             var dataObject = {
                 graphics: {test:1},
                 renderer: {test:2}
@@ -585,7 +599,7 @@ describe("Offline Editing", function()
             });
         });
 
-        async.it("retrieve FeatureLayer data", function(done){
+        async.it("retrieve FeatureLayerJSON data", function(done){
             g_editsStore.getFeatureLayerJSON(function(success,data){
                 expect(success).toBe(true);
                 expect(data.id).toBe(g_editsStore.FEATURE_LAYER_JSON_ID);
@@ -595,7 +609,7 @@ describe("Offline Editing", function()
             });
         });
 
-        async.it("update FeatureLayer data", function(done){
+        async.it("update FeatureLayerJSON data", function(done){
             var dataObject = {
                 graphics: {test: 2}
             };
@@ -612,11 +626,14 @@ describe("Offline Editing", function()
             })
         });
 
-        async.it("delete FeatureLayer data", function(done){
-            g_editsStore.deleteFeatureLayerData(function(success){
+        async.it("delete FeatureLayerJSON data", function(done){
+            g_editsStore.deleteFeatureLayerJSON(function(success, msg){
                 expect(success).toBe(true);
-                g_editsStore.getFeatureLayerJSON(function(success,data){
+                expect(msg.message).toBe("id does not exist");
+
+                g_editsStore.getFeatureLayerJSON(function(success,msg){
                     expect(success).toBe(false);
+                    expect(msg).toBe("nothing found");
                     done();
                 });
             })
