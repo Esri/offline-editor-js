@@ -572,6 +572,26 @@ describe("Offline Editing", function()
        })
     });
 
+    describe("Test PhantomGraphicsLayer", function()
+    {
+        async.it("Get PhantomLayerGraphics array", function(done){
+            g_editsStore.getPhantomGraphicsArray(function(results,errors){
+                expect(results.length).toBe(0);
+                expect(errors).toBe("end");
+                done();
+            })
+        })
+
+        async.it("Set PhantomLayerGraphic", function(done){
+            var graphic = new g_modules.Graphic({"geometry":{"x":-109900,"y":5137000,"spatialReference":{"wkid":102100}},"attributes":{"objectId":"test001","symbolname":"Reference Point DLRP","z":null,"additionalinformation":null,"eny":null,"datetimevalid":null,"datetimeexpired":null,"distance":null,"azimuth":null,"uniquedesignation":null,"x":null,"y":null}} );
+            g_editsStore.pushPhantomGraphic(graphic,function(result,error){
+                expect(result).toBe(true);
+                expect(error).toBe(null);
+                done();
+            });
+        })
+    });
+
     describe("Test FeatureLayerJSON store", function()
     {
 
