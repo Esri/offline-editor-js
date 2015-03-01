@@ -599,7 +599,7 @@ describe("Offline Editing", function()
             var dataObject = {
                 graphics: {test: 2}
             };
-            g_editsStore.updateFeatureLayerData(dataObject,function(success,result){
+            g_editsStore.pushFeatureLayerJSON(dataObject,function(success,result){
                 expect(success).toBe(true);
                 expect(result).toBe(null);
 
@@ -615,7 +615,7 @@ describe("Offline Editing", function()
         async.it("delete FeatureLayer data", function(done){
             g_editsStore.deleteFeatureLayerData(function(success){
                 expect(success).toBe(true);
-                g_editsStore.getFeatureLayerJSON(function(success,data){ console.log("DATA BABY " + JSON.stringify(data))
+                g_editsStore.getFeatureLayerJSON(function(success,data){
                     expect(success).toBe(false);
                     done();
                 });
