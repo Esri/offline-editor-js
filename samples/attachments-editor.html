@@ -75,7 +75,7 @@
 
             "dijit/layout/BorderContainer", "dijit/layout/ContentPane",
 
-            "../dist/offline-edit-min.js",
+            "../dist/offline-edit-src.js",
 
             "dojo/domReady!"
         ], function(
@@ -85,8 +85,7 @@
         {
             parser.parse();
 
-            var featureLayers = [], 
-                featureLayer,
+            var featureLayer,
                 attachmentsInited = false;
 
 //            window.proxyPath = null; //can be set to null when using a CORS-enabled server
@@ -171,7 +170,9 @@
                     {
                         var layer = evt.layer;
 
-                        offlineFeaturesManager.extend(featureLayer);
+                        offlineFeaturesManager.extend(featureLayer,function(success, error){
+                            if(success == false) alert("There was a problem initiating the database. " + error);
+                        });
                     }
                     catch(err)
                     {
