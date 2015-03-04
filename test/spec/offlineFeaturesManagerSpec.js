@@ -580,7 +580,7 @@ describe("Offline Editing", function()
                 expect(errors).toBe("end");
                 done();
             })
-        })
+        });
 
         async.it("Set PhantomLayerGraphic", function(done){
             var graphic = new g_modules.Graphic({"geometry":{"x":-109900,"y":5137000,"spatialReference":{"wkid":102100}},"attributes":{"objectId":"test001","symbolname":"Reference Point DLRP","z":null,"additionalinformation":null,"eny":null,"datetimevalid":null,"datetimeexpired":null,"distance":null,"azimuth":null,"uniquedesignation":null,"x":null,"y":null}} );
@@ -589,7 +589,57 @@ describe("Offline Editing", function()
                 expect(error).toBe(null);
                 done();
             });
-        })
+        });
+
+        async.it("Get simple PhantomLayerGraphics array (internal)", function(done){
+           g_editsStore._getPhantomGraphicsArraySimple(function(results,errors){
+               expect(results.length).toBe(1);
+               expect(results[0]).toBe("phantom-layertest001");
+               expect(errors).toBe("end");
+               done();
+           })
+        });
+
+        async.it("Add two more PhantomLayer graphics to database", function(done){
+            var graphic = new g_modules.Graphic({"geometry":{"x":-109901,"y":5137000,"spatialReference":{"wkid":102100}},"attributes":{"objectId":"test002","symbolname":"Reference Point DLRP","z":null,"additionalinformation":null,"eny":null,"datetimevalid":null,"datetimeexpired":null,"distance":null,"azimuth":null,"uniquedesignation":null,"x":null,"y":null}} );
+
+            g_editsStore.pushPhantomGraphic(graphic,function(result,error){
+                expect(result).toBe(true);
+                expect(error).toBe(null);
+
+                var graphic2 = new g_modules.Graphic({"geometry":{"x":-109901,"y":5137001,"spatialReference":{"wkid":102100}},"attributes":{"objectId":"test003","symbolname":"Reference Point DLRP","z":null,"additionalinformation":null,"eny":null,"datetimevalid":null,"datetimeexpired":null,"distance":null,"azimuth":null,"uniquedesignation":null,"x":null,"y":null}} );
+
+                g_editsStore.pushPhantomGraphic(graphic2,function(result,error){
+                    expect(result).toBe(true);
+                    expect(error).toBe(null);
+                    done();
+                });
+            });
+        });
+
+        async.it("Get simple PhantomLayerGraphics array (internal)", function(done){
+            g_editsStore._getPhantomGraphicsArraySimple(function(results,errors){
+                expect(results.length).toBe(3);
+                expect(results[0]).toBe("phantom-layertest001");
+                expect(results[1]).toBe("phantom-layertest002");
+                expect(results[2]).toBe("phantom-layertest003");
+                expect(errors).toBe("end");
+                done();
+            })
+        });
+
+        async.it("Delete PhantomLayerGraphics", function(done){
+
+           g_editsStore.deletePhantomGraphics(function(result){
+               expect(result).toBe(true);
+
+               g_editsStore._getPhantomGraphicsArraySimple(function(results,errors){
+                   expect(results.length).toBe(0);
+                   expect(errors).toBe("end");
+                   done();
+               })
+           })
+        });
     });
 
     describe("Test FeatureLayerJSON store", function()
