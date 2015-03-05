@@ -445,7 +445,7 @@ describe("Offline Editing", function()
         async.it("Get simple PhantomLayerGraphics array (internal)", function(done){
            g_editsStore._getPhantomGraphicsArraySimple(function(results,errors){
                expect(results.length).toBe(1);
-               expect(results[0]).toBe("phantom-layertest001");
+               expect(results[0]).toBe("phantom-layer+test001");
                expect(errors).toBe("end");
                done();
            })
@@ -471,17 +471,31 @@ describe("Offline Editing", function()
         async.it("Get simple PhantomLayerGraphics array (internal)", function(done){
             g_editsStore._getPhantomGraphicsArraySimple(function(results,errors){
                 expect(results.length).toBe(3);
-                expect(results[0]).toBe("phantom-layertest001");
-                expect(results[1]).toBe("phantom-layertest002");
-                expect(results[2]).toBe("phantom-layertest003");
+                expect(results[0]).toBe("phantom-layer+test001");
+                expect(results[1]).toBe("phantom-layer+test002");
+                expect(results[2]).toBe("phantom-layer+test003");
                 expect(errors).toBe("end");
                 done();
             })
         });
 
-        async.it("Delete PhantomLayerGraphics", function(done){
+        async.it("Delete a single graphic in the phantom graphics layer", function(done){
+           g_editsStore.deletePhantomGraphic("phantom-layer+test001",function(success){
+               expect(success).toBe(true);
+               
+               g_editsStore._getPhantomGraphicsArraySimple(function(results,errors){
+                   expect(results.length).toBe(2);
+                   expect(results[0]).toBe("phantom-layer+test002");
+                   expect(results[1]).toBe("phantom-layer+test003");
+                   expect(errors).toBe("end");
+                   done();
+               })
+           })
+        });
 
-           g_editsStore.deletePhantomGraphics(function(result){
+        async.it("Delete all PhantomLayerGraphics", function(done){
+
+           g_editsStore.resetPhantomGraphicsQueue(function(result){
                expect(result).toBe(true);
 
                g_editsStore._getPhantomGraphicsArraySimple(function(results,errors){
