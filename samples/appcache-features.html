@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html manifest="appcache-features.appcache">
+<!--<html manifest="appcache-features.appcache">-->
+<html>
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <!--The viewport meta tag is used to improve the presentation and behavior of the samples 
@@ -182,8 +183,15 @@
                 var popup,closeBtn,saveBtn,deleteBtn,stopMainID,stopID,stopRoutes,stopNames;
 
                 var editsStore = new O.esri.Edit.EditStore();
-                mediaQueries();
-                initModalPopup();
+                editsStore.init(function(success){
+                    if(success){
+                        mediaQueries();
+                        initModalPopup();
+                    }
+                    else{
+                        alert("Unable to initialize database.");
+                    }
+                });
 
                 /**
                  * There have been a few bugs in the offline detection library (offline.min.js)
@@ -733,36 +741,28 @@
                  */
 
                 function editsEnqueued(){
-                    if( editsStore.hasPendingEdits())
-                    {
-                        var edits = editsStore.retrieveEditsQueue();
-                        pendingEdits.innerHTML = edits.length;
 
-                        //Make sure we store phantom layer graphics so that we have them if the browser is restarted
-                        if(busStopFeatureLayer != null && typeof busStopFeatureLayer.getPhantomLayerGraphics !== "undefined") {
-                            var graphics = busStopFeatureLayer.getPhantomLayerGraphics(function(result){
-                                localStorage.offlinePhantomGraphics = result;
-                            });
-                        }
-                    }
-                    else
-                    {
-                        pendingEdits.innerHTML = "0";
-                    }
+                    editsStore.pendingEditsCount(function(count){
+                        pendingEdits.innerHTML = count;
+                    });
+
+//TODO!!
+
+//                    if(busStopFeatureLayer != null && typeof busStopFeatureLayer.getPhantomLayerGraphics !== "undefined") {
+//                        var graphics = busStopFeatureLayer.getPhantomLayerGraphics(function(result){
+//                            localStorage.offlinePhantomGraphics = result;
+//                        });
+//                    }
                 }
 
                 function allEditsSent(){
-                    if( editsStore.hasPendingEdits())
-                    {
-                        var edits = editsStore.retrieveEditsQueue();
-                        pendingEdits.innerHTML = edits.length;
-                    }
-                    else
-                    {
-                        pendingEdits.innerHTML = "0";
-                        // Clear out the phantom layer
-                        localStorage.setItem("offlinePhantomGraphics","");
-                    }
+
+                    editsStore.pendingEditsCount(function(count){
+                        pendingEdits.innerHTML = count;
+//TODO!!
+//                        localStorage.setItem("offlinePhantomGraphics","");
+                    });
+
                 }
 
                 function editsError(){
@@ -770,15 +770,9 @@
                 }
 
                 function updateStatus(){
-                    if( editsStore.hasPendingEdits())
-                    {
-                        var edits = editsStore.retrieveEditsQueue();
-                        pendingEdits.innerHTML = edits.length;
-                    }
-                    else
-                    {
-                        pendingEdits.innerHTML = "0";
-                    }
+                    editsStore.pendingEditsCount(function(count){
+                        pendingEdits.innerHTML = count;
+                    });
                 }
 
                 function updatePhantomGraphicsLayer(){
