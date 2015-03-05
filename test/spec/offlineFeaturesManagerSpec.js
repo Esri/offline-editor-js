@@ -160,121 +160,6 @@ describe("Normal online editing - Exercise the feature services", function()
         });
 		});
 	});
-//
-//	describe("Extended applyEdits method (online)", function()
-//	{
-//		async.it("clears the feature layers", function(done)
-//		{
-//			var count = 0;
-//			function completedOne()
-//			{
-//				count += 1;
-//				console.log(count);
-//				if(count==3)
-//					done();
-//			}
-//			clearFeatureLayer( g_featureLayers[0], function(success,response)
-//			{
-//				expect(success).toBeTruthy();
-//				var listener = g_featureLayers[0].on('update-end', function(){ listener.remove(); completedOne();})
-//				g_featureLayers[0].refresh();
-//
-//			});
-//			clearFeatureLayer( g_featureLayers[1], function(success,response)
-//			{
-//				expect(success).toBeTruthy();
-//				var listener = g_featureLayers[1].on('update-end', function(){ listener.remove(); completedOne();})
-//				g_featureLayers[1].refresh();
-//			});
-//			clearFeatureLayer( g_featureLayers[2], function(success,response)
-//			{
-//				expect(success).toBeTruthy();
-//				var listener = g_featureLayers[2].on('update-end', function(){ listener.remove(); completedOne();})
-//				g_featureLayers[2].refresh();
-//			});
-//		});
-//
-//		async.it("add test features", function(done)
-//		{
-//			expect(g_featureLayers[0].graphics.length).toBe(0);
-//
-//			g1 = new g_modules.Graphic({"geometry":{"x":-105400,"y":5137000,"spatialReference":{"wkid":102100}},"attributes":{"symbolname":"Ground Zero","z":null,"additionalinformation":null,"eny":null,"datetimevalid":null,"datetimeexpired":null,"distance":null,"azimuth":null,"uniquedesignation":null,"x":null,"y":null}});
-//			g2 = new g_modules.Graphic({"geometry":{"x":-105600,"y":5137000,"spatialReference":{"wkid":102100}},"attributes":{"symbolname":"Ground Zero","z":null,"additionalinformation":null,"eny":null,"datetimevalid":null,"datetimeexpired":null,"distance":null,"azimuth":null,"uniquedesignation":null,"x":null,"y":null}});
-//			g3 = new g_modules.Graphic({"geometry":{"x":-105800,"y":5137000,"spatialReference":{"wkid":102100}},"attributes":{"symbolname":"Ground Zero","z":null,"additionalinformation":null,"eny":null,"datetimevalid":null,"datetimeexpired":null,"distance":null,"azimuth":null,"uniquedesignation":null,"x":null,"y":null}});
-//
-//			var adds = [g1,g2,g3];
-//			g_featureLayers[0].applyEdits(adds,null,null,function(addResults,updateResults,deleteResults)
-//			{
-//				expect(addResults.length).toBe(3);
-//				expect(addResults[0].success).toBeTruthy();
-//				expect(addResults[1].success).toBeTruthy();
-//				expect(addResults[2].success).toBeTruthy();
-//				g1.attributes.objectid = addResults[0].objectId;
-//				g2.attributes.objectid = addResults[1].objectId;
-//				g3.attributes.objectid = addResults[2].objectId;
-//				expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2,g3]));
-//				expect(g_featureLayers[0].graphics.length).toBe(3);
-//				countFeatures(g_featureLayers[0], function(success,result)
-//				{
-//					expect(success).toBeTruthy();
-//					expect(result.count).toBe(3);
-//					done();
-//				});
-//			},
-//			function(error)
-//			{
-//				expect(true).toBeFalsy();
-//				done();
-//			});
-//		});
-//
-//		async.it("update test features", function(done)
-//		{
-//			expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2,g3]));
-//			expect(g_featureLayers[0].graphics.length).toBe(3);
-//
-//			g1.geometry.y += 300;
-//			g2.geometry.y += 100;
-//			g3.geometry.y -= 200;
-//			var updates = [g1,g2,g3];
-//			g_featureLayers[0].applyEdits(null,updates,null,function(addResults,updateResults,deleteResults)
-//			{
-//				expect(updateResults.length).toBe(3);
-//				expect(updateResults[0].success).toBeTruthy();
-//				expect(updateResults[1].success).toBeTruthy();
-//				expect(updateResults[2].success).toBeTruthy();
-//				expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2,g3]));
-//				expect(g_featureLayers[0].graphics.length).toBe(3);
-//				done();
-//			},
-//			function(error)
-//			{
-//				expect(true).toBeFalsy();
-//				done();
-//			});
-//		});
-//
-//		async.it("delete test features", function(done)
-//		{
-//			expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2,g3]));
-//			expect(g_featureLayers[0].graphics.length).toBe(3);
-//
-//			var deletes = [g3];
-//			g_featureLayers[0].applyEdits(null,null,deletes,function(addResults,updateResults,deleteResults)
-//			{
-//				expect(deleteResults.length).toBe(1);
-//				expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2]));
-//				expect(g_featureLayers[0].graphics.length).toBe(2);
-//				done();
-//			},
-//			function(error)
-//			{
-//				expect(true).toBeFalsy();
-//				done();
-//			});
-//		});
-//	});
-//});
 
 describe("Offline Editing", function()
 {
@@ -461,39 +346,6 @@ describe("Offline Editing", function()
 		});
 	});
 
-	//async.it("update existing features again - points", function(done)
-	//{
-	//	expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2,g3]));
-	//	expect(g_featureLayers[0].graphics.length).toBe(3);
-	//	expect(g_offlineFeaturesManager.getOnlineStatus()).toBe(g_offlineFeaturesManager.OFFLINE);
-    //
-	//	g1.geometry.y += 50;
-	//	g2.geometry.y += 50;
-	//	g3.geometry.y -= 50;
-	//	var updates = [g1,g2,g3];
-	//	g_featureLayers[0].applyEdits(null,updates,null,function(addResults,updateResults,deleteResults)
-	//	{
-	//		expect(updateResults.length).toBe(3);
-	//		expect(updateResults[0].success).toBeTruthy();
-	//		expect(updateResults[1].success).toBeTruthy();
-	//		expect(updateResults[2].success).toBeTruthy();
-	//		expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2,g3]));
-	//		expect(g_featureLayers[0].graphics.length).toBe(3);
-	//		expect(g_editsStore.pendingEditsCount()).toBe(9);
-	//		countFeatures(g_featureLayers[0], function(success,result)
-	//		{
-	//			expect(success).toBeTruthy();
-	//			expect(result.count).toBe(3);
-	//			done();
-	//		});
-	//	},
-	//	function(error)
-	//	{
-	//		expect(true).toBeFalsy();
-	//		done();
-	//	});
-	//});
-	//
 	async.it("delete existing features - points", function(done)
 	{
 		expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2,g3]));
@@ -550,12 +402,6 @@ describe("Offline Editing", function()
 			expect(g4.attributes.objectid).toBeLessThan(0);
 			expect(g5.attributes.objectid).toBeLessThan(g4.attributes.objectid);
 			expect(g6.attributes.objectid).toBeLessThan(g5.attributes.objectid);
-			//countFeatures(g_featureLayers[0], function(success,result)
-			//{
-			//	expect(success).toBeTruthy();
-			//	expect(result.count).toBe(3); // still 3
-			//	done();
-			//});
 		},
 		function(error)
 		{
@@ -571,6 +417,11 @@ describe("Offline Editing", function()
            done();
        })
     });
+
+    // TO-DO!!
+    //describe("Test attachments", function(){
+    //    //TO-DO
+    //});
 
     describe("Test PhantomGraphicsLayer", function()
     {
