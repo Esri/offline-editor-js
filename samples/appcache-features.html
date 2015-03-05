@@ -390,9 +390,16 @@
                     offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_ENQUEUED, editsEnqueued);
                     offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_SENT, updateStatus);
                     offlineFeaturesManager.on(offlineFeaturesManager.events.ALL_EDITS_SENT, allEditsSent);
+                    offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_SENT_ERROR, editsError);
 
-                    offlineFeaturesManager.extend(busStopFeatureLayer);
-                    console.log("offlineFeaturesManager initialized.");
+                    offlineFeaturesManager.extend(busStopFeatureLayer,function(result, error){
+                        if(result){
+                            console.log("offlineFeaturesManager initialized.");
+                        }
+                        else{
+                            alert("Unable to initialize the database. " + error);
+                        }
+                    });
 
                     Offline.check();
                     Offline.on('up', goOnline);
@@ -756,6 +763,10 @@
                         // Clear out the phantom layer
                         localStorage.setItem("offlinePhantomGraphics","");
                     }
+                }
+
+                function editsError(){
+                    alert("There was a problem. Not all edits were synced with the server.");
                 }
 
                 function updateStatus(){
