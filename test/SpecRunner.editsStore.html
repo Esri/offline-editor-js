@@ -29,6 +29,7 @@
 	var g_map;
 	var g_test = {};
 	var g_editsStore;
+    var esriGraphic;
 
 	require(["esri/map", 
 	"esri/layers/GraphicsLayer", "esri/graphic", "esri/symbols/SimpleFillSymbol", "esri/symbols/SimpleMarkerSymbol", "esri/symbols/SimpleLineSymbol",
@@ -53,6 +54,8 @@
 
 		g_map.on('load', test);
 		*/
+        esriGraphic = Graphic;
+
 		g_editsStore = new O.esri.Edit.EditStore();
 		test();
 
