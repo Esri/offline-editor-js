@@ -1,11 +1,5 @@
 "use strict";
 
-var KEY_PREFIX = "__LOCAL_STORAGE_TEST__";
-var EDITS_QUEUE_KEY = "esriEditsQueue";
-var REDO_STACK_KEY  = "esriRedoStack";
-
-var EXECUTE_LONG_TESTS = true;
-
 describe("Internal Methods", function()
 {
     describe("Serialize/Deserialize Graphics", function()
@@ -218,7 +212,7 @@ describe("Public Interface", function()
                 })
             });
 
-            async.it("delete an existing record from the database", function(done){
+            async.it("Add record then delete it from the database", function(done){
 
                 //First we add a new entry
                 g_editsStore.pushEdit(g_editsStore.ADD, 22, g_test.pointFeature, function(result){
@@ -236,189 +230,166 @@ describe("Public Interface", function()
                 });
 
             });
+        });
 
-//            it("pending edits", function()
-//            {
-//                expect(g_editsStore.hasPendingEdits()).toBeTruthy();
-//            });
-//
-//            it("pop edit from edits queue - 1", function()
-//            {
-//                var firstEdit = g_editsStore.popFirstEdit();
-//                expect(g_editsStore.pendingEditsCount()).toBe(2);
-//                expect(typeof(firstEdit)).toBe("object");
-//                expect(firstEdit.operation).toBe(g_editsStore.ADD);
-//                expect(firstEdit.layer).toBe(6);
-//                expect(firstEdit.graphic.attributes).toEqual(g_test.pointFeature.attributes);
-//                expect(firstEdit.graphic.geometry).toEqual(g_test.pointFeature.geometry);
-//                expect(firstEdit.graphic.symbol).toEqual(null);
-//            });
-//
-//            it("pop edit from edits queue - 2", function()
-//            {
-//                var secondEdit = g_editsStore.popFirstEdit();
-//                expect(g_editsStore.pendingEditsCount()).toBe(1);
-//                expect(typeof(secondEdit)).toBe("object");
-//                expect(secondEdit.operation).toBe(g_editsStore.UPDATE);
-//                expect(secondEdit.layer).toBe(3);
-//                expect(secondEdit.graphic.attributes).toEqual(g_test.polygonFeature.attributes);
-//                expect(secondEdit.graphic.geometry).toEqual(g_test.polygonFeature.geometry);
-//                expect(secondEdit.graphic.symbol).toEqual(null);
-//            });
-//
-//            it("pop edit from edits queue - 3", function()
-//            {
-//                var thirdEdit = g_editsStore.popFirstEdit();
-//                expect(g_editsStore.pendingEditsCount()).toBe(0);
-//                expect(typeof(thirdEdit)).toBe("object");
-//                expect(thirdEdit.operation).toBe(g_editsStore.DELETE);
-//                expect(thirdEdit.layer).toBe(2);
-//                expect(thirdEdit.graphic.attributes).toEqual(g_test.lineFeature.attributes);
-//                expect(thirdEdit.graphic.geometry).toEqual(g_test.lineFeature.geometry);
-//                expect(thirdEdit.graphic.symbol).toEqual(null);
-//            });
-//
-//            it("pending edits", function()
-//            {
-//                expect(g_editsStore.hasPendingEdits()).toBeFalsy();
-//            });
-//        });
-//
-    });
-//
-    describe("Database storage size", function()
-    {
-        async.it("get size", function(done){
-            g_editsStore.getUsage(function(result,error){
-                console.log("RESULT IS " + result.sizeBytes);
-                expect(result).toEqual(jasmine.any(Object));
-                expect(result.sizeBytes).toEqual(1302);
-                expect(result.editCount).toEqual(3);
-                done();
+        describe("Database storage size", function()
+        {
+            async.it("get size", function(done){
+                g_editsStore.getUsage(function(result,error){
+                    console.log("RESULT IS " + result.sizeBytes);
+                    expect(result).toEqual(jasmine.any(Object));
+                    expect(result.sizeBytes).toEqual(1302);
+                    expect(result.editCount).toEqual(3);
+                    done();
+                })
             })
-        })
-    });
-//        var usedBytes, totalBytes;
-//
-//        it("reset edits queue", function()
-//        {
-//            g_editsStore.resetEditsQueue();
-//            expect(g_editsStore.pendingEditsCount()).toBe(0);
-//        });
-//
-//        it("add edits", function()
-//        {
-//            var result;
-//            result = g_editsStore.pushEdit(g_editsStore.ADD, 6, g_test.pointFeature);
-//            expect(g_editsStore.pendingEditsCount()).toBe(1);
-//            expect(result.success).toBeTruthy();
-//            expect(result.error).toBeUndefined();
-//            result = g_editsStore.pushEdit(g_editsStore.UPDATE, 3, g_test.polygonFeature);
-//            expect(result.success).toBeTruthy();
-//            expect(result.error).toBeUndefined();
-//            expect(g_editsStore.pendingEditsCount()).toBe(2);
-//        });
-//
-//        it("report edit store size", function()
-//        {
-//            usedBytes = g_editsStore.getEditsStoreSizeBytes();
-//            expect(usedBytes).toBe(505);
-//        });
-//
-//        it("report total local storage size", function()
-//        {
-//            totalBytes = g_editsStore.getLocalStorageSizeBytes();
-//            expect(usedBytes).not.toBeGreaterThan(totalBytes);
-//        });
-//
-//        it("report edit store size when uninitalized", function()
-//        {
-//            window.localStorage.removeItem( EDITS_QUEUE_KEY );
-//            window.localStorage.removeItem( REDO_STACK_KEY );
-//            var usedBytes = g_editsStore.getEditsStoreSizeBytes();
-//            expect(usedBytes).toBe(0);
-//        });
-//
-//        if( EXECUTE_LONG_TESTS )
-//        {
-//            it("exhaust localStorage capacity", function()
-//            {
-//                window.localStorage.clear();
-//                console.log("this will take some time");
-//
-//                // clean everything before
-//                for( var key in window.localStorage )
-//                {
-//                    if( key.indexOf(KEY_PREFIX)==0 )
-//                        window.localStorage.removeItem(key);
-//                }
-//
-//                var sizeBefore = g_editsStore.getLocalStorageSizeBytes();
-//                if( sizeBefore == 0)
-//                {
-//                    // if not initialized, create the empty elements
-//                    window.localStorage.setItem( EDITS_QUEUE_KEY, "");
-//                    window.localStorage.setItem( REDO_STACK_KEY, "");
-//                    sizeBefore = g_editsStore.getLocalStorageSizeBytes();
-//                }
-//
-//                // first, fill localStorage up to max capacity
-//                var error = null;
-//
-//                try
-//                {
-//                    var index = 0;
-//                    var value = "0123456789";
-//                    var value8 = value + value + value + value + value + value + value + value;
-//                    while(true)
-//                    {
-//                        var key = KEY_PREFIX + index;
-//                        window.localStorage.setItem(key, value8 + value8 + value8 + value8);
-//                        index += 1;
-//
-//                        if( index % 1000 == 0)
-//                            console.log(index, g_editsStore.getLocalStorageSizeBytes());
-//                    }
-//                }
-//                catch(err)
-//                {
-//                    console.log(err);
-//                    error = err;
-//                }
-//
-//                expect(error).not.toBe(null);
-//
-//                // now, try to push one edit
-//                var result = g_editsStore.pushEdit(g_editsStore.ADD, 20, g_test.polygonFeature);
-//                expect(result.success).toBeFalsy();
-//                expect(result.error.code).toEqual(1000);
-//                expect(result.error.description).toEqual(g_editsStore.ERROR_LOCALSTORAGE_FULL);
-//
-//                // clean everything
-//                for( var key in window.localStorage )
-//                {
-//                    if( key.indexOf(KEY_PREFIX)==0 )
-//                        window.localStorage.removeItem(key);
-//                }
-//
-//                var sizeAfter = g_editsStore.getLocalStorageSizeBytes();
-//                expect(sizeBefore).toEqual(sizeAfter);
-//            });
-//        }
-//        else
-//        {
-//            it("exhaust localStorage capacity - LONG TEST NOT EXECUTED", function()
-//            {
-//            });
-//        }
+        });
+
+        describe("Handle Phantom Graphics", function(){
+           async.it("add a phantom graphic", function(done){
+
+               g_test.pointFeature2 = new esriGraphic( g_test.point, g_test.pointSymbol, {"name": "the name of the feature", "objectId":200});
+
+               g_editsStore.pushPhantomGraphic(g_test.pointFeature2,function(success,err){
+                   expect(success).toBe(true);
+                   expect(err).toBe(null);
+                   done();
+               });
+           });
+
+            async.it("add another phantom graphic", function(done){
+
+                g_test.pointFeature3 = new esriGraphic( g_test.point, g_test.pointSymbol, {"name": "the name of the feature", "objectId":300});
+                g_editsStore.pushPhantomGraphic(g_test.pointFeature3,function(success,err){
+                    expect(success).toBe(true);
+                    expect(err).toBe(null);
+                    done();
+                });
+            });
+
+           async.it("get phantom graphics array", function(done){
+               g_editsStore.getPhantomGraphicsArray(function(array,message){
+                   expect(array.length).toBe(2);
+                   expect(message).toBe("end");
+                   expect(array[0].id).toBe("phantom-layer+200");
+                   expect(array[0].graphic.attributes.name).toBe("the name of the feature");
+                   expect(array[1].id).toBe("phantom-layer+300");
+                   expect(array[1].graphic.attributes.name).toBe("the name of the feature");
+                   done();
+               });
+           });
+
+            async.it("get phantom graphics array simple", function(done){
+               g_editsStore._getPhantomGraphicsArraySimple(function(array, message){
+                   expect(array.length).toBe(2);
+                   expect(message).toBe("end");
+                   expect(array[0]).toBe("phantom-layer+200");
+                   expect(array[1]).toBe("phantom-layer+300");
+                   done();
+               });
+            });
+
+            async.it("delete phantom graphic",function(done){
+               g_editsStore.deletePhantomGraphic("phantom-layer+200",function(success){
+                   expect(success).toBe(true)
+                   g_editsStore._getPhantomGraphicsArraySimple(function(array,message){
+                       expect(array.length).toBe(1);
+                       expect(message).toBe("end");
+                       expect(array[0]).toBe("phantom-layer+300");
+                       done();
+                   });
+               }) ;
+            });
+
+            async.it("reset phantom graphics queue",function(done){
+               g_editsStore.resetPhantomGraphicsQueue(function(success){
+                   expect(success).toBe(true);
+                   g_editsStore._getPhantomGraphicsArraySimple(function(array, message){
+                       expect(array.length).toBe(0);
+                       expect(message).toBe("end");
+                       done();
+                   });
+               })
+            });
+
+            async.it("get size - should be the same", function(done){
+                g_editsStore.getUsage(function(success){
+                    expect(success).toEqual(jasmine.any(Object));
+                    expect(success.sizeBytes).toEqual(1302);
+                    expect(success.editCount).toEqual(3);
+                    done();
+                })
+            })
+
+        });
+
+        describe("Handle FeatureLayer Service Info in database", function(){
+
+            async.it("set feature layer service info",function(done){
+                var obj = {"something":0,"somethingElse":"helloworld"};
+                g_editsStore.pushFeatureLayerJSON(obj,function(success,error){
+                    expect(success).toBe(true);
+                    expect(error).toBe(null);
+                    done();
+                })
+            });
+
+            async.it("get feature layer service info",function(done){
+               g_editsStore.getFeatureLayerJSON(function(success,result){
+                   expect(success).toBe(true);
+                   expect(result).toEqual(jasmine.any(Object));
+                   expect(result.id).toEqual(g_editsStore.FEATURE_LAYER_JSON_ID);
+                   done();
+               })
+            });
+
+            async.it("get size", function(done){
+                g_editsStore.getUsage(function(success){
+                    expect(success).toEqual(jasmine.any(Object));
+                    expect(success.sizeBytes).toEqual(1379);
+                    expect(success.editCount).toEqual(4);
+                    done();
+                })
+            });
+
+            async.it("delete feature layer service info", function(done){
+                g_editsStore.deleteFeatureLayerJSON(function(success,message){
+                    expect(success).toBe(true);
+                    g_editsStore.getFeatureLayerJSON(function(success,result){
+                        expect(success).toBe(false);
+                        expect(result).toEqual("nothing found");
+                        done();
+                    })
+                });
+            });
+
+            async.it("get size", function(done){
+                g_editsStore.getUsage(function(success){
+                    expect(success).toEqual(jasmine.any(Object));
+                    expect(success.sizeBytes).toEqual(1302);
+                    expect(success.editCount).toEqual(3);
+                    done();
+                })
+            });
+        });
     })
 });
-//
-//describe("Reset store", function()
-//{
-//    it("reset the store", function()
-//    {
-//        g_editsStore.resetEditsQueue();
-//    })
-//});
-//
+
+describe("Reset store", function()
+{
+    it("reset the store", function()
+    {
+        g_editsStore.resetEditsQueue(function(success){
+            expect(success).toBe(true);
+        });
+    });
+    it("size should be zero", function(){
+
+        g_editsStore.getUsage(function(success){
+            expect(success).toEqual(jasmine.any(Object));
+            expect(success.sizeBytes).toEqual(0);
+            expect(success.editCount).toEqual(0);
+        });
+    });
+});
+
