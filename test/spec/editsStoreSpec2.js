@@ -72,120 +72,6 @@ describe("Internal Methods", function()
                 expect(typeof(g_test.polygonFeature.attributes)).toBe("object");
             });
         });
-
-        describe("Serialize/Deserialize Point", function()
-        {
-            var str, graphic;
-
-            it("serialize", function()
-            {
-                str = g_editsStore._serialize(g_test.pointFeature);
-                expect(typeof(str)).toBe("string");
-            });
-
-            it("deserialize", function()
-            {
-                graphic = g_editsStore._deserialize(str);
-                expect(typeof(graphic)).toBe("object");
-                expect(graphic.declaredClass).toEqual("esri.Graphic");
-            });
-
-            it("deserialize - attributes", function()
-            {
-                expect(graphic.attributes).toEqual(g_test.pointFeature.attributes);
-            });
-
-            it("deserialize - geometry", function()
-            {
-                expect(graphic.geometry).toEqual(g_test.pointFeature.geometry);
-            });
-
-            it("deserialize - symbol should be null", function()
-            {
-                expect(graphic.symbol).toBeNull();
-            });
-
-            it("deserialize - infoTemplate should be null", function()
-            {
-                expect(graphic.infoTemplate).toBeNull();
-            });
-        });
-
-        describe("Serialize/Deserialize Polyline", function()
-        {
-            var str, graphic;
-
-            it("serialize", function()
-            {
-                str = g_editsStore._serialize(g_test.lineFeature);
-                expect(typeof(str)).toBe("string");
-            });
-
-            it("deserialize", function()
-            {
-                graphic = g_editsStore._deserialize(str);
-                expect(typeof(graphic)).toBe("object");
-                expect(graphic.declaredClass).toEqual("esri.Graphic");
-            });
-
-            it("deserialize - attributes", function()
-            {
-                expect(graphic.attributes).toEqual(g_test.lineFeature.attributes);
-            });
-
-            it("deserialize - geometry", function()
-            {
-                expect(graphic.geometry).toEqual(g_test.lineFeature.geometry);
-            });
-
-            it("deserialize - symbol should be null", function()
-            {
-                expect(graphic.symbol).toBeNull();
-            });
-
-            it("deserialize - infoTemplate should be null", function()
-            {
-                expect(graphic.infoTemplate).toBeNull();
-            });
-        });
-
-        describe("Serialize/Deserialize Polygon", function()
-        {
-            var str, graphic;
-
-            it("serialize", function()
-            {
-                str = g_editsStore._serialize(g_test.polygonFeature);
-                expect(typeof(str)).toBe("string");
-            });
-
-            it("deserialize", function()
-            {
-                graphic = g_editsStore._deserialize(str);
-                expect(typeof(graphic)).toBe("object");
-                expect(graphic.declaredClass).toEqual("esri.Graphic");
-            });
-
-            it("deserialize - attributes", function()
-            {
-                expect(graphic.attributes).toEqual(g_test.polygonFeature.attributes);
-            });
-
-            it("deserialize - geometry", function()
-            {
-                expect(graphic.geometry).toEqual(g_test.polygonFeature.geometry);
-            });
-
-            it("deserialize - symbol should be null", function()
-            {
-                expect(graphic.symbol).toBeNull();
-            });
-
-            it("deserialize - infoTemplate should be null", function()
-            {
-                expect(graphic.infoTemplate).toBeNull();
-            });
-        });
     });
 
     describe("Pack/Unpack array of edits",function()
@@ -279,15 +165,9 @@ describe("Public Interface", function()
 
             async.it("check yes edit already exists", function(done)
             {
+                var  id = 6 + "/" + g_test.pointFeature.attributes.objectid;
 
-                var edit = {
-                    id: 6 + "/" + g_test.pointFeature.attributes.objectid,
-                    operation: g_editsStore.ADD,
-                    layer: 6,
-                    graphic: g_test.pointFeature.toJson()
-                };
-
-                g_editsStore.editExists(edit).then(function(result){
+                g_editsStore.editExists(id).then(function(result){
                     console.log("RESULT does edit exist " + JSON.stringify(result));
                     expect(result.success).toBe(true);
                     done();
@@ -300,14 +180,8 @@ describe("Public Interface", function()
             async.it("check no edit does not exist", function(done)
             {
 
-                var edit = {
-                    id: 62 + "/" + g_test.pointFeature.attributes.objectid,
-                    operation: g_editsStore.ADD,
-                    layer: 62,
-                    graphic: g_test.pointFeature.toJson()
-                };
-
-                g_editsStore.editExists(edit).then(function(result){
+                var id = 62 + "/" + g_test.pointFeature.attributes.objectid;
+                g_editsStore.editExists(id).then(function(result){
                     console.log("RESULT does edit exist " + JSON.stringify(result));
                     expect(result.success).toBe(false);
                     done();
@@ -418,7 +292,7 @@ describe("Public Interface", function()
             g_editsStore.getUsage(function(result,error){
                 console.log("RESULT IS " + result.sizeBytes);
                 expect(result).toEqual(jasmine.any(Object));
-                expect(result.sizeBytes).toEqual(1142);
+                expect(result.sizeBytes).toEqual(1302);
                 expect(result.editCount).toEqual(3);
                 done();
             })
