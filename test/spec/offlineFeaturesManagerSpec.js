@@ -482,7 +482,7 @@ describe("Offline Editing", function()
         async.it("Delete a single graphic in the phantom graphics layer", function(done){
            g_editsStore.deletePhantomGraphic("phantom-layer+test001",function(success){
                expect(success).toBe(true);
-               
+
                g_editsStore._getPhantomGraphicsArraySimple(function(results,errors){
                    expect(results.length).toBe(2);
                    expect(results[0]).toBe("phantom-layer+test002");
@@ -645,7 +645,7 @@ describe("Offline Editing", function()
 		expect(g_offlineFeaturesManager.getOnlineStatus()).toBe(g_offlineFeaturesManager.RECONNECTING);
 	});
 
-    async.it("After online",function(done){
+    async.it("After online - check pending edits count 0",function(done){
         g_editsStore.pendingEditsCount(function(result){
             expect(result).toBe(0);
             done();
