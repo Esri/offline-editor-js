@@ -445,7 +445,7 @@ describe("Offline Editing", function()
         async.it("Get simple PhantomLayerGraphics array (internal)", function(done){
            g_editsStore._getPhantomGraphicsArraySimple(function(results,errors){
                expect(results.length).toBe(1);
-               expect(results[0]).toBe("phantom-layer+test001");
+               expect(results[0]).toBe("phantom-layer|@|test001");
                expect(errors).toBe("end");
                done();
            })
@@ -471,22 +471,22 @@ describe("Offline Editing", function()
         async.it("Get simple PhantomLayerGraphics array (internal)", function(done){
             g_editsStore._getPhantomGraphicsArraySimple(function(results,errors){
                 expect(results.length).toBe(3);
-                expect(results[0]).toBe("phantom-layer+test001");
-                expect(results[1]).toBe("phantom-layer+test002");
-                expect(results[2]).toBe("phantom-layer+test003");
+                expect(results[0]).toBe("phantom-layer|@|test001");
+                expect(results[1]).toBe("phantom-layer|@|test002");
+                expect(results[2]).toBe("phantom-layer|@|test003");
                 expect(errors).toBe("end");
                 done();
             })
         });
 
         async.it("Delete a single graphic in the phantom graphics layer", function(done){
-           g_editsStore.deletePhantomGraphic("phantom-layer+test001",function(success){
+           g_editsStore.deletePhantomGraphic("phantom-layer|@|test001",function(success){
                expect(success).toBe(true);
 
                g_editsStore._getPhantomGraphicsArraySimple(function(results,errors){
                    expect(results.length).toBe(2);
-                   expect(results[0]).toBe("phantom-layer+test002");
-                   expect(results[1]).toBe("phantom-layer+test003");
+                   expect(results[0]).toBe("phantom-layer|@|test002");
+                   expect(results[1]).toBe("phantom-layer|@|test003");
                    expect(errors).toBe("end");
                    done();
                })
@@ -583,13 +583,17 @@ describe("Offline Editing", function()
 		expect(g_featureLayers[0].graphics.length).toBe(5);
 		expect(g_featureLayers[1].graphics.length).toBe(3);
 
-		var listener = jasmine.createSpy('event listener');
-		g_offlineFeaturesManager.on(g_offlineFeaturesManager.events.ALL_EDITS_SENT, listener);
+		var listener = jasmine.createSpy('event listener all edits sent');
+        var listener_editsSent = jasmine.createSpy('event listener edits sent');
 
-		g_offlineFeaturesManager.goOnline(function(results,responses) {
+		g_offlineFeaturesManager.on(g_offlineFeaturesManager.events.ALL_EDITS_SENT,listener);
+        g_offlineFeaturesManager.on(g_offlineFeaturesManager.events.EDITS_SENT,listener_editsSent);
+
+		g_offlineFeaturesManager.goOnline(function(results) {
             console.log("went online");
             expect(g_offlineFeaturesManager.getOnlineStatus()).toBe(g_offlineFeaturesManager.ONLINE);
             expect(listener).toHaveBeenCalled();
+            expect(listener_editsSent).toHaveBeenCalled();
             expect(results.features.success).toBeTruthy();
 
             //console.log("RESPONSES " + JSON.stringify(responses) + ", " + JSON.stringify(results))
