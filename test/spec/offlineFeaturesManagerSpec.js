@@ -411,7 +411,7 @@ describe("Offline Editing", function()
 
     async.it("check db size", function(done){
        g_editsStore.getUsage(function(usage,error){
-           expect(usage.sizeBytes).toBe(5343);
+           expect(usage.sizeBytes).toBe(4977);
            expect(usage.editCount).toBe(9);
            expect(error).toBe(null);
            done();
