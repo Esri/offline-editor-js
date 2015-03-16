@@ -271,31 +271,31 @@ describe("Public Interface", function()
                g_editsStore.getPhantomGraphicsArray(function(array,message){
                    expect(array.length).toBe(2);
                    expect(message).toBe("end");
-                   expect(array[0].id).toBe("phantom-layer+200");
+                   expect(array[0].id).toBe("phantom-layer|@|200");
                    expect(array[0].graphic.attributes.name).toBe("the name of the feature");
-                   expect(array[1].id).toBe("phantom-layer+300");
+                   expect(array[1].id).toBe("phantom-layer|@|300");
                    expect(array[1].graphic.attributes.name).toBe("the name of the feature");
                    done();
                });
            });
 
             async.it("get phantom graphics array simple", function(done){
-               g_editsStore._getPhantomGraphicsArraySimple(function(array, message){
+               g_editsStore._getPhantomGraphicsArraySimple(function(array, message){ console.log("LENGHT!!!! " + array.length)
                    expect(array.length).toBe(2);
                    expect(message).toBe("end");
-                   expect(array[0]).toBe("phantom-layer+200");
-                   expect(array[1]).toBe("phantom-layer+300");
+                   expect(array[0]).toBe("phantom-layer|@|200");
+                   expect(array[1]).toBe("phantom-layer|@|300");
                    done();
                });
             });
 
             async.it("delete phantom graphic",function(done){
-               g_editsStore.deletePhantomGraphic("phantom-layer+200",function(success){
+               g_editsStore.deletePhantomGraphic("phantom-layer|@|200",function(success){
                    expect(success).toBe(true)
                    g_editsStore._getPhantomGraphicsArraySimple(function(array,message){
                        expect(array.length).toBe(1);
                        expect(message).toBe("end");
-                       expect(array[0]).toBe("phantom-layer+300");
+                       expect(array[0]).toBe("phantom-layer|@|300");
                        done();
                    });
                }) ;
