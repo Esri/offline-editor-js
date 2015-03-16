@@ -295,7 +295,7 @@ describe("Offline Editing", function()
 		g3.geometry.y -= 200;
 		var updates = [g1,g2,g3];
 		g_featureLayers[0].applyEdits(null,updates,null,function(addResults,updateResults,deleteResults)
-		{
+		{   console.log("LINE 298: " + JSON.stringify(updateResults))
 			expect(updateResults.length).toBe(3);
 			expect(updateResults[0].success).toBeTruthy();
 			expect(updateResults[1].success).toBeTruthy();
@@ -575,85 +575,93 @@ describe("Offline Editing", function()
         });
     });
 
-	async.it("go Online", function(done)
-	{
-		// Remember we deleted g3! So our total count is 8 not 9. HOWEVER, there should be 9 records in the database!
-        expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2,g4,g5,g6]));
-		expect(getObjectIds(g_featureLayers[1].graphics)).toEqual(getObjectIds([l1,l2,l3]));
-		expect(g_featureLayers[0].graphics.length).toBe(5);
-		expect(g_featureLayers[1].graphics.length).toBe(3);
-
-		var listener = jasmine.createSpy('event listener all edits sent');
-        var listener_editsSent = jasmine.createSpy('event listener edits sent');
-
-		g_offlineFeaturesManager.on(g_offlineFeaturesManager.events.ALL_EDITS_SENT,listener);
-        g_offlineFeaturesManager.on(g_offlineFeaturesManager.events.EDITS_SENT,listener_editsSent);
-
-		g_offlineFeaturesManager.goOnline(function(results) {
-            console.log("went online");
-            expect(g_offlineFeaturesManager.getOnlineStatus()).toBe(g_offlineFeaturesManager.ONLINE);
-            expect(listener).toHaveBeenCalled();
-            expect(listener_editsSent).toHaveBeenCalled();
-            expect(results.features.success).toBeTruthy();
-
-            //console.log("RESPONSES " + JSON.stringify(responses) + ", " + JSON.stringify(results))
-
-            expect(Object.keys(results.features.responses).length).toBe(9);
-            for (var key in results.features.responses) {
-
-                var response = results.features.responses[key];
-
-                console.log("RESPONSE " + JSON.stringify(response))
-
-                var layerId = response.layer.substring(response.layer.lastIndexOf('/') + 1);
-
-                expect(typeof response.tempId).toBe("object");
-                expect(typeof response.updateResults).toBe("object");
-                expect(typeof response.deleteResults).toBe("object");
-                expect(typeof response.addResults).toBe("object");
-                expect(typeof response.id).toBe("string");
-                expect(typeof response.layer).toBe("string");
-
-                if(response.updateResults.length > 0){
-                    expect(response.updateResults[0].success).toBe(true);
-                    expect(response.updateResults[0].objectId).toBeGreaterThan(0);
-                }
-                if(response.deleteResults.length > 0){
-                    expect(response.deleteResults[0].success).toBe(true);
-                    expect(response.deleteResults[0].objectId).toBeGreaterThan(0);
-                }
-                if(response.addResults.length > 0){
-                    expect(response.addResults[0].success).toBe(true);
-                    expect(response.addResults[0].objectId).toBeGreaterThan(0);
-                }
-            }
-
-			// all of them are positive
-			expect(getObjectIds(g_featureLayers[0].graphics).filter(function(id){ return id<0; })).toEqual([]);
-			expect(getObjectIds(g_featureLayers[1].graphics).filter(function(id){ return id<0; })).toEqual([]);
-			expect(g_featureLayers[0].graphics.length).toBe(5);
-			expect(g_featureLayers[1].graphics.length).toBe(3);
-			countFeatures(g_featureLayers[0], function(success,result)
-			{
-				expect(success).toBeTruthy();
-				expect(result.count).toBe(5);
-				countFeatures(g_featureLayers[1], function(success,result)
-				{
-					expect(success).toBeTruthy();
-					expect(result.count).toBe(3);
-					done();
-				});
-			});
-
-		});
-		expect(g_offlineFeaturesManager.getOnlineStatus()).toBe(g_offlineFeaturesManager.RECONNECTING);
-	});
-
-    async.it("After online - check pending edits count 0",function(done){
-        g_editsStore.pendingEditsCount(function(result){
-            expect(result).toBe(0);
+    describe("go Online", function()
+    {
+        async.it("Before going online validate graphic layer properties", function(done){
+            // Remember we deleted g3! So our total count is 8 not 9. HOWEVER, there should be 9 records in the database!
+            expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2,g4,g5,g6]));
+            expect(getObjectIds(g_featureLayers[1].graphics)).toEqual(getObjectIds([l1,l2,l3]));
+            expect(g_featureLayers[0].graphics.length).toBe(5);
+            expect(g_featureLayers[1].graphics.length).toBe(3);
             done();
         });
+
+        async.it("go Online", function(done)
+        {
+
+            var listener = jasmine.createSpy('event listener all edits sent');
+            var listener_editsSent = jasmine.createSpy('event listener edits sent');
+
+            g_offlineFeaturesManager.on(g_offlineFeaturesManager.events.ALL_EDITS_SENT,listener);
+            g_offlineFeaturesManager.on(g_offlineFeaturesManager.events.EDITS_SENT,listener_editsSent);
+
+            g_offlineFeaturesManager.goOnline(function(results) {
+                console.log("Library is now back online");
+                expect(g_offlineFeaturesManager.getOnlineStatus()).toBe(g_offlineFeaturesManager.ONLINE);
+                expect(listener).toHaveBeenCalled();
+                expect(listener_editsSent).toHaveBeenCalled();
+                expect(results.features.success).toBeTruthy();
+
+                //console.log("RESPONSES " + JSON.stringify(responses) + ", " + JSON.stringify(results))
+
+                expect(Object.keys(results.features.responses).length).toBe(9);
+                for (var key in results.features.responses) {
+
+                    var response = results.features.responses[key];
+
+                    console.log("RESPONSE " + JSON.stringify(response))
+
+                    var layerId = response.layer.substring(response.layer.lastIndexOf('/') + 1);
+
+                    expect(typeof response.tempId).toBe("object");
+                    expect(typeof response.updateResults).toBe("object");
+                    expect(typeof response.deleteResults).toBe("object");
+                    expect(typeof response.addResults).toBe("object");
+                    expect(typeof response.id).toBe("string");
+                    expect(typeof response.layer).toBe("string");
+
+                    if(response.updateResults.length > 0){
+                        expect(response.updateResults[0].success).toBe(true);
+                        expect(response.updateResults[0].objectId).toBeGreaterThan(0);
+                    }
+                    if(response.deleteResults.length > 0){
+                        expect(response.deleteResults[0].success).toBe(true);
+                        expect(response.deleteResults[0].objectId).toBeGreaterThan(0);
+                    }
+                    if(response.addResults.length > 0){
+                        expect(response.addResults[0].success).toBe(true);
+                        expect(response.addResults[0].objectId).toBeGreaterThan(0);
+                    }
+                }
+
+                // all of them are positive
+                expect(getObjectIds(g_featureLayers[0].graphics).filter(function(id){ return id<0; })).toEqual([]);
+                expect(getObjectIds(g_featureLayers[1].graphics).filter(function(id){ return id<0; })).toEqual([]);
+                expect(g_featureLayers[0].graphics.length).toBe(5);
+                expect(g_featureLayers[1].graphics.length).toBe(3);
+                countFeatures(g_featureLayers[0], function(success,result)
+                {
+                    expect(success).toBeTruthy();
+                    expect(result.count).toBe(5);
+                    countFeatures(g_featureLayers[1], function(success,result)
+                    {
+                        expect(success).toBeTruthy();
+                        expect(result.count).toBe(3);
+                        done();
+                    });
+                });
+
+            });
+            expect(g_offlineFeaturesManager.getOnlineStatus()).toBe(g_offlineFeaturesManager.RECONNECTING);
+        });
+
+        async.it("After online - check pending edits count 0",function(done){
+            g_editsStore.pendingEditsCount(function(result){
+                expect(result).toBe(0);
+                done();
+            });
+        });
+
     });
 });
 
