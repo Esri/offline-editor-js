@@ -1,4 +1,4 @@
-/*! offline-editor-js - v2.5 - 2015-02-23
+/*! offline-editor-js - v2.5 - 2015-03-17
 *   Copyright (c) 2015 Environmental Systems Research Institute, Inc.
 *   Apache License*/
 
@@ -40,7 +40,8 @@ define([
         events: {
             EDITS_SENT: "edits-sent",           // ...whenever any edit is actually sent to the server
             EDITS_ENQUEUED: "edits-enqueued",   // ...when an edit is enqueued (and not sent to the server)
-            EDITS_SENT_ERROR: "edits-error",         // ...there was a problem with one or more edits!
+            EDITS_ENQUEUED_ERROR: "edits-enqueued-error", // ...when there is an error during the queing process
+            EDITS_SENT_ERROR: "edits-sent-error",         // ...there was a problem with one or more edits!
             ALL_EDITS_SENT: "all-edits-sent",   // ...after going online and there are no pending edits in the queue
             ATTACHMENT_ENQUEUED: "attachment-enqueued",
             ATTACHMENTS_SENT: "attachments-sent"
@@ -58,7 +59,7 @@ define([
 
             if( !this._checkFileAPIs())
             {
-                return callback(false, "File APIs not supported");                
+                return callback(false, "File APIs not supported");
             }
 
             try
@@ -83,6 +84,7 @@ define([
         /**
          * Overrides a feature layer.
          * @param layer
+         * @param callback {boolean, String} Traps whether or not the database initialized
          * @returns deferred
          */
         extend: function(layer,callback)
@@ -124,8 +126,6 @@ define([
             - what if the user deletes an offline feature that had offline attachments? we need to discard the attachment  (DONE)
 
             pending tasks:
-            - delete attachment (DONE)
-            - send attachments to server when reconnecting (DONE)
             - check for hasAttachments attribute in the FeatureLayer (NOT YET)
             */            
 
@@ -282,6 +282,8 @@ define([
              * @param callback Called when the operation is complete.
              * @param errback  An error object is returned if an error occurs
              * @returns {*} deferred
+             * @throws EDITS_ENQUEUED if all edits successfully stored while offline
+             * @throws EDITS_ENQUEUED_ERROR if there was an error while storing an edit while offline
              */
             layer.applyEdits = function(adds,updates,deletes,callback,errback)
             {
@@ -327,7 +329,16 @@ define([
                         {
                             objectId: objectId
                         });
+
+                    // Add phantom graphic to the layer
                     this._phantomLayer.add(phantomAdd);
+
+                    // Add phantom graphic to the database
+                    self._editStore.pushPhantomGraphic(phantomAdd,function(result){
+                        if(!result)console.log("There was a problem adding phantom graphic id: " + objectId);
+                        console.log("Phantom graphic " + objectId + " added to database as an add.");
+                    });
+
                     domAttr.set(phantomAdd.getNode(),"stroke-dasharray","10,4");
                     domStyle.set(phantomAdd.getNode(), "pointer-events","none");
 
@@ -354,6 +365,13 @@ define([
                             objectId: objectId
                         });
                     this._phantomLayer.add(phantomUpdate);
+
+                    // Add phantom graphic to the database
+                    self._editStore.pushPhantomGraphic(phantomUpdate,function(result){
+                        if(!result)console.log("There was a problem adding phantom graphic id: " + objectId);
+                        console.log("Phantom graphic " + objectId + " added to database as an update.");
+                    });
+
                     domAttr.set(phantomUpdate.getNode(),"stroke-dasharray","5,2");
                     domStyle.set(phantomUpdate.getNode(), "pointer-events","none");
 
@@ -378,6 +396,13 @@ define([
                             objectId: objectId
                         });
                     this._phantomLayer.add(phantomDelete);
+
+                    // Add phantom graphic to the database
+                    self._editStore.pushPhantomGraphic(phantomDelete,function(result){
+                        if(!result)console.log("There was a problem adding phantom graphic id: " + objectId);
+                        console.log("Phantom graphic " + objectId + " added to database as a deletion.");
+                    });
+
                     domAttr.set(phantomDelete.getNode(),"stroke-dasharray","4,4");
                     domStyle.set(phantomDelete.getNode(), "pointer-events","none");
 
@@ -395,13 +420,18 @@ define([
 
                 all(promises).then( function(r)
                 {
-                    //TO-DO - handle information related to any failed edits that didn't get stored
+                    // Make sure all edits were successful. If not throw an error.
+                    var success = true;
+                    var length = r.length;
+                    for(var v = 0;v < length;v++){
+                        if(r[v] == false) success = false;
+                    }
 
                     /* we already pushed the edits into the database, now we let the FeatureLayer to do the local updating of the layer graphics */
                     setTimeout(function()
                     {
                         this._editHandler(results, adds, updatesMap, callback, errback, deferred);
-                        self.emit(self.events.EDITS_ENQUEUED, results);
+                        success == true ? self.emit(self.events.EDITS_ENQUEUED, results) : self.emit(self.events.EDITS_ENQUEUED_ERROR, results);
                     }.bind(this),0);
                     return deferred;
                 }.bind(this));
@@ -437,7 +467,8 @@ define([
             };
 
             /**
-             * Sets the phantom layer with a new features.
+             * Sets the phantom layer with new features.
+             * Used to restore PhantomGraphicsLayer after offline restart
              * @param graphicsArray an array of Graphics
              */
             layer.setPhantomLayerGraphics = function(graphicsArray){
@@ -489,10 +520,10 @@ define([
                         "geometryType": geometryType
                     }
 
-                }
+                };
 
                 callback(featureDefinition);
-            }
+            };
 
             /* internal methods */
 
@@ -872,7 +903,7 @@ define([
             var editStore = this._editStore;
 
             this._editStore.getAllEditsArray(function(result,err){
-                if(result != null) {
+                if(result.length > 0) {
                     tempArray = result;
 
                     var length = tempArray.length;
@@ -882,7 +913,7 @@ define([
 
                         // If the layer has attachments then check to see if the attachmentsStore has been initialized
                         if (attachmentsStore == null && layer.hasAttachments) {
-                            console.log("ERROR: you need to run OfflineFeaturesManager.initAttachments(). Check the Attachments doc for more info.")
+                            console.log("ERROR: you need to run OfflineFeaturesManager.initAttachments(). Check the Attachments doc for more info.");
                             throw new Error("OfflineFeaturesManager: Attachments aren't initialized.");
                         }
 
@@ -899,11 +930,12 @@ define([
                             console.log("intercepting events onBeforeApplyEdits");
                         };
 
+                        // Let's zero everything out
                         adds = [], updates = [], deletes = [], tempObjectIds = [];
 
                         // IMPORTANT: reconstitute the graphic JSON into an actual esri.Graphic object
-                        // NOTE: we are only sending on Graphic per loop!
-                        var graphic = new Graphic(JSON.parse(tempArray[n].graphic));
+                        // NOTE: we are only sending one Graphic per loop!
+                        var graphic = new Graphic(tempArray[n].graphic);
 
                         switch (tempArray[n].operation) {
                             case editStore.ADD:
@@ -938,15 +970,29 @@ define([
                     function(responses)
                     {
                         console.log("OfflineFeaturesManager - all responses are back");
-                        this._cleanDatabase(responses,function(success,error){
+                        this._cleanSuccessfulEditsDatabaseRecords(responses,function(success,error){ console.log("CLEANED EDITS DATABASE")
                             if(success){
-                                this.emit(this.events.EDITS_SENT);
-                                this.emit(this.events.ALL_EDITS_SENT);
-                                callback && callback(true,responses);
+
+                                this._editStore.resetLimitedPhantomGraphicsQueue(responses,function(success){
+                                    console.log("CLEAR PHANTOM GRAPHICS " + JSON.stringify(responses))
+                                });
+
+                                this._editStore.resetPhantomGraphicsQueue(function(success){
+
+                                    this.emit(this.events.EDITS_SENT);
+
+                                    if(success == false){
+                                        console.log("There was a problem deleting phantom graphics in the database.");
+                                        this.emit(this.events.EDITS_SENT_ERROR,{msg:"Problem deleting phantom graphic(s)"});
+                                    }
+                                    else{
+                                        this.emit(this.events.ALL_EDITS_SENT);
+                                    }
+                                    callback && callback(true,responses);
+                                }.bind(this))
                             }
                             else{
-                                this.emit(this.events.EDITS_SENT);
-                                this.emit(this.events.EDITS_SENT_ERROR); // There was a problem, some edits were not successfully sent!
+                                this.emit(this.events.EDITS_SENT_ERROR,{msg:error}); // There was a problem, some edits were not successfully sent!
                                 callback && callback(false,responses);
                             }
                         }.bind(that));
@@ -961,44 +1007,52 @@ define([
             });
         },
 
-        // Only delete items from database that were verified as successfully updated
-        // on the server.
-        _cleanDatabase: function(responses,callback){
+        /**
+         * Only delete items from database that were verified as successfully updated on the server.
+         * @param responses Object
+         * @param callback callback(true, responses) or callback(false, responses)
+         * @private
+         */
+        _cleanSuccessfulEditsDatabaseRecords: function(responses,callback){
             if( Object.keys(responses).length !== 0 ){
 
                 var editsArray = [];
-                var fails = 0; // track any failures
+                var editsFailedArray = [];
 
                 for(var key in responses){
                     if (responses.hasOwnProperty(key)) {
 
                         var edit = responses[key];
+                        var tempResult = {};
 
                         if(edit.updateResults.length > 0){
-                            var tempResult = {};
-                            tempResult.layer = edit.layer;
-                            tempResult.id = edit.updateResults[0].objectId;
-                            editsArray.push(tempResult);
-                            if(edit.updateResults[0].success == false){
-                                fails++;
+                            if(edit.updateResults[0].success){
+                                tempResult.layer = edit.layer;
+                                tempResult.id = edit.updateResults[0].objectId;
+                                editsArray.push(tempResult);
+                            }
+                            else{
+                                editsFailedArray.push(edit);
                             }
                         }
                         if(edit.deleteResults.length > 0){
-                            var tempResult = {};
-                            tempResult.layer = edit.layer;
-                            tempResult.id = edit.deleteResults[0].objectId;
-                            editsArray.push(tempResult);
-                            if(edit.deleteResults[0].success == false){
-                                fails++;
+                            if(edit.deleteResults[0].success){
+                                tempResult.layer = edit.layer;
+                                tempResult.id = edit.deleteResults[0].objectId;
+                                editsArray.push(tempResult);
+                            }
+                            else{
+                                editsFailedArray.push(edit);
                             }
                         }
                         if(edit.addResults.length > 0){
-                            var tempResult = {};
-                            tempResult.layer = edit.layer;
-                            tempResult.id = edit.tempId;
-                            editsArray.push(tempResult);
-                            if(tempResult.success == false){
-                                fails++;
+                            if(edit.addResults[0].success){
+                                tempResult.layer = edit.layer;
+                                tempResult.id = edit.tempId;
+                                editsArray.push(tempResult);
+                            }
+                            else{
+                                editsFailedArray.push(edit);
                             }
                         }
                     }
@@ -1009,7 +1063,7 @@ define([
                 for(var i = 0; i < length; i++){
                     promises[i] = this._updateDatabase(editsArray[i]);
                 }
-                console.log("EDIT LIST " + JSON.stringify(editsArray));
+                //console.log("EDIT LIST " + JSON.stringify(editsArray));
 
                 // wait for all requests to finish
                 //
@@ -1017,13 +1071,16 @@ define([
                 allPromises.then(
                     function(responses)
                     {
-                        fails > 0 ? callback(false,responses) : callback(true,responses);
+                        editsFailedArray.length > 0 ? callback(false,responses) : callback(true,responses);
                     },
                     function(errors)
                     {
                         callback(false,errors);
                     }
                 );
+            }
+            else{
+                callback(true,{});
             }
         },
 
@@ -1036,17 +1093,22 @@ define([
         _updateDatabase: function(edit){
             var dfd = new Deferred();
             var fakeGraphic = {};
-            fakeGraphic.attributes = {}
+            fakeGraphic.attributes = {};
             fakeGraphic.attributes.objectid = edit.id;
 
             this._editStore.delete(edit.layer,fakeGraphic,function(success,error){
                 if(success){
+
+                    var id = this._editStore.PHANTOM_GRAPHIC_PREFIX + this._editStore._PHANTOM_PREFIX_TOKEN + edit.id;
+                    console.log("PHANTOM DELETE ID " + id);
+                    //this.deletePhantomGraphic()
+
                     dfd.resolve({success: true, error:null});
                 }
                 else{
                     dfd.reject({success:false, error: error});
                 }
-            });
+            }.bind(this));
 
             return dfd.promise;
 
@@ -1060,7 +1122,7 @@ define([
          * @param adds
          * @param updates
          * @param deletes
-         * @returns {l.Deferred.promise|*|c.promise|q.promise|promise}
+         * @returns {l.Deferred.promise} contains {id,layer,tempId,addResults,updateResults,deleteResults}
          * @private
          */
         _internalApplyEdits: function(layer,id,tempObjectIds,adds,updates,deletes)
@@ -1237,6 +1299,10 @@ O.esri.Edit.EditStore = function()
     this.UPDATE = "update";
     this.DELETE = "delete";
 
+    this.FEATURE_LAYER_JSON_ID = "feature-layer-object-1001";
+    this.PHANTOM_GRAPHIC_PREFIX = "phantom-layer";
+    this._PHANTOM_PREFIX_TOKEN = "|@|";
+
     this.isSupported = function()
     {
         if(!window.indexedDB){
@@ -1248,18 +1314,18 @@ O.esri.Edit.EditStore = function()
     /**
      * Commit an edit to the database
      * @param operation add, update or delete
-     * @param layer the URL of the feature layer
+     * @param layerUrl the URL of the feature layer
      * @param graphic esri/graphic. The method will serialize to JSON
      * @param callback {true, edit} or {false, error}
      */
-    this.pushEdit = function(operation,layer,graphic, callback)
+    this.pushEdit = function(operation,layerUrl,graphic, callback)
     {
 
         var edit = {
-                id: layer + "/" + graphic.attributes.objectid,
+                id: layerUrl + "/" + graphic.attributes.objectid,
                 operation: operation,
-                layer: layer,
-                graphic: this._serialize(graphic)
+                layer: layerUrl,
+                graphic: graphic.toJson()
             };
 
         var transaction = this._db.transaction([objectStoreName],"readwrite");
@@ -1277,6 +1343,450 @@ O.esri.Edit.EditStore = function()
     };
 
     /**
+     * Use this to store any static FeatureLayer or related JSON data related to your app that will assist in restoring
+     * a FeatureLayer.
+     *
+     * Handles both adds and updates. It copies any object properties, so it will not, by default, overwrite the entire object.
+     *
+     * Example: If you just submit {featureLayerRenderer: {someJSON}} it will only update the featureLayerRenderer property
+     *
+     * NOTE: "dataObject.id" is a reserved property. If you use "id" in your object this method will break.
+     * @param dataObject Object
+     * @param callback callback(true, null) || callback(false, error)
+     */
+    this.pushFeatureLayerJSON = function(dataObject /*Object*/, callback){
+
+        console.assert(this._db !== null, "indexeddb not initialized");
+        if(typeof dataObject != "object"){
+            callback(false,"dataObject type is not an object.");
+        }
+
+        var db = this._db;
+        dataObject.id = this.FEATURE_LAYER_JSON_ID;
+
+        this.getFeatureLayerJSON(function(success,result) {
+
+            if (success && typeof result !== "undefined") {
+
+                var objectStore = db.transaction([objectStoreName],"readwrite").objectStore(objectStoreName);
+
+                for(var key in dataObject){
+                    if (dataObject.hasOwnProperty(key)) {
+                        result[key] = dataObject[key];
+                    }
+                }
+
+                // Insert the update into the database
+                var updateFeatureLayerDataRequest = objectStore.put(result);
+
+                updateFeatureLayerDataRequest.onsuccess = function(){
+                    callback(true,null);
+                }
+
+                updateFeatureLayerDataRequest.onerror = function(err){
+                    callback(false,err);
+                };
+            }
+            else{
+
+                var transaction = db.transaction([objectStoreName],"readwrite");
+
+                transaction.oncomplete = function(event){
+                    callback(true, null);
+                };
+
+                transaction.onerror = function(event){
+                    callback(false,event.target.error.message);
+                };
+
+                var objectStore = transaction.objectStore(objectStoreName);
+                objectStore.put(dataObject);
+            }
+        });
+    };
+
+    /**
+     * Retrieve the FeatureLayer data object
+     * @param callback callback(true, object) || callback(false, error)
+     */
+    this.getFeatureLayerJSON = function(callback){
+
+        console.assert(this._db !== null, "indexeddb not initialized");
+
+        var objectStore = this._db.transaction([objectStoreName],"readwrite").objectStore(objectStoreName);
+
+        //Get the entry associated with the graphic
+        var objectStoreGraphicRequest = objectStore.get(this.FEATURE_LAYER_JSON_ID);
+
+        objectStoreGraphicRequest.onsuccess = function() {
+            var object = objectStoreGraphicRequest.result;
+            if(typeof object != "undefined"){
+                callback(true,object);
+            }
+            else{
+                callback(false,"nothing found");
+            }
+        };
+
+        objectStoreGraphicRequest.onerror = function(msg){
+            callback(false,msg);
+        }
+    };
+
+    /**
+     * Safe delete. Checks if id exists, then reverifies.
+     * @param callback callback(boolean, {message: String})
+     */
+    this.deleteFeatureLayerJSON = function(callback){
+        // NOTE: the implementation of the IndexedDB spec has a design fault with respect to
+        // handling deletes. The result of a delete operation is always designated as undefined.
+        // What this means is that there is no way to tell if an operation was successful or not.
+        // And, it will always return 'true.'
+        //
+        // In order to get around this we have to verify if after the attempted deletion operation
+        // if the record is or is not in the database. Kinda dumb, but that's how IndexedDB works.
+        //http://stackoverflow.com/questions/17137879/is-there-a-way-to-get-information-on-deleted-record-when-calling-indexeddbs-obj
+
+        var db = this._db;
+        var deferred = null;
+        var self = this;
+
+        var id = this.FEATURE_LAYER_JSON_ID;
+
+        require(["dojo/Deferred"], function(Deferred) {
+            deferred = new Deferred();
+
+            // Step 4 - Then we check to see if the record actually exists or not.
+            deferred.then(function (result) {
+                    // IF the delete was successful, then the record should return an error because it doesn't exist.
+                    // We aren't 100% sure how all platforms will perform so we also trap the promise for return results.
+                    self.editExists(id).then(function (results) {
+                            // If the result is false then in theory the id no longer exists
+                            // and we should return 'true' to indicate a successful delete operation.
+                            results.success == false ? callback(true, {message:"id does not exist"}) : callback(false, {message:null});
+                        },
+                        function (err) {
+                            // If the result is false then in theory the id no longer exists
+                            // and we should return 'true' to indicate a successful delete operation.
+                            callback(true, {message:"id does not exist"}); //because we want this test to throw an error. That means item deleted.
+                        })
+                },
+                // There was a problem with the delete operation on the database
+                // This error message will come from editExists();
+                function (err) {
+                    callback(false, {message: "id does not exist"});
+                });
+
+            // Step 1 - lets see if record exits. If it does not then return callback. Otherwise,
+            // continue on with the deferred.
+            self.editExists(id).then(function (result) {
+                    if (result && result.success) {
+
+                        var objectStore = db.transaction([objectStoreName], "readwrite").objectStore(objectStoreName);
+
+                        // Step 2 - go ahead and delete graphic
+                        var objectStoreDeleteRequest = objectStore.delete(id);
+
+                        // Step 3 - We know that the onsuccess will always fire unless something serious goes wrong.
+                        // So we go ahead and resolve the deferred here.
+                        objectStoreDeleteRequest.onsuccess = function () {
+                            deferred.resolve(true);
+                        };
+
+                        objectStoreDeleteRequest.onerror = function (msg) {
+                            deferred.reject({success: false, error: msg});
+                        }
+                    }
+                    else{
+                        deferred.reject({success:false,message:"id does not exist"})
+                    }
+                },
+                // If there is an error in editExists()
+                function (err) {
+                    deferred.reject({success: false, message: err});
+                });
+        })
+    };
+
+    /**
+     * Add a phantom graphic to the store.
+     * IMPORTANT! Requires graphic to have an objectId
+     * @param graphic
+     * @param callback
+     */
+    this.pushPhantomGraphic = function(graphic,callback){
+        console.assert(this._db !== null, "indexeddb not initialized");
+
+        var db = this._db;
+        var id = this.PHANTOM_GRAPHIC_PREFIX + this._PHANTOM_PREFIX_TOKEN + graphic.attributes.objectId;
+
+        var object = {
+            id : id,
+            graphic: graphic.toJson()
+        }
+
+        var transaction = db.transaction([objectStoreName],"readwrite");
+
+        transaction.oncomplete = function(event){
+            callback(true, null);
+        };
+
+        transaction.onerror = function(event){
+            callback(false,event.target.error.message);
+        };
+
+        var objectStore = transaction.objectStore(objectStoreName);
+        objectStore.put(object);
+
+    };
+
+    /**
+     * Return an array of phantom graphics
+     * @param callback
+     */
+    this.getPhantomGraphicsArray = function(callback){
+        console.assert(this._db !== null, "indexeddb not initialized");
+        var editsArray = [];
+
+        if(this._db !== null){
+
+            var phantomGraphicPrefix = this.PHANTOM_GRAPHIC_PREFIX;
+
+            var transaction = this._db.transaction([objectStoreName])
+                .objectStore(objectStoreName)
+                .openCursor();
+
+            transaction.onsuccess = function(event)
+            {
+                var cursor = event.target.result;
+                if(cursor && cursor.value && cursor.value.id){
+
+                    // Make sure we are not return FeatureLayer JSON data or a Phantom Graphic
+                    if(cursor.value.id.indexOf(phantomGraphicPrefix) != -1){
+                        editsArray.push(cursor.value);
+
+                    }
+                    cursor.continue();
+                }
+                else
+                {
+                    callback(editsArray, "end");
+                }
+            }.bind(this);
+            transaction.onerror = function(err)
+            {
+                callback(null, err);
+            };
+        }
+        else
+        {
+            callback(null, "no db");
+        }
+    };
+
+    /**
+     * Internal method that returns an array of id's only
+     * @param callback
+     * @private
+     */
+    this._getPhantomGraphicsArraySimple = function(callback){
+        console.assert(this._db !== null, "indexeddb not initialized");
+        var editsArray = [];
+
+        if(this._db !== null){
+
+            var phantomGraphicPrefix = this.PHANTOM_GRAPHIC_PREFIX;
+
+            var transaction = this._db.transaction([objectStoreName])
+                .objectStore(objectStoreName)
+                .openCursor();
+
+            transaction.onsuccess = function(event)
+            {
+                var cursor = event.target.result;
+                if(cursor && cursor.value && cursor.value.id){
+
+                    // Make sure we are not return FeatureLayer JSON data or a Phantom Graphic
+                    if(cursor.value.id.indexOf(phantomGraphicPrefix) != -1){
+                        editsArray.push(cursor.value.id);
+
+                    }
+                    cursor.continue();
+                }
+                else
+                {
+                    callback(editsArray, "end");
+                }
+            }.bind(this);
+            transaction.onerror = function(err)
+            {
+                callback(null, err);
+            };
+        }
+        else
+        {
+            callback(null, "no db");
+        }
+    };
+
+    /**
+     * Deletes an individual graphic from the phantom layer
+     * @param id
+     * @param callback callback(boolean, message)
+     */
+    this.deletePhantomGraphic = function(id,callback){
+        // NOTE: the implementation of the IndexedDB spec has a design fault with respect to
+        // handling deletes. The result of a delete operation is always designated as undefined.
+        // What this means is that there is no way to tell if an operation was successful or not.
+        // And, it will always return 'true.'
+        //
+        // In order to get around this we have to verify if after the attempted deletion operation
+        // if the record is or is not in the database. Kinda dumb, but that's how IndexedDB works.
+        //http://stackoverflow.com/questions/17137879/is-there-a-way-to-get-information-on-deleted-record-when-calling-indexeddbs-obj
+
+        var db = this._db;
+        var deferred = null;
+        var self = this;
+
+        require(["dojo/Deferred"], function(Deferred){
+            deferred = new Deferred();
+
+            // Step 1 - lets see if record exits. If it does then return callback.
+            self.editExists(id).then(function(result){
+                    if(result.success){
+                        // Step 4 - Then we check to see if the record actually exists or not.
+                        deferred.then(function(result){
+
+                                // IF the delete was successful, then the record should return 'false' because it doesn't exist.
+                                self.editExists(id).then(function(results){
+                                        results.success == false ? callback(true) : callback(false);
+                                    },
+                                    function(err){
+                                        callback(true); //because we want this test to throw an error. That means item deleted.
+                                    })
+                            },
+                            // There was a problem with the delete operation on the database
+                            function(err){
+                                callback(false,err);
+                            });
+
+                        var objectStore = db.transaction([objectStoreName],"readwrite").objectStore(objectStoreName);
+
+                        // Step 2 - go ahead and delete graphic
+                        var objectStoreDeleteRequest = objectStore.delete(id);
+
+                        // Step 3 - We know that the onsuccess will always fire unless something serious goes wrong.
+                        // So we go ahead and resolve the deferred here.
+                        objectStoreDeleteRequest.onsuccess = function() {
+                            deferred.resolve(true);
+                        };
+
+                        objectStoreDeleteRequest.onerror = function(msg){
+                            deferred.reject({success:false,error:msg});
+                        }
+                    }
+                },
+                // If there is an error in editExists()
+                function(err){
+                    callback(false);
+                });
+        });
+    };
+
+    /**
+     * Removes some phantom graphics from database
+     * @param callback boolean
+     */
+    this.resetLimitedPhantomGraphicsQueue = function(responseObject,callback){
+
+        if( Object.keys(responseObject).length > 0 ){
+            var db = this._db;
+
+            var errors = 0;
+            var tx = db.transaction([objectStoreName], "readwrite");
+            var objectStore = tx.objectStore(objectStoreName);
+
+            objectStore.onerror = function () {
+                errors++; console.log("PHANTOM GRAPHIC ERROR")
+            };
+
+            tx.oncomplete= function(){
+                errors == 0 ? callback(true): callback(false);
+            };
+
+            for(var key in responseObject){
+                if (responseObject.hasOwnProperty(key)) {
+                    var edit = responseObject[key];
+                    var id = this.PHANTOM_GRAPHIC_PREFIX + this._PHANTOM_PREFIX_TOKEN + edit.id;
+                    console.log("EDIT " + JSON.stringify(edit))
+
+                    // CAUTION:
+                    // TO-DO we do NOT match the edit.id with edit's objectId
+
+                    if(edit.updateResults.length > 0){
+                        if(edit.updateResults[0].success){
+                            objectStore.delete(id);
+                        }
+                    }
+                    if(edit.deleteResults.length > 0){
+                        if(edit.deleteResults[0].success){
+                            objectStore.delete(id);
+                        }
+                    }
+                    if(edit.addResults.length > 0){
+                        if(edit.addResults[0].success){
+                            objectStore.delete(id);
+                        }
+                    }
+                }
+            }
+            callback(true);
+
+        }
+        else{
+            callback(true);
+        }
+
+    };
+
+
+    /**
+     * Removes all phantom graphics from database
+     * @param callback boolean
+     */
+    this.resetPhantomGraphicsQueue = function(callback){
+
+        var db = this._db;
+
+        // First we need to get the array of graphics that are stored in the database
+        // so that we can cycle thru them.
+        this._getPhantomGraphicsArraySimple(function(array){
+            if(array != []){
+
+                var errors = 0;
+                var tx = db.transaction([objectStoreName], "readwrite");
+                var objectStore = tx.objectStore(objectStoreName);
+
+                objectStore.onerror = function () {
+                    errors++;
+                }
+
+                tx.oncomplete= function(){
+                    errors == 0 ? callback(true): callback(false);
+                }
+
+                var length = array.length;
+                for(var i=0;i < length;i++){
+                    objectStore.delete(array[i]);
+                }
+            }
+            else{
+                callback(true);
+            }
+        });
+    };
+
+    /**
      * Returns all the edits recursively via the callback
      * @param callback {value, message}
      */
@@ -1285,6 +1795,10 @@ O.esri.Edit.EditStore = function()
         console.assert(this._db !== null, "indexeddb not initialized");
 
         if(this._db !== null){
+
+            var fLayerJSONId = this.FEATURE_LAYER_JSON_ID;
+            var phantomGraphicPrefix = this.PHANTOM_GRAPHIC_PREFIX;
+
             var transaction = this._db.transaction([objectStoreName])
                 .objectStore(objectStoreName)
                 .openCursor();
@@ -1292,8 +1806,12 @@ O.esri.Edit.EditStore = function()
             transaction.onsuccess = function(event)
             {
                 var cursor = event.target.result;
-                if(cursor){
-                    callback(cursor.value,null);
+                if(cursor && cursor.hasOwnProperty("value") && cursor.value.hasOwnProperty("id")){
+
+                    // Make sure we are not return FeatureLayer JSON data or a Phantom Graphic
+                    if(cursor.value.id !== fLayerJSONId && cursor.value.id.indexOf(phantomGraphicPrefix) == -1){
+                        callback(cursor.value,null);
+                    }
                     cursor.continue();
                 }
                 else
@@ -1322,6 +1840,10 @@ O.esri.Edit.EditStore = function()
         var editsArray = [];
 
         if(this._db !== null){
+
+            var fLayerJSONId = this.FEATURE_LAYER_JSON_ID;
+            var phantomGraphicPrefix = this.PHANTOM_GRAPHIC_PREFIX;
+
             var transaction = this._db.transaction([objectStoreName])
                 .objectStore(objectStoreName)
                 .openCursor();
@@ -1329,8 +1851,13 @@ O.esri.Edit.EditStore = function()
             transaction.onsuccess = function(event)
             {
                 var cursor = event.target.result;
-                if(cursor){
-                    editsArray.push(cursor.value);
+                if(cursor && cursor.value && cursor.value.id){
+
+                    // Make sure we are not return FeatureLayer JSON data or a Phantom Graphic
+                    if(cursor.value.id !== fLayerJSONId && cursor.value.id.indexOf(phantomGraphicPrefix) == -1){
+                        editsArray.push(cursor.value);
+
+                    }
                     cursor.continue();
                 }
                 else
@@ -1460,6 +1987,13 @@ O.esri.Edit.EditStore = function()
         });
     };
 
+    /**
+     * Full database reset.
+     * CAUTION! If some edits weren't successfully sent, then their record
+     * will still exist in the database. If you use this function you
+     * will also delete those records.
+     * @param callback boolean
+     */
     this.resetEditsQueue = function(callback)
     {
         console.assert(this._db !== null, "indexeddb not initialized");
@@ -1480,14 +2014,22 @@ O.esri.Edit.EditStore = function()
         console.assert(this._db !== null, "indexeddb not initialized");
 
         var count = 0;
+        var id = this.FEATURE_LAYER_JSON_ID;
+        var phantomGraphicPrefix = this.PHANTOM_GRAPHIC_PREFIX;
 
-        var objectStore = this._db.transaction([objectStoreName]).objectStore(objectStoreName);
+        var transaction = this._db.transaction([objectStoreName],"readwrite")
+        var objectStore = transaction.objectStore(objectStoreName);
         objectStore.openCursor().onsuccess = function(evt)
         {
             var cursor = evt.target.result;
-            if(cursor)
+
+            // IMPORTANT:
+            // Remember that we have feature layer JSON and Phantom Graphics in the same database
+            if(cursor && cursor.value && cursor.value.id && cursor.value.id.indexOf(phantomGraphicPrefix) == -1)
             {
-                count++;
+                if(cursor.value.id !== id){
+                    count++;
+                }
                 cursor.continue();
             }
             else
@@ -1543,6 +2085,9 @@ O.esri.Edit.EditStore = function()
     {
         console.assert(this._db !== null, "indexeddb not initialized");
 
+        var id = this.FEATURE_LAYER_JSON_ID;
+        var phantomGraphicPrefix = this.PHANTOM_GRAPHIC_PREFIX;
+
         var usage = { sizeBytes: 0, editCount: 0 };
 
         var transaction = this._db.transaction([objectStoreName])
@@ -1554,12 +2099,16 @@ O.esri.Edit.EditStore = function()
         transaction.onsuccess = function(event)
         {
             var cursor = event.target.result;
-            if(cursor)
+            if(cursor && cursor.value && cursor.value.id)
             {
                 var storedObject = cursor.value;
                 var json = JSON.stringify(storedObject);
                 usage.sizeBytes += json.length;
-                usage.editCount += 1;
+
+                if(cursor.value.id.indexOf(phantomGraphicPrefix) == -1 && cursor.value.id !== id){
+                    usage.editCount += 1;
+                }
+
                 cursor.continue();
             }
             else
