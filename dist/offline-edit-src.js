@@ -82,19 +82,41 @@ define([
         },
 
         /**
-         * Overrides a feature layer.
+         * Overrides a feature layer. Call this AFTER the FeatureLayer's 'update-end' event.
+         * IMPORTANT: If options are specified they will be saved to the database. Any complex
+         * objects such as [esri.Graphic] will need to be serialized or you will get an error.
          * @param layer
-         * @param callback {boolean, String} Traps whether or not the database initialized
+         * @param updateEndEvent The FeatureLayer's update-end event object
+         * @param callback {true, null} or {false, errorString} Traps whether or not the database initialized
+         * @param options Optional configuration Object. Added @ v2.5
          * @returns deferred
          */
-        extend: function(layer,callback)
+        extend: function(layer,callback,options)
         {
             var self = this;
 
             // Attempt to initialize the database
             self._editStore.init(function(result){
-                callback(result);
-                //return;
+
+                ////////////////////////////////////////////////////
+                // OFFLINE RESTART CONFIGURATION
+                // Added @ v2.5
+                //
+                // Configure database for offline restart
+                // If options Object is not defined the do nothing.
+                //
+                //
+
+                if(typeof options == "object"){
+                    self._editStore.pushFeatureLayerJSON(options,function(success,err){
+                        if(success){
+                            callback(true,null);
+                        }
+                        else{
+                            callback(false,err);
+                        }
+                    })
+                }
             });
 
             // we keep track of the FeatureLayer object
@@ -441,7 +463,7 @@ define([
             /**
              * Converts an array of graphics/features into JSON
              * @param features
-             * @param updateEndEvent
+             * @param updateEndEvent The layer's 'update-end' event
              * @param callback
              */
             layer.convertGraphicLayerToJSON = function(features,updateEndEvent,callback){
@@ -461,6 +483,50 @@ define([
                         var featureJSON = JSON.stringify(jsonArray);
                         var layerDefJSON = JSON.stringify(layerDefinition);
                         callback(featureJSON,layerDefJSON);
+                        break;
+                    }
+                }
+            };
+
+            /**
+             * Retrieves f=json from the feature layer
+             * @param url FeatureLayer's URL
+             * @param callback
+             * @private
+             */
+            layer.getFeatureLayerJSON =  function(url,callback){
+                require(["esri/request"],function(esriRequest){
+                    var request = esriRequest({
+                        url: url,
+                        content: { f: "json" },
+                        handleAs: "json",
+                        callbackParamName: "callback"
+                    });
+
+                    request.then(function(response) {
+                        console.log("Success: ", response);
+                        callback(true,response);
+                    },function(error) {
+                        console.log("Error: ", error.message);
+                        callback(false,error.message);
+                    });
+                })
+            };
+
+            /**
+             * Serialize the feature layer graphics
+             * @param features
+             * @param callback
+             */
+            layer.convertFeatureGraphicsToJSON = function(features,callback){
+                var length = features.length;
+                var jsonArray = [];
+                for(var i=0; i < length; i++){
+                    var jsonGraphic = features[i].toJson();
+                    jsonArray.push(jsonGraphic);
+                    if(i == (length - 1)) {
+                        var featureJSON = JSON.stringify(jsonArray);
+                        callback(featureJSON);
                         break;
                     }
                 }
@@ -1115,6 +1181,31 @@ define([
         },
 
         /**
+         * Retrieves f=json from the feature layer
+         * @param url FeatureLayer's URL
+         * @param callback
+         * @private
+         */
+        getFeatureLayerJSON: function(url,callback){
+            require(["esri/request"],function(esriRequest){
+                var request = esriRequest({
+                    url: url,
+                    content: { f: "json" },
+                    handleAs: "json",
+                    callbackParamName: "callback"
+                });
+
+                request.then(function(response) {
+                    console.log("Success: ", response);
+                    callback(true,response);
+                },function(error) {
+                    console.log("Error: ", error.message);
+                    callback(false,error.message);
+                });
+            })
+        },
+
+        /**
          * Executes the _applyEdits() method
          * @param layer
          * @param id the unique id that identifies the Graphic in the database
@@ -1348,11 +1439,23 @@ O.esri.Edit.EditStore = function()
      *
      * Handles both adds and updates. It copies any object properties, so it will not, by default, overwrite the entire object.
      *
-     * Example: If you just submit {featureLayerRenderer: {someJSON}} it will only update the featureLayerRenderer property
+     * Example 1: If you just submit {featureLayerRenderer: {someJSON}} it will only update the featureLayerRenderer property
+     * Example 2: This is a full example
+     * {
+     *      featureLayerJSON: ...,
+     *      graphics: ..., // Serialized Feature Layer graphics. Must be serialized!
+     *      renderer: ...,
+     *      opacity: ...,
+     *      outfields: ...,
+     *      mode: ...,
+     *      extent: ...,
+     *      zoom: 7,
+     *      lastEdit: ...
+     * }
      *
      * NOTE: "dataObject.id" is a reserved property. If you use "id" in your object this method will break.
      * @param dataObject Object
-     * @param callback callback(true, null) || callback(false, error)
+     * @param callback callback(true, null) or callback(false, error)
      */
     this.pushFeatureLayerJSON = function(dataObject /*Object*/, callback){
 
@@ -1370,6 +1473,7 @@ O.esri.Edit.EditStore = function()
 
                 var objectStore = db.transaction([objectStoreName],"readwrite").objectStore(objectStoreName);
 
+                // Make a copy of the object
                 for(var key in dataObject){
                     if (dataObject.hasOwnProperty(key)) {
                         result[key] = dataObject[key];
@@ -1400,7 +1504,15 @@ O.esri.Edit.EditStore = function()
                 };
 
                 var objectStore = transaction.objectStore(objectStoreName);
-                objectStore.put(dataObject);
+
+                // Protect against data cloning errors since we don't validate the input object
+                // Example: if you attempt to use an esri.Graphic in its native form you'll get a data clone error
+                try{
+                    objectStore.put(dataObject);
+                }
+                catch(err){
+                    callback(false,JSON.stringify(err));
+                }
             }
         });
     };
@@ -2079,6 +2191,7 @@ O.esri.Edit.EditStore = function()
 
     /**
      * Returns the approximate size of the database in bytes
+     * IMPORTANT: Currently requires all data be serialized!
      * @param callback  {usage, error} Whereas, the usage Object is {sizeBytes: number, editCount: number}
      */
     this.getUsage = function(callback)
