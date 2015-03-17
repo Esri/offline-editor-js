@@ -399,7 +399,7 @@ describe("Public Interface", function()
                 g_editsStore.getUsage(function(success){
                     expect(success).toEqual(jasmine.any(Object));
                     expect(success.sizeBytes).toEqual(1219);
-                    expect(success.editCount).toEqual(4);
+                    expect(success.editCount).toEqual(3);
                     done();
                 })
             });
