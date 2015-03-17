@@ -319,6 +319,58 @@ describe("Public Interface", function()
                     expect(success.editCount).toEqual(3);
                     done();
                 })
+            });
+
+            async.it("add back a new phantom graphic", function(done){
+
+                g_test.pointFeature3 = new esriGraphic( g_test.point, g_test.pointSymbol, {"name": "the name of the feature", "objectId":621});
+                g_editsStore.pushPhantomGraphic(g_test.pointFeature3,function(success,err){
+                    expect(success).toBe(true);
+                    expect(err).toBe(null);
+                    done();
+                });
+            });
+
+            async.it("add a second phantom graphic", function(done){
+
+                g_test.pointFeature3 = new esriGraphic( g_test.point, g_test.pointSymbol, {"name": "the name of the feature", "objectId":622});
+                g_editsStore.pushPhantomGraphic(g_test.pointFeature3,function(success,err){
+                    expect(success).toBe(true);
+                    expect(err).toBe(null);
+                    done();
+                });
+            });
+
+            async.it("delete only phantom graphics - test resetLimitedPhantomGraphicsQueue", function(done){
+                var responseObject = {
+                    "0":{"id":621,"tempId":[],"addResults":[],"updateResults":[],"deleteResults":[{"objectId":621,"success":true}]},
+                    "1":{"id":622,"tempId":[],"addResults":[],"updateResults":[],"deleteResults":[{"objectId":622,"success":true}]}
+                };
+
+                g_editsStore.resetLimitedPhantomGraphicsQueue(responseObject,function(result){
+                    expect(result).toBe(true);
+                    done();
+                })
+            });
+
+            // This will be 3 because we had 3 non-Phantom Graphics in the database :-)
+            async.it("validate number of database entries", function(done){
+                g_editsStore.getAllEditsArray(function(array,msg){
+                    expect(array.length).toBe(3);
+                    expect(msg).toBe("end");
+                    done();
+                })
+            });
+
+            // Size should still be the same as before we started playing with phantom graphics
+            async.it("get size", function(done){
+                g_editsStore.getUsage(function(result,error){
+                    console.log("RESULT IS " + result.sizeBytes);
+                    expect(result).toEqual(jasmine.any(Object));
+                    expect(result.sizeBytes).toEqual(1142);
+                    expect(result.editCount).toEqual(3);
+                    done();
+                })
             })
 
         });
