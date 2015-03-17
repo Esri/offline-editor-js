@@ -430,6 +430,15 @@ describe("Offline Editing", function()
 
                 // Should be the same size as the number of edits!!
                 expect(results.length).toBe(9);
+                expect(results[0].id).toBe("phantom-layer|@|-1");
+                expect(results[1].id).toBe("phantom-layer|@|-2");
+                expect(results[2].id).toBe("phantom-layer|@|-3");
+                expect((results[3].id).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
+                expect((results[4].id).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
+                expect((results[5].id).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
+                expect((results[6].id).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
+                expect((results[7].id).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
+                expect((results[8].id).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
                 expect(errors).toBe("end");
                 done();
             })
@@ -450,6 +459,15 @@ describe("Offline Editing", function()
                // Should be the previous size + 1 additional phantom graphic.
                expect(results.length).toBe(10);
                expect(results[0]).toBe("phantom-layer|@|-1");
+               expect(results[1]).toBe("phantom-layer|@|-2");
+               expect(results[2]).toBe("phantom-layer|@|-3");
+               expect((results[3]).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
+               expect((results[4]).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
+               expect((results[5]).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
+               expect((results[6]).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
+               expect((results[7]).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
+               expect((results[8]).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
+               expect(results[9]).toBe("phantom-layer|@|test001");
                expect(errors).toBe("end");
                done();
            })
@@ -480,6 +498,15 @@ describe("Offline Editing", function()
                 expect(results[0]).toBe("phantom-layer|@|-1");
                 expect(results[1]).toBe("phantom-layer|@|-2");
                 expect(results[2]).toBe("phantom-layer|@|-3");
+                expect((results[3]).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
+                expect((results[4]).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
+                expect((results[5]).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
+                expect((results[6]).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
+                expect((results[7]).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
+                expect((results[8]).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
+                expect(results[9]).toBe("phantom-layer|@|test001");
+                expect(results[10]).toBe("phantom-layer|@|test002");
+                expect(results[11]).toBe("phantom-layer|@|test003");
                 expect(errors).toBe("end");
                 done();
             })
@@ -495,6 +522,15 @@ describe("Offline Editing", function()
                    expect(results.length).toBe(11);
                    expect(results[0]).toBe("phantom-layer|@|-1");
                    expect(results[1]).toBe("phantom-layer|@|-2");
+                   expect(results[2]).toBe("phantom-layer|@|-3");
+                   expect((results[3]).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
+                   expect((results[4]).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
+                   expect((results[5]).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
+                   expect((results[6]).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
+                   expect((results[7]).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
+                   expect((results[8]).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
+                   expect(results[9]).toBe("phantom-layer|@|test002");
+                   expect(results[10]).toBe("phantom-layer|@|test003");
                    expect(errors).toBe("end");
                    done();
                })
