@@ -79,16 +79,31 @@
 
 			g_map.on('layers-add-result', test);
 
-			function test() 
+			function test(evt)
 			{
 				try
 				{
 					g_featureLayers.forEach(function(layer)
 					{
-						g_offlineFeaturesManager.extend(layer,function(result){
-                            if(result == false) alert("Unable to initialize database");
-                        });
-					});		
+						var graphicsArray = [];
+                        var length = graphicsArray.length;
+
+                        // Let's serialize the graphics array
+                        for(var a = 0; a < length; a++){
+                            var graphic = evt.target.graphics.graphics[a].toJson();
+                            graphicsArray.push(graphic);
+                        }
+
+                        var options = {};
+                        // Uncomment the line below to test if extend() throws an error!
+                        // options.graphics = evt.target.graphics.graphics;
+                        options.graphics = graphicsArray;
+                        options.zoom = g_map.getZoom();
+
+                        g_offlineFeaturesManager.extend(layer,function(result){
+                            if(result == false) console.error("WARNING: Unable to initialize database");
+                        },options);
+					});
 				}
 				catch(err)
 				{
