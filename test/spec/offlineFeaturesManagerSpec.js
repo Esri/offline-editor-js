@@ -411,7 +411,7 @@ describe("Offline Editing", function()
 
     async.it("check db size", function(done){
        g_editsStore.getUsage(function(usage,error){
-           expect(usage.sizeBytes).toBe(4977);
+           expect(usage.sizeBytes).toBe(7834);
            expect(usage.editCount).toBe(9);
            expect(error).toBe(null);
            done();
@@ -427,7 +427,9 @@ describe("Offline Editing", function()
     {
         async.it("Get PhantomLayerGraphics array", function(done){
             g_editsStore.getPhantomGraphicsArray(function(results,errors){
-                expect(results.length).toBe(0);
+
+                // Should be the same size as the number of edits!!
+                expect(results.length).toBe(9);
                 expect(errors).toBe("end");
                 done();
             })
@@ -444,8 +446,10 @@ describe("Offline Editing", function()
 
         async.it("Get simple PhantomLayerGraphics array (internal)", function(done){
            g_editsStore._getPhantomGraphicsArraySimple(function(results,errors){
-               expect(results.length).toBe(1);
-               expect(results[0]).toBe("phantom-layer|@|test001");
+
+               // Should be the previous size + 1 additional phantom graphic.
+               expect(results.length).toBe(10);
+               expect(results[0]).toBe("phantom-layer|@|-1");
                expect(errors).toBe("end");
                done();
            })
@@ -470,10 +474,12 @@ describe("Offline Editing", function()
 
         async.it("Get simple PhantomLayerGraphics array (internal)", function(done){
             g_editsStore._getPhantomGraphicsArraySimple(function(results,errors){
-                expect(results.length).toBe(3);
-                expect(results[0]).toBe("phantom-layer|@|test001");
-                expect(results[1]).toBe("phantom-layer|@|test002");
-                expect(results[2]).toBe("phantom-layer|@|test003");
+
+                // We added two phantom graphics to previous result
+                expect(results.length).toBe(12);
+                expect(results[0]).toBe("phantom-layer|@|-1");
+                expect(results[1]).toBe("phantom-layer|@|-2");
+                expect(results[2]).toBe("phantom-layer|@|-3");
                 expect(errors).toBe("end");
                 done();
             })
@@ -484,9 +490,11 @@ describe("Offline Editing", function()
                expect(success).toBe(true);
 
                g_editsStore._getPhantomGraphicsArraySimple(function(results,errors){
-                   expect(results.length).toBe(2);
-                   expect(results[0]).toBe("phantom-layer|@|test002");
-                   expect(results[1]).toBe("phantom-layer|@|test003");
+
+                   // We remove one graphic from the previous result of 12
+                   expect(results.length).toBe(11);
+                   expect(results[0]).toBe("phantom-layer|@|-1");
+                   expect(results[1]).toBe("phantom-layer|@|-2");
                    expect(errors).toBe("end");
                    done();
                })
