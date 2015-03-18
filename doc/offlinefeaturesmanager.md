@@ -87,6 +87,7 @@ Methods | Returns | Description
 `getPhantomLayerGraphics( callback) ` | `callback( graphicsLayerJSON)` | Used with offline browser restarts. Returns a JSON representation of the internal phantom graphics layer. This layer is designed to indicate to the user any graphic that has been modified while offline. The appcache-features.html sample demonstrates this pattern.
 `addAttachments()` | Internal | Adds an attachment.
 `deleteAttachments()` | Internal | Deletes an attachment.
+`getUsage(callback)`| `callback({usage}, error)` | **New @ v2.5** Returns the approximate size of the database in bytes. the usage Object is {sizeBytes: number, editCount: number}.
 `getPhantomGraphicsArray( callback)` | `callback(boolean, array)` | **New @ v2.5** Used with offline browser restarts. Returns an array of phantom graphics from the database.
 `getAllEditsArray(callback)` | `callback(boolean, array)` | **New @ v2.5** Returns an array of all edits stored in the database.
 `getFeatureLayerJSON(url,callback)` | `callback( boolean, JSON )` | **New @ v2.5.** Retrieves the feature layer's JSON using `f=json` parameter.
