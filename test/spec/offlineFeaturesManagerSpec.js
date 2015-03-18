@@ -425,7 +425,7 @@ describe("Offline Editing", function()
 
     describe("Test PhantomGraphicsLayer", function()
     {
-        async.it("Get PhantomLayerGraphics array", function(done){
+        async.it("Get PhantomLayerGraphics array via editsStore", function(done){
             g_editsStore.getPhantomGraphicsArray(function(results,errors){
 
                 // Should be the same size as the number of edits!!
@@ -442,6 +442,25 @@ describe("Offline Editing", function()
                 expect(errors).toBe("end");
                 done();
             })
+        });
+
+        // offlineFeaturesManager results should be the same as getting results directly from database
+        async.it("Get PhantomLayerGraphics via the layer", function(done){
+            g_featureLayers[0].getPhantomGraphicsArray(function(result,array){
+                expect(result).toBe(true);
+                expect(typeof array).toBe("object");
+                expect(array.length).toBe(9);
+                expect(array[0].id).toBe("phantom-layer|@|-1");
+                expect(array[1].id).toBe("phantom-layer|@|-2");
+                expect(array[2].id).toBe("phantom-layer|@|-3");
+                expect((array[3].id).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
+                expect((array[4].id).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
+                expect((array[5].id).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
+                expect((array[6].id).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
+                expect((array[7].id).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
+                expect((array[8].id).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
+                done();
+            });
         });
 
         async.it("Set PhantomLayerGraphic", function(done){
@@ -619,17 +638,28 @@ describe("Offline Editing", function()
         });
     });
 
-    describe("go Online", function()
-    {
+    describe("Before going online", function(){
         async.it("Before going online validate graphic layer properties", function(done){
             // Remember we deleted g3! So our total count is 8 not 9. HOWEVER, there should be 9 records in the database!
             expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2,g4,g5,g6]));
             expect(getObjectIds(g_featureLayers[1].graphics)).toEqual(getObjectIds([l1,l2,l3]));
             expect(g_featureLayers[0].graphics.length).toBe(5);
             expect(g_featureLayers[1].graphics.length).toBe(3);
+            expect(g_featureLayers[2].graphics.length).toBe(0);
             done();
         });
 
+        async.it("Retrieve edits array from the layer", function(done){
+            g_featureLayers[0].getAllEditsArray(function(success,array){
+                expect(success).toBe(true); console.log("ARRAY " + JSON.stringify(array))
+                expect(array.length).toBe(9);
+                done();
+            });
+        });
+    });
+
+    describe("go Online", function()
+    {
         async.it("go Online", function(done)
         {
 
@@ -680,7 +710,9 @@ describe("Offline Editing", function()
                 done();
             });
         });
+    });
 
+    describe("After online", function(){
         async.it("After online - verify feature layer graphic counts",function(done){
             // all of them are positive
             expect(getObjectIds(g_featureLayers[0].graphics).filter(function(id){ return id<0; })).toEqual([]);
@@ -711,6 +743,5 @@ describe("Offline Editing", function()
                 done();
             });
         });
-
     });
 });

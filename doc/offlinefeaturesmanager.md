@@ -35,7 +35,7 @@ Methods | Returns | Description
 `goOffline()` | nothing | Forces library into an offline state. Any edits applied to extended FeatureLayers during this condition will be stored locally.
 `goOnline(callback)` | `callback( boolean, errors )` | Forces library to return to an online state. If there are pending edits, an attempt will be made to sync them with the remote feature server. Callback function will be called when resync process is done.
 `getOnlineStatus()` | `ONLINE`, `OFFLINE` or `RECONNECTING`| Determines the current state of the manager. Please, note that this library doesn't detect actual browser offline/online condition. You need to use the `offline.min.js` library included in `vendor\offline` directory to detect connection status and connect events to goOffline() and goOnline() methods. See `military-offline.html` sample.
-`getReadableEdit()` | String | **DEPRECATED** at v2.5. A string value representing human readable information on pending edits.
+`getReadableEdit()` | String | **DEPRECATED** at v2.5. A string value representing human readable information on pending edits. Use featureLayer.getAllEditsArray().
 
 
 ###Events
@@ -54,9 +54,9 @@ Application code can subscribe to offlineFeaturesManager events to be notified o
 Event | Value | Returns |  Description
 --- | --- | --- | ---
 `events.EDITS_SENT` | "edits-sent" | nothing | When any edit is actually sent to the server.
-`events.EDITS_SENT_ERROR` | "edits-sent-error" | {msg:error} | (Added at v2.5) There was a problem while sending errors to the server.
+`events.EDITS_SENT_ERROR` | "edits-sent-error" | {msg:error} | **New at v2.5** There was a problem while sending errors to the server.
 `events.EDITS_ENQUEUED` | "edits-enqueued" | nothing | When an edit is enqueued and not sent to the server.
-`events.EDITS_ENQUEUED_ERROR` | "edits-enqueued-error" | {msg:error} | (Added at v2.5) An error occurred while trying to store the edit. In your app it is recommended to verify if the edit is in the database or not.
+`events.EDITS_ENQUEUED_ERROR` | "edits-enqueued-error" | {msg:error} | **New at v2.5** An error occurred while trying to store the edit. In your app it is recommended to verify if the edit is in the database or not.
 `events.ALL_EDITS_SENT` | "all-edits-sent" | nothing| After going online and there are no pending edits remaining in the queue.
 `events.ATTACHMENT_ENQUEUED` | "attachment-enqueued" | nothing | An attachment is in the queue to be sent to the server.
 `events.ATTACHMENTS_SENT` | "attachments-sent" | nothing | When any attachment is actually sent to the server.
@@ -85,8 +85,10 @@ Methods | Returns | Description
 `getFeatureDefinition(` `featureLayer, featuresArr` `geometryType, callback)` | Object | Used with offline browser restarts. Pass it a FeatureLayer instance, an array of features and specify the Esri geometry type. It will return a FeatureLayer Definition object that can be used to reconstitute a Feature Layer from scratch. The appcache-features.html sample demonstrates this pattern. Go here for more info on the ArcGIS REST API [layerDefinition](http://resources.arcgis.com/en/help/arcgis-rest-api/index.html#//02r30000004v000000), and [Layer](http://resources.arcgis.com/en/help/arcgis-rest-api/index.html#/Layer/02r30000004q000000/).
 `setPhantomLayerGraphics( graphicsArray) ` | nothing | Used with offline browser restarts. Adds the graphics in the `graphicsArray` to the internal phantom graphics layer. This layer is designed to indicate to the user any graphic that has been modified while offline. The appcache-features.html sample demonstrates this pattern.
 `getPhantomLayerGraphics( callback) ` | `callback( graphicsLayerJSON)` | Used with offline browser restarts. Returns a JSON representation of the internal phantom graphics layer. This layer is designed to indicate to the user any graphic that has been modified while offline. The appcache-features.html sample demonstrates this pattern.
-`addAttachments()` | TBD | **New @ v2.5.** TBD
-`deleteAttachments()` | TBD | **New @ v2.5.** TBD
+`addAttachments()` | Internal | Adds an attachment.
+`deleteAttachments()` | Internal | Deletes an attachment.
+`getPhantomGraphicsArray( callback)` | `callback(boolean, array)` | **New @ v2.5** Used with offline browser restarts. Returns an array of phantom graphics from the database.
+`getAllEditsArray(callback)` | `callback(boolean, array)` | **New @ v2.5** Returns an array of all edits stored in the database.
 `getFeatureLayerJSON(url,callback)` | `callback( boolean, JSON )` | **New @ v2.5.** Retrieves the feature layer's JSON using `f=json` parameter.
 `convertFeatureGraphicsToJSON(` `[features],callback)` | `callback( jsonString )` | **New @ v2.5.** Converts an array of feature layer graphics to a JSON string.
 
