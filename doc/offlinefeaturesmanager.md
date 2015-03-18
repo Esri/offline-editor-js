@@ -31,7 +31,7 @@ The offline-editor-js library provides the following functionality.
 
 Methods | Returns | Description
 --- | --- | ---
-`extend(layer)`|nothing|Overrides a feature layer, by replacing the `applyEdits()` method of the layer. You can use the FeatureLayer as always, but it's behaviour will be different according to the online status of the manager.
+`extend(layer,callback,options)`|`callback( boolean, errors )`|Overrides a feature layer, by replacing the `applyEdits()` method of the layer. You can use the FeatureLayer as always, but it's behaviour will be different according to the online status of the manager. `options` is optional and is an Object that contains any information you need when reconsistuting the layer after an offline browser restart.
 `goOffline()` | nothing | Forces library into an offline state. Any edits applied to extended FeatureLayers during this condition will be stored locally.
 `goOnline(callback)` | `callback( boolean, errors )` | Forces library to return to an online state. If there are pending edits, an attempt will be made to sync them with the remote feature server. Callback function will be called when resync process is done.
 `getOnlineStatus()` | `ONLINE`, `OFFLINE` or `RECONNECTING`| Determines the current state of the manager. Please, note that this library doesn't detect actual browser offline/online condition. You need to use the `offline.min.js` library included in `vendor\offline` directory to detect connection status and connect events to goOffline() and goOnline() methods. See `military-offline.html` sample.
@@ -85,6 +85,10 @@ Methods | Returns | Description
 `getFeatureDefinition(` `featureLayer, featuresArr` `geometryType, callback)` | Object | Used with offline browser restarts. Pass it a FeatureLayer instance, an array of features and specify the Esri geometry type. It will return a FeatureLayer Definition object that can be used to reconstitute a Feature Layer from scratch. The appcache-features.html sample demonstrates this pattern. Go here for more info on the ArcGIS REST API [layerDefinition](http://resources.arcgis.com/en/help/arcgis-rest-api/index.html#//02r30000004v000000), and [Layer](http://resources.arcgis.com/en/help/arcgis-rest-api/index.html#/Layer/02r30000004q000000/).
 `setPhantomLayerGraphics( graphicsArray) ` | nothing | Used with offline browser restarts. Adds the graphics in the `graphicsArray` to the internal phantom graphics layer. This layer is designed to indicate to the user any graphic that has been modified while offline. The appcache-features.html sample demonstrates this pattern.
 `getPhantomLayerGraphics( callback) ` | `callback( graphicsLayerJSON)` | Used with offline browser restarts. Returns a JSON representation of the internal phantom graphics layer. This layer is designed to indicate to the user any graphic that has been modified while offline. The appcache-features.html sample demonstrates this pattern.
+`addAttachments()` | TBD | **New @ v2.5.** TBD
+`deleteAttachments()` | TBD | **New @ v2.5.** TBD
+`getFeatureLayerJSON(url,callback)` | `callback( boolean, JSON )` | **New @ v2.5.** Retrieves the feature layer's JSON using `f=json` parameter.
+`convertFeatureGraphicsToJSON(` `[features],callback)` | `callback( jsonString )` | **New @ v2.5.** Converts an array of feature layer graphics to a JSON string.
 
 ##O.esri.Edit.EditStore
 
@@ -103,17 +107,30 @@ Property | Value | Description
 `UPDATE` | "update" | Represents a FeatureLayer.update() operation.
 `DELETE` | "delete" | Represents a FeatureLayer.delete() operation.
 
+###Public Properties
+
+Property | Value | Description
+--- | --- | ---
+`dbName` | "features_store" | **New @ v2.5.** Defines the database name. You can have multiple databases within the same application.
+`objectStoreName` | "features" | **New @ v2.5.** Represents an object store that allows access to a set of data in the IndexedDB database, looked up via primary key. 
+`dbIndex` | "featureId" | **New @ v2.5.** Allows access to a subset of data in the IndexedDB database via an index to retrieve the record(s) rather than the primary key. This is sometimes faster than using IDBObjectStore.
+
 ###Public Methods
 Methods | Returns | Description
 --- | --- | ---
 `isSupported()` | boolean | Determines if local storage is available. If it is not available then the storage cache will not work. It's a best practice to verify this before attempting to write to the local cache.
 `pushEdit(` `operation, layer, graphic, callback)` | `callback(` `true, edit)` or  `callback(` `false, message)`| Pushes an edit into storage. Operation is the corresponding enum. Layer is a reference to the feature layer, and the graphic is the graphic object associated with the edit.
-`hasPendingEdits()` | boolean | Determines if there are any queued edits in the local cache.
-`resetEditsQueue()` | nothing | Empties the edits queue and replaces it with an empty string.
-`retrieveEditsQueue()` | Array | returns an array of all pending edits.
-`pendingEditsCount()` | int | The total number of edits that are queued in the local cache.
-`getEditsStoreSizeBytes()` | Number | Returns the total size of all pending edits in bytes.
-`getLocalStorageSizeBytes()` | Number | Returns the total size in bytes of all items for local storage cached using the current domain name. 
+`resetEditsQueue(callback)` | `callback( boolean, String)` | **Updated @ v2.5.** Empties the edits queue and replaces it with an empty string.
+`pendingEditsCount( callback )` | `callback( int )` | **Updated @ v2.5.** The total number of edits that are queued in the database.
+`getAllEditsArray( callback)` | `callback()` | **New @ v2.5.** Returns all edits in an iterable array.
+`getFeatureLayerJSON( callback)` | `callback( boolean, Object)` | **New @ v2.5.** Returns the feature layer JSON object.
+`deleteFeatureLayerJSON( callback)` | `callback( boolean, {message:String)` | **New @ v2.5.** Delete the feature layer JSON object from the database.
+`pushFeatureLayerJSON( dataObject, callback)` | `callback( boolean, error)` | **New @ v2.5.** Use this to store any static FeatureLayer or related JSON data related to your app that will assist in restoring the layer after an offline restart. Supports adds and updates, will not overwrite entire object.
+`getUsage( callback)` | `callback( int, errorString)` | **New @ v2.5.** Returns the approximate size of the database in bytes.
+`hasPendingEdits()` | boolean | **Deprecated @ v2.5.** Determines if there are any queued edits in the local cache. Use `pendingEditsCount()` instead.
+`retrieveEditsQueue()` | Array | **Deprecated @ v2.5.** Returns an array of all pending edits.
+`getEditsStoreSizeBytes()` | Number | **Deprecated @ v2.5.** Returns the total size of all pending edits in bytes. Use `getUsage()` instead.
+`getLocalStorageSizeBytes()` | Number | **Deprecated @ v2.5.** Returns the total size in bytes of all items for local storage cached using the current domain name. Use `getUsage()` instead.
 
 ##O.esri.Edit.AttachmentsStore
 
