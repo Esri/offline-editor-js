@@ -181,7 +181,7 @@ describe("Offline Editing", function()
 
 	async.it("Prepare feature service. Clear database",function(done)
 	{
-        g_editsStore.resetEditsQueue(function (result) {
+        g_featureLayers[0].resetDatabase(function (result) {
             expect(result).toEqual(true);
 
             g_editsStore.pendingEditsCount(function (count) {
