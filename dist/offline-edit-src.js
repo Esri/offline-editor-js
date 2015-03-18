@@ -1,10 +1,9 @@
-/*! offline-editor-js - v2.5 - 2015-03-17
+/*! offline-editor-js - v2.5 - 2015-03-18
 *   Copyright (c) 2015 Environmental Systems Research Institute, Inc.
 *   Apache License*/
 define([
         "dojo/Evented",
         "dojo/_base/Deferred",
-        "dojo/DeferredList",
         "dojo/promise/all",
         "dojo/_base/declare",
         "dojo/_base/array",
@@ -18,7 +17,7 @@ define([
         "esri/symbols/SimpleLineSymbol",
         "esri/symbols/SimpleFillSymbol",
         "esri/urlUtils"],
-    function (Evented, Deferred, DeferredList, all, declare, array, domAttr, domStyle, query,
+    function (Evented, Deferred, all, declare, array, domAttr, domStyle, query,
               esriConfig, GraphicsLayer, Graphic, SimpleMarkerSymbol, SimpleLineSymbol, SimpleFillSymbol, urlUtils) {
         "use strict";
         return declare("O.esri.Edit.OfflineFeaturesManager", [Evented],
@@ -32,6 +31,10 @@ define([
                 RECONNECTING: "reconnecting",   // sending stored edits to the server
                 attachmentsStore: null,         // indexedDB for storing attachments
                 proxyPath: null,                // by default we use CORS and therefore proxyPath is null
+
+                // Database properties
+                DB_NAME: "features_store",      // Sets the database name.
+                DB_OBJECTSTORE_NAME: "features",// Represents an object store that allows access to a set of data in the IndexedDB database
 
                 // manager emits event when...
                 events: {
@@ -87,29 +90,8 @@ define([
                 extend: function (layer, callback, options) {
                     var self = this;
 
-                    // Attempt to initialize the database
-                    self._editStore.init(function (result) {
-
-                        ////////////////////////////////////////////////////
-                        // OFFLINE RESTART CONFIGURATION
-                        // Added @ v2.5
-                        //
-                        // Configure database for offline restart
-                        // If options Object is not defined the do nothing.
-                        //
-                        //
-
-                        if (typeof options == "object") {
-                            self._editStore.pushFeatureLayerJSON(options, function (success, err) {
-                                if (success) {
-                                    callback(true, null);
-                                }
-                                else {
-                                    callback(false, err);
-                                }
-                            })
-                        }
-                    });
+                    // Initialize the database as well as set offline data.
+                    this._initializeDB(options,callback);
 
                     // we keep track of the FeatureLayer object
                     this._featureLayers[layer.url] = layer;
@@ -275,8 +257,8 @@ define([
                      * @param callback Called when the operation is complete.
                      * @param errback  An error object is returned if an error occurs
                      * @returns {*} deferred
-                     * @throws EDITS_ENQUEUED if all edits successfully stored while offline
-                     * @throws EDITS_ENQUEUED_ERROR if there was an error while storing an edit while offline
+                     * @event EDITS_ENQUEUED boolean if all edits successfully stored while offline
+                     * @event EDITS_ENQUEUED_ERROR string message if there was an error while storing an edit while offline
                      */
                     layer.applyEdits = function (adds, updates, deletes, callback, errback) {
                         // inside this method, 'this' will be the FeatureLayer
@@ -294,7 +276,7 @@ define([
                             return def;
                         }
 
-                        var deferred = new Deferred();
+                        var deferred1 = new Deferred();
                         var results = {addResults: [], updateResults: [], deleteResults: []};
                         var updatesMap = {};
 
@@ -411,13 +393,15 @@ define([
                                 if (r[v] == false) success = false;
                             }
 
-                            /* we already pushed the edits into the database, now we let the FeatureLayer to do the local updating of the layer graphics */
-                            setTimeout(function () {
-                                this._editHandler(results, adds, updatesMap, callback, errback, deferred);
+                            // we already pushed the edits into the database, now we let the FeatureLayer to do the local updating of the layer graphics
+                            // EDITS_ENQUEUED = callback(true, edit), and EDITS_ENQUEUED_ERROR = callback(false, /*String */ error)
+                            //setTimeout(function () {
+                                this._editHandler(results, adds, updatesMap, callback, errback, deferred1);
                                 success == true ? self.emit(self.events.EDITS_ENQUEUED, results) : self.emit(self.events.EDITS_ENQUEUED_ERROR, results);
-                            }.bind(this), 0);
-                            return deferred;
+                            //}.bind(this), 0);
                         }.bind(this));
+
+                        return deferred1;
 
                     }; // layer.applyEdits()
 
@@ -532,6 +516,54 @@ define([
                     };
 
                     /**
+                     * Returns an array of phantom graphics from the database.
+                     * @param callback callback (true, array) or (false, errorString)
+                     */
+                    layer.getPhantomGraphicsArray = function(callback){
+                        self._editStore.getPhantomGraphicsArray(function(array,message){
+                            if(message == "end"){
+                                callback(true,array);
+                            }
+                            else{
+                                callback(false,message);
+                            }
+                        });
+                    };
+
+                    /**
+                     * Returns the approximate size of the database in bytes
+                     * @param callback callback({usage}, error) Whereas, the usage Object is {sizeBytes: number, editCount: number}
+                     */
+                    layer.getUsage = function(callback){
+                        self._editStore.getUsage(function(usage,error){
+                            callback(usage,error);
+                        });
+                    };
+
+                    /**
+                     * Full database reset.
+                     * CAUTION! If some edits weren't successfully sent, then their record
+                     * will still exist in the database. If you use this function you
+                     * will also delete those records.
+                     * @param callback (boolean, error)
+                     */
+                    layer.resetDatabase = function(callback){
+                        self._editStore.resetEditsQueue(function(result,error){
+                            callback(result,error);
+                        });
+                    };
+
+                    /**
+                     * Returns the number of edits pending in the database.
+                     * @param callback callback( int )
+                     */
+                    layer.pendingEditsCount = function(callback){
+                        self._editStore.pendingEditsCount(function(count){
+                            callback(count);
+                        })
+                    };
+
+                    /**
                      * Create a featureDefinition
                      * @param featureLayer
                      * @param featuresArr
@@ -550,6 +582,21 @@ define([
                         };
 
                         callback(featureDefinition);
+                    };
+
+                    /**
+                     * Returns an interable array of all edits stored in the database
+                     * @param callback (true, array) or (false, errorString)
+                     */
+                    layer.getAllEditsArray = function(callback){
+                        self._editStore.getAllEditsArray(function(array,message){
+                            if(message == "end"){
+                                callback(true,array);
+                            }
+                            else{
+                                callback(false,message);
+                            }
+                        })
                     };
 
                     /* internal methods */
@@ -651,6 +698,51 @@ define([
                 },
 
                 /* internal methods */
+
+                /**
+                 * Intialize the database and push featureLayer JSON to DB if required
+                 * @param options
+                 * @param callback
+                 * @private
+                 */
+                _initializeDB: function(options,callback){
+
+                    var editStore = this._editStore;
+
+                    // Configure the database
+                    editStore.dbName = this.DB_NAME;
+                    editStore.objectStoreName = this.DB_OBJECTSTORE_NAME;
+
+                    // Attempt to initialize the database
+                    editStore.init(function (result, error) {
+
+                        ////////////////////////////////////////////////////
+                        // OFFLINE RESTART CONFIGURATION
+                        // Added @ v2.5
+                        //
+                        // Configure database for offline restart
+                        // If options Object is not defined the do nothing.
+                        //
+                        //
+
+                        if (typeof options == "object" && result == true) {
+                            editStore.pushFeatureLayerJSON(options, function (success, err) {
+                                if (success) {
+                                    callback(true, null);
+                                }
+                                else {
+                                    callback(false, err);
+                                }
+                            })
+                        }
+                        else if(result == false){
+                            callback(false, error);
+                        }
+                        else if(result == true){
+                            callback(true, null);
+                        }
+                    });
+                },
 
                 /**
                  * internal method that checks if this browser supports everything that is needed to handle offline attachments
@@ -949,6 +1041,10 @@ define([
                             }
 
                         }
+                        else{
+                            // No edits were found
+                            callback(true,[]);
+                        }
 
                         // wait for all requests to finish
                         //
@@ -1241,20 +1337,13 @@ define([
                 },
 
                 /**
-                 * DEPRECATED @ v2.5
+                 * DEPRECATED @ v2.5. Use getAllEditsArray() and parse the results
                  * A string value representing human readable information on pending edits
                  * @param edit
                  * @returns {string}
                  */
                 getReadableEdit: function (edit) {
-                    var layer = this._featureLayers[edit.layer];
-                    var graphic = this._editStore._deserialize(edit.graphic);
-                    var readableGraphic = graphic.geometry.type;
-                    var layerId = edit.layer.substring(edit.layer.lastIndexOf("/") + 1);
-                    if (layer) {
-                        readableGraphic += " [id=" + graphic.attributes[layer.objectIdField] + "]";
-                    }
-                    return "o:" + edit.operation + ", l:" + layerId + ", g:" + readableGraphic;
+                    return "DEPRECATED at v2.5!";
                 }
 
             }); // declare
@@ -1311,7 +1400,7 @@ O.esri.Edit.EditStore = function () {
      * @param operation add, update or delete
      * @param layerUrl the URL of the feature layer
      * @param graphic esri/graphic. The method will serialize to JSON
-     * @param callback {true, edit} or {false, error}
+     * @param callback callback(true, edit) or callback(false, error)
      */
     this.pushEdit = function (operation, layerUrl, graphic, callback) {
 
@@ -1836,7 +1925,7 @@ O.esri.Edit.EditStore = function () {
 
     /**
      * Returns all the edits as a single Array via the callback
-     * @param callback {value, message}
+     * @param callback {array, messageString} or {null, messageString}
      */
     this.getAllEditsArray = function (callback) {
 
@@ -2077,7 +2166,7 @@ O.esri.Edit.EditStore = function () {
     /**
      * Returns the approximate size of the database in bytes
      * IMPORTANT: Currently requires all data be serialized!
-     * @param callback  {usage, error} Whereas, the usage Object is {sizeBytes: number, editCount: number}
+     * @param callback  callback({usage}, error) Whereas, the usage Object is {sizeBytes: number, editCount: number}
      */
     this.getUsage = function (callback) {
         console.assert(this._db !== null, "indexeddb not initialized");
@@ -2179,11 +2268,13 @@ O.esri.Edit.EditStore = function () {
     };
 
     ///
-    /// DEPRECATED
+    /// DEPRECATED @ v2.5
+    /// Subject to complete removal at the next release.
+    /// Many of these were undocumented and for internal use.
     ///
 
     /**
-     * Deprecated @ v2.5. Use pendingEditsCount() instead.
+     * Deprecated @ v2.5. Use pendingEditsCount().
      */
     this.hasPendingEdits = function () {
         return "DEPRECATED at v2.5!";
@@ -2197,26 +2288,40 @@ O.esri.Edit.EditStore = function () {
     };
 
     /**
-     * Deprecated @ v2.5. 
-     * @returns {string}
+     * Deprecated @ v2.5. Use pushEdit()
      */
-    this.retrieveEditsQueue = function(){
+    this._storeEditsQueue = function (edits) {
         return "DEPRECATED at v2.5!";
     };
 
     /**
      * Deprecated @ v2.5.
-     * @returns {string}
      */
-    this.getEditsStoreSizeBytes = function(){
+    this._unpackArrayOfEdits = function (edits) {
         return "DEPRECATED at v2.5!";
     };
 
     /**
-     * Deprecated @ v2.5.
+     * Deprecated @ v2.5. Use getUsage().
      * @returns {string}
      */
     this.getLocalStorageSizeBytes = function(){
+        return "DEPRECATED at v2.5!";
+    };
+
+    /**
+     * Deprecated @ v2.5.
+     * @returns {string}
+     */
+    this.peekFirstEdit = function(){
+        return "DEPRECATED at v2.5!";
+    };
+
+    /**
+     * Deprecated @ v2.5.
+     * @returns {string}
+     */
+    this.popFirstEdit = function(){
         return "DEPRECATED at v2.5!";
     };
 };
