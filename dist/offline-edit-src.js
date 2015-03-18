@@ -2195,6 +2195,30 @@ O.esri.Edit.EditStore = function () {
     this._isEditDuplicated = function (newEdit, edits) {
         return "DEPRECATED at v2.5!";
     };
+
+    /**
+     * Deprecated @ v2.5. 
+     * @returns {string}
+     */
+    this.retrieveEditsQueue = function(){
+        return "DEPRECATED at v2.5!";
+    };
+
+    /**
+     * Deprecated @ v2.5.
+     * @returns {string}
+     */
+    this.getEditsStoreSizeBytes = function(){
+        return "DEPRECATED at v2.5!";
+    };
+
+    /**
+     * Deprecated @ v2.5.
+     * @returns {string}
+     */
+    this.getLocalStorageSizeBytes = function(){
+        return "DEPRECATED at v2.5!";
+    };
 };
 
 
