@@ -732,6 +732,14 @@ describe("Offline Editing", function()
             });
         });
 
+        async.it("Retrieve edits array from the layer", function(done){
+            g_featureLayers[0].getAllEditsArray(function(success,array){
+                expect(success).toBe(true); console.log("ARRAY " + JSON.stringify(array))
+                expect(array.length).toBe(0);
+                done();
+            });
+        });
+
         async.it("After online - verify online status",function(done){
             expect(g_offlineFeaturesManager.getOnlineStatus()).toBe(g_offlineFeaturesManager.ONLINE);
             done();
