@@ -8,13 +8,15 @@ The `offline-edit-min.js` library provides the following tools for working with 
 ###Constructor
 Constructor | Description
 --- | ---
-`O.esri.Edit.OfflineFeaturesManager()` | Creates an instance of the offlineFeaturesManager class. This library allows you to extend FeatureLayer objects with offline editing capabilities and manage the online/offline resynchronization process.
+`O.esri.Edit.OfflineFeaturesManager()` | Creates an instance of the OfflineFeaturesManager class. This library allows you to extend FeatureLayer objects with offline editing capabilities and manage the online/offline resynchronization process.
 
 ###Properties
-Property | Description
+Property | Value | Description
 --- | ---
-`proxyPath` | Default is null. If you are using a Feature Service that is not CORS-enabled then you will need to set this path.
-`attachmentsStore` | Default is null. If you are using attachments, this property gives you access to the associated database.
+`DB_NAME` | "features_store" | **New @ v2.5** Sets the database name. You can instantiate multiple databases within the same application by creating seperate instances of OfflineFeaturesManager.
+`DB_OBJECTSTORE_NAME` | "features" | **New @ v2.5** Represents an object store that allows access to a set of data in the database.
+`proxyPath` | null | Default is null. If you are using a Feature Service that is not CORS-enabled then you will need to set this path.
+`attachmentsStore` | null | Default is null. If you are using attachments, this property gives you access to the associated database.
 
 ###ENUMs
 The manager can be in one of these three states (see `getOnlineStatus()` method):
@@ -27,7 +29,7 @@ Property | Value | Description
 
 ###Methods
 
-The offline-editor-js library provides the following functionality.
+OfflineFeaturesManager provides the following functionality.
 
 Methods | Returns | Description
 --- | --- | ---
@@ -95,7 +97,7 @@ Methods | Returns | Description
 
 ##O.esri.Edit.EditStore
 
-Provides a number of public methods that are used by `OfflineFeaturesManager` library for storing edits in the browser. Instiantiate this library using a `new` statement. 
+Provides a number of public methods that are used by `OfflineFeaturesManager` library for storing edits in the browser. Instiantiate this library using a `new` statement. Most of the methods are RESERVED for internal use-only. All common use functions should be accessed directly through the feature layer after it has been extended by the offlineFeaturesManager.
 
 ###Constructor
 Constructor | Description
@@ -123,7 +125,7 @@ Methods | Returns | Description
 --- | --- | ---
 `isSupported()` | boolean | Determines if local storage is available. If it is not available then the storage cache will not work. It's a best practice to verify this before attempting to write to the local cache.
 `pushEdit(` `operation, layer, graphic, callback)` | `callback(` `true, edit)` or  `callback(` `false, message)`| Pushes an edit into storage. Operation is the corresponding enum. Layer is a reference to the feature layer, and the graphic is the graphic object associated with the edit.
-`resetEditsQueue(callback)` | `callback( boolean, String)` | **Updated @ v2.5.** Empties the edits queue and replaces it with an empty string.
+`resetEditsQueue(callback)` | `callback( boolean, error)` | **Updated @ v2.5.** Use with **caution**, initiates a complete database reset. If some edits weren't sent when your app goes online, then you will delete those records as well.
 `pendingEditsCount( callback )` | `callback( int )` | **Updated @ v2.5.** The total number of edits that are queued in the database.
 `getAllEditsArray( callback)` | `callback()` | **New @ v2.5.** Returns all edits in an iterable array.
 `getFeatureLayerJSON( callback)` | `callback( boolean, Object)` | **New @ v2.5.** Returns the feature layer JSON object.
@@ -137,7 +139,7 @@ Methods | Returns | Description
 
 ##O.esri.Edit.AttachmentsStore
 
-Provides a number of public methods that are used by `OfflineFeaturesManager` library for storing attachments in the browser. Instiantiate this library using a `new` statement. 
+Provides a number of public methods that are used by `OfflineFeaturesManager` library for storing attachments in the browser. Instiantiate this library using a `new` statement. Instiantiate this library using a `new` statement. 
 
 ###Constructor
 Constructor | Description
