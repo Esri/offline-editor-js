@@ -2,11 +2,11 @@
 <html>
 <head>
 	<meta charset="UTF-8">
-	<title>Military Offline Editor</title>
+	<title>Offline Editing - COP</title>
 
 	<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" >
     <link rel="stylesheet" href="http://js.arcgis.com/3.12/dijit/themes/claro/claro.css">
-    <link rel="stylesheet" href="http://js.arcgis.com/3.12/esri/css/esri.css" />
+    <link rel="stylesheet" href="http://js.arcgis.com/3.13/esri/css/esri.css" />
 
 	<style>
 		html,body{height:100%;width:100%;margin:0;overflow:hidden;font-family: sans-serif;}
@@ -64,7 +64,7 @@
 		.dj_ie .simpleInfoWindow .content {position: relative;}	
 	</style>
 
-	<script src="http://js.arcgis.com/3.12/"></script>
+	<script src="http://js.arcgis.com/3.13/"></script>
 	<script src="../vendor/offline/offline.min.js"></script>
     <script>
         Offline.options = {
@@ -101,6 +101,9 @@
 	    "esri/config",
 	    "dojo/i18n!esri/nls/jsapi",
 
+        "dojo/_base/Deferred",
+        "dojo/promise/all",
+
 	    "dojo/_base/array", "dojo/parser", "dojo/keys", 
 		"dojo/dom", "dojo/on", "dojo/dom-construct", "dojo/dom-class", "esri/domUtils",
 
@@ -116,12 +119,11 @@
 	    SimpleMarkerSymbol, SimpleLineSymbol, 
 	    Editor, TemplatePicker,
 	    esriConfig, jsapiBundle,
+        Deferred, all,
 	    arrayUtils, parser, keys, 
 		dom, on, domConstruct, domClass, domUtils,Graphic
 	) {
 		var editor;
-		var basemapLayer;
-        var editStore = new O.esri.Edit.EditStore();
 
 		parser.parse();
 		dojo.fadeOut({node:'loader-cloak', onEnd: function(n){n.style.display="none"}}).play();
@@ -140,16 +142,6 @@
         // Refer to "Using the Proxy Page" for more information:  https://developers.arcgis.com/en/javascript/jshelp/ags_proxy.html
         offlineFeaturesManager.proxyPath = null;
 
-		offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_ENQUEUED, updateStatus);
-		offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_SENT, updateStatus);
-		offlineFeaturesManager.on(offlineFeaturesManager.events.ALL_EDITS_SENT, updateStatus);
-		updateConnectivityIndicator();
-		updateStorageInfo();
-
-        Offline.check();
-		Offline.on('up', goOnline );
-		Offline.on('down', goOffline );
-
 		map = new Map("map", {
 			basemap: "satellite",
 			center: [-0.958, 41.846],
@@ -163,6 +155,7 @@
 		// var layersIds = [0,1,2,3,4,5,6];
 		var layersIds = [1,2,3];
 		var featureLayers = [];
+        var offlineInitializedLayers = [];
 
 		layersIds.forEach(function(layerId)
 		{
@@ -179,41 +172,8 @@
 
 		function initEditor(evt)
 		{
-			try {
-				var offlineTilesEnabler = new O.esri.Tiles.OfflineTilesEnabler();
-				basemapLayer = map.getLayer( map.layerIds[0] );
-				offlineTilesEnabler.extend(basemapLayer);
 
-				/* extend layer with offline detection functionality */
-				evt.layers.forEach(function(result)
-				{
-					var layer = result.layer;
-					offlineFeaturesManager.extend(layer);
-					layer.on('update-end', logCurrentObjectIds);
-				});
-
-				/* handle errors that happen while storing offline edits */
-				offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_ENQUEUED, function(results)
-				{
-					var errors = Array.prototype.concat(
-						results.addResults.filter(function(r){ return !r.success }),
-						results.updateResults.filter(function(r){ return !r.success }),
-						results.deleteResults.filter(function(r){ return !r.success }) 
-					);
-
-					if( errors.length )
-					{
-						var messages = errors.map(function(e){ return e.error.message });
-						alert("Error editing features: " + messages.join('\n'));
-					}
-				});
-
-				updatePendingEditsList();
-			}
-			catch(err)
-			{
-				console.log(err);
-			}
+            initFeatureLayersForOffline(evt);
 
 			try {
 				/* template picker */
@@ -258,19 +218,85 @@
 			{
 				console.log(err);
 			}
-
-			try {
-				if( Offline.state === 'up' )
-				{
-					// if we have pending edits from previous executions and we are online, then try to replay them
-					goOnline();
-				}
-			} 
-			catch(err)
-			{
-				console.log(err);
-			}
 		}
+
+        function initFeatureLayersForOffline(evt){
+            try {
+
+                var promises = [];
+
+                // extend layer with offline detection functionality
+                evt.layers.forEach(function(result)
+                {
+                    var deferred = new Deferred();
+
+                    var layer = result.layer;
+                    offlineInitializedLayers.push(layer);
+
+                    offlineFeaturesManager.extend(layer,function(success,error){
+                        if(success){
+                            deferred.resolve(true);
+                        }
+                        else{
+                            deferred.reject(false);
+                            alert("Unable to open database: " + error);
+                        }
+                    });
+                    layer.on('update-end', logCurrentObjectIds);
+                    promises.push(deferred);
+                });
+
+                var allPromises = all(promises);
+                allPromises.then(function(results){
+                    if(results[0] && results[1] && results[2]){
+                        resolveOfflinePromises();
+                    }
+                    else{
+                        alert("There was a problem initializing the layers for offline.");
+                    }
+                });
+            }
+            catch(err)
+            {
+                console.log(err);
+            }
+        }
+
+        // Things to do when all the promises complete
+        function resolveOfflinePromises(){
+            offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_ENQUEUED, updateStatus);
+            offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_SENT, updateStatus);
+            offlineFeaturesManager.on(offlineFeaturesManager.events.ALL_EDITS_SENT, updateStatus);
+
+            offlineInitializedLayers[0].on("edits-complete", handleEditsComplete);
+            offlineInitializedLayers[1].on("edits-complete", handleEditsComplete);
+            offlineInitializedLayers[2].on("edits-complete", handleEditsComplete);
+
+            // handle errors that happen while storing offline edits
+            offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_ENQUEUED_ERROR, function(errors)
+            {
+                if( errors.length )
+                {
+                    var messages = errors.map(function(e){ return e });
+                    alert("Error editing features: " + messages.join('\n'));
+                }
+            });
+
+            updateConnectivityIndicator();
+
+            Offline.check();
+            Offline.on('up', goOnline );
+            Offline.on('down', goOffline );
+
+            updateStorageInfo();
+            updatePendingEditsList();
+
+            if( Offline.state === 'up' )
+            {
+                // if we have pending edits from previous executions and we are online, then try to replay them
+                goOnline();
+            }
+        }
 
 		function updateStatus()
 		{
@@ -280,17 +306,32 @@
 			logCurrentObjectIds();
 		}
 
+        function handleEditsComplete(results){
+            var errors = Array.prototype.concat(
+                    results.adds.filter(function(r){ return !r.success }),
+                    results.updates.filter(function(r){ return !r.success }),
+                    results.deletes.filter(function(r){ return !r.success })
+            );
+            if( errors.length )
+            {
+                var messages = errors.map(function(e){ return e.error.message });
+                alert("Error editing features: " + messages.join('\n'));
+            }
+        }
+
 		function updateStorageInfo()
 		{
 			var formatMb = function(bytes)
 			{
 				return Math.floor(bytes / 1024 / 1024 * 100)/100 + " MBs";
 			}
-			var localStorageSizeBytes = editStore.getLocalStorageSizeBytes();
-			var editStoreSizeBytes = editStore.getEditsStoreSizeBytes();
 
-			var info = "Used " + formatMb(localStorageSizeBytes) + " (" + formatMb(editStoreSizeBytes) + ")";
-			dom.byId('storageInfo').innerHTML = info;
+            offlineInitializedLayers[0].getUsage(function(usage,error){
+                if(error == null){
+                    var info = "Used " + formatMb(usage.sizeBytes);
+                    dom.byId('storageInfo').innerHTML = info;
+                }
+            });
 		}
 
 		function logCurrentObjectIds(evt)
@@ -307,32 +348,35 @@
 		{
 			var li;
 			domConstruct.empty('pendingEdits');
-			if( editStore.hasPendingEdits())
-			{
-				var edits = editStore.retrieveEditsQueue();
-				edits.forEach(function(edit)
-				{
-					var readableEdit = offlineFeaturesManager.getReadableEdit(edit);
-					li = "<li>" + readableEdit + "</li>";
-					domConstruct.place(li, 'pendingEdits','last');
-				},this);
-			}
-			else
-			{
-				li = "<li>No edits pending</li>";
-				domConstruct.place(li, 'pendingEdits','last');
-			}
+
+            // We can use Array[0] because all feature layers are sharing the same offline database
+            offlineInitializedLayers[0].getAllEditsArray(function(success,array){
+                if(success && array.length > 0){
+                    array.forEach(function(edit)
+                    {
+                        var readableEdit = edit.operation + ": " + ", ID: " + edit.id;
+                        li = "<li>" + readableEdit + "</li>";
+                        domConstruct.place(li, 'pendingEdits','last');
+                    },this);
+                }
+                else{
+                    li = "<li>No edits pending</li>";
+                    domConstruct.place(li, 'pendingEdits','last');
+                }
+            });
 		}
 
 		function clearPendingEdits()
 		{
-			editStore.resetEditsQueue();
+            // We can use Array[0] because all feature layers are sharing the same offline database
+            offlineInitializedLayers[0].resetDatabase(function(success,error){
+                if(!success) alert("There was a problem resetting the database: " + error);
+            });
 			updateStatus();
 		}
 
 		function goOnline()
 		{
-			basemapLayer.goOnline();			
 			domUtils.show(editor.progressBar.domNode);
 			offlineFeaturesManager.goOnline(function()
 			{
@@ -345,7 +389,6 @@
 		function goOffline()
 		{
 			offlineFeaturesManager.goOffline();
-			basemapLayer.goOffline();
 			updateConnectivityIndicator();
 		}
 
@@ -372,7 +415,7 @@
 
 		function refreshFeatureLayers()
 		{
-			featureLayers.forEach(function(featureLayer)
+			offlineInitializedLayers.forEach(function(featureLayer)
 			{
 				featureLayer.refresh();
 			})
