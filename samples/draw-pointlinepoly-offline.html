@@ -110,7 +110,6 @@
         "esri/graphic",
 
 	    "dijit/layout/BorderContainer", "dijit/layout/ContentPane",
-        "../dist/offline-tiles-basic-min.js",
         "../dist/offline-edit-src.js",
 	    "dojo/domReady!"
 	], function(
@@ -242,7 +241,6 @@
                             alert("Unable to open database: " + error);
                         }
                     });
-                    layer.on('update-end', logCurrentObjectIds);
                     promises.push(deferred);
                 });
 
@@ -265,7 +263,6 @@
         // Things to do when all the promises complete
         function resolveOfflinePromises(){
             offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_ENQUEUED, updateStatus);
-            offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_SENT, updateStatus);
             offlineFeaturesManager.on(offlineFeaturesManager.events.ALL_EDITS_SENT, updateStatus);
 
             offlineInitializedLayers[0].on("edits-complete", handleEditsComplete);
@@ -283,13 +280,11 @@
             });
 
             updateConnectivityIndicator();
+            updateStorageInfo();
 
             Offline.check();
             Offline.on('up', goOnline );
             Offline.on('down', goOffline );
-
-            updateStorageInfo();
-            updatePendingEditsList();
 
             if( Offline.state === 'up' )
             {
@@ -303,7 +298,6 @@
 			console.log("updatingStatus");
 			updateStorageInfo();
 			updatePendingEditsList();
-			logCurrentObjectIds();
 		}
 
         function handleEditsComplete(results){
@@ -334,23 +328,13 @@
             });
 		}
 
-		function logCurrentObjectIds(evt)
-		{
-			var layers = ( evt && evt.target )? [evt.target] : featureLayers;
-			layers.forEach(function(layer)
-			{				
-				var objectIds = layer.graphics.map( function(g) { return g.attributes[ layer.objectIdField ];});
-				console.log(layer.name, objectIds);
-			});
-		}
-
 		function updatePendingEditsList()
 		{
 			var li;
-			domConstruct.empty('pendingEdits');
+			domConstruct.empty('pendingEdits'); console.log("GET ALL EDITS AAA ")
 
             // We can use Array[0] because all feature layers are sharing the same offline database
-            offlineInitializedLayers[0].getAllEditsArray(function(success,array){
+            offlineInitializedLayers[0].getAllEditsArray(function(success,array){ console.log("GET ALL EDITS ")
                 if(success && array.length > 0){
                     array.forEach(function(edit)
                     {
