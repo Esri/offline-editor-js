@@ -238,7 +238,7 @@ describe("Public Interface", function()
                 g_editsStore.getUsage(function(result,error){
                     console.log("RESULT IS " + result.sizeBytes);
                     expect(result).toEqual(jasmine.any(Object));
-                    expect(result.sizeBytes).toEqual(1142);
+                    expect(result.sizeBytes).toEqual(1174);
                     expect(result.editCount).toEqual(3);
                     done();
                 })
@@ -315,7 +315,7 @@ describe("Public Interface", function()
             async.it("get size - should be the same", function(done){
                 g_editsStore.getUsage(function(success){
                     expect(success).toEqual(jasmine.any(Object));
-                    expect(success.sizeBytes).toEqual(1142);
+                    expect(success.sizeBytes).toEqual(1174);
                     expect(success.editCount).toEqual(3);
                     done();
                 })
@@ -367,7 +367,7 @@ describe("Public Interface", function()
                 g_editsStore.getUsage(function(result,error){
                     console.log("RESULT IS " + result.sizeBytes);
                     expect(result).toEqual(jasmine.any(Object));
-                    expect(result.sizeBytes).toEqual(1142);
+                    expect(result.sizeBytes).toEqual(1174);
                     expect(result.editCount).toEqual(3);
                     done();
                 })
@@ -398,7 +398,7 @@ describe("Public Interface", function()
             async.it("get size", function(done){
                 g_editsStore.getUsage(function(success){
                     expect(success).toEqual(jasmine.any(Object));
-                    expect(success.sizeBytes).toEqual(1219);
+                    expect(success.sizeBytes).toEqual(1251);
                     expect(success.editCount).toEqual(3);
                     done();
                 })
@@ -418,7 +418,7 @@ describe("Public Interface", function()
             async.it("get size", function(done){
                 g_editsStore.getUsage(function(success){
                     expect(success).toEqual(jasmine.any(Object));
-                    expect(success.sizeBytes).toEqual(1142);
+                    expect(success.sizeBytes).toEqual(1174);
                     expect(success.editCount).toEqual(3);
                     done();
                 })
