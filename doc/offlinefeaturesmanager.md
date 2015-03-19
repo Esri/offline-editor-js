@@ -59,7 +59,7 @@ Event | Value | Returns |  Description
 `events.EDITS_SENT_ERROR` | "edits-sent-error" | {msg:error} | **New at v2.5** There was a problem while sending errors to the server.
 `events.EDITS_ENQUEUED` | "edits-enqueued" | nothing | When an edit is enqueued and not sent to the server.
 `events.EDITS_ENQUEUED_ERROR` | "edits-enqueued-error" | {msg:error} | **New at v2.5** An error occurred while trying to store the edit. In your app it is recommended to verify if the edit is in the database or not.
-`events.ALL_EDITS_SENT` | "all-edits-sent" | nothing| After going online and there are no pending edits remaining in the queue. Be sure to also check for `EDITS_SENT_ERROR`.
+`events.ALL_EDITS_SENT` | "all-edits-sent" | {[addResults] ,[updateResults], [deleteResults]} | After going online and there are no pending edits remaining in the queue. Be sure to also check for `EDITS_SENT_ERROR`. 
 `events.ATTACHMENT_ENQUEUED` | "attachment-enqueued" | nothing | An attachment is in the queue to be sent to the server.
 `events.ATTACHMENTS_SENT` | "attachments-sent" | nothing | When any attachment is actually sent to the server.
 
