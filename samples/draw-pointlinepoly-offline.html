@@ -263,7 +263,8 @@
         // Things to do when all the promises complete
         function resolveOfflinePromises(){
             offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_ENQUEUED, updateStatus);
-            offlineFeaturesManager.on(offlineFeaturesManager.events.ALL_EDITS_SENT, updateStatus);
+            offlineFeaturesManager.on(offlineFeaturesManager.events.ALL_EDITS_SENT, updateStatusAllEditsSent);
+            offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_SENT_ERROR, handleEditsSentError);
 
             offlineInitializedLayers[0].on("edits-complete", handleEditsComplete);
             offlineInitializedLayers[1].on("edits-complete", handleEditsComplete);
@@ -280,7 +281,7 @@
             });
 
             updateConnectivityIndicator();
-            updateStorageInfo();
+            updateStatus();
 
             Offline.check();
             Offline.on('up', goOnline );
@@ -300,6 +301,32 @@
 			updatePendingEditsList();
 		}
 
+        function updateStatusAllEditsSent(responses){
+
+            if(Object.keys(responses).length !== 0){
+
+                var addResults = [], updateResults = [], deleteResults = [];
+
+                for (var key in responses) {
+                    if (responses.hasOwnProperty(key)) {
+                        var result = responses[key];
+                        addResults.push( result.addResults.map(function(e){ return "<l1>" + JSON.stringify(e) + "</li>"}));
+                        updateResults.push( result.updateResults.map(function(e){ return "<l1>" + JSON.stringify(e) + "</li>";}));
+                        deleteResults.push( result.deleteResults.map(function(e){ return "<l1>" + JSON.stringify(e) + "</li>";}));
+                    }
+                }
+
+                var allResults = addResults.join("<br>") + updateResults.join("<br>") + deleteResults.join("<br>");
+
+                domConstruct.place(allResults, 'pendingEdits','last');
+            }
+        }
+
+        function handleEditsSentError(error){
+            var errorMessage = parseErrors(error.msg);
+            alert("There was a problem syncing edits over the internet: " + errorMessage);
+        }
+
         function handleEditsComplete(results){
             var errors = Array.prototype.concat(
                     results.adds.filter(function(r){ return !r.success }),
@@ -313,16 +340,37 @@
             }
         }
 
+        function parseErrors(responses){
+            if(Object.keys(responses).length !== 0){
+
+                var addResults = [], updateResults = [], deleteResults = [];
+
+                for (var key in responses) {
+                    if (responses.hasOwnProperty(key)) {
+                        var result = responses[key];
+                        addResults.push( result.addResults.map(function(e){ return JSON.stringify(e)}));
+                        updateResults.push( result.updateResults.map(function(e){ return JSON.stringify(e);}));
+                        deleteResults.push( result.deleteResults.map(function(e){ return JSON.stringify(e);}));
+                    }
+                }
+
+                return addResults.join("/n") + updateResults.join("/n") + deleteResults.join("/n");
+            }
+        }
+
 		function updateStorageInfo()
 		{
-			var formatMb = function(bytes)
-			{
-				return Math.floor(bytes / 1024 / 1024 * 100)/100 + " MBs";
-			}
+            function bytesToSize(bytes) {
+                if(bytes == 0) return '0 Byte';
+                var k = 1000;
+                var sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+                var i = Math.floor(Math.log(bytes) / Math.log(k));
+                return (bytes / Math.pow(k, i)).toPrecision(3) + ' ' + sizes[i];
+            }
 
             offlineInitializedLayers[0].getUsage(function(usage,error){
                 if(error == null){
-                    var info = "Used " + formatMb(usage.sizeBytes);
+                    var info = "Used " + bytesToSize(usage.sizeBytes);
                     dom.byId('storageInfo').innerHTML = info;
                 }
             });
@@ -331,14 +379,14 @@
 		function updatePendingEditsList()
 		{
 			var li;
-			domConstruct.empty('pendingEdits'); console.log("GET ALL EDITS AAA ")
+			domConstruct.empty('pendingEdits');
 
             // We can use Array[0] because all feature layers are sharing the same offline database
-            offlineInitializedLayers[0].getAllEditsArray(function(success,array){ console.log("GET ALL EDITS ")
+            offlineInitializedLayers[0].getAllEditsArray(function(success,array){
                 if(success && array.length > 0){
                     array.forEach(function(edit)
                     {
-                        var readableEdit = edit.operation + ": " + ", ID: " + edit.id;
+                        var readableEdit = edit.operation + ": " + ", ID: " + edit.graphic.attributes.objectid + ", Type: " + edit.type;
                         li = "<li>" + readableEdit + "</li>";
                         domConstruct.place(li, 'pendingEdits','last');
                     },this);
