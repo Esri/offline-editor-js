@@ -411,7 +411,7 @@ describe("Offline Editing", function()
 
     async.it("check db size", function(done){
        g_featureLayers[0].getUsage(function(usage,error){
-           expect(usage.sizeBytes).toBe(7834);
+           expect(usage.sizeBytes).toBe(7978);
            expect(usage.editCount).toBe(9);
            expect(error).toBe(null);
            done();
@@ -667,13 +667,11 @@ describe("Offline Editing", function()
             var listener_editsSent = jasmine.createSpy('event listener edits sent');
 
             g_offlineFeaturesManager.on(g_offlineFeaturesManager.events.ALL_EDITS_SENT,listener);
-            g_offlineFeaturesManager.on(g_offlineFeaturesManager.events.EDITS_SENT,listener_editsSent);
 
             g_offlineFeaturesManager.goOnline(function(results) {
                 console.log("Library is now back online");
                 expect(g_offlineFeaturesManager.getOnlineStatus()).toBe(g_offlineFeaturesManager.ONLINE);
                 expect(listener).toHaveBeenCalled();
-                expect(listener_editsSent).toHaveBeenCalled();
                 expect(results.features.success).toBeTruthy();
 
                 //console.log("RESPONSES " + JSON.stringify(responses) + ", " + JSON.stringify(results))
