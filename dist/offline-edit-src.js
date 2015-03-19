@@ -1,4 +1,4 @@
-/*! offline-editor-js - v2.5 - 2015-03-18
+/*! offline-editor-js - v2.5 - 2015-03-19
 *   Copyright (c) 2015 Environmental Systems Research Institute, Inc.
 *   Apache License*/
 define([
@@ -280,38 +280,52 @@ define([
                         var results = {addResults: [], updateResults: [], deleteResults: []};
                         var updatesMap = {};
 
-                        this.onBeforeApplyEdits(adds, updates, deletes);
+                        if(this.onBeforeApplyEdits)this.onBeforeApplyEdits(adds, updates, deletes);
 
                         adds = adds || [];
                         adds.forEach(function (addEdit) {
                             var deferred = new Deferred();
 
+                            //self._validateFeature(addEdit).then(function(result){
+                            //    console.log("HELLLLOOOO")
+                            //});
+
                             var objectId = this._getNextTempId();
                             addEdit.attributes[this.objectIdField] = objectId;
 
+                            var thisLayer = this;
+
                             self._editStore.pushEdit(self._editStore.ADD, this.url, addEdit, function (result, error) {
-                                result == true ? deferred.resolve(result) : deferred.reject(error);
+                                if(result == true){
+                                    results.addResults.push({success: true, error: null, objectId: objectId});
+
+                                    var phantomAdd = new Graphic(
+                                        addEdit.geometry,
+                                        self._getPhantomSymbol(addEdit.geometry, self._editStore.ADD),
+                                        {
+                                            objectId: objectId
+                                        });
+
+                                    // Add phantom graphic to the layer
+                                    thisLayer._phantomLayer.add(phantomAdd);
+
+                                    // Add phantom graphic to the database
+                                    self._editStore.pushPhantomGraphic(phantomAdd, function (result) {
+                                        if (!result)console.log("There was a problem adding phantom graphic id: " + objectId);
+                                        console.log("Phantom graphic " + objectId + " added to database as an add.");
+                                    });
+
+                                    domAttr.set(phantomAdd.getNode(), "stroke-dasharray", "10,4");
+                                    domStyle.set(phantomAdd.getNode(), "pointer-events", "none");
+
+                                    deferred.resolve(result);
+                                }
+                                else{
+                                    // If we can't push edit to database then we don't create a phantom graphic
+                                    results.addResults.push({success: false, error: error, objectId: objectId});
+                                    deferred.reject(error);
+                                }
                             });
-                            results.addResults.push({success: true, error: null, objectId: objectId});
-
-                            var phantomAdd = new Graphic(
-                                addEdit.geometry,
-                                self._getPhantomSymbol(addEdit.geometry, self._editStore.ADD),
-                                {
-                                    objectId: objectId
-                                });
-
-                            // Add phantom graphic to the layer
-                            this._phantomLayer.add(phantomAdd);
-
-                            // Add phantom graphic to the database
-                            self._editStore.pushPhantomGraphic(phantomAdd, function (result) {
-                                if (!result)console.log("There was a problem adding phantom graphic id: " + objectId);
-                                console.log("Phantom graphic " + objectId + " added to database as an add.");
-                            });
-
-                            domAttr.set(phantomAdd.getNode(), "stroke-dasharray", "10,4");
-                            domStyle.set(phantomAdd.getNode(), "pointer-events", "none");
 
                             promises.push(deferred);
                         }, this);
@@ -323,27 +337,38 @@ define([
                             var objectId = updateEdit.attributes[this.objectIdField];
                             updatesMap[objectId] = updateEdit;
 
+                            var thisLayer = this;
+
                             self._editStore.pushEdit(self._editStore.UPDATE, this.url, updateEdit, function (result, error) {
-                                result == true ? deferred.resolve(result) : deferred.reject(error);
+
+                                if(result == true){
+                                    results.updateResults.push({success: true, error: null, objectId: objectId});
+
+                                    var phantomUpdate = new Graphic(
+                                        updateEdit.geometry,
+                                        self._getPhantomSymbol(updateEdit.geometry, self._editStore.UPDATE),
+                                        {
+                                            objectId: objectId
+                                        });
+                                    thisLayer._phantomLayer.add(phantomUpdate);
+
+                                    // Add phantom graphic to the database
+                                    self._editStore.pushPhantomGraphic(phantomUpdate, function (result) {
+                                        if (!result)console.log("There was a problem adding phantom graphic id: " + objectId);
+                                        console.log("Phantom graphic " + objectId + " added to database as an update.");
+                                    });
+
+                                    domAttr.set(phantomUpdate.getNode(), "stroke-dasharray", "5,2");
+                                    domStyle.set(phantomUpdate.getNode(), "pointer-events", "none");
+
+                                    deferred.resolve(result);
+                                }
+                                else{
+                                    // If we can't push edit to database then we don't create a phantom graphic
+                                    results.addResults.push({success: false, error: error, objectId: objectId});
+                                    deferred.reject(error);
+                                }
                             });
-                            results.updateResults.push({success: true, error: null, objectId: objectId});
-
-                            var phantomUpdate = new Graphic(
-                                updateEdit.geometry,
-                                self._getPhantomSymbol(updateEdit.geometry, self._editStore.UPDATE),
-                                {
-                                    objectId: objectId
-                                });
-                            this._phantomLayer.add(phantomUpdate);
-
-                            // Add phantom graphic to the database
-                            self._editStore.pushPhantomGraphic(phantomUpdate, function (result) {
-                                if (!result)console.log("There was a problem adding phantom graphic id: " + objectId);
-                                console.log("Phantom graphic " + objectId + " added to database as an update.");
-                            });
-
-                            domAttr.set(phantomUpdate.getNode(), "stroke-dasharray", "5,2");
-                            domStyle.set(phantomUpdate.getNode(), "pointer-events", "none");
 
                             promises.push(deferred);
                         }, this);
@@ -353,34 +378,47 @@ define([
                             var deferred = new Deferred();
 
                             var objectId = deleteEdit.attributes[this.objectIdField];
+
+                            var thisLayer = this;
+
                             self._editStore.pushEdit(self._editStore.DELETE, this.url, deleteEdit, function (result, error) {
-                                result == true ? deferred.resolve(result) : deferred.reject(error);
+
+                                if(result == true){
+                                    results.deleteResults.push({success: true, error: null, objectId: objectId});
+
+                                    var phantomDelete = new Graphic(
+                                        deleteEdit.geometry,
+                                        self._getPhantomSymbol(deleteEdit.geometry, self._editStore.DELETE),
+                                        {
+                                            objectId: objectId
+                                        });
+                                    thisLayer._phantomLayer.add(phantomDelete);
+
+                                    // Add phantom graphic to the database
+                                    self._editStore.pushPhantomGraphic(phantomDelete, function (result) {
+                                        if (!result)console.log("There was a problem adding phantom graphic id: " + objectId);
+                                        console.log("Phantom graphic " + objectId + " added to database as a deletion.");
+                                    });
+
+                                    domAttr.set(phantomDelete.getNode(), "stroke-dasharray", "4,4");
+                                    domStyle.set(phantomDelete.getNode(), "pointer-events", "none");
+
+                                    if (self.attachmentsStore) {
+                                        // delete local attachments of this feature, if any... we just launch the delete and don't wait for it to complete
+                                        self.attachmentsStore.deleteAttachmentsByFeatureId(this.url, objectId, function (deletedCount) {
+                                            console.log("deleted", deletedCount, "attachments of feature", objectId);
+                                        });
+                                    }
+
+                                    deferred.resolve(result);
+                                }
+                                else{
+                                    // If we can't push edit to database then we don't create a phantom graphic
+                                    results.addResults.push({success: false, error: error, objectId: objectId});
+                                    deferred.reject(error);
+                                }
+
                             });
-                            results.deleteResults.push({success: true, error: null, objectId: objectId});
-
-                            var phantomDelete = new Graphic(
-                                deleteEdit.geometry,
-                                self._getPhantomSymbol(deleteEdit.geometry, self._editStore.DELETE),
-                                {
-                                    objectId: objectId
-                                });
-                            this._phantomLayer.add(phantomDelete);
-
-                            // Add phantom graphic to the database
-                            self._editStore.pushPhantomGraphic(phantomDelete, function (result) {
-                                if (!result)console.log("There was a problem adding phantom graphic id: " + objectId);
-                                console.log("Phantom graphic " + objectId + " added to database as a deletion.");
-                            });
-
-                            domAttr.set(phantomDelete.getNode(), "stroke-dasharray", "4,4");
-                            domStyle.set(phantomDelete.getNode(), "pointer-events", "none");
-
-                            if (self.attachmentsStore) {
-                                // delete local attachments of this feature, if any... we just launch the delete and don't wait for it to complete
-                                self.attachmentsStore.deleteAttachmentsByFeatureId(this.url, objectId, function (deletedCount) {
-                                    console.log("deleted", deletedCount, "attachments of feature", objectId);
-                                });
-                            }
 
                             promises.push(deferred);
                         }, this);
@@ -395,10 +433,8 @@ define([
 
                             // we already pushed the edits into the database, now we let the FeatureLayer to do the local updating of the layer graphics
                             // EDITS_ENQUEUED = callback(true, edit), and EDITS_ENQUEUED_ERROR = callback(false, /*String */ error)
-                            //setTimeout(function () {
-                                this._editHandler(results, adds, updatesMap, callback, errback, deferred1);
-                                success == true ? self.emit(self.events.EDITS_ENQUEUED, results) : self.emit(self.events.EDITS_ENQUEUED_ERROR, results);
-                            //}.bind(this), 0);
+                            this._editHandler(results, adds, updatesMap, callback, errback, deferred1);
+                            success == true ? self.emit(self.events.EDITS_ENQUEUED, results) : self.emit(self.events.EDITS_ENQUEUED_ERROR, results);
                         }.bind(this));
 
                         return deferred1;
@@ -586,6 +622,14 @@ define([
 
                     /**
                      * Returns an interable array of all edits stored in the database
+                     * Each item in the array is an object and contains:
+                     * {
+                     *    id: "internal ID",
+                     *    operation: "add, update or delete",
+                     *    layer: "layerURL",
+                     *    type: "esri Geometry Type",
+                     *    graphic: "esri.Graphic converted to JSON"
+                     * }
                      * @param callback (true, array) or (false, errorString)
                      */
                     layer.getAllEditsArray = function(callback){
@@ -961,9 +1005,8 @@ define([
                 /**
                  * Attempts to send any edits in the database. Monitor events for success or failure.
                  * @param callback
-                 * @throws EDITS_SENT when some edits have been successfully sent
-                 * @throws ALL_EDITS_SENT when all edits have been successfully sent
-                 * @throws EDITS_SENT_ERROR some edits were not sent successfully
+                 * @event ALL_EDITS_SENT when all edits have been successfully sent. Contains {[addResults],[updateResults],[deleteResults]}
+                 * @event EDITS_SENT_ERROR some edits were not sent successfully. Contains {msg: error}
                  * @private
                  */
                 _replayStoredEdits: function (callback) {
@@ -1062,20 +1105,18 @@ define([
 
                                         this._editStore.resetPhantomGraphicsQueue(function (success) {
 
-                                            this.emit(this.events.EDITS_SENT);
-
                                             if (success == false) {
                                                 console.log("There was a problem deleting phantom graphics in the database.");
                                                 this.emit(this.events.EDITS_SENT_ERROR, {msg: "Problem deleting phantom graphic(s)"});
                                             }
                                             else {
-                                                this.emit(this.events.ALL_EDITS_SENT);
+                                                this.emit(this.events.ALL_EDITS_SENT,responses);
                                             }
                                             callback && callback(true, responses);
                                         }.bind(this))
                                     }
                                     else {
-                                        this.emit(this.events.EDITS_SENT_ERROR, {msg: error}); // There was a problem, some edits were not successfully sent!
+                                        this.emit(this.events.EDITS_SENT_ERROR, {msg: responses}); // There was a problem, some edits were not successfully sent!
                                         callback && callback(false, responses);
                                     }
                                 }.bind(that));
@@ -1279,61 +1320,58 @@ define([
                 },
 
                 /**
-                 * DEPRECATED @ v2.5
-                 * @returns {{}}
+                 * Validates duplicate entries. Last edit on same feature can overwite any previous values.
+                 * @param edit valid internal editsStore edit object.
+                 * @returns deferred
                  * @private
                  */
-                _optimizeEditsQueue: function () {
-                    var optimizedEdits = {},
-                        editCount = this._editStore.pendingEditsCount(),
-                        optimizedCount = 0;
+                _validateFeature: function (edit) {
 
-                    var edit, layer;
-                    var layerEdits, objectId;
-
-                    while (this._editStore.hasPendingEdits()) {
-                        edit = this._editStore.popFirstEdit();
-                        layer = this._featureLayers[edit.layer];
-
-                        if (!(edit.layer in optimizedEdits)) {
-                            optimizedEdits[edit.layer] = {};
-                        }
-
-                        layerEdits = optimizedEdits[edit.layer];
-                        objectId = edit.graphic.attributes[layer.objectIdField];
-
-                        if (!( objectId in layerEdits)) {
-                            // first edit we see of this feature, no optimization to apply
-                            layerEdits[objectId] = edit;
-                            optimizedCount += 1;
-                        }
-                        else {
-                            // we already have seen one edit for this same feature... we can merge the two edits in a single operation
-                            switch (edit.operation) {
+                    var deferred = new Deferred();
+                    this._editStore.getEdit(edit.id,function(success,result){
+                        if (success) {
+                            switch( edit.operation )
+                            {
                                 case this._editStore.ADD:
-                                    /* impossible!! */
-                                    throw("can't add the same feature twice!");
+                                    // Not good - however we'll allow the new ADD to replace existing edit
+                                    // and pass it through unmodified. Last ADD wins.
+                                    deferred.resolve(edit);
+                                    break;
                                 case this._editStore.UPDATE:
-                                    layerEdits[objectId].graphic = edit.graphic;
+                                    // If we are doing an update on a feature that has not been added to
+                                    // the server yet, then we need to maintain its operation as an ADD
+                                    // and not an update. This avoids the potential for an error if we submit
+                                    // an update operation on a feature that has not been added to the
+                                    // database yet.
+                                    if(result.operation = this._editStore.ADD){
+                                        edit.operation = this._editStore.ADD;
+                                    }
+                                    deferred.resolve(edit);
                                     break;
                                 case this._editStore.DELETE:
-                                    if (objectId < 0) {
-                                        delete layerEdits[objectId];
-                                        optimizedCount -= 1;
+
+                                    if(result.operation = this._editStore.ADD){
+                                        // If we are deleting a new feature that has not been added to the
+                                        // server yet we need to delete it and its phantom graphic.
                                     }
-                                    else {
-                                        layerEdits[objectId].operation = this._editStore.DELETE;
-                                    }
+                                    deferred.resolve(edit);
                                     break;
                             }
                         }
-                        if (Object.keys(layerEdits).length === 0) {
-                            delete optimizedEdits[edit.layer];
+                        else{
+                            deferred.resolve(edit);
                         }
-                    }
+                    });
+                    return deferred;
+                },
 
-                    console.log("optimized", editCount, "edits into", optimizedCount, "edits of", Object.keys(optimizedEdits).length, "layers");
-                    return optimizedEdits;
+                /**
+                 * Deprecated @ v2.5. Internal-use only
+                 * @returns {string}
+                 * @private
+                 */
+                _optimizeEditsQueue: function(){
+                    return "DEPRECATED at v2.5!";
                 },
 
                 /**
@@ -1374,9 +1412,12 @@ O.esri.Edit.EditStore = function () {
 
     // Public properties
 
-    var dbName = "features_store";
-    var objectStoreName = "features";
-    var dbIndex = "featureId";
+    this.dbName = "features_store";
+    this.objectStoreName = "features";
+    var dbName = this.dbName;
+    var objectStoreName = this.objectStoreName;
+
+    var dbIndex = "featureId"; // @private
 
     // ENUMs
 
@@ -1408,6 +1449,7 @@ O.esri.Edit.EditStore = function () {
             id: layerUrl + "/" + graphic.attributes.objectid,
             operation: operation,
             layer: layerUrl,
+            type: graphic.geometry.type,
             graphic: graphic.toJson()
         };
 
@@ -1879,6 +1921,35 @@ O.esri.Edit.EditStore = function () {
             }
             else {
                 callback(true);
+            }
+        });
+    };
+
+    /**
+     * Retrieve an edit by its internal ID
+     * @param id String identifier
+     * @param callback callback(true,graphic) or callback(false, error)
+     */
+    this.getEdit = function(id,callback){
+        require(["dojo/Deferred"], function (Deferred) {
+
+            var objectStore = db.transaction([objectStoreName], "readwrite").objectStore(objectStoreName);
+
+            //Get the entry associated with the graphic
+            var objectStoreGraphicRequest = objectStore.get(id);
+
+            objectStoreGraphicRequest.onsuccess = function () {
+                var graphic = objectStoreGraphicRequest.result;
+                if (graphic && (graphic.id == id)) {
+                    callback(true,graphic);
+                }
+                else {
+                    callback(false,"Id not found");
+                }
+            };
+
+            objectStoreGraphicRequest.onerror = function (msg) {
+                callback(false,msg);
             }
         });
     };
