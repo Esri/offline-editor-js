@@ -93,7 +93,7 @@ Methods | Returns | Description
 `pendingEditsCount(callback)` | `callback( int )` | **New @ v2.5** Returns the number of pending edits in the database.  
 `getUsage(callback)`| `callback({usage}, error)` | **New @ v2.5** Returns the approximate size of the database in bytes. the usage Object is {sizeBytes: number, editCount: number}.
 `getPhantomGraphicsArray( callback)` | `callback(boolean, array)` | **New @ v2.5** Used with offline browser restarts. Returns an array of phantom graphics from the database.
-`getAllEditsArray(callback)` | `callback(boolean, array)` | **New @ v2.5** Returns an array of all edits stored in the database.
+`getAllEditsArray(callback)` | `callback(boolean, array)` | **New @ v2.5** Returns an array of all edits stored in the database. Each item in array is an object that contains: {"id":"internalID", "operation":"add, update, delete","layer":"layerURL","type":"esriGeometryType","graphic":"esri.Graphic JSON"}
 `getFeatureLayerJSON(url,callback)` | `callback( boolean, JSON )` | **New @ v2.5.** Retrieves the feature layer's JSON using `f=json` parameter.
 `convertFeatureGraphicsToJSON(` `[features],callback)` | `callback( jsonString )` | **New @ v2.5.** Converts an array of feature layer graphics to a JSON string.
 
