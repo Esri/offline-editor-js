@@ -46,7 +46,7 @@ Application code can subscribe to offlineFeaturesManager events to be notified o
 ```js
 
 	offlineFeaturesManager.on(
-		offlineFeaturesManager.events.EDITS_SENT, 
+		offlineFeaturesManager.events.ALL_EDITS_SENT, 
 		function(edits) 
 		{
 			...
