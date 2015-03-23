@@ -409,9 +409,82 @@ describe("Offline Editing", function()
 		});
 	});
 
+    async.it("Update new feature offline - point", function(done){
+
+        // Let's make a change to g6 attributes
+        g6.attributes.additionalinformation = "TEST123";
+        var updates = [g6];
+        g_featureLayers[0].applyEdits(null,updates,null,function(addResults,updateResults,deleteResults)
+        {
+            expect(updateResults.length).toBe(1);
+
+            g_editsStore.pendingEditsCount(function(result){
+
+                // Should be the exact same as previous test
+                // An update to a new feature should be a single entry in the database.
+                // We simply update the existing entry with the new information.
+                expect(result).toBe(9);
+                done();
+            });
+        },
+        function(error)
+        {
+            expect(true).toBeFalsy();
+        });
+    });
+
+    async.it("validate non-existent feature - ADD", function(done){
+
+        var testGraphic = new g_modules.Graphic({"geometry":{"x":-109100,"y":5137000,"spatialReference":{"wkid":102100}},"attributes":{"symbolname":"Reference Point DLRP","z":null,"additionalinformation":null,"eny":null,"datetimevalid":null,"datetimeexpired":null,"distance":null,"azimuth":null,"uniquedesignation":null,"x":null,"y":null}} );
+
+        g_featureLayers[0]._validateFeature(testGraphic,g_featureLayers[0].url,"add")
+            .then(function(result){
+                expect(result.success).toBe(true);
+                expect(testGraphic).toEqual(result.graphic);
+                expect(result.operation).toEqual("add");
+                done();
+            },function(error){
+                console.log("Validate feature error: " + error);
+            });
+    });
+
+    async.it("validate existing feature - ADD", function(done){
+        var id = getObjectIds([g6]).toString();
+        expect(id).toEqual("-3");
+        g_featureLayers[0]._validateFeature(g6,g_featureLayers[0].url,"add")
+            .then(function(result){
+                expect(result.success).toBe(true);
+                expect(g6).toEqual(result.graphic);
+                expect(JSON.stringify(g6.toJson()) === JSON.stringify(result.graphic.toJson())).toBeTruthy();
+                expect(result.operation).toEqual("add");
+                done();
+            },function(error){
+                console.log("Validate feature error: " + error);
+            });
+    });
+
+    async.it("validate existing feature - UPDATE", function(done){
+        var id = getObjectIds([g6]).toString();
+        expect(id).toEqual("-3");
+        g_featureLayers[0]._validateFeature(g6,g_featureLayers[0].url,"update")
+            .then(function(result){
+                expect(result.success).toBe(true);
+                expect(g6).toEqual(result.graphic);
+
+                // we swap the operation type when updating an edit that hasn't
+                // been submitted to the server yet.
+                expect(result.operation).toBe("add");
+                expect(JSON.stringify(g6.toJson()) === JSON.stringify(result.graphic.toJson())).toBeTruthy();
+                expect(result.operation).toEqual("add");
+                done();
+            },function(error){
+                console.log("Validate feature error: " + error);
+            });
+    });
+
     async.it("check db size", function(done){
        g_featureLayers[0].getUsage(function(usage,error){
-           expect(usage.sizeBytes).toBe(7978);
+           expect(usage.sizeBytes).toBe(7982);
            expect(usage.editCount).toBe(9);
            expect(error).toBe(null);
            done();
