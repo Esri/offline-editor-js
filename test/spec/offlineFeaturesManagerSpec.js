@@ -448,7 +448,7 @@ describe("Offline Editing", function()
             });
     });
 
-    async.it("validate existing feature - ADD", function(done){
+    async.it("validate feature that exists in db - ADD", function(done){
         var id = getObjectIds([g6]).toString();
         expect(id).toEqual("-3");
         g_featureLayers[0]._validateFeature(g6,g_featureLayers[0].url,"add")
@@ -463,7 +463,8 @@ describe("Offline Editing", function()
             });
     });
 
-    async.it("validate existing feature - UPDATE", function(done){
+    // This UPDATE should be converted in an ADD
+    async.it("validate feature that exists in db - UPDATE", function(done){
         var id = getObjectIds([g6]).toString();
         expect(id).toEqual("-3");
         g_featureLayers[0]._validateFeature(g6,g_featureLayers[0].url,"update")
