@@ -78,62 +78,90 @@
             }
         }
     </script>
+</head>
+<body class="claro">
+<div id="loader-cloak"></div>
+<div id="main" data-dojo-type="dijit/layout/BorderContainer" data-dojo-props="design:'headline'" style="height:width:100%;height:100%;">
+	<div data-dojo-type="dijit/layout/ContentPane" id="header" data-dojo-props="region:'top'">
+	Common Operational Picture
+	</div>
+	<div data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:'left'" style="width: 200px;overflow:hidden;">
+        <div id="connectivityPane" data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:'top'">
+            <div id="connectivityIndicator" >unknown</div>
+        </div>
+		<div id="storageInfoPane" data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:'top'">
+			<div id="storageInfo">Storage used: 0 MBs</div>
+		</div>
+		<div id="pendingEditsPane" data-dojo-type="dijit/layout/ContentPane" data-dojo-propos="region:'top'">
+            <button style="width:60%" id="clear-pending-edits-btn" class="btn1">Clear Local Edits</button>			
+            <button style="width:38%" id="go-offline-btn" class="btn1">Go Offline</button>
+            <button style="width:60%" id="refresh-feature-layers-btn" class="btn1">Refresh Layers</button>			
+            <button style="width:38%" id="go-online-btn" class="btn1">Go Online</button>
+			<ul id="pendingEdits"></ul>
+		</div>
+	</div>
+	<div data-dojo-type="dijit/layout/ContentPane" id="map" data-dojo-props="region:'center'"></div>
+	<div data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:'right'" style="width:242px;padding:1px;">
+		<div id="editorDiv"></div>
+		<div id="templateDiv"></div>
+	</div>
+</div>
 
-	<script>
-	// based on https://developers.arcgis.com/javascript/jssamples/ed_simpletoolbar.html
-	var map;
+<script>
+    // based on https://developers.arcgis.com/javascript/jssamples/ed_simpletoolbar.html
+    var map;
 
-	require([
-	    "esri/map", 
-	    "esri/tasks/GeometryService",
-	    "esri/toolbars/edit",
+    require([
+        "esri/map",
+        "esri/tasks/GeometryService",
+        "esri/toolbars/edit",
 
-	    "esri/layers/ArcGISTiledMapServiceLayer",
-	    "esri/layers/FeatureLayer",
+        "esri/layers/ArcGISTiledMapServiceLayer",
+        "esri/layers/FeatureLayer",
 
 
-	    "esri/symbols/SimpleMarkerSymbol",
-	    "esri/symbols/SimpleLineSymbol",
+        "esri/symbols/SimpleMarkerSymbol",
+        "esri/symbols/SimpleLineSymbol",
 
-	    "esri/dijit/editing/Editor",
-	    "esri/dijit/editing/TemplatePicker",
+        "esri/dijit/editing/Editor",
+        "esri/dijit/editing/TemplatePicker",
 
-	    "esri/config",
-	    "dojo/i18n!esri/nls/jsapi",
+        "esri/config",
+        "dojo/i18n!esri/nls/jsapi",
 
         "dojo/_base/Deferred",
         "dojo/promise/all",
 
-	    "dojo/_base/array", "dojo/parser", "dojo/keys", 
-		"dojo/dom", "dojo/on", "dojo/dom-construct", "dojo/dom-class", "esri/domUtils",
+        "dojo/_base/array", "dojo/parser", "dojo/keys",
+        "dojo/dom", "dojo/on", "dojo/dom-construct", "dojo/dom-class", "esri/domUtils",
 
         "esri/graphic",
 
-	    "dijit/layout/BorderContainer", "dijit/layout/ContentPane",
+        "dijit/layout/BorderContainer", "dijit/layout/ContentPane",
         "../dist/offline-edit-src.js",
-	    "dojo/domReady!"
-	], function(
-	    Map, GeometryService, Edit, 
-	    ArcGISTiledMapServiceLayer, FeatureLayer,
-	    SimpleMarkerSymbol, SimpleLineSymbol, 
-	    Editor, TemplatePicker,
-	    esriConfig, jsapiBundle,
-        Deferred, all,
-	    arrayUtils, parser, keys, 
-		dom, on, domConstruct, domClass, domUtils,Graphic
-	) {
-		var editor;
+        "dojo/domReady!"
+    ], function(
+            Map, GeometryService, Edit,
+            ArcGISTiledMapServiceLayer, FeatureLayer,
+            SimpleMarkerSymbol, SimpleLineSymbol,
+            Editor, TemplatePicker,
+            esriConfig, jsapiBundle,
+            Deferred, all,
+            arrayUtils, parser, keys,
+            dom, on, domConstruct, domClass, domUtils,Graphic
+    ) {
+        var editor;
 
-		parser.parse();
-		dojo.fadeOut({node:'loader-cloak', onEnd: function(n){n.style.display="none"}}).play();
+        parser.parse();
+        dojo.fadeOut({node:'loader-cloak', onEnd: function(n){n.style.display="none"}}).play();
 
-		// user interface
-		on(dom.byId('storageInfo'), 'click', updateStorageInfo);
-		on(dom.byId('clear-pending-edits-btn'),'click', clearPendingEdits);
-		on(dom.byId('go-offline-btn'),'click', goOffline);
-		on(dom.byId('go-online-btn'),'click', goOnline);
-		on(dom.byId('refresh-feature-layers-btn'),'click', refreshFeatureLayers);
-		var offlineFeaturesManager = new O.esri.Edit.OfflineFeaturesManager();
+        // user interface
+        on(dom.byId('storageInfo'), 'click', updateStorageInfo);
+        on(dom.byId('clear-pending-edits-btn'),'click', clearPendingEdits);
+        on(dom.byId('go-offline-btn'),'click', goOffline);
+        on(dom.byId('go-online-btn'),'click', goOnline);
+        on(dom.byId('refresh-feature-layers-btn'),'click', refreshFeatureLayers);
+        var offlineFeaturesManager = new O.esri.Edit.OfflineFeaturesManager();
 
         // IMPORTANT!!!
         // A proxy page may be required to upload attachments.
@@ -141,83 +169,83 @@
         // Refer to "Using the Proxy Page" for more information:  https://developers.arcgis.com/en/javascript/jshelp/ags_proxy.html
         offlineFeaturesManager.proxyPath = null;
 
-		map = new Map("map", {
-			basemap: "satellite",
-			center: [-0.958, 41.846],
-			zoom: 13,
-			slider: true
-		});
+        map = new Map("map", {
+            basemap: "satellite",
+            center: [-0.958, 41.846],
+            zoom: 13,
+            slider: true
+        });
 
-		map.on('layers-add-result', initEditor);
+        map.on('layers-add-result', initEditor);
 
-		var fsUrl = "http://services2.arcgis.com/CQWCKwrSm5dkM28A/arcgis/rest/services/Military/FeatureServer/";
-		// var layersIds = [0,1,2,3,4,5,6];
-		var layersIds = [1,2,3];
-		var featureLayers = [];
+        var fsUrl = "http://services2.arcgis.com/CQWCKwrSm5dkM28A/arcgis/rest/services/Military/FeatureServer/";
+        // var layersIds = [0,1,2,3,4,5,6];
+        var layersIds = [1,2,3];
+        var featureLayers = [];
         var offlineInitializedLayers = [];
 
-		layersIds.forEach(function(layerId)
-		{
-			var layer = new FeatureLayer(fsUrl + layerId, {
-				mode: FeatureLayer.MODE_SNAPSHOT,
-				outFields: ['*']
-			});
-			featureLayers.push(layer);			
-		})
+        layersIds.forEach(function(layerId)
+        {
+            var layer = new FeatureLayer(fsUrl + layerId, {
+                mode: FeatureLayer.MODE_SNAPSHOT,
+                outFields: ['*']
+            });
+            featureLayers.push(layer);
+        })
 
-		map.addLayers(featureLayers);
+        map.addLayers(featureLayers);
 
-		//////////////////////////////////////
+        //////////////////////////////////////
 
-		function initEditor(evt)
-		{
+        function initEditor(evt)
+        {
 
             initFeatureLayersForOffline(evt);
 
-			try {
-				/* template picker */
-				var templateLayers = evt.layers.map(function(result){return result.layer;});
-				var templatePicker = new TemplatePicker({
-					featureLayers: templateLayers,
-					grouping: true,
-					rows: "auto",
-					columns: 3,
-				}, "templateDiv");
-				templatePicker.startup();
+            try {
+                /* template picker */
+                var templateLayers = evt.layers.map(function(result){return result.layer;});
+                var templatePicker = new TemplatePicker({
+                    featureLayers: templateLayers,
+                    grouping: true,
+                    rows: "auto",
+                    columns: 3,
+                }, "templateDiv");
+                templatePicker.startup();
 
-				/* editor */
-				var layers = evt.layers.map(function(result){return {featureLayer: result.layer};});
-				var settings = {
-					map: map,
-					templatePicker: templatePicker,
-					layerInfos: layers,
-					toolbarVisible: true,
-					enableUndoRedo: true,
-					maxUndoRedoOperations: 15,
-					createOptions: {
-						polylineDrawTools: [ 
-							Editor.CREATE_TOOL_FREEHAND_POLYLINE,
-							Editor.CREATE_TOOL_POLYLINE ],
-						polygonDrawTools: [
-							Editor.CREATE_TOOL_FREEHAND_POLYGON,
-							Editor.CREATE_TOOL_POLYGON,
-							Editor.CREATE_TOOL_RECTANGLE ]
-					},
-					toolbarOptions: {
-						reshapeVisible: false
-					}
-				};
+                /* editor */
+                var layers = evt.layers.map(function(result){return {featureLayer: result.layer};});
+                var settings = {
+                    map: map,
+                    templatePicker: templatePicker,
+                    layerInfos: layers,
+                    toolbarVisible: true,
+                    enableUndoRedo: true,
+                    maxUndoRedoOperations: 15,
+                    createOptions: {
+                        polylineDrawTools: [
+                            Editor.CREATE_TOOL_FREEHAND_POLYLINE,
+                            Editor.CREATE_TOOL_POLYLINE ],
+                        polygonDrawTools: [
+                            Editor.CREATE_TOOL_FREEHAND_POLYGON,
+                            Editor.CREATE_TOOL_POLYGON,
+                            Editor.CREATE_TOOL_RECTANGLE ]
+                    },
+                    toolbarOptions: {
+                        reshapeVisible: false
+                    }
+                };
 
-				editor = new Editor({ settings: settings }, 'editorDiv');
-				editor.startup();
+                editor = new Editor({ settings: settings }, 'editorDiv');
+                editor.startup();
 
-				console.log("ok!");
-			}
-			catch(err)
-			{
-				console.log(err);
-			}
-		}
+                console.log("ok!");
+            }
+            catch(err)
+            {
+                console.log(err);
+            }
+        }
 
         function initFeatureLayersForOffline(evt){
             try {
@@ -294,14 +322,16 @@
             }
         }
 
-		function updateStatus()
-		{
-			console.log("updatingStatus");
-			updateStorageInfo();
-			updatePendingEditsList();
-		}
+        function updateStatus()
+        {
+            console.log("updatingStatus");
+            updateStorageInfo();
+            updatePendingEditsList();
+        }
 
         function updateStatusAllEditsSent(responses){
+
+            updateStorageInfo();
 
             if(Object.keys(responses).length !== 0){
 
@@ -328,6 +358,8 @@
         }
 
         function handleEditsComplete(results){
+
+            // Check for errors after online edits complete
             var errors = Array.prototype.concat(
                     results.adds.filter(function(r){ return !r.success }),
                     results.updates.filter(function(r){ return !r.success }),
@@ -358,8 +390,8 @@
             }
         }
 
-		function updateStorageInfo()
-		{
+        function updateStorageInfo()
+        {
             function bytesToSize(bytes) {
                 if(bytes == 0) return '0 Byte';
                 var k = 1000;
@@ -374,12 +406,12 @@
                     dom.byId('storageInfo').innerHTML = info;
                 }
             });
-		}
+        }
 
-		function updatePendingEditsList()
-		{
-			var li;
-			domConstruct.empty('pendingEdits');
+        function updatePendingEditsList()
+        {
+            var li;
+            domConstruct.empty('pendingEdits');
 
             // We can use Array[0] because all feature layers are sharing the same offline database
             offlineInitializedLayers[0].getAllEditsArray(function(success,array){
@@ -396,91 +428,64 @@
                     domConstruct.place(li, 'pendingEdits','last');
                 }
             });
-		}
+        }
 
-		function clearPendingEdits()
-		{
+        function clearPendingEdits()
+        {
             // We can use Array[0] because all feature layers are sharing the same offline database
             offlineInitializedLayers[0].resetDatabase(function(success,error){
                 if(!success) alert("There was a problem resetting the database: " + error);
             });
-			updateStatus();
-		}
+            updateStatus();
+        }
 
-		function goOnline()
-		{
-			domUtils.show(editor.progressBar.domNode);
-			offlineFeaturesManager.goOnline(function()
-			{
-				domUtils.hide(editor.progressBar.domNode);
-				updateConnectivityIndicator();
-			});
-			updateConnectivityIndicator();
-		}
+        function goOnline()
+        {
+            domUtils.show(editor.progressBar.domNode);
+            offlineFeaturesManager.goOnline(function()
+            {
+                domUtils.hide(editor.progressBar.domNode);
+                updateConnectivityIndicator();
+            });
+            updateConnectivityIndicator();
+        }
 
-		function goOffline()
-		{
-			offlineFeaturesManager.goOffline();
-			updateConnectivityIndicator();
-		}
+        function goOffline()
+        {
+            offlineFeaturesManager.goOffline();
+            updateConnectivityIndicator();
+        }
 
-		function updateConnectivityIndicator()
-		{
-			var node = dom.byId('connectivityIndicator');
-			domClass.remove(node, "online offline reconnecting");
-			switch( offlineFeaturesManager.getOnlineStatus() )
-			{
-				case offlineFeaturesManager.OFFLINE:
-					node.innerHTML = "<i class='fa fa-chain-broken'></i> offline";
-					domClass.add(node, "offline");
-					break;
-				case offlineFeaturesManager.ONLINE:
-					node.innerHTML = "<i class='fa fa-link'></i> online";
-					domClass.add(node, "online");
-					break;
-				case offlineFeaturesManager.RECONNECTING:
-					node.innerHTML = "<i class='fa fa-cog fa-spin'></i> reconnecting";
-					domClass.add(node, "reconnecting");
-					break;
-			}
-		}
+        function updateConnectivityIndicator()
+        {
+            var node = dom.byId('connectivityIndicator');
+            domClass.remove(node, "online offline reconnecting");
+            switch( offlineFeaturesManager.getOnlineStatus() )
+            {
+                case offlineFeaturesManager.OFFLINE:
+                    node.innerHTML = "<i class='fa fa-chain-broken'></i> offline";
+                    domClass.add(node, "offline");
+                    break;
+                case offlineFeaturesManager.ONLINE:
+                    node.innerHTML = "<i class='fa fa-link'></i> online";
+                    domClass.add(node, "online");
+                    break;
+                case offlineFeaturesManager.RECONNECTING:
+                    node.innerHTML = "<i class='fa fa-cog fa-spin'></i> reconnecting";
+                    domClass.add(node, "reconnecting");
+                    break;
+            }
+        }
 
-		function refreshFeatureLayers()
-		{
-			offlineInitializedLayers.forEach(function(featureLayer)
-			{
-				featureLayer.refresh();
-			})
-		}
-	});
-	</script>
-</head>
-<body class="claro">
-<div id="loader-cloak"></div>
-<div id="main" data-dojo-type="dijit/layout/BorderContainer" data-dojo-props="design:'headline'" style="height:width:100%;height:100%;">
-	<div data-dojo-type="dijit/layout/ContentPane" id="header" data-dojo-props="region:'top'">
-	Common Operational Picture
-	</div>
-	<div data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:'left'" style="width: 200px;overflow:hidden;">
-        <div id="connectivityPane" data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:'top'">
-            <div id="connectivityIndicator" >unknown</div>
-        </div>
-		<div id="storageInfoPane" data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:'top'">
-			<div id="storageInfo">Storage used: 0 MBs</div>
-		</div>
-		<div id="pendingEditsPane" data-dojo-type="dijit/layout/ContentPane" data-dojo-propos="region:'top'">
-            <button style="width:60%" id="clear-pending-edits-btn" class="btn1">Clear Local Edits</button>			
-            <button style="width:38%" id="go-offline-btn" class="btn1">Go Offline</button>
-            <button style="width:60%" id="refresh-feature-layers-btn" class="btn1">Refresh Layers</button>			
-            <button style="width:38%" id="go-online-btn" class="btn1">Go Online</button>
-			<ul id="pendingEdits"></ul>
-		</div>
-	</div>
-	<div data-dojo-type="dijit/layout/ContentPane" id="map" data-dojo-props="region:'center'"></div>
-	<div data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:'right'" style="width:242px;padding:1px;">
-		<div id="editorDiv"></div>
-		<div id="templateDiv"></div>
-	</div>
-</div>
+        function refreshFeatureLayers()
+        {
+            offlineInitializedLayers.forEach(function(featureLayer)
+            {
+                featureLayer.refresh();
+            })
+        }
+    });
+</script>
+
 </body>
 </html>
