@@ -1,4 +1,4 @@
-/*! offline-editor-js - v2.5 - 2015-03-19
+/*! offline-editor-js - v2.5 - 2015-03-24
 *   Copyright (c) 2015 Environmental Systems Research Institute, Inc.
 *   Apache License*/
 define([
@@ -280,51 +280,32 @@ define([
                         var results = {addResults: [], updateResults: [], deleteResults: []};
                         var updatesMap = {};
 
-                        if(this.onBeforeApplyEdits)this.onBeforeApplyEdits(adds, updates, deletes);
-
                         adds = adds || [];
                         adds.forEach(function (addEdit) {
                             var deferred = new Deferred();
-
-                            //self._validateFeature(addEdit).then(function(result){
-                            //    console.log("HELLLLOOOO")
-                            //});
 
                             var objectId = this._getNextTempId();
                             addEdit.attributes[this.objectIdField] = objectId;
 
                             var thisLayer = this;
 
-                            self._editStore.pushEdit(self._editStore.ADD, this.url, addEdit, function (result, error) {
-                                if(result == true){
-                                    results.addResults.push({success: true, error: null, objectId: objectId});
+                            // We need to run some validation tests against each feature being added.
+                            // Adding the same feature multiple times results in the last edit wins. LIFO.
+                            this._validateFeature(addEdit,this.url,self._editStore.ADD).then(function(result){
+                                console.log("EDIT ADD IS BACK!!! " );
 
-                                    var phantomAdd = new Graphic(
-                                        addEdit.geometry,
-                                        self._getPhantomSymbol(addEdit.geometry, self._editStore.ADD),
-                                        {
-                                            objectId: objectId
-                                        });
-
-                                    // Add phantom graphic to the layer
-                                    thisLayer._phantomLayer.add(phantomAdd);
-
-                                    // Add phantom graphic to the database
-                                    self._editStore.pushPhantomGraphic(phantomAdd, function (result) {
-                                        if (!result)console.log("There was a problem adding phantom graphic id: " + objectId);
-                                        console.log("Phantom graphic " + objectId + " added to database as an add.");
-                                    });
-
-                                    domAttr.set(phantomAdd.getNode(), "stroke-dasharray", "10,4");
-                                    domStyle.set(phantomAdd.getNode(), "pointer-events", "none");
-
-                                    deferred.resolve(result);
+                                if(result.success){
+                                    thisLayer._pushValidatedAddFeatureToDB(thisLayer,addEdit,result.operation,results,objectId,deferred);
                                 }
                                 else{
-                                    // If we can't push edit to database then we don't create a phantom graphic
-                                    results.addResults.push({success: false, error: error, objectId: objectId});
-                                    deferred.reject(error);
+                                    // If we get here then we deleted an edit that was added offline.
+                                    // We also have deleted the phantom graphic.
+                                    deferred.resolve(true);
                                 }
+
+                            },function(error){
+                                console.log("_validateFeature: Unable to validate!");
+                                deferred.reject(error);
                             });
 
                             promises.push(deferred);
@@ -339,35 +320,24 @@ define([
 
                             var thisLayer = this;
 
-                            self._editStore.pushEdit(self._editStore.UPDATE, this.url, updateEdit, function (result, error) {
+                            // We need to run some validation tests against each feature being updated.
+                            // If we have added a feature and we need to update it then we change it's operation type to "add"
+                            // and the last edits wins. LIFO.
+                            this._validateFeature(updateEdit,this.url,self._editStore.UPDATE).then(function(result){
+                                console.log("EDIT UPDATE IS BACK!!! " );
 
-                                if(result == true){
-                                    results.updateResults.push({success: true, error: null, objectId: objectId});
-
-                                    var phantomUpdate = new Graphic(
-                                        updateEdit.geometry,
-                                        self._getPhantomSymbol(updateEdit.geometry, self._editStore.UPDATE),
-                                        {
-                                            objectId: objectId
-                                        });
-                                    thisLayer._phantomLayer.add(phantomUpdate);
-
-                                    // Add phantom graphic to the database
-                                    self._editStore.pushPhantomGraphic(phantomUpdate, function (result) {
-                                        if (!result)console.log("There was a problem adding phantom graphic id: " + objectId);
-                                        console.log("Phantom graphic " + objectId + " added to database as an update.");
-                                    });
-
-                                    domAttr.set(phantomUpdate.getNode(), "stroke-dasharray", "5,2");
-                                    domStyle.set(phantomUpdate.getNode(), "pointer-events", "none");
-
-                                    deferred.resolve(result);
+                                if(result.success){
+                                    thisLayer._pushValidatedUpdateFeatureToDB(thisLayer,updateEdit,result.operation,results,objectId,deferred);
                                 }
                                 else{
-                                    // If we can't push edit to database then we don't create a phantom graphic
-                                    results.addResults.push({success: false, error: error, objectId: objectId});
-                                    deferred.reject(error);
+                                    // If we get here then we deleted an edit that was added offline.
+                                    // We also have deleted the phantom graphic.
+                                    deferred.resolve(true);
                                 }
+
+                            },function(error){
+                                console.log("_validateFeature: Unable to validate!");
+                                deferred.reject(error);
                             });
 
                             promises.push(deferred);
@@ -381,43 +351,25 @@ define([
 
                             var thisLayer = this;
 
-                            self._editStore.pushEdit(self._editStore.DELETE, this.url, deleteEdit, function (result, error) {
+                            // We need to run some validation tests against each feature being deleted.
+                            // If we have added a feature and then deleted it in the app then we go ahead
+                            // and delete it and its phantom graphic from the database.
+                            // NOTE: at this time we don't handle attachments automatically
+                            this._validateFeature(deleteEdit,this.url,self._editStore.DELETE).then(function(result){
+                                console.log("EDIT DELETE IS BACK!!! " );
 
-                                if(result == true){
-                                    results.deleteResults.push({success: true, error: null, objectId: objectId});
-
-                                    var phantomDelete = new Graphic(
-                                        deleteEdit.geometry,
-                                        self._getPhantomSymbol(deleteEdit.geometry, self._editStore.DELETE),
-                                        {
-                                            objectId: objectId
-                                        });
-                                    thisLayer._phantomLayer.add(phantomDelete);
-
-                                    // Add phantom graphic to the database
-                                    self._editStore.pushPhantomGraphic(phantomDelete, function (result) {
-                                        if (!result)console.log("There was a problem adding phantom graphic id: " + objectId);
-                                        console.log("Phantom graphic " + objectId + " added to database as a deletion.");
-                                    });
-
-                                    domAttr.set(phantomDelete.getNode(), "stroke-dasharray", "4,4");
-                                    domStyle.set(phantomDelete.getNode(), "pointer-events", "none");
-
-                                    if (self.attachmentsStore) {
-                                        // delete local attachments of this feature, if any... we just launch the delete and don't wait for it to complete
-                                        self.attachmentsStore.deleteAttachmentsByFeatureId(this.url, objectId, function (deletedCount) {
-                                            console.log("deleted", deletedCount, "attachments of feature", objectId);
-                                        });
-                                    }
-
-                                    deferred.resolve(result);
+                                if(result.success){
+                                    thisLayer._pushValidatedDeleteFeatureToDB(thisLayer,deleteEdit,result.operation,results,objectId,deferred);
                                 }
                                 else{
-                                    // If we can't push edit to database then we don't create a phantom graphic
-                                    results.addResults.push({success: false, error: error, objectId: objectId});
-                                    deferred.reject(error);
+                                    // If we get here then we deleted an edit that was added offline.
+                                    // We also have deleted the phantom graphic.
+                                    deferred.resolve(true);
                                 }
 
+                            },function(error){
+                                console.log("_validateFeature: Unable to validate!");
+                                deferred.reject(error);
                             });
 
                             promises.push(deferred);
@@ -644,6 +596,253 @@ define([
                     };
 
                     /* internal methods */
+
+                    /**
+                     * Pushes an DELETE request to the database after it's been validated
+                     * @param layer
+                     * @param deleteEdit
+                     * @param operation
+                     * @param resultsArray
+                     * @param objectId
+                     * @param deferred
+                     * @private
+                     */
+                    layer._pushValidatedDeleteFeatureToDB = function(layer,deleteEdit,operation,resultsArray,objectId,deferred){
+                        self._editStore.pushEdit(operation, layer.url, deleteEdit, function (result, error) {
+
+                            if(result == true){
+                                resultsArray.deleteResults.push({success: true, error: null, objectId: objectId});
+
+                                var phantomDelete = new Graphic(
+                                    deleteEdit.geometry,
+                                    self._getPhantomSymbol(deleteEdit.geometry, self._editStore.DELETE),
+                                    {
+                                        objectId: objectId
+                                    });
+                                layer._phantomLayer.add(phantomDelete);
+
+                                // Add phantom graphic to the database
+                                self._editStore.pushPhantomGraphic(phantomDelete, function (result) {
+                                    if (!result)console.log("There was a problem adding phantom graphic id: " + objectId);
+                                    console.log("Phantom graphic " + objectId + " added to database as a deletion.");
+                                });
+
+                                domAttr.set(phantomDelete.getNode(), "stroke-dasharray", "4,4");
+                                domStyle.set(phantomDelete.getNode(), "pointer-events", "none");
+
+                                if (self.attachmentsStore) {
+                                    // delete local attachments of this feature, if any... we just launch the delete and don't wait for it to complete
+                                    self.attachmentsStore.deleteAttachmentsByFeatureId(layer.url, objectId, function (deletedCount) {
+                                        console.log("deleted", deletedCount, "attachments of feature", objectId);
+                                    });
+                                }
+
+                                deferred.resolve(result);
+                            }
+                            else{
+                                // If we can't push edit to database then we don't create a phantom graphic
+                                resultsArray.addResults.push({success: false, error: error, objectId: objectId});
+                                deferred.reject(error);
+                            }
+
+                        });
+                    };
+
+                    /**
+                     * Pushes an UPDATE request to the database after it's been validated
+                     * @param layer
+                     * @param updateEdit
+                     * @param operation
+                     * @param resultsArray
+                     * @param objectId
+                     * @param deferred
+                     * @private
+                     */
+                    layer._pushValidatedUpdateFeatureToDB = function(layer,updateEdit,operation,resultsArray,objectId,deferred){
+                        self._editStore.pushEdit(operation, layer.url, updateEdit, function (result, error) {
+
+                            if(result == true){
+                                resultsArray.updateResults.push({success: true, error: null, objectId: objectId});
+
+                                var phantomUpdate = new Graphic(
+                                    updateEdit.geometry,
+                                    self._getPhantomSymbol(updateEdit.geometry, self._editStore.UPDATE),
+                                    {
+                                        objectId: objectId
+                                    });
+                                layer._phantomLayer.add(phantomUpdate);
+
+                                // Add phantom graphic to the database
+                                self._editStore.pushPhantomGraphic(phantomUpdate, function (result) {
+                                    if (!result)console.log("There was a problem adding phantom graphic id: " + objectId);
+                                    console.log("Phantom graphic " + objectId + " added to database as an update.");
+                                });
+
+                                domAttr.set(phantomUpdate.getNode(), "stroke-dasharray", "5,2");
+                                domStyle.set(phantomUpdate.getNode(), "pointer-events", "none");
+
+                                deferred.resolve(result);
+                            }
+                            else{
+                                // If we can't push edit to database then we don't create a phantom graphic
+                                resultsArray.addResults.push({success: false, error: error, objectId: objectId});
+                                deferred.reject(error);
+                            }
+                        });
+                    };
+
+                    /**
+                     * Pushes an ADD request to the database after it's been validated
+                     * @param layer
+                     * @param addEdit
+                     * @param operation
+                     * @param resultsArray
+                     * @param objectId
+                     * @param deferred
+                     * @private
+                     */
+                    layer._pushValidatedAddFeatureToDB = function(layer,addEdit,operation,resultsArray,objectId,deferred){
+                        self._editStore.pushEdit(operation, layer.url, addEdit, function (result, error) {
+                            if(result == true){
+                                resultsArray.addResults.push({success: true, error: null, objectId: objectId});
+
+                                var phantomAdd = new Graphic(
+                                    addEdit.geometry,
+                                    self._getPhantomSymbol(addEdit.geometry, self._editStore.ADD),
+                                    {
+                                        objectId: objectId
+                                    });
+
+                                // Add phantom graphic to the layer
+                                layer._phantomLayer.add(phantomAdd);
+
+                                // Add phantom graphic to the database
+                                self._editStore.pushPhantomGraphic(phantomAdd, function (result) {
+                                    if (!result)console.log("There was a problem adding phantom graphic id: " + objectId);
+                                    console.log("Phantom graphic " + objectId + " added to database as an add.");
+                                });
+
+                                domAttr.set(phantomAdd.getNode(), "stroke-dasharray", "10,4");
+                                domStyle.set(phantomAdd.getNode(), "pointer-events", "none");
+
+                                deferred.resolve(result);
+                            }
+                            else{
+                                // If we can't push edit to database then we don't create a phantom graphic
+                                resultsArray.addResults.push({success: false, error: error, objectId: objectId});
+                                deferred.reject(error);
+                            }
+                        });
+                    };
+
+                    /**
+                     * Validates duplicate entries. Last edit on same feature can overwite any previous values.
+                     * Note: if an edit was already added offline and you delete it then we return success == false
+                     * @param graphic esri.Graphic.
+                     * @param layerUrl the URL of the feature service
+                     * @param operation add, update or delete action on an edit
+                     * @returns deferred {success:boolean,graphic:graphic,operation:add|update|delete}
+                     * @private
+                     */
+                    layer._validateFeature = function (graphic,layerUrl,operation) {
+
+                        var deferred = new Deferred();
+
+                        var id = layerUrl + "/" + graphic.attributes.objectid;
+
+                        self._editStore.getEdit(id,function(success,result){
+                            if (success) {
+                                switch( operation )
+                                {
+                                    case self._editStore.ADD:
+                                        // Not good - however we'll allow the new ADD to replace/overwrite existing edit
+                                        // and pass it through unmodified. Last ADD wins.
+                                        deferred.resolve({"success":true,"graphic":graphic,"operation":operation});
+                                        break;
+                                    case self._editStore.UPDATE:
+                                        // If we are doing an update on a feature that has not been added to
+                                        // the server yet, then we need to maintain its operation as an ADD
+                                        // and not an UPDATE. This avoids the potential for an error if we submit
+                                        // an update operation on a feature that has not been added to the
+                                        // database yet.
+                                        if(result.operation == self._editStore.ADD){
+                                            graphic.operation = self._editStore.ADD;
+                                            operation = self._editStore.ADD;
+                                        }
+                                        deferred.resolve({"success":true,"graphic":graphic,"operation":operation});
+                                        break;
+                                    case self._editStore.DELETE:
+
+                                        var resolved = true;
+
+                                        if(result.operation == self._editStore.ADD){
+                                            // If we are deleting a new feature that has not been added to the
+                                            // server yet we need to delete it and its phantom graphic.
+                                            self._deleteTemporaryFeature(graphic,function(success){
+                                                if(success == false){
+                                                    resolved = false;
+                                                }
+                                            });
+                                        }
+                                        deferred.resolve({"success":resolved,"graphic":graphic,"operation":operation});
+                                        break;
+                                }
+                            }
+                            else if(result == "Id not found"){
+                                // Let's simply pass the graphic back as good-to-go.
+                                // No modifications needed because the graphic does not
+                                // already exist in the database.
+                                deferred.resolve({"success":true,"graphic":graphic,"operation":operation});
+                            }
+                            else{
+                                deferred.reject(graphic);
+                            }
+                        });
+
+                        return deferred;
+                    };
+
+                    /**
+                     * Delete a graphic and its associated phantom graphic that has been added while offline.
+                     * @param graphic
+                     * @param callback
+                     * @private
+                     */
+                    layer._deleteTemporaryFeature = function(graphic,callback){
+
+                        var phantomGraphicId = self._editStore.PHANTOM_GRAPHIC_PREFIX + self._editStore._PHANTOM_PREFIX_TOKEN + graphic.attributes.objectid;
+
+                        function _deleteGraphic(){
+                            var deferred = new Deferred();
+                            self._editStore.delete(layer.url,graphic,function(success,error){
+                                if(success){
+                                    deferred.resolve(true);
+                                }
+                                else{
+                                    deferred.resolve(false);
+                                }
+                            });
+                            return deferred.promise;
+                        }
+
+                        function _deletePhantomGraphic(){
+                            var deferred = new Deferred();
+                            self._editStore.deletePhantomGraphic(phantomGraphicId,function(success){
+                                if(success){
+                                    deferred.resolve(true);
+                                }
+                                else{
+                                    deferred.resolve(false);
+                                }
+                            });
+                            return deferred.promise;
+                        }
+
+                        all([_deleteGraphic(),_deletePhantomGraphic()]).then(function (results) {
+                            callback(results);
+                        });
+
+                    };
 
                     layer._getFilesFromForm = function (formNode) {
                         var files = [];
@@ -1047,10 +1246,6 @@ define([
                                 layer.onEditsComplete = function () {
                                     console.log("intercepting events onEditsComplete");
                                 };
-                                layer.__onBeforeApplyEdits = layer.onBeforeApplyEdits;
-                                layer.onBeforeApplyEdits = function () {
-                                    console.log("intercepting events onBeforeApplyEdits");
-                                };
 
                                 // Let's zero everything out
                                 adds = [], updates = [], deletes = [], tempObjectIds = [];
@@ -1278,8 +1473,6 @@ define([
                         function (addResults, updateResults, deleteResults) {
                             layer._phantomLayer.clear();
 
-                            layer.onBeforeApplyEdits = layer.__onBeforeApplyEdits;
-                            delete layer.__onBeforeApplyEdits;
                             var newObjectIds = addResults.map(function (r) {
                                 return r.objectId;
                             });
@@ -1311,58 +1504,11 @@ define([
                         function (error) {
                             layer.onEditsComplete = layer.__onEditsComplete;
                             delete layer.__onEditsComplete;
-                            layer.onBeforeApplyEdits = layer.__onBeforeApplyEdits;
-                            delete layer.__onBeforeApplyEdits;
+
                             dfd.reject(error);
                         }
                     );
                     return dfd.promise;
-                },
-
-                /**
-                 * Validates duplicate entries. Last edit on same feature can overwite any previous values.
-                 * @param edit valid internal editsStore edit object.
-                 * @returns deferred
-                 * @private
-                 */
-                _validateFeature: function (edit) {
-
-                    var deferred = new Deferred();
-                    this._editStore.getEdit(edit.id,function(success,result){
-                        if (success) {
-                            switch( edit.operation )
-                            {
-                                case this._editStore.ADD:
-                                    // Not good - however we'll allow the new ADD to replace existing edit
-                                    // and pass it through unmodified. Last ADD wins.
-                                    deferred.resolve(edit);
-                                    break;
-                                case this._editStore.UPDATE:
-                                    // If we are doing an update on a feature that has not been added to
-                                    // the server yet, then we need to maintain its operation as an ADD
-                                    // and not an update. This avoids the potential for an error if we submit
-                                    // an update operation on a feature that has not been added to the
-                                    // database yet.
-                                    if(result.operation = this._editStore.ADD){
-                                        edit.operation = this._editStore.ADD;
-                                    }
-                                    deferred.resolve(edit);
-                                    break;
-                                case this._editStore.DELETE:
-
-                                    if(result.operation = this._editStore.ADD){
-                                        // If we are deleting a new feature that has not been added to the
-                                        // server yet we need to delete it and its phantom graphic.
-                                    }
-                                    deferred.resolve(edit);
-                                    break;
-                            }
-                        }
-                        else{
-                            deferred.resolve(edit);
-                        }
-                    });
-                    return deferred;
                 },
 
                 /**
@@ -1769,7 +1915,7 @@ O.esri.Edit.EditStore = function () {
 
     /**
      * Deletes an individual graphic from the phantom layer
-     * @param id
+     * @param id Internal ID
      * @param callback callback(boolean, message)
      */
     this.deletePhantomGraphic = function (id, callback) {
@@ -1931,9 +2077,16 @@ O.esri.Edit.EditStore = function () {
      * @param callback callback(true,graphic) or callback(false, error)
      */
     this.getEdit = function(id,callback){
+
+        console.assert(this._db !== null, "indexeddb not initialized");
+        var objectStore = this._db.transaction([objectStoreName], "readwrite").objectStore(objectStoreName);
+
         require(["dojo/Deferred"], function (Deferred) {
 
-            var objectStore = db.transaction([objectStoreName], "readwrite").objectStore(objectStoreName);
+            if(typeof id === "undefined"){
+                callback(false,"id is undefined.");
+                return;
+            }
 
             //Get the entry associated with the graphic
             var objectStoreGraphicRequest = objectStore.get(id);
