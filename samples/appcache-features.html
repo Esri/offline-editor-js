@@ -182,16 +182,18 @@
                 // Variables for modal popup
                 var popup,closeBtn,saveBtn,deleteBtn,stopMainID,stopID,stopRoutes,stopNames;
 
-                var editsStore = new O.esri.Edit.EditStore();
-                editsStore.init(function(success){
-                    if(success){
-                        mediaQueries();
-                        initModalPopup();
-                    }
-                    else{
-                        alert("Unable to initialize database.");
-                    }
-                });
+                mediaQueries();
+                initModalPopup();
+
+//                var editsStore = new O.esri.Edit.EditStore();
+//                editsStore.init(function(success){
+//                    if(success){
+//
+//                    }
+//                    else{
+//                        alert("Unable to initialize database.");
+//                    }
+//                });
 
                 /**
                  * There have been a few bugs in the offline detection library (offline.min.js)
@@ -271,7 +273,13 @@
                         on(btnGetTiles,"click",downloadTiles);
                         on(btnOnlineOffline, 'click', goOnlineOffline);
 
-                        initOfflineFeaturesMgr();
+                        initOfflineFeaturesMgr(function(success){
+                            if(success){
+                                updateOfflineUsage();
+                                updateStatus();
+                            }
+                        });
+
                         setFeatureLayerClickHandler();
                         setModalPopupClickListeners();
                         
@@ -312,8 +320,6 @@
                     map.on("load",function(evt){
 
                         _currentExtent = evt.map.extent;
-                        updateOfflineUsage();
-                        updateStatus();
 
                         //**************************************************
                         //
@@ -332,7 +338,9 @@
                             var featuresArray = JSON.parse(localStorage.offlineFeature);
                             var geometryType = "esriGeometryPoint";
 
-                            initOfflineFeaturesMgr();
+                            initOfflineFeaturesMgr(function(success){
+                                console.log("Offline Feature Manager initialized.");
+                            });
 
                             busStopFeatureLayer.getFeatureDefinition(featureLayer,featuresArray,geometryType,function(featureDef){
 
@@ -386,7 +394,7 @@
                  * **********************************************
                  */
 
-                function initOfflineFeaturesMgr(){
+                function initOfflineFeaturesMgr(callback){
                     offlineFeaturesManager = new O.esri.Edit.OfflineFeaturesManager();
 
                     // IMPORTANT!!!
@@ -403,22 +411,25 @@
                     offlineFeaturesManager.extend(busStopFeatureLayer,function(result, error){
                         if(result){
                             console.log("offlineFeaturesManager initialized.");
+
+                            Offline.check();
+                            Offline.on('up', goOnline);
+                            Offline.on('down', goOffline);
+
+                            // If the app is online then set offlineFeaturesManager to its online state
+                            // This will force the library to check for pending edits and attempt to
+                            // resend them to the Feature Service.
+                            if(_isOnline == true){
+                                offlineFeaturesManager.goOnline();
+                            }
+
+                            callback(true);
                         }
                         else{
+                            callback(false);
                             alert("Unable to initialize the database. " + error);
                         }
                     });
-
-                    Offline.check();
-                    Offline.on('up', goOnline);
-                    Offline.on('down', goOffline);
-
-                    // If the app is online then set offlineFeaturesManager to its online state
-                    // This will force the library to check for pending edits and attempt to
-                    // resend them to the Feature Service.
-                    if(_isOnline == true){
-                        offlineFeaturesManager.goOnline();
-                    }
                 }
 
                 // Keep latest extent and zoom level available in case of an offline browser restart
@@ -443,26 +454,11 @@
                     busStopFeatureLayer.on("click", function(evt) {
                         currentFeature = evt.graphic;
                         showModalPopup(currentFeature);
-                        var atts = currentFeature.attributes
+                        var atts = currentFeature.attributes;
                         stopID.value = atts.GlobalID;
                         stopMainID.value = atts.BSID;
                         stopNames.value = atts.STOPNAME;
                         stopRoutes.value = atts.ROUTES;
-
-//                        var query = new Query();
-//                        query.objectIds = [evt.graphic.attributes.GlobalID];
-//                        busStopFeatureLayer.selectFeatures(query,FeatureLayer.SELECTION_NEW,
-//                                function(evt){
-//                                    console.log("Success: " + JSON.stringify(evt[0].attributes));
-//                                    showModalPopup(evt[0]);
-//                                    var atts = evt[0].attributes
-//                                    stopID.value = atts.GlobalID;
-//                                    stopMainID.value = atts.BSID;
-//                                    stopNames.value = atts.STOPNAME;
-//                                    stopRoutes.value = atts.ROUTES;
-//                                },function(err){
-//                                    console.log("ERROR " + JSON.stringify(err));
-//                                });
                     }.bind(this));
                 }
 
@@ -707,7 +703,7 @@
                 }
 
                 /**
-                 * Attempts an http request to verify if app is online or offline.
+                 * Attempts a manual http request to verify if app is online or offline.
                  * Use this in conjunction with the offline checker library: offline.min.js
                  * @param callback
                  */
@@ -742,7 +738,7 @@
 
                 function editsEnqueued(){
 
-                    editsStore.pendingEditsCount(function(count){
+                    busStopFeatureLayer.pendingEditsCount(function(count){
                         pendingEdits.innerHTML = count;
                     });
 
@@ -757,10 +753,8 @@
 
                 function allEditsSent(){
 
-                    editsStore.pendingEditsCount(function(count){
+                    busStopFeatureLayer.pendingEditsCount(function(count){
                         pendingEdits.innerHTML = count;
-//TODO!!
-//                        localStorage.setItem("offlinePhantomGraphics","");
                     });
 
                 }
@@ -770,7 +764,7 @@
                 }
 
                 function updateStatus(){
-                    editsStore.pendingEditsCount(function(count){
+                    busStopFeatureLayer.pendingEditsCount(function(count){
                         pendingEdits.innerHTML = count;
                     });
                 }
@@ -785,12 +779,14 @@
 
                 /**
                  * ************************************
-                 * APPCACHE MANAGEMENT CODE
+                 * APPCACHE MANAGEMENT
                  * ************************************
                  */
 
                 /**
                  * Listen for app cache events.
+                 * You don't have to listen to all these events. It's mainly for demonstration
+                 * and troubleshooting purposes that this is included.
                  */
                 function initAppCacheManager(){
                     appCacheManager = new AppCacheManager(true,true);
