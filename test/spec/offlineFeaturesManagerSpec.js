@@ -163,364 +163,416 @@ describe("Normal online editing - Exercise the feature services", function()
 
 describe("Offline Editing", function()
 {
-	var g1,g2,g3;
-	var g4,g5,g6;
-	var l1,l2,l3;
 
-    async.it("detect IndexedDB support", function (done) {
-        expect(g_editsStore.isSupported()).toBeTruthy();
-        done();
-    });
+    var g1,g2,g3;
+    var g4,g5,g6;
+    var l1,l2,l3;
 
-    async.it("initialize database", function (done) {
-        g_editsStore.init(function (success) {
-            expect(success).toEqual(true);
-            done();
-        })
-    });
-
-	async.it("Prepare feature service. Clear database",function(done)
-	{
-        g_featureLayers[0].resetDatabase(function (result) {
-            expect(result).toEqual(true);
-
-            g_editsStore.pendingEditsCount(function (count) {
-                expect(count).toBe(0);
-                done();
-            });
-
-        });
-	});
-
-    async.it("Prepare feature service. Clear feature Layers - points - lines", function(done)
+    describe("Prep db and feature service", function()
     {
-        var count = 0;
-        function completedOne()
-        {
-            count += 1;
-            if(count==3)
-                done();
-        }
-        clearFeatureLayer( g_featureLayers[0], function(success,response)
-        {
-            expect(success).toBeTruthy();
-            var listener = g_featureLayers[0].on('update-end', function(){ listener.remove(); completedOne();})
-            g_featureLayers[0].refresh();
-
-        });
-        clearFeatureLayer( g_featureLayers[1], function(success,response)
-        {
-            expect(success).toBeTruthy();
-            var listener = g_featureLayers[1].on('update-end', function(){ listener.remove(); completedOne();})
-            g_featureLayers[1].refresh();
-        });
-        clearFeatureLayer( g_featureLayers[2], function(success,response)
-        {
-            expect(success).toBeTruthy();
-            var listener = g_featureLayers[2].on('update-end', function(){ listener.remove(); completedOne();})
-            g_featureLayers[2].refresh();
-        });
-    });
-
-	async.it("Prepare feature service. Add some features online - points", function(done)
-	{
-		expect(g_offlineFeaturesManager.getOnlineStatus()).toBe(g_offlineFeaturesManager.ONLINE);
-
-		g1 = new g_modules.Graphic({"geometry":{"x":-105400,"y":5137000,"spatialReference":{"wkid":102100}},"attributes":{"symbolname":"Ground Zero","z":null,"additionalinformation":null,"eny":null,"datetimevalid":null,"datetimeexpired":null,"distance":null,"azimuth":null,"uniquedesignation":null,"x":null,"y":null}});
-		g2 = new g_modules.Graphic({"geometry":{"x":-105600,"y":5137000,"spatialReference":{"wkid":102100}},"attributes":{"symbolname":"Ground Zero","z":null,"additionalinformation":null,"eny":null,"datetimevalid":null,"datetimeexpired":null,"distance":null,"azimuth":null,"uniquedesignation":null,"x":null,"y":null}});
-		g3 = new g_modules.Graphic({"geometry":{"x":-105800,"y":5137000,"spatialReference":{"wkid":102100}},"attributes":{"symbolname":"Ground Zero","z":null,"additionalinformation":null,"eny":null,"datetimevalid":null,"datetimeexpired":null,"distance":null,"azimuth":null,"uniquedesignation":null,"x":null,"y":null}});
-
-		var adds = [g1,g2,g3];
-		g_featureLayers[0].applyEdits(adds,null,null,function(addResults,updateResults,deleteResults)
-		{
-			expect(addResults.length).toBe(3);
-			expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2,g3]));
-			expect(g_featureLayers[0].graphics.length).toBe(3);
-			countFeatures(g_featureLayers[0], function(success,result)
-			{
-				expect(success).toBeTruthy();
-				expect(result.count).toBe(3);
-				done();
-			});
-		},
-		function(error)
-		{
-			expect(true).toBeFalsy();
-		});
-	});
-
-	async.it("Prepare feature service. Add some features online - lines", function(done)
-	{
-		expect(g_offlineFeaturesManager.getOnlineStatus()).toBe(g_offlineFeaturesManager.ONLINE);
-
-		l1 = new g_modules.Graphic({"geometry":{"paths":[[[-101300,5136900],[-108400,5136900]]],"spatialReference":{"wkid":102100}},"attributes":{"ruleid":40,"zmax":null,"additionalinformation":null,"eny":null,"uniquedesignation":null,"datetimevalid":null,"datetimeexpired":null,"distance":null,"azimuth":null,"echelon":null,"x":null,"y":null,"z":null,"zmin":null}});
-		l2 = new g_modules.Graphic({"geometry":{"paths":[[[-101300,5136800],[-108400,5136800]]],"spatialReference":{"wkid":102100}},"attributes":{"ruleid":40,"zmax":null,"additionalinformation":null,"eny":null,"uniquedesignation":null,"datetimevalid":null,"datetimeexpired":null,"distance":null,"azimuth":null,"echelon":null,"x":null,"y":null,"z":null,"zmin":null}});
-		l3 = new g_modules.Graphic({"geometry":{"paths":[[[-101300,5136700],[-108400,5136700]]],"spatialReference":{"wkid":102100}},"attributes":{"ruleid":40,"zmax":null,"additionalinformation":null,"eny":null,"uniquedesignation":null,"datetimevalid":null,"datetimeexpired":null,"distance":null,"azimuth":null,"echelon":null,"x":null,"y":null,"z":null,"zmin":null}});
-
-		var adds = [l1,l2,l3];
-		g_featureLayers[1].applyEdits(adds,null,null,function(addResults,updateResults,deleteResults)
-		{
-			expect(addResults.length).toBe(3);
-			expect(getObjectIds(g_featureLayers[1].graphics)).toEqual(getObjectIds([l1,l2,l3]));
-			expect(g_featureLayers[1].graphics.length).toBe(3);
-			countFeatures(g_featureLayers[1], function(success,result)
-			{
-				expect(success).toBeTruthy();
-				expect(result.count).toBe(3);
-				done();
-			});
-		},
-		function(error)
-		{
-			expect(true).toBeFalsy();
-		});
-	});
-
-	async.it("go Offline", function(done)
-	{
-		expect(g_offlineFeaturesManager.getOnlineStatus()).toBe(g_offlineFeaturesManager.ONLINE);
-		g_offlineFeaturesManager.goOffline();
-		expect(g_offlineFeaturesManager.getOnlineStatus()).toBe(g_offlineFeaturesManager.OFFLINE);
-		done();
-	});
-
-	async.it("update existing features - points", function(done)
-	{
-		expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2,g3]));
-		expect(g_featureLayers[0].graphics.length).toBe(3);
-		expect(g_offlineFeaturesManager.getOnlineStatus()).toBe(g_offlineFeaturesManager.OFFLINE);
-
-		g1.geometry.y += 300;
-		g2.geometry.y += 100;
-		g3.geometry.y -= 200;
-		var updates = [g1,g2,g3];
-		g_featureLayers[0].applyEdits(null,updates,null,function(addResults,updateResults,deleteResults)
-		{   console.log("LINE 298: " + JSON.stringify(updateResults))
-			expect(updateResults.length).toBe(3);
-			expect(updateResults[0].success).toBeTruthy();
-			expect(updateResults[1].success).toBeTruthy();
-			expect(updateResults[2].success).toBeTruthy();
-			expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2,g3]));
-			expect(g_featureLayers[0].graphics.length).toBe(3);
-			g_editsStore.pendingEditsCount(function(result){
-                expect(result).toBe(3);
-                done();
-            });
-		},
-		function(error)
-		{
-			expect(true).toBeFalsy();
-			done();
-		});
-	});
-
-	async.it("update existing features - lines", function(done)
-	{
-		expect(getObjectIds(g_featureLayers[1].graphics)).toEqual(getObjectIds([l1,l2,l3]));
-		expect(g_featureLayers[1].graphics.length).toBe(3);
-		expect(g_offlineFeaturesManager.getOnlineStatus()).toBe(g_offlineFeaturesManager.OFFLINE);
-
-
-		l1.geometry.y += 300; // jabadia: change
-		l2.geometry.y += 100;
-		l3.geometry.y -= 200;
-
-		var updates = [l1,l2,l3];
-		g_featureLayers[1].applyEdits(null,updates,null,function(addResults,updateResults,deleteResults)
-		{
-			expect(updateResults.length).toBe(3);
-			expect(updateResults[0].success).toBeTruthy();
-			expect(updateResults[1].success).toBeTruthy();
-			expect(updateResults[2].success).toBeTruthy();
-			expect(getObjectIds(g_featureLayers[1].graphics)).toEqual(getObjectIds([l1,l2,l3]));
-			expect(g_featureLayers[1].graphics.length).toBe(3);
-            g_editsStore.pendingEditsCount(function(result){
-                expect(result).toBe(6);
-                done();
-            });
-		},
-		function(error)
-		{
-			expect(true).toBeFalsy();
-			done();
-		});
-	});
-
-	async.it("delete existing features - points", function(done)
-	{
-		expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2,g3]));
-		expect(g_featureLayers[0].graphics.length).toBe(3);
-
-		var deletes = [g3]; console.log("Graphic " + JSON.stringify(g3.toJson()));
-		g_featureLayers[0].applyEdits(null,null,deletes,function(addResults,updateResults,deleteResults)
-		{
-			expect(deleteResults.length).toBe(1);
-			expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2]));
-			expect(g_featureLayers[0].graphics.length).toBe(2);
-            g_editsStore.pendingEditsCount(function(result){
-
-                // Expected count will stil be 6! This record is the database gets overwritten
-                // with the latest edit request. Last edit wins.
-                expect(result).toBe(6);
-                done();
-            });
-		},
-		function(error)
-		{
-			expect(true).toBeFalsy();
-			done();
-		});
-	});
-
-	async.it("add new features offline - points", function(done)
-	{
-		expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2]));
-		expect(g_featureLayers[0].graphics.length).toBe(2);
-		expect(g_offlineFeaturesManager.getOnlineStatus()).toBe(g_offlineFeaturesManager.OFFLINE);
-
-		g4 = new g_modules.Graphic({"geometry":{"x":-109100,"y":5137000,"spatialReference":{"wkid":102100}},"attributes":{"symbolname":"Reference Point DLRP","z":null,"additionalinformation":null,"eny":null,"datetimevalid":null,"datetimeexpired":null,"distance":null,"azimuth":null,"uniquedesignation":null,"x":null,"y":null}} );
-		g5 = new g_modules.Graphic({"geometry":{"x":-109500,"y":5137000,"spatialReference":{"wkid":102100}},"attributes":{"symbolname":"Reference Point DLRP","z":null,"additionalinformation":null,"eny":null,"datetimevalid":null,"datetimeexpired":null,"distance":null,"azimuth":null,"uniquedesignation":null,"x":null,"y":null}} );
-		g6 = new g_modules.Graphic({"geometry":{"x":-109900,"y":5137000,"spatialReference":{"wkid":102100}},"attributes":{"symbolname":"Reference Point DLRP","z":null,"additionalinformation":null,"eny":null,"datetimevalid":null,"datetimeexpired":null,"distance":null,"azimuth":null,"uniquedesignation":null,"x":null,"y":null}} );
-
-		var adds = [g4,g5,g6];
-		g_featureLayers[0].applyEdits(adds,null,null,function(addResults,updateResults,deleteResults)
-		{
-			expect(addResults.length).toBe(3);
-
-            g_editsStore.pendingEditsCount(function(result){
-
-                // Should be 9 since we added 3 three edits and we had 6 edits in the previous test
-                expect(result).toBe(9);
-                done();
-            });
-
-			expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2,g4,g5,g6]));
-			expect(g_featureLayers[0].graphics.length).toBe(5);
-			g4.attributes.objectid = addResults[0].objectId;
-			g5.attributes.objectid = addResults[1].objectId;
-			g6.attributes.objectid = addResults[2].objectId;
-			expect(g4.attributes.objectid).toBeLessThan(0);
-			expect(g5.attributes.objectid).toBeLessThan(g4.attributes.objectid);
-			expect(g6.attributes.objectid).toBeLessThan(g5.attributes.objectid);
-		},
-		function(error)
-		{
-			expect(true).toBeFalsy();
-		});
-	});
-
-    async.it("Update new feature offline - point", function(done){
-
-        // Let's make a change to g6 attributes
-        g6.attributes.additionalinformation = "TEST123";
-        var updates = [g6];
-        g_featureLayers[0].applyEdits(null,updates,null,function(addResults,updateResults,deleteResults)
-        {
-            expect(updateResults.length).toBe(1);
-
-            g_editsStore.pendingEditsCount(function(result){
-
-                // Should be the exact same as previous test
-                // An update to a new feature should be a single entry in the database.
-                // We simply update the existing entry with the new information.
-                expect(result).toBe(9);
-                done();
-            });
-        },
-        function(error)
-        {
-            expect(true).toBeFalsy();
-        });
-    });
-
-    async.it("validate non-existent feature - ADD", function(done){
-
-        var testGraphic = new g_modules.Graphic({"geometry":{"x":-109100,"y":5137000,"spatialReference":{"wkid":102100}},"attributes":{"symbolname":"Reference Point DLRP","z":null,"additionalinformation":null,"eny":null,"datetimevalid":null,"datetimeexpired":null,"distance":null,"azimuth":null,"uniquedesignation":null,"x":null,"y":null}} );
-
-        g_featureLayers[0]._validateFeature(testGraphic,g_featureLayers[0].url,"add")
-            .then(function(result){
-                expect(result.success).toBe(true);
-                expect(testGraphic).toEqual(result.graphic);
-                expect(result.operation).toEqual("add");
-                done();
-            },function(error){
-                console.log("Validate feature error: " + error);
-            });
-    });
-
-    async.it("validate feature that exists in db - ADD", function(done){
-        var id = getObjectIds([g6]).toString();
-        expect(id).toEqual("-3");
-        g_featureLayers[0]._validateFeature(g6,g_featureLayers[0].url,"add")
-            .then(function(result){
-                expect(result.success).toBe(true);
-                expect(g6).toEqual(result.graphic);
-                expect(JSON.stringify(g6.toJson()) === JSON.stringify(result.graphic.toJson())).toBeTruthy();
-                expect(result.operation).toEqual("add");
-                done();
-            },function(error){
-                console.log("Validate feature error: " + error);
-            });
-    });
-
-    // This UPDATE should be converted in an ADD
-    async.it("validate feature that exists in db - UPDATE", function(done){
-        var id = getObjectIds([g6]).toString();
-        expect(id).toEqual("-3");
-        g_featureLayers[0]._validateFeature(g6,g_featureLayers[0].url,"update")
-            .then(function(result){
-                expect(result.success).toBe(true);
-                expect(g6).toEqual(result.graphic);
-
-                // we swap the operation type when updating an edit that hasn't
-                // been submitted to the server yet.
-                expect(result.operation).toBe("add");
-                expect(JSON.stringify(g6.toJson()) === JSON.stringify(result.graphic.toJson())).toBeTruthy();
-                expect(result.operation).toEqual("add");
-                done();
-            },function(error){
-                console.log("Validate feature error: " + error);
-            });
-    });
-
-    // Checking for errors and error handling
-    async.it("delete a non-existing feature directly from db", function(done){
-
-        var fakeGraphic = new g_modules.Graphic({"geometry":{"x":-10910,"y":513700,"spatialReference":{"wkid":102100}},"attributes":{"symbolname":"Reference Point 1234","z":null,"additionalinformation":null,"eny":null,"datetimevalid":null,"datetimeexpired":null,"distance":null,"azimuth":null,"uniquedesignation":null,"x":null,"y":null}} );
-        g_editsStore.delete(g_featureLayers[0].url,fakeGraphic,function(success,error){
-            expect(success).toBe(false);
+        async.it("detect IndexedDB support", function (done) {
+            expect(g_editsStore.isSupported()).toBeTruthy();
             done();
         });
-    });
 
-    // Checking for errors and error handling
-    async.it("delete a non-existing feature using extended feature layer", function(done){
+        async.it("initialize database", function (done) {
+            g_editsStore.init(function (success) {
+                expect(success).toEqual(true);
+                done();
+            })
+        });
 
-        var fakeGraphic = new g_modules.Graphic({"geometry":{"x":-10910,"y":513700,"spatialReference":{"wkid":102100}},"attributes":{"symbolname":"Reference Point 1234","z":null,"additionalinformation":null,"eny":null,"datetimevalid":null,"datetimeexpired":null,"distance":null,"azimuth":null,"uniquedesignation":null,"x":null,"y":null}} );
-        g_featureLayers[0]._deleteTemporaryFeature(fakeGraphic,function(results){
-            expect(results[0]).toBe(false);
-            expect(results[1]).toBe(false);
-            done();
+        async.it("Get feature layer options object", function(done){
+            g_featureLayers[0].getFeatureLayerJSONOptions(function(success,message){
+                expect(success).toBe(true);
+                expect(message.zoom).toEqual(10);
+                done();
+            })
+        });
+
+        async.it("Modify feature layer options object", function(done){
+            var object = {
+                "zoom":9
+            };
+            g_featureLayers[0].setFeatureLayerJSONOptions(object,function(success,message){
+                expect(success).toBe(true);
+
+                g_featureLayers[0].getFeatureLayerJSONOptions(function(success,message){
+                    expect(success).toBe(true);
+                    expect(message.zoom).toEqual(9);
+
+                    var graphics = JSON.parse(message.graphics);
+
+                    //Verify that we did not overwrite the options object.
+                    //If this tests passes then it's still there!
+                    expect(graphics.layerDefinition.id).toEqual(3);
+
+                    done();
+                });
+            })
+        });
+
+        async.it("Prepare feature service. Clear database",function(done)
+        {
+            g_featureLayers[0].resetDatabase(function (result) {
+                expect(result).toEqual(true);
+
+                g_featureLayers[0].pendingEditsCount(function (count) {
+                    expect(count).toBe(0);
+                    done();
+                });
+
+            });
+        });
+
+        async.it("Prepare feature service. Clear feature Layers - points - lines", function(done)
+        {
+            var count = 0;
+            function completedOne()
+            {
+                count += 1;
+                if(count==3)
+                    done();
+            }
+            clearFeatureLayer( g_featureLayers[0], function(success,response)
+            {
+                expect(success).toBeTruthy();
+                var listener = g_featureLayers[0].on('update-end', function(){ listener.remove(); completedOne();})
+                g_featureLayers[0].refresh();
+
+            });
+            clearFeatureLayer( g_featureLayers[1], function(success,response)
+            {
+                expect(success).toBeTruthy();
+                var listener = g_featureLayers[1].on('update-end', function(){ listener.remove(); completedOne();})
+                g_featureLayers[1].refresh();
+            });
+            clearFeatureLayer( g_featureLayers[2], function(success,response)
+            {
+                expect(success).toBeTruthy();
+                var listener = g_featureLayers[2].on('update-end', function(){ listener.remove(); completedOne();})
+                g_featureLayers[2].refresh();
+            });
+        });
+
+        async.it("Prepare feature service. Add some features online - points", function(done)
+        {
+            expect(g_offlineFeaturesManager.getOnlineStatus()).toBe(g_offlineFeaturesManager.ONLINE);
+
+            g1 = new g_modules.Graphic({"geometry":{"x":-105400,"y":5137000,"spatialReference":{"wkid":102100}},"attributes":{"symbolname":"Ground Zero","z":null,"additionalinformation":null,"eny":null,"datetimevalid":null,"datetimeexpired":null,"distance":null,"azimuth":null,"uniquedesignation":null,"x":null,"y":null}});
+            g2 = new g_modules.Graphic({"geometry":{"x":-105600,"y":5137000,"spatialReference":{"wkid":102100}},"attributes":{"symbolname":"Ground Zero","z":null,"additionalinformation":null,"eny":null,"datetimevalid":null,"datetimeexpired":null,"distance":null,"azimuth":null,"uniquedesignation":null,"x":null,"y":null}});
+            g3 = new g_modules.Graphic({"geometry":{"x":-105800,"y":5137000,"spatialReference":{"wkid":102100}},"attributes":{"symbolname":"Ground Zero","z":null,"additionalinformation":null,"eny":null,"datetimevalid":null,"datetimeexpired":null,"distance":null,"azimuth":null,"uniquedesignation":null,"x":null,"y":null}});
+
+            var adds = [g1,g2,g3];
+            g_featureLayers[0].applyEdits(adds,null,null,function(addResults,updateResults,deleteResults)
+                {
+                    expect(addResults.length).toBe(3);
+                    expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2,g3]));
+                    expect(g_featureLayers[0].graphics.length).toBe(3);
+                    countFeatures(g_featureLayers[0], function(success,result)
+                    {
+                        expect(success).toBeTruthy();
+                        expect(result.count).toBe(3);
+                        done();
+                    });
+                },
+                function(error)
+                {
+                    expect(true).toBeFalsy();
+                });
+        });
+
+        async.it("Prepare feature service. Add some features online - lines", function(done)
+        {
+            expect(g_offlineFeaturesManager.getOnlineStatus()).toBe(g_offlineFeaturesManager.ONLINE);
+
+            l1 = new g_modules.Graphic({"geometry":{"paths":[[[-101300,5136900],[-108400,5136900]]],"spatialReference":{"wkid":102100}},"attributes":{"ruleid":40,"zmax":null,"additionalinformation":null,"eny":null,"uniquedesignation":null,"datetimevalid":null,"datetimeexpired":null,"distance":null,"azimuth":null,"echelon":null,"x":null,"y":null,"z":null,"zmin":null}});
+            l2 = new g_modules.Graphic({"geometry":{"paths":[[[-101300,5136800],[-108400,5136800]]],"spatialReference":{"wkid":102100}},"attributes":{"ruleid":40,"zmax":null,"additionalinformation":null,"eny":null,"uniquedesignation":null,"datetimevalid":null,"datetimeexpired":null,"distance":null,"azimuth":null,"echelon":null,"x":null,"y":null,"z":null,"zmin":null}});
+            l3 = new g_modules.Graphic({"geometry":{"paths":[[[-101300,5136700],[-108400,5136700]]],"spatialReference":{"wkid":102100}},"attributes":{"ruleid":40,"zmax":null,"additionalinformation":null,"eny":null,"uniquedesignation":null,"datetimevalid":null,"datetimeexpired":null,"distance":null,"azimuth":null,"echelon":null,"x":null,"y":null,"z":null,"zmin":null}});
+
+            var adds = [l1,l2,l3];
+            g_featureLayers[1].applyEdits(adds,null,null,function(addResults,updateResults,deleteResults)
+                {
+                    expect(addResults.length).toBe(3);
+                    expect(getObjectIds(g_featureLayers[1].graphics)).toEqual(getObjectIds([l1,l2,l3]));
+                    expect(g_featureLayers[1].graphics.length).toBe(3);
+                    countFeatures(g_featureLayers[1], function(success,result)
+                    {
+                        expect(success).toBeTruthy();
+                        expect(result.count).toBe(3);
+                        done();
+                    });
+                },
+                function(error)
+                {
+                    expect(true).toBeFalsy();
+                });
         });
     });
 
-    // This private function deletes a temporary graphic and it's associated phantom graphic
-    async.it("delete an existing feature using extended feature layer", function(done){
-
-        g_featureLayers[0]._deleteTemporaryFeature(g5,function(results){
-            expect(results[0]).toBe(true);
-            expect(results[1]).toBe(true);
+    describe("Go offline", function()
+    {
+        async.it("go Offline", function(done)
+        {
+            expect(g_offlineFeaturesManager.getOnlineStatus()).toBe(g_offlineFeaturesManager.ONLINE);
+            g_offlineFeaturesManager.goOffline();
+            expect(g_offlineFeaturesManager.getOnlineStatus()).toBe(g_offlineFeaturesManager.OFFLINE);
             done();
         });
-    });
 
-    async.it("check db size", function(done){
-       g_featureLayers[0].getUsage(function(usage,error){
-           expect(usage.sizeBytes).toBe(7083);
-           expect(usage.editCount).toBe(8);
-           expect(error).toBe(null);
-           done();
-       })
+        async.it("Convert feature array into JSON", function(done){
+
+            var adds = [g1,g2,g3];
+            g_offlineFeaturesManager.serializeFeatureGraphicsArray(adds,function(JSONString){
+                expect(typeof JSONString).toBe("string");
+                var object = JSON.parse(JSONString);
+                expect(typeof object).toBe("object");
+                expect(object[0].geometry.x).toEqual(-105400);
+                expect(object[1].geometry.x).toEqual(-105600);
+                expect(object[2].geometry.x).toEqual(-105800);
+                done();
+            });
+
+        });
+
+        async.it("update existing features - points", function(done)
+        {
+            expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2,g3]));
+            expect(g_featureLayers[0].graphics.length).toBe(3);
+            expect(g_offlineFeaturesManager.getOnlineStatus()).toBe(g_offlineFeaturesManager.OFFLINE);
+
+            g1.geometry.y += 300;
+            g2.geometry.y += 100;
+            g3.geometry.y -= 200;
+            var updates = [g1,g2,g3];
+            g_featureLayers[0].applyEdits(null,updates,null,function(addResults,updateResults,deleteResults)
+                {   console.log("LINE 298: " + JSON.stringify(updateResults))
+                    expect(updateResults.length).toBe(3);
+                    expect(updateResults[0].success).toBeTruthy();
+                    expect(updateResults[1].success).toBeTruthy();
+                    expect(updateResults[2].success).toBeTruthy();
+                    expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2,g3]));
+                    expect(g_featureLayers[0].graphics.length).toBe(3);
+                    g_editsStore.pendingEditsCount(function(result){
+                        expect(result).toBe(3);
+                        done();
+                    });
+                },
+                function(error)
+                {
+                    expect(true).toBeFalsy();
+                    done();
+                });
+        });
+
+        async.it("update existing features - lines", function(done)
+        {
+            expect(getObjectIds(g_featureLayers[1].graphics)).toEqual(getObjectIds([l1,l2,l3]));
+            expect(g_featureLayers[1].graphics.length).toBe(3);
+            expect(g_offlineFeaturesManager.getOnlineStatus()).toBe(g_offlineFeaturesManager.OFFLINE);
+
+
+            l1.geometry.y += 300; // jabadia: change
+            l2.geometry.y += 100;
+            l3.geometry.y -= 200;
+
+            var updates = [l1,l2,l3];
+            g_featureLayers[1].applyEdits(null,updates,null,function(addResults,updateResults,deleteResults)
+                {
+                    expect(updateResults.length).toBe(3);
+                    expect(updateResults[0].success).toBeTruthy();
+                    expect(updateResults[1].success).toBeTruthy();
+                    expect(updateResults[2].success).toBeTruthy();
+                    expect(getObjectIds(g_featureLayers[1].graphics)).toEqual(getObjectIds([l1,l2,l3]));
+                    expect(g_featureLayers[1].graphics.length).toBe(3);
+                    g_editsStore.pendingEditsCount(function(result){
+                        expect(result).toBe(6);
+                        done();
+                    });
+                },
+                function(error)
+                {
+                    expect(true).toBeFalsy();
+                    done();
+                });
+        });
+
+        async.it("delete existing features - points", function(done)
+        {
+            expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2,g3]));
+            expect(g_featureLayers[0].graphics.length).toBe(3);
+
+            var deletes = [g3]; console.log("Graphic " + JSON.stringify(g3.toJson()));
+            g_featureLayers[0].applyEdits(null,null,deletes,function(addResults,updateResults,deleteResults)
+                {
+                    expect(deleteResults.length).toBe(1);
+                    expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2]));
+                    expect(g_featureLayers[0].graphics.length).toBe(2);
+                    g_editsStore.pendingEditsCount(function(result){
+
+                        // Expected count will stil be 6! This record is the database gets overwritten
+                        // with the latest edit request. Last edit wins.
+                        expect(result).toBe(6);
+                        done();
+                    });
+                },
+                function(error)
+                {
+                    expect(true).toBeFalsy();
+                    done();
+                });
+        });
+
+        async.it("add new features offline - points", function(done)
+        {
+            expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2]));
+            expect(g_featureLayers[0].graphics.length).toBe(2);
+            expect(g_offlineFeaturesManager.getOnlineStatus()).toBe(g_offlineFeaturesManager.OFFLINE);
+
+            g4 = new g_modules.Graphic({"geometry":{"x":-109100,"y":5137000,"spatialReference":{"wkid":102100}},"attributes":{"symbolname":"Reference Point DLRP","z":null,"additionalinformation":null,"eny":null,"datetimevalid":null,"datetimeexpired":null,"distance":null,"azimuth":null,"uniquedesignation":null,"x":null,"y":null}} );
+            g5 = new g_modules.Graphic({"geometry":{"x":-109500,"y":5137000,"spatialReference":{"wkid":102100}},"attributes":{"symbolname":"Reference Point DLRP","z":null,"additionalinformation":null,"eny":null,"datetimevalid":null,"datetimeexpired":null,"distance":null,"azimuth":null,"uniquedesignation":null,"x":null,"y":null}} );
+            g6 = new g_modules.Graphic({"geometry":{"x":-109900,"y":5137000,"spatialReference":{"wkid":102100}},"attributes":{"symbolname":"Reference Point DLRP","z":null,"additionalinformation":null,"eny":null,"datetimevalid":null,"datetimeexpired":null,"distance":null,"azimuth":null,"uniquedesignation":null,"x":null,"y":null}} );
+
+            var adds = [g4,g5,g6];
+            g_featureLayers[0].applyEdits(adds,null,null,function(addResults,updateResults,deleteResults)
+                {
+                    expect(addResults.length).toBe(3);
+
+                    g_editsStore.pendingEditsCount(function(result){
+
+                        // Should be 9 since we added 3 three edits and we had 6 edits in the previous test
+                        expect(result).toBe(9);
+                        done();
+                    });
+
+                    expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2,g4,g5,g6]));
+                    expect(g_featureLayers[0].graphics.length).toBe(5);
+                    g4.attributes.objectid = addResults[0].objectId;
+                    g5.attributes.objectid = addResults[1].objectId;
+                    g6.attributes.objectid = addResults[2].objectId;
+                    expect(g4.attributes.objectid).toBeLessThan(0);
+                    expect(g5.attributes.objectid).toBeLessThan(g4.attributes.objectid);
+                    expect(g6.attributes.objectid).toBeLessThan(g5.attributes.objectid);
+                },
+                function(error)
+                {
+                    expect(true).toBeFalsy();
+                });
+        });
+
+        async.it("Update new feature offline - point", function(done){
+
+            // Let's make a change to g6 attributes
+            g6.attributes.additionalinformation = "TEST123";
+            var updates = [g6];
+            g_featureLayers[0].applyEdits(null,updates,null,function(addResults,updateResults,deleteResults)
+                {
+                    expect(updateResults.length).toBe(1);
+
+                    g_editsStore.pendingEditsCount(function(result){
+
+                        // Should be the exact same as previous test
+                        // An update to a new feature should be a single entry in the database.
+                        // We simply update the existing entry with the new information.
+                        expect(result).toBe(9);
+                        done();
+                    });
+                },
+                function(error)
+                {
+                    expect(true).toBeFalsy();
+                });
+        });
+
+        async.it("validate non-existent feature - ADD", function(done){
+
+            var testGraphic = new g_modules.Graphic({"geometry":{"x":-109100,"y":5137000,"spatialReference":{"wkid":102100}},"attributes":{"symbolname":"Reference Point DLRP","z":null,"additionalinformation":null,"eny":null,"datetimevalid":null,"datetimeexpired":null,"distance":null,"azimuth":null,"uniquedesignation":null,"x":null,"y":null}} );
+
+            g_featureLayers[0]._validateFeature(testGraphic,g_featureLayers[0].url,"add")
+                .then(function(result){
+                    expect(result.success).toBe(true);
+                    expect(testGraphic).toEqual(result.graphic);
+                    expect(result.operation).toEqual("add");
+                    done();
+                },function(error){
+                    console.log("Validate feature error: " + error);
+                });
+        });
+
+        async.it("validate feature that exists in db - ADD", function(done){
+            var id = getObjectIds([g6]).toString();
+            expect(id).toEqual("-3");
+            g_featureLayers[0]._validateFeature(g6,g_featureLayers[0].url,"add")
+                .then(function(result){
+                    expect(result.success).toBe(true);
+                    expect(g6).toEqual(result.graphic);
+                    expect(JSON.stringify(g6.toJson()) === JSON.stringify(result.graphic.toJson())).toBeTruthy();
+                    expect(result.operation).toEqual("add");
+                    done();
+                },function(error){
+                    console.log("Validate feature error: " + error);
+                });
+        });
+
+        // This UPDATE should be converted in an ADD
+        async.it("validate feature that exists in db - UPDATE", function(done){
+            var id = getObjectIds([g6]).toString();
+            expect(id).toEqual("-3");
+            g_featureLayers[0]._validateFeature(g6,g_featureLayers[0].url,"update")
+                .then(function(result){
+                    expect(result.success).toBe(true);
+                    expect(g6).toEqual(result.graphic);
+
+                    // we swap the operation type when updating an edit that hasn't
+                    // been submitted to the server yet.
+                    expect(result.operation).toBe("add");
+                    expect(JSON.stringify(g6.toJson()) === JSON.stringify(result.graphic.toJson())).toBeTruthy();
+                    expect(result.operation).toEqual("add");
+                    done();
+                },function(error){
+                    console.log("Validate feature error: " + error);
+                });
+        });
+
+        // Checking for errors and error handling
+        async.it("delete a non-existing feature directly from db", function(done){
+
+            var fakeGraphic = new g_modules.Graphic({"geometry":{"x":-10910,"y":513700,"spatialReference":{"wkid":102100}},"attributes":{"symbolname":"Reference Point 1234","z":null,"additionalinformation":null,"eny":null,"datetimevalid":null,"datetimeexpired":null,"distance":null,"azimuth":null,"uniquedesignation":null,"x":null,"y":null}} );
+            g_editsStore.delete(g_featureLayers[0].url,fakeGraphic,function(success,error){
+                expect(success).toBe(false);
+                done();
+            });
+        });
+
+        // Checking for errors and error handling
+        async.it("delete a non-existing feature using extended feature layer", function(done){
+
+            var fakeGraphic = new g_modules.Graphic({"geometry":{"x":-10910,"y":513700,"spatialReference":{"wkid":102100}},"attributes":{"symbolname":"Reference Point 1234","z":null,"additionalinformation":null,"eny":null,"datetimevalid":null,"datetimeexpired":null,"distance":null,"azimuth":null,"uniquedesignation":null,"x":null,"y":null}} );
+            g_featureLayers[0]._deleteTemporaryFeature(fakeGraphic,function(results){
+                expect(results[0]).toBe(false);
+                expect(results[1]).toBe(false);
+                done();
+            });
+        });
+
+        // This private function deletes a temporary graphic and it's associated phantom graphic
+        async.it("delete an existing feature using extended feature layer", function(done){
+
+            g_featureLayers[0]._deleteTemporaryFeature(g5,function(results){
+                expect(results[0]).toBe(true);
+                expect(results[1]).toBe(true);
+                done();
+            });
+        });
+
+        async.it("check db size", function(done){
+            g_featureLayers[0].getUsage(function(usage,error){
+                expect(usage.sizeBytes).toBe(7083);
+                expect(usage.editCount).toBe(8);
+                expect(error).toBe(null);
+                done();
+            })
+        });
     });
 
     // TO-DO!!

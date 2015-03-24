@@ -86,19 +86,11 @@
 				{
 					g_featureLayers.forEach(function(layer)
 					{
-						var graphicsArray = [];
-                        var length = graphicsArray.length;
-
-                        // Let's serialize the graphics array
-                        for(var a = 0; a < length; a++){
-                            var graphic = evt.target.graphics.graphics[a].toJson();
-                            graphicsArray.push(graphic);
-                        }
 
                         var options = {};
                         // Uncomment the line below to test if extend() throws an error!
                         // options.graphics = evt.target.graphics.graphics;
-                        options.graphics = graphicsArray;
+                        options.graphics = JSON.stringify(layer.toJson());
                         options.zoom = g_map.getZoom();
 
                         g_offlineFeaturesManager.extend(layer,function(result){
