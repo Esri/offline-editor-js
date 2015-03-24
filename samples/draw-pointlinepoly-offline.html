@@ -339,10 +339,10 @@
 
                 for (var key in responses) {
                     if (responses.hasOwnProperty(key)) {
-                        var result = responses[key];
-                        addResults.push( result.addResults.map(function(e){ return "<l1>" + JSON.stringify(e) + "</li>"}));
-                        updateResults.push( result.updateResults.map(function(e){ return "<l1>" + JSON.stringify(e) + "</li>";}));
-                        deleteResults.push( result.deleteResults.map(function(e){ return "<l1>" + JSON.stringify(e) + "</li>";}));
+                        var result = responses[key]; console.log("KEY KEY KEY " + JSON.stringify(result))
+                        if(result.addResults.length > 0) addResults.push( result.addResults.map(function(e){ return "<l1>" + JSON.stringify(e) + "</li>"}));
+                        if(result.updateResults.length > 0) updateResults.push( result.updateResults.map(function(e){ return "<l1>" + JSON.stringify(e) + "</li>";}));
+                        if(result.deleteResults.length > 0) deleteResults.push( result.deleteResults.map(function(e){ return "<l1>" + JSON.stringify(e) + "</li>";}));
                     }
                 }
 
