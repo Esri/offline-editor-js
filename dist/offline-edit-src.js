@@ -1563,7 +1563,7 @@ O.esri.Edit.EditStore = function () {
     var dbName = this.dbName;
     var objectStoreName = this.objectStoreName;
 
-    var dbIndex = "featureId"; // @private
+    var _dbIndex = "featureId"; // @private
 
     // ENUMs
 
@@ -2481,7 +2481,7 @@ O.esri.Edit.EditStore = function () {
             }
 
             var objectStore = db.createObjectStore(objectStoreName, {keyPath: "id"});
-            objectStore.createIndex(dbIndex, dbIndex, {unique: false});
+            objectStore.createIndex(_dbIndex, _dbIndex, {unique: false});
         }.bind(this);
 
         request.onsuccess = function (event) {
