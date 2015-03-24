@@ -75,6 +75,8 @@
     <!--</script>-->
     <script src="../vendor/offline/offline.min.js"></script>
     <script>
+        // This options sets up an image that the offline status detection library
+        // will use to ping to see if app is online or offline.
         Offline.options = {
             checks: {
                 image: {
@@ -95,11 +97,14 @@
             }
         }
     </script>
-    <!-- Required when using the offline-editor-js library with Safari -->
+    <!--
+        Required when using the offline-editor-js library with Safari.
+    -->
     <script src="../vendor/IndexedDBShim/dist/IndexedDBShim.js"></script>
 
     <!--
-        This is a locally hosted optimized build of the ArcGIS JS API
+        This is a locally hosted optimized build of the ArcGIS JS API.
+        The optimizer creates a single JavaScript file that you can host yourself.
         To create your own optimized build go to: http://http://jso.arcgis.com/
     -->
     <script src="../samples/jsolib/dojo.js" data-dojo-config="async: true"></script>
@@ -131,7 +136,7 @@
     </div>
 </div>
 
-<!-- Stub for modal popup -->
+<!-- Stub for modal editing popup -->
 <div id="modal-popup"></div>
 
 <script>
@@ -184,16 +189,6 @@
 
                 mediaQueries();
                 initModalPopup();
-
-//                var editsStore = new O.esri.Edit.EditStore();
-//                editsStore.init(function(success){
-//                    if(success){
-//
-//                    }
-//                    else{
-//                        alert("Unable to initialize database.");
-//                    }
-//                });
 
                 /**
                  * There have been a few bugs in the offline detection library (offline.min.js)
