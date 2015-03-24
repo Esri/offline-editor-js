@@ -246,15 +246,20 @@
                         console.log("Tile Layer initialized for offline. App state is: " + Offline.state);
                     },_isOnline);
 
+                    // We don't need a proxy. All ArcGIS Online Service are CORS enabled.
                     tileLayer.offline.proxyPath = null;
 
+                    // We are using Esri bootstrap-map-js to create a responsive mapping app
                     map = BootstrapMap.create("mapDiv",{
                         center: [-104.99,39.75], // long, lat
                         zoom: 17,
                         sliderStyle: "small"
                     });
 
+                    // Add our offline enabled tile layer to the map
                     map.addLayer(tileLayer);
+
+                    // Initialize our feature layer like we normally would
                     busStopFeatureLayer = new FeatureLayer("http://services1.arcgis.com/M8KJPUwAXP8jhtnM/arcgis/rest/services/Denver_Bus_Stops/FeatureServer/0", {
                         mode: FeatureLayer.MODE_SNAPSHOT,
                         outFields: ["GlobalID","BSID","ROUTES","STOPNAME"]
@@ -270,7 +275,7 @@
                         on(btnGetTiles,"click",downloadTiles);
                         on(btnOnlineOffline, 'click', goOnlineOffline);
 
-                        initOfflineFeaturesMgr(function(success){
+                        initOfflineFeaturesMgr(evt,function(success){
                             if(success){
                                 updateOfflineUsage();
                                 updateStatus();
@@ -286,22 +291,22 @@
                         // These are then stored in localStorage.
                         // If you want you can store multiple feature layers.
                         // Just be aware of the localStorage limitations.
-                        busStopFeatureLayer.convertGraphicLayerToJSON(features,evt,function(features,layerDef){
-
-                            updateLocalStorage();
-
-                            if(typeof(Storage) !== "undefined") {
-                                localStorage.offlineLayerDef = layerDef;
-                                localStorage.offlineFeature = features;
-                                if(typeof localStorage.offlineDefaultSymbol === "undefined"){
-                                    var featureLayerDefaultSymbol = busStopFeatureLayer.renderer.getSymbol(busStopFeatureLayer.graphics[0]);
-                                    localStorage.offlineDefaultSymbol = JSON.stringify(featureLayerDefaultSymbol);
-                                }
-                                console.log("Done pushing layerDef and features to localStorage.")
-                            } else {
-                                alert("The offline library is not supported on this browser.")
-                            }
-                        })
+//                        busStopFeatureLayer.convertGraphicLayerToJSON(features,evt,function(features,layerDef){
+//
+//                            updateLocalStorage();
+//
+//                            if(typeof(Storage) !== "undefined") {
+//                                localStorage.offlineLayerDef = layerDef;
+//                                localStorage.offlineFeature = features;
+//                                if(typeof localStorage.offlineDefaultSymbol === "undefined"){
+//                                    var featureLayerDefaultSymbol = busStopFeatureLayer.renderer.getSymbol(busStopFeatureLayer.graphics[0]);
+//                                    localStorage.offlineDefaultSymbol = JSON.stringify(featureLayerDefaultSymbol);
+//                                }
+//                                console.log("Done pushing layerDef and features to localStorage.")
+//                            } else {
+//                                alert("The offline library is not supported on this browser.")
+//                            }
+//                        })
                     });
 
                     map.on("zoom-end",function(evt){
@@ -335,7 +340,7 @@
                             var featuresArray = JSON.parse(localStorage.offlineFeature);
                             var geometryType = "esriGeometryPoint";
 
-                            initOfflineFeaturesMgr(function(success){
+                            initOfflineFeaturesMgr(null,function(success){
                                 console.log("Offline Feature Manager initialized.");
                             });
 
@@ -347,8 +352,8 @@
                                     outFields: ["GlobalID","BSID","ROUTES","STOPNAME"]
                                 });
 
-                                var temp = JSON.parse( localStorage.offlineDefaultSymbol);
-                                var symbol = new SimpleMarkerSymbol(temp);
+//                                var temp = JSON.parse( localStorage.offlineDefaultSymbol);
+                                var symbol = new SimpleMarkerSymbol(defaultSymbol);
 
                                 // Set the graphic symbols to red diamond to make it easy to click on them
                                 // on a mobile device.
@@ -391,7 +396,7 @@
                  * **********************************************
                  */
 
-                function initOfflineFeaturesMgr(callback){
+                function initOfflineFeaturesMgr(event,callback){
                     offlineFeaturesManager = new O.esri.Edit.OfflineFeaturesManager();
 
                     // IMPORTANT!!!
@@ -404,6 +409,18 @@
                     offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_SENT, updateStatus);
                     offlineFeaturesManager.on(offlineFeaturesManager.events.ALL_EDITS_SENT, allEditsSent);
                     offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_SENT_ERROR, editsError);
+
+                    var featureLayerJSON = null;
+
+                    if(event != null){
+
+                        // This object contains everything we need to restore the map and feature layer after an offline restart
+                        //
+                        // There are two caveats:
+                        // First, you cannot use the object key 'id'. That's a reserved key for internal offline library use.
+                        // Second, complex objects need to be serialized or you'll get a database cloning error.
+                        var featureLayerJSON = getFeatureLayerJSON();
+                    }
 
                     offlineFeaturesManager.extend(busStopFeatureLayer,function(result, error){
                         if(result){
@@ -426,7 +443,8 @@
                             callback(false);
                             alert("Unable to initialize the database. " + error);
                         }
-                    });
+                    },/* This is the options property */featureLayerJSON);
+
                 }
 
                 // Keep latest extent and zoom level available in case of an offline browser restart
@@ -473,11 +491,13 @@
                         popup.graphic.attributes.STOPNAME = stopNames.value;
 
                         busStopFeatureLayer.applyEdits(null,[popup.graphic],null,function(result){
-                                    updateFeatureLayerJSON(
-                                            busStopFeatureLayer.graphics,
-                                            popup.graphic.attributes.GlobalID,
-                                            stopRoutes.value,
-                                            stopNames.value);
+                                    upFeatureLayerJSON();
+
+//                                    updateFeatureLayerJSON(
+//                                            busStopFeatureLayer.graphics,
+//                                            popup.graphic.attributes.GlobalID,
+//                                            stopRoutes.value,
+//                                            stopNames.value);
                                     console.log("Successfully saved changes to: " + popup.graphic.attributes.STOPNAME);
                                     hideModalPopup();
                                 },
@@ -513,6 +533,21 @@
 
                 function hideModalPopup(){
                     popup.hide();
+                }
+
+                function getFeatureLayerJSON(){
+                    return {
+                        "featureLayerCollection": JSON.stringify(busStopFeatureLayer.toJson()),
+                        "zoomLevel": map.getZoom(),
+                        "centerPt" : (map.extent.getCenter()).toJson()
+                    }
+                }
+
+                function upFeatureLayerJSON(){
+                    var fl = getFeatureLayerJSON();
+                    busStopFeatureLayer.setFeatureLayerJSONOptions(fl,function(result,error){
+                        console.log("Result: " + result + ", error: " + error);
+                    })
                 }
 
                 //Temporary test - this should be added to offlineFeaturesManager
@@ -738,14 +773,6 @@
                     busStopFeatureLayer.pendingEditsCount(function(count){
                         pendingEdits.innerHTML = count;
                     });
-
-//TODO!!
-
-//                    if(busStopFeatureLayer != null && typeof busStopFeatureLayer.getPhantomLayerGraphics !== "undefined") {
-//                        var graphics = busStopFeatureLayer.getPhantomLayerGraphics(function(result){
-//                            localStorage.offlinePhantomGraphics = result;
-//                        });
-//                    }
                 }
 
                 function allEditsSent(){
@@ -753,7 +780,6 @@
                     busStopFeatureLayer.pendingEditsCount(function(count){
                         pendingEdits.innerHTML = count;
                     });
-
                 }
 
                 function editsError(){
