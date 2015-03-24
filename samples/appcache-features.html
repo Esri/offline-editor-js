@@ -177,7 +177,7 @@
                 var btnOnlineOffline = document.getElementById("btn-online-offline");
 
                 // Important settings for determining which tile layers gets stored for offline use.
-                var minZoomAdjust = -1, maxZoomAdjust = 1, resetZoom = 18;
+                var minZoomAdjust = -1, maxZoomAdjust = 1;
                 var EXTENT_BUFFER = 0; //buffers the map extent in meters
 
                 // Misc.
@@ -191,6 +191,9 @@
                 initModalPopup();
 
                 /**
+                 * NOTE: This is the entry point into the application. The very first thing
+                 * we need to do is check if the application is online or offline.
+                 *
                  * There have been a few bugs in the offline detection library (offline.min.js)
                  * This is a utility check to 100% validate if the application is online or
                  * offline prior to launching any map functionality.
@@ -238,7 +241,6 @@
 
                     //Make sure map shows up after a browser refresh
                     Offline.check();
-                    Offline.state === 'up' ? resetZoom = 18 : resetZoom = 17;
 
                     tileLayer = new O.esri.Tiles.OfflineTileEnablerLayer("http://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer",function(evt){
                         console.log("Tile Layer initialized for offline. App state is: " + Offline.state);
