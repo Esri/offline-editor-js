@@ -483,10 +483,41 @@ describe("Offline Editing", function()
             });
     });
 
+    // Checking for errors and error handling
+    async.it("delete a non-existing feature directly from db", function(done){
+
+        var fakeGraphic = new g_modules.Graphic({"geometry":{"x":-10910,"y":513700,"spatialReference":{"wkid":102100}},"attributes":{"symbolname":"Reference Point 1234","z":null,"additionalinformation":null,"eny":null,"datetimevalid":null,"datetimeexpired":null,"distance":null,"azimuth":null,"uniquedesignation":null,"x":null,"y":null}} );
+        g_editsStore.delete(g_featureLayers[0].url,fakeGraphic,function(success,error){
+            expect(success).toBe(false);
+            done();
+        });
+    });
+
+    // Checking for errors and error handling
+    async.it("delete a non-existing feature using extended feature layer", function(done){
+
+        var fakeGraphic = new g_modules.Graphic({"geometry":{"x":-10910,"y":513700,"spatialReference":{"wkid":102100}},"attributes":{"symbolname":"Reference Point 1234","z":null,"additionalinformation":null,"eny":null,"datetimevalid":null,"datetimeexpired":null,"distance":null,"azimuth":null,"uniquedesignation":null,"x":null,"y":null}} );
+        g_featureLayers[0]._deleteTemporaryFeature(fakeGraphic,function(results){
+            expect(results[0]).toBe(false);
+            expect(results[1]).toBe(false);
+            done();
+        });
+    });
+
+    // This private function deletes a temporary graphic and it's associated phantom graphic
+    async.it("delete an existing feature using extended feature layer", function(done){
+
+        g_featureLayers[0]._deleteTemporaryFeature(g5,function(results){
+            expect(results[0]).toBe(true);
+            expect(results[1]).toBe(true);
+            done();
+        });
+    });
+
     async.it("check db size", function(done){
        g_featureLayers[0].getUsage(function(usage,error){
-           expect(usage.sizeBytes).toBe(7982);
-           expect(usage.editCount).toBe(9);
+           expect(usage.sizeBytes).toBe(7083);
+           expect(usage.editCount).toBe(8);
            expect(error).toBe(null);
            done();
        })
@@ -503,16 +534,16 @@ describe("Offline Editing", function()
             g_editsStore.getPhantomGraphicsArray(function(results,errors){
 
                 // Should be the same size as the number of edits!!
-                expect(results.length).toBe(9);
+                expect(results.length).toBe(8);
                 expect(results[0].id).toBe("phantom-layer|@|-1");
-                expect(results[1].id).toBe("phantom-layer|@|-2");
-                expect(results[2].id).toBe("phantom-layer|@|-3");
+                //expect(results[1].id).toBe("phantom-layer|@|-2");
+                expect(results[1].id).toBe("phantom-layer|@|-3");
+                expect((results[2].id).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
                 expect((results[3].id).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
                 expect((results[4].id).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
                 expect((results[5].id).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
                 expect((results[6].id).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
-                expect((results[7].id).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
-                expect((results[8].id).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
+                //expect((results[8].id).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
                 expect(errors).toBe("end");
                 done();
             })
@@ -523,16 +554,16 @@ describe("Offline Editing", function()
             g_featureLayers[0].getPhantomGraphicsArray(function(result,array){
                 expect(result).toBe(true);
                 expect(typeof array).toBe("object");
-                expect(array.length).toBe(9);
+                expect(array.length).toBe(8);
                 expect(array[0].id).toBe("phantom-layer|@|-1");
-                expect(array[1].id).toBe("phantom-layer|@|-2");
-                expect(array[2].id).toBe("phantom-layer|@|-3");
+                //expect(results[1].id).toBe("phantom-layer|@|-2");
+                expect(array[1].id).toBe("phantom-layer|@|-3");
+                expect((array[2].id).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
                 expect((array[3].id).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
                 expect((array[4].id).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
                 expect((array[5].id).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
                 expect((array[6].id).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
-                expect((array[7].id).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
-                expect((array[8].id).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
+                //expect((results[8].id).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
                 done();
             });
         });
@@ -550,17 +581,17 @@ describe("Offline Editing", function()
            g_editsStore._getPhantomGraphicsArraySimple(function(results,errors){
 
                // Should be the previous size + 1 additional phantom graphic.
-               expect(results.length).toBe(10);
+               expect(results.length).toBe(9);
                expect(results[0]).toBe("phantom-layer|@|-1");
-               expect(results[1]).toBe("phantom-layer|@|-2");
-               expect(results[2]).toBe("phantom-layer|@|-3");
+               //expect(results[1]).toBe("phantom-layer|@|-2");
+               expect(results[1]).toBe("phantom-layer|@|-3");
+               expect((results[2]).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
                expect((results[3]).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
                expect((results[4]).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
                expect((results[5]).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
                expect((results[6]).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
                expect((results[7]).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
-               expect((results[8]).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
-               expect(results[9]).toBe("phantom-layer|@|test001");
+               expect(results[8]).toBe("phantom-layer|@|test001");
                expect(errors).toBe("end");
                done();
            })
@@ -587,19 +618,19 @@ describe("Offline Editing", function()
             g_editsStore._getPhantomGraphicsArraySimple(function(results,errors){
 
                 // We added two phantom graphics to previous result
-                expect(results.length).toBe(12);
+                expect(results.length).toBe(11);
                 expect(results[0]).toBe("phantom-layer|@|-1");
-                expect(results[1]).toBe("phantom-layer|@|-2");
-                expect(results[2]).toBe("phantom-layer|@|-3");
+                //expect(results[1]).toBe("phantom-layer|@|-2");
+                expect(results[1]).toBe("phantom-layer|@|-3");
+                expect((results[2]).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
                 expect((results[3]).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
                 expect((results[4]).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
                 expect((results[5]).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
                 expect((results[6]).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
                 expect((results[7]).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
-                expect((results[8]).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
-                expect(results[9]).toBe("phantom-layer|@|test001");
-                expect(results[10]).toBe("phantom-layer|@|test002");
-                expect(results[11]).toBe("phantom-layer|@|test003");
+                expect(results[8]).toBe("phantom-layer|@|test001");
+                expect(results[9]).toBe("phantom-layer|@|test002");
+                expect(results[10]).toBe("phantom-layer|@|test003");
                 expect(errors).toBe("end");
                 done();
             })
@@ -612,23 +643,31 @@ describe("Offline Editing", function()
                g_editsStore._getPhantomGraphicsArraySimple(function(results,errors){
 
                    // We remove one graphic from the previous result of 12
-                   expect(results.length).toBe(11);
+                   expect(results.length).toBe(10);
                    expect(results[0]).toBe("phantom-layer|@|-1");
-                   expect(results[1]).toBe("phantom-layer|@|-2");
-                   expect(results[2]).toBe("phantom-layer|@|-3");
+                   //expect(results[1]).toBe("phantom-layer|@|-2");
+                   expect(results[1]).toBe("phantom-layer|@|-3");
+                   expect((results[2]).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
                    expect((results[3]).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
                    expect((results[4]).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
                    expect((results[5]).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
                    expect((results[6]).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
                    expect((results[7]).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
-                   expect((results[8]).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
-                   expect(results[9]).toBe("phantom-layer|@|test002");
-                   expect(results[10]).toBe("phantom-layer|@|test003");
+                   expect(results[8]).toBe("phantom-layer|@|test002");
+                   expect(results[9]).toBe("phantom-layer|@|test003");
                    expect(errors).toBe("end");
                    done();
                })
            })
         });
+
+        //async.it("delete temporary feature", function(done){
+        //    g_featureLayers[0]._deleteTemporaryFeature(g6,function(results){
+        //        expect(results[0]).toBe(true);
+        //        expect(results[1]).toBe(true);
+        //        done();
+        //    });
+        //});
 
         async.it("Delete all PhantomLayerGraphics", function(done){
 
@@ -726,7 +765,7 @@ describe("Offline Editing", function()
         async.it("Retrieve edits array from the layer", function(done){
             g_featureLayers[0].getAllEditsArray(function(success,array){
                 expect(success).toBe(true); console.log("ARRAY " + JSON.stringify(array))
-                expect(array.length).toBe(9);
+                expect(array.length).toBe(8);
                 done();
             });
         });
@@ -750,7 +789,7 @@ describe("Offline Editing", function()
 
                 //console.log("RESPONSES " + JSON.stringify(responses) + ", " + JSON.stringify(results))
 
-                expect(Object.keys(results.features.responses).length).toBe(9);
+                expect(Object.keys(results.features.responses).length).toBe(8);
                 for (var key in results.features.responses) {
 
                     var response = results.features.responses[key];
@@ -787,14 +826,14 @@ describe("Offline Editing", function()
     describe("After online", function(){
         async.it("After online - verify feature layer graphic counts",function(done){
             // all of them are positive
-            expect(getObjectIds(g_featureLayers[0].graphics).filter(function(id){ return id<0; })).toEqual([]);
+            expect(getObjectIds(g_featureLayers[0].graphics).filter(function(id){ return id<0; })).toEqual([-2]);
             expect(getObjectIds(g_featureLayers[1].graphics).filter(function(id){ return id<0; })).toEqual([]);
             expect(g_featureLayers[0].graphics.length).toBe(5);
             expect(g_featureLayers[1].graphics.length).toBe(3);
             countFeatures(g_featureLayers[0], function(success,result)
             {
                 expect(success).toBeTruthy();
-                expect(result.count).toBe(5);
+                expect(result.count).toBe(4);
                 countFeatures(g_featureLayers[1], function(success,result)
                 {
                     expect(success).toBeTruthy();
