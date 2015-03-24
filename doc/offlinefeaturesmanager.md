@@ -12,7 +12,7 @@ Constructor | Description
 
 ###Properties
 Property | Value | Description
---- | ---
+--- | --- | ---
 `DB_NAME` | "features_store" | **New @ v2.5** Sets the database name. You can instantiate multiple databases within the same application by creating seperate instances of OfflineFeaturesManager.
 `DB_OBJECTSTORE_NAME` | "features" | **New @ v2.5** Represents an object store that allows access to a set of data in the database.
 `proxyPath` | null | Default is null. If you are using a Feature Service that is not CORS-enabled then you will need to set this path.
@@ -120,7 +120,6 @@ Property | Value | Description
 --- | --- | ---
 `dbName` | "features_store" | **New @ v2.5.** Defines the database name. You can have multiple databases within the same application.
 `objectStoreName` | "features" | **New @ v2.5.** Represents an object store that allows access to a set of data in the IndexedDB database, looked up via primary key. 
-`dbIndex` | "featureId" | **New @ v2.5.** Allows access to a subset of data in the IndexedDB database via an index to retrieve the record(s) rather than the primary key. This is sometimes faster than using IDBObjectStore.
 
 ###Public Methods
 Methods | Returns | Description
