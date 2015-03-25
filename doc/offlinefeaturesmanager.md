@@ -15,8 +15,9 @@ Property | Value | Description
 --- | --- | ---
 `DB_NAME` | "features_store" | **New @ v2.5** Sets the database name. You can instantiate multiple databases within the same application by creating seperate instances of OfflineFeaturesManager.
 `DB_OBJECTSTORE_NAME` | "features" | **New @ v2.5** Represents an object store that allows access to a set of data in the database.
-`proxyPath` | null | Default is null. If you are using a Feature Service that is not CORS-enabled then you will need to set this path.
-`attachmentsStore` | null | Default is null. If you are using attachments, this property gives you access to the associated database.
+`DB_UID` | "objectid" | **New @ v2.5 IMPORTANT!** This tells the database what id to use as a unique identifier. This depends on how your feature service was created. ArcGIS Online services may use something different such as `GlobalID`.
+`proxyPath` | null | Default is `null`. If you are using a Feature Service that is not CORS-enabled then you will need to set this path.
+`attachmentsStore` | null | Default is `null`. If you are using attachments, this property gives you access to the associated database.
 
 ###ENUMs
 The manager can be in one of these three states (see `getOnlineStatus()` method):
