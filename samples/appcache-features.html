@@ -42,6 +42,8 @@
     <link rel="stylesheet" href="http://esri.github.io/bootstrap-map-js/src/css/bootstrapmap.css">
 
     <script>
+        // DO NOT DELETE!
+        // Listen for application cache update events
         window.addEventListener('load', function(evt) {
 
             window.applicationCache.addEventListener('updateready', function(evt) {
@@ -58,6 +60,15 @@
             }, false);
 
         }, false);
+
+        // If you need to catch AppCache errors as early as possible to troubleshoot errors.
+//        window.applicationCache.addEventListener("error",function(err){
+//            console.log("ApplicationCache listener: " + err.toString());
+//            if (confirm('There was a problem setting this app up for offline. Reload?')) {
+//                window.location.reload();
+//                console.log("App cache reloaded");
+//            }
+//        },false)
     </script>
 
     <style>
@@ -84,16 +95,6 @@
         .container { padding: 20px; width: 100%;}
     </style>
 
-    <!--<script>-->
-        <!--// If you need to catch AppCache errors as early as possible to troubleshoot errors.-->
-        <!--window.applicationCache.addEventListener("error",function(err){-->
-            <!--console.log("ApplicationCache listener: " + err.toString());-->
-            <!--if (confirm('There was a problem setting this app up for offline. Reload?')) {-->
-                <!--window.location.reload();-->
-                <!--console.log("App cache reloaded");-->
-            <!--}-->
-        <!--},false)-->
-    <!--</script>-->
     <script src="../vendor/offline/offline.min.js"></script>
     <script>
         // This options sets up an image that the offline status detection library
