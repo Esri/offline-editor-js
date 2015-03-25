@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!--<html manifest="appcache-features.appcache">-->
+<html manifest="appcache-features.appcache">
 <html>
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -20,7 +20,7 @@
 
     Here is the node list for the optimized file used in this sample app: https://github.com/Esri/offline-editor-js/issues/284
 
-    Use the Grunt task in the /samples diretory to help generate the manifest file. There is manual
+    Use the Grunt task in the /samples directory to help generate the manifest file. There is manual
     work involved in determining which files need to go into the manifest. The included manifest
     file should work with this sample to give you an idea of what goes into the manifest.
 
@@ -37,9 +37,28 @@
     <!-- Bootstrap core CSS -->
     <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
     <link rel="stylesheet" href="../samples/widgets/modal/css/modal-popup.css">
-    <link rel="stylesheet" href="http://js.arcgis.com/3.12/dijit/themes/claro/claro.css">
-    <link rel="stylesheet" href="http://js.arcgis.com/3.12/esri/css/esri.css">
+    <link rel="stylesheet" href="http://js.arcgis.com/3.11/dijit/themes/claro/claro.css">
+    <link rel="stylesheet" href="http://js.arcgis.com/3.11/esri/css/esri.css">
     <link rel="stylesheet" href="http://esri.github.io/bootstrap-map-js/src/css/bootstrapmap.css">
+
+    <script>
+        window.addEventListener('load', function(evt) {
+
+            window.applicationCache.addEventListener('updateready', function(evt) {
+                if (window.applicationCache.status == window.applicationCache.UPDATEREADY) {
+                    // Browser downloaded a new app cache.
+                    if (confirm('A new version of this cache is available.')) {
+                        window.location.reload();
+                        console.log("App cache reloaded");
+                    }
+                } else {
+                    // Manifest didn't changed. Nothing new to server.
+                    console.log("App cache no change");
+                }
+            }, false);
+
+        }, false);
+    </script>
 
     <style>
         #mapDiv {
@@ -143,7 +162,6 @@
 
 <script>
     require(["esri/map","esri/layers/FeatureLayer",
-         "utils/appCacheManager",
         "esri/renderers/SimpleRenderer","esri/symbols/SimpleMarkerSymbol",
         "esri/Color",
         "esri/tasks/query",
@@ -154,11 +172,9 @@
         "../dist/offline-tiles-advanced-src.js",
         "../dist/offline-edit-src.js",
         "dojo/domReady!"],
-            function(Map,FeatureLayer,AppCacheManager,
+            function(Map,FeatureLayer,
                 SimpleRenderer,SimpleMarkerSymbol,Color,Query,
                 on,Graphic,Extent,SpatialReference,ModalPopup,BootstrapMap) {
-
-                initAppCacheManager();
 
                 var map = null;
                 var _isOnline = true;
@@ -335,6 +351,8 @@
                                         // Set the graphic symbols to red diamond to make it easy to click on them
                                         // on a mobile device.
                                         busStopFeatureLayer.setRenderer(new SimpleRenderer(symbol));
+
+                                        // If/when the update-end event has been thrown then let's finish initializing
                                         var mapListen = map.on("update-end",function(evt){
                                             console.log("Feature has been added back to the map while offline.");
                                             on(btnGetTiles,"click",downloadTiles);
@@ -762,37 +780,6 @@
                         var graphics = JSON.parse(phantomLocalGraphics);
                         busStopFeatureLayer.setPhantomLayerGraphics(graphics);
                     }
-                }
-
-                /**
-                 * ************************************
-                 * APPCACHE MANAGEMENT
-                 * ************************************
-                 */
-
-                /**
-                 * Listen for app cache events.
-                 * You don't have to listen to all these events. It's mainly for demonstration
-                 * and troubleshooting purposes that this is included.
-                 */
-                function initAppCacheManager(){
-                    appCacheManager = new AppCacheManager(true,true);
-                    appCacheManager.on(appCacheManager.CACHE_EVENT,cacheEventHandler);
-                    appCacheManager.on(appCacheManager.CACHE_ERROR,cacheErrorHandler);
-                    appCacheManager.on(appCacheManager.CACHE_LOADED,cacheLoadedHandler);
-                }
-
-                function cacheLoadedHandler(evt){
-                    if(evt == appCacheManager.CACHE_LOADED) console.log("Application cache successfully loaded!")
-                }
-
-                function cacheEventHandler(evt){
-                    if(evt.hasOwnProperty("total")) console.log("CACHE EVENT loaded #:" + evt.loaded + ", out of " + evt.total);
-                }
-
-                function cacheErrorHandler(evt){
-                    console.log("CACHE ERROR: " + JSON.stringify(evt));
-                    //alert("There was a problem loading the cache. ");
                 }
             });
 </script>
