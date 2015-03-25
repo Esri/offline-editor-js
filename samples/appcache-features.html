@@ -18,6 +18,8 @@
     using the Web Optimizer: http://jso.arcgis.com/. You can reference the CDN or host it on your
     own web server.
 
+    Here is the node list for the optimized file used in this sample app: https://github.com/Esri/offline-editor-js/issues/284
+
     Use the Grunt task in the /samples diretory to help generate the manifest file. There is manual
     work involved in determining which files need to go into the manifest. The included manifest
     file should work with this sample to give you an idea of what goes into the manifest.
@@ -284,39 +286,16 @@
 
                         setFeatureLayerClickHandler();
                         setModalPopupClickListeners();
-                        
-                        var features = evt.target.graphics;
-
-                        // Convert existing feature graphics into JSON.
-                        // These are then stored in localStorage.
-                        // If you want you can store multiple feature layers.
-                        // Just be aware of the localStorage limitations.
-//                        busStopFeatureLayer.convertGraphicLayerToJSON(features,evt,function(features,layerDef){
-//
-//                            updateLocalStorage();
-//
-//                            if(typeof(Storage) !== "undefined") {
-//                                localStorage.offlineLayerDef = layerDef;
-//                                localStorage.offlineFeature = features;
-//                                if(typeof localStorage.offlineDefaultSymbol === "undefined"){
-//                                    var featureLayerDefaultSymbol = busStopFeatureLayer.renderer.getSymbol(busStopFeatureLayer.graphics[0]);
-//                                    localStorage.offlineDefaultSymbol = JSON.stringify(featureLayerDefaultSymbol);
-//                                }
-//                                console.log("Done pushing layerDef and features to localStorage.")
-//                            } else {
-//                                alert("The offline library is not supported on this browser.")
-//                            }
-//                        })
                     });
 
                     map.on("zoom-end",function(evt){
                         _currentExtent = evt.extent;
-                        updateLocalStorage();
+                        updateFeatureLayerJSON();
                     });
 
                     map.on("pan-end",function(evt){
                        _currentExtent = evt.extent;
-                        updateLocalStorage();
+                        updateFeatureLayerJSON();
                     });
 
                     map.on("load",function(evt){
@@ -336,54 +315,88 @@
 
                             // Set the map to the
 
-                            var featureLayer = JSON.parse(localStorage.offlineLayerDef);
-                            var featuresArray = JSON.parse(localStorage.offlineFeature);
-                            var geometryType = "esriGeometryPoint";
+//                            var featureLayer = JSON.parse(localStorage.offlineLayerDef);
+//                            var featuresArray = JSON.parse(localStorage.offlineFeature);
+//                            var geometryType = "esriGeometryPoint";
 
                             initOfflineFeaturesMgr(null,function(success){
                                 console.log("Offline Feature Manager initialized.");
-                            });
 
-                            busStopFeatureLayer.getFeatureDefinition(featureLayer,featuresArray,geometryType,function(featureDef){
+                                busStopFeatureLayer.getFeatureLayerJSONOptions(function(success,optionsObj){
+                                    if(success){
+                                        // Use the feature layer returns from getFeatureDefinition() to reconstitute the layer
+                                        busStopFeatureLayer = new FeatureLayer(optionsObj.featureLayerCollection,{
+                                            mode: FeatureLayer.MODE_SNAPSHOT,
+                                            outFields: ["GlobalID","BSID","ROUTES","STOPNAME"]
+                                        });
 
-                                // Use the feature layer returns from getFeatureDefinition() to reconstitute the layer
-                                busStopFeatureLayer = new FeatureLayer(featureDef,{
-                                    mode: FeatureLayer.MODE_SNAPSHOT,
-                                    outFields: ["GlobalID","BSID","ROUTES","STOPNAME"]
-                                });
+                                        var symbol = new SimpleMarkerSymbol(defaultSymbol);
 
-//                                var temp = JSON.parse( localStorage.offlineDefaultSymbol);
-                                var symbol = new SimpleMarkerSymbol(defaultSymbol);
+                                        // Set the graphic symbols to red diamond to make it easy to click on them
+                                        // on a mobile device.
+                                        busStopFeatureLayer.setRenderer(new SimpleRenderer(symbol));
+                                        var mapListen = map.on("update-end",function(evt){
+                                            console.log("Feature has been added back to the map while offline.");
+                                            on(btnGetTiles,"click",downloadTiles);
+                                            on(btnOnlineOffline, 'click', goOnlineOffline);
 
-                                // Set the graphic symbols to red diamond to make it easy to click on them
-                                // on a mobile device.
-                                busStopFeatureLayer.setRenderer(new SimpleRenderer(symbol));
-                                var mapListen = map.on("update-end",function(evt){
-                                    console.log("Feature has been added back to the map while offline.");
-                                    on(btnGetTiles,"click",downloadTiles);
-                                    on(btnOnlineOffline, 'click', goOnlineOffline);
+                                            setFeatureLayerClickHandler();
+                                            setModalPopupClickListeners();
+                                            updatePhantomGraphicsLayer();
 
-                                    setFeatureLayerClickHandler();
-                                    setModalPopupClickListeners();
-                                    updatePhantomGraphicsLayer();
+                                            map.setExtent(optionsObj.extent);
+                                            map.setZoom(optionsObj.zoom);
 
-                                    // Restore our map to its last extent before the browser restarted!
-                                    var e = JSON.parse(localStorage.offlineExtent);
-                                    var extent = new Extent({
-                                        "xmin": e.xmin,
-                                        "ymin": e.ymin,
-                                        "xmax": e.xmax,
-                                        "xmin": e.xmin,
-                                        "spatialReference":{"wkid": e.spatialReference}
-                                    })
-                                    var zoom = parseInt(localStorage.offlineZoom);
-                                    map.setExtent(extent);
-                                    map.setZoom(zoom);
+                                            mapListen.remove();
+                                        });
 
-                                    mapListen.remove();
+                                        map.addLayer(busStopFeatureLayer);
+                                    }
+                                    else{
+                                        alert("Sorry there was a problem retrieving feature layer options object. " + optionsObj);
+                                    }
                                 })
-                                map.addLayer(busStopFeatureLayer);
                             });
+
+//                            busStopFeatureLayer.getFeatureDefinition(featureLayer,featuresArray,geometryType,function(featureDef){
+//
+//                                // Use the feature layer returns from getFeatureDefinition() to reconstitute the layer
+//                                busStopFeatureLayer = new FeatureLayer(featureDef,{
+//                                    mode: FeatureLayer.MODE_SNAPSHOT,
+//                                    outFields: ["GlobalID","BSID","ROUTES","STOPNAME"]
+//                                });
+//
+//                                var symbol = new SimpleMarkerSymbol(defaultSymbol);
+//
+//                                // Set the graphic symbols to red diamond to make it easy to click on them
+//                                // on a mobile device.
+//                                busStopFeatureLayer.setRenderer(new SimpleRenderer(symbol));
+//                                var mapListen = map.on("update-end",function(evt){
+//                                    console.log("Feature has been added back to the map while offline.");
+//                                    on(btnGetTiles,"click",downloadTiles);
+//                                    on(btnOnlineOffline, 'click', goOnlineOffline);
+//
+//                                    setFeatureLayerClickHandler();
+//                                    setModalPopupClickListeners();
+//                                    updatePhantomGraphicsLayer();
+//
+//                                    // Restore our map to its last extent before the browser restarted!
+//                                    var e = JSON.parse(localStorage.offlineExtent);
+//                                    var extent = new Extent({
+//                                        "xmin": e.xmin,
+//                                        "ymin": e.ymin,
+//                                        "xmax": e.xmax,
+//                                        "xmin": e.xmin,
+//                                        "spatialReference":{"wkid": e.spatialReference}
+//                                    })
+//                                    var zoom = parseInt(localStorage.offlineZoom);
+//                                    map.setExtent(extent);
+//                                    map.setZoom(zoom);
+//
+//                                    mapListen.remove();
+//                                })
+//                                map.addLayer(busStopFeatureLayer);
+//                            });
                         }
                     });
 
@@ -398,6 +411,10 @@
 
                 function initOfflineFeaturesMgr(event,callback){
                     offlineFeaturesManager = new O.esri.Edit.OfflineFeaturesManager();
+
+                    // IMPORTANT!!!
+                    // This tells the database which graphic.attribute property to use as a unique identifier
+                    offlineFeaturesManager.DB_UID = "FID";
 
                     // IMPORTANT!!!
                     // A proxy page may be required to upload attachments.
@@ -447,21 +464,6 @@
 
                 }
 
-                // Keep latest extent and zoom level available in case of an offline browser restart
-                function updateLocalStorage(){
-
-                    var zoom = map.getZoom();
-                    var extent = JSON.stringify(map.extent);
-
-                    if(typeof(Storage) !== "undefined") {
-                        localStorage.offlineZoom = zoom;
-                        localStorage.offlineExtent = extent;
-                        console.log("Done updating zoom and extent to localStorage.")
-                    } else {
-                        alert("The offline library is not supported on this browser.")
-                    }
-                }
-
                 /**
                  * Display modal popup when someone clicks on a feature
                  */
@@ -491,13 +493,7 @@
                         popup.graphic.attributes.STOPNAME = stopNames.value;
 
                         busStopFeatureLayer.applyEdits(null,[popup.graphic],null,function(result){
-                                    upFeatureLayerJSON();
-
-//                                    updateFeatureLayerJSON(
-//                                            busStopFeatureLayer.graphics,
-//                                            popup.graphic.attributes.GlobalID,
-//                                            stopRoutes.value,
-//                                            stopNames.value);
+                                    updateFeatureLayerJSON();
                                     console.log("Successfully saved changes to: " + popup.graphic.attributes.STOPNAME);
                                     hideModalPopup();
                                 },
@@ -512,11 +508,7 @@
                         //forceInternalOfflineCheck();
 
                         busStopFeatureLayer.applyEdits(null,null,[popup.graphic],function(result){
-                                    updateFeatureLayerJSON(
-                                            busStopFeatureLayer.graphics,
-                                            popup.graphic.attributes.GlobalID,
-                                            stopRoutes.value,
-                                            stopNames.value);
+                                    updateFeatureLayerJSON();
                                     console.log("Successfully deleted: " + popup.graphic.attributes.STOPNAME);
                                     hideModalPopup();
                                 },
@@ -543,39 +535,11 @@
                     }
                 }
 
-                function upFeatureLayerJSON(){
+                function updateFeatureLayerJSON(){
                     var fl = getFeatureLayerJSON();
                     busStopFeatureLayer.setFeatureLayerJSONOptions(fl,function(result,error){
-                        console.log("Result: " + result + ", error: " + error);
+                        console.log("updateFeatureLayerJSON - Result: " + result + ", error: " + error);
                     })
-                }
-
-                //Temporary test - this should be added to offlineFeaturesManager
-                //Provide a callback of the stringified JSON.
-                //Upon restart allows feature layer to show latest edits.
-                //Still need to wire this up to phantom symbols somehow.
-                //Maybe serialize Phantom graphic layer as well and reconstitute it on restart?
-                function updateFeatureLayerJSON(features,id,routes,stopnames){
-                    var length = features.length;
-
-                    var f = JSON.parse(localStorage.offlineFeature);
-                    var arrLength = f.length;
-
-                    for(var a = 0; a < arrLength; a++){
-                        if(f[a].attributes.GlobalID == id){
-                            f[a].attributes.ROUTES = routes;
-                            f[a].attributes.STOPNAME = stopnames;
-                            var fJson = JSON.stringify(f);
-                            if(typeof(Storage) !== "undefined") {
-                                localStorage.offlineFeature = fJson;
-                                console.log("Done pushing layerDef and features to localStorage.");
-                            } else {
-                                alert("convertFeatureLayerToJSON: Unable to update Local Storage.");
-                            }
-                            break;
-
-                        }
-                    }
                 }
 
                 /**
@@ -782,8 +746,8 @@
                     });
                 }
 
-                function editsError(){
-                    alert("There was a problem. Not all edits were synced with the server.");
+                function editsError(evt){
+                    alert("There was a problem. Not all edits were synced with the server. " + JSON.stringify(evt));
                 }
 
                 function updateStatus(){
