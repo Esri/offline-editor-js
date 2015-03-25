@@ -621,7 +621,7 @@ describe("Offline Editing", function()
         });
 
         async.it("Set PhantomLayerGraphic", function(done){
-            var graphic = new g_modules.Graphic({"geometry":{"x":-109900,"y":5137000,"spatialReference":{"wkid":102100}},"attributes":{"objectId":"test001","symbolname":"Reference Point DLRP","z":null,"additionalinformation":null,"eny":null,"datetimevalid":null,"datetimeexpired":null,"distance":null,"azimuth":null,"uniquedesignation":null,"x":null,"y":null}} );
+            var graphic = new g_modules.Graphic({"geometry":{"x":-109900,"y":5137000,"spatialReference":{"wkid":102100}},"attributes":{"objectid":"test001","symbolname":"Reference Point DLRP","z":null,"additionalinformation":null,"eny":null,"datetimevalid":null,"datetimeexpired":null,"distance":null,"azimuth":null,"uniquedesignation":null,"x":null,"y":null}} );
             g_editsStore.pushPhantomGraphic(graphic,function(result,error){
                 expect(result).toBe(true);
                 expect(error).toBe(null);
@@ -650,13 +650,13 @@ describe("Offline Editing", function()
         });
 
         async.it("Add two more PhantomLayer graphics to database", function(done){
-            var graphic = new g_modules.Graphic({"geometry":{"x":-109901,"y":5137000,"spatialReference":{"wkid":102100}},"attributes":{"objectId":"test002","symbolname":"Reference Point DLRP","z":null,"additionalinformation":null,"eny":null,"datetimevalid":null,"datetimeexpired":null,"distance":null,"azimuth":null,"uniquedesignation":null,"x":null,"y":null}} );
+            var graphic = new g_modules.Graphic({"geometry":{"x":-109901,"y":5137000,"spatialReference":{"wkid":102100}},"attributes":{"objectid":"test002","symbolname":"Reference Point DLRP","z":null,"additionalinformation":null,"eny":null,"datetimevalid":null,"datetimeexpired":null,"distance":null,"azimuth":null,"uniquedesignation":null,"x":null,"y":null}} );
 
             g_editsStore.pushPhantomGraphic(graphic,function(result,error){
                 expect(result).toBe(true);
                 expect(error).toBe(null);
 
-                var graphic2 = new g_modules.Graphic({"geometry":{"x":-109901,"y":5137001,"spatialReference":{"wkid":102100}},"attributes":{"objectId":"test003","symbolname":"Reference Point DLRP","z":null,"additionalinformation":null,"eny":null,"datetimevalid":null,"datetimeexpired":null,"distance":null,"azimuth":null,"uniquedesignation":null,"x":null,"y":null}} );
+                var graphic2 = new g_modules.Graphic({"geometry":{"x":-109901,"y":5137001,"spatialReference":{"wkid":102100}},"attributes":{"objectid":"test003","symbolname":"Reference Point DLRP","z":null,"additionalinformation":null,"eny":null,"datetimevalid":null,"datetimeexpired":null,"distance":null,"azimuth":null,"uniquedesignation":null,"x":null,"y":null}} );
 
                 g_editsStore.pushPhantomGraphic(graphic2,function(result,error){
                     expect(result).toBe(true);
