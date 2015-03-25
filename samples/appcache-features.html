@@ -30,6 +30,9 @@
     - The /utils/appCacheManager.js library will auto detect if the manifest changed and
     ask if you want to reload the application.
 
+    HINT: When testing be sure you allow for browser caching. If you are using Chrome make sure you have NOT
+    checked Network Tab > Disable cache.
+
     -->
 
     <title>AppCache Tiles and Features</title>
@@ -376,46 +379,6 @@
                                     }
                                 })
                             });
-
-//                            busStopFeatureLayer.getFeatureDefinition(featureLayer,featuresArray,geometryType,function(featureDef){
-//
-//                                // Use the feature layer returns from getFeatureDefinition() to reconstitute the layer
-//                                busStopFeatureLayer = new FeatureLayer(featureDef,{
-//                                    mode: FeatureLayer.MODE_SNAPSHOT,
-//                                    outFields: ["GlobalID","BSID","ROUTES","STOPNAME"]
-//                                });
-//
-//                                var symbol = new SimpleMarkerSymbol(defaultSymbol);
-//
-//                                // Set the graphic symbols to red diamond to make it easy to click on them
-//                                // on a mobile device.
-//                                busStopFeatureLayer.setRenderer(new SimpleRenderer(symbol));
-//                                var mapListen = map.on("update-end",function(evt){
-//                                    console.log("Feature has been added back to the map while offline.");
-//                                    on(btnGetTiles,"click",downloadTiles);
-//                                    on(btnOnlineOffline, 'click', goOnlineOffline);
-//
-//                                    setFeatureLayerClickHandler();
-//                                    setModalPopupClickListeners();
-//                                    updatePhantomGraphicsLayer();
-//
-//                                    // Restore our map to its last extent before the browser restarted!
-//                                    var e = JSON.parse(localStorage.offlineExtent);
-//                                    var extent = new Extent({
-//                                        "xmin": e.xmin,
-//                                        "ymin": e.ymin,
-//                                        "xmax": e.xmax,
-//                                        "xmin": e.xmin,
-//                                        "spatialReference":{"wkid": e.spatialReference}
-//                                    })
-//                                    var zoom = parseInt(localStorage.offlineZoom);
-//                                    map.setExtent(extent);
-//                                    map.setZoom(zoom);
-//
-//                                    mapListen.remove();
-//                                })
-//                                map.addLayer(busStopFeatureLayer);
-//                            });
                         }
                     });
 
