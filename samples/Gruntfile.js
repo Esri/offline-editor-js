@@ -53,7 +53,7 @@ module.exports = function(grunt) {
                         "//code.jquery.com/jquery-2.1.1.min.js",
                         "",
                         "# Custom feature service",
-                        "//services.arcgis.com/IZtlGBUe4KTzLOl4/arcgis/rest/services/BPX_RTD_BusStops2/FeatureServer/0?f=json",
+                        "//services1.arcgis.com/M8KJPUwAXP8jhtnM/arcgis/rest/services/Denver_Bus_Stops/FeatureServer/0?f=json",
                         "#",
 						"# required local html",
 						"# /xyz/style.css",
