@@ -35,6 +35,7 @@ define([
                 // Database properties
                 DB_NAME: "features_store",      // Sets the database name.
                 DB_OBJECTSTORE_NAME: "features",// Represents an object store that allows access to a set of data in the IndexedDB database
+                DB_UID: "objectid",        // Set this based on the unique identifier is set up in the feature service
 
                 // manager emits event when...
                 events: {
@@ -447,23 +448,44 @@ define([
                     };
 
                     /**
-                     * Serialize the feature layer graphics
-                     * @param features
+                     * Sets the optional feature layer storage object
+                     * @param jsonObject
                      * @param callback
                      */
-                    layer.convertFeatureGraphicsToJSON = function (features, callback) {
-                        var length = features.length;
-                        var jsonArray = [];
-                        for (var i = 0; i < length; i++) {
-                            var jsonGraphic = features[i].toJson();
-                            jsonArray.push(jsonGraphic);
-                            if (i == (length - 1)) {
-                                var featureJSON = JSON.stringify(jsonArray);
-                                callback(featureJSON);
-                                break;
-                            }
-                        }
+                    layer.setFeatureLayerJSONOptions = function(jsonObject, callback){
+                        self._editStore.pushFeatureLayerJSON(jsonObject,function(success,error){
+                            callback(success,error);
+                        });
                     };
+
+                    /**
+                     * Retrieves the optional feature layer storage object
+                     * @param callback callback(true, object) || callback(false, error)
+                     */
+                    layer.getFeatureLayerJSONOptions = function(callback){
+                        self._editStore.getFeatureLayerJSON(function(success,message){
+                            callback(success,message);
+                        })
+                    };
+
+                    ///**
+                    //* Serialize the feature layer graphics
+                    //* @param features Array of features
+                    //* @param callback
+                    //*/
+                    //layer.convertFeatureGraphicsToJSON = function (features, callback) {
+                    //    var length = features.length;
+                    //    var jsonArray = [];
+                    //    for (var i = 0; i < length; i++) {
+                    //        var jsonGraphic = features[i].toJson();
+                    //        jsonArray.push(jsonGraphic);
+                    //        if (i == (length - 1)) {
+                    //            var featureJSON = JSON.stringify(jsonArray);
+                    //            callback(featureJSON);
+                    //            break;
+                    //        }
+                    //    }
+                    //};
 
                     /**
                      * Sets the phantom layer with new features.
@@ -617,7 +639,7 @@ define([
                                     deleteEdit.geometry,
                                     self._getPhantomSymbol(deleteEdit.geometry, self._editStore.DELETE),
                                     {
-                                        objectId: objectId
+                                        "objectid": objectId
                                     });
                                 layer._phantomLayer.add(phantomDelete);
 
@@ -668,7 +690,7 @@ define([
                                     updateEdit.geometry,
                                     self._getPhantomSymbol(updateEdit.geometry, self._editStore.UPDATE),
                                     {
-                                        objectId: objectId
+                                        "objectid": objectId
                                     });
                                 layer._phantomLayer.add(phantomUpdate);
 
@@ -710,7 +732,7 @@ define([
                                     addEdit.geometry,
                                     self._getPhantomSymbol(addEdit.geometry, self._editStore.ADD),
                                     {
-                                        objectId: objectId
+                                        "objectid": objectId
                                     });
 
                                 // Add phantom graphic to the layer
@@ -940,6 +962,25 @@ define([
                     return this._onlineStatus;
                 },
 
+                /**
+                * Serialize the feature layer graphics
+                * @param features Array of features
+                * @param callback Returns a JSON string
+                */
+                serializeFeatureGraphicsArray: function (features, callback) {
+                    var length = features.length;
+                    var jsonArray = [];
+                    for (var i = 0; i < length; i++) {
+                        var jsonGraphic = features[i].toJson();
+                        jsonArray.push(jsonGraphic);
+                        if (i == (length - 1)) {
+                            var featureJSON = JSON.stringify(jsonArray);
+                            callback(featureJSON);
+                            break;
+                        }
+                    }
+                },
+
                 /* internal methods */
 
                 /**
@@ -955,6 +996,7 @@ define([
                     // Configure the database
                     editStore.dbName = this.DB_NAME;
                     editStore.objectStoreName = this.DB_OBJECTSTORE_NAME;
+                    editStore.objectId = this.DB_UID;
 
                     // Attempt to initialize the database
                     editStore.init(function (result, error) {
@@ -1234,8 +1276,7 @@ define([
 
                                 // If the layer has attachments then check to see if the attachmentsStore has been initialized
                                 if (attachmentsStore == null && layer.hasAttachments) {
-                                    console.log("ERROR: you need to run OfflineFeaturesManager.initAttachments(). Check the Attachments doc for more info.");
-                                    throw new Error("OfflineFeaturesManager: Attachments aren't initialized.");
+                                    console.log("NOTICE: you may need to run OfflineFeaturesManager.initAttachments(). Check the Attachments doc for more info. Layer id: " + layer.id + " accepts attachments");
                                 }
 
                                 // Assign the attachmentsStore to the layer as a private var so we can access it from
@@ -1560,8 +1601,11 @@ O.esri.Edit.EditStore = function () {
 
     this.dbName = "features_store";
     this.objectStoreName = "features";
+    this.objectId = "objectid"; // set this depending on how your feature service is configured;
+
     var dbName = this.dbName;
     var objectStoreName = this.objectStoreName;
+    var objectId = this.objectId;
 
     var _dbIndex = "featureId"; // @private
 
@@ -1592,7 +1636,7 @@ O.esri.Edit.EditStore = function () {
     this.pushEdit = function (operation, layerUrl, graphic, callback) {
 
         var edit = {
-            id: layerUrl + "/" + graphic.attributes.objectid,
+            id: layerUrl + "/" + graphic.attributes[objectId],
             operation: operation,
             layer: layerUrl,
             type: graphic.geometry.type,
@@ -1808,9 +1852,9 @@ O.esri.Edit.EditStore = function () {
      */
     this.pushPhantomGraphic = function (graphic, callback) {
         console.assert(this._db !== null, "indexeddb not initialized");
-
+        console.log("HAHAHAHA " + graphic.attributes[objectId] + ", " + graphic.attributes.objectId);
         var db = this._db;
-        var id = this.PHANTOM_GRAPHIC_PREFIX + this._PHANTOM_PREFIX_TOKEN + graphic.attributes.objectId;
+        var id = this.PHANTOM_GRAPHIC_PREFIX + this._PHANTOM_PREFIX_TOKEN + graphic.attributes[objectId];
 
         var object = {
             id: id,
