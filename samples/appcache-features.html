@@ -281,21 +281,21 @@
                             if(success){
                                 updateOfflineUsage();
                                 updateStatus();
+
+                                map.on("zoom-end",function(evt){
+                                    _currentExtent = evt.extent;
+                                    updateFeatureLayerJSON();
+                                });
+
+                                map.on("pan-end",function(evt){
+                                    _currentExtent = evt.extent;
+                                    updateFeatureLayerJSON();
+                                });
                             }
                         });
 
                         setFeatureLayerClickHandler();
                         setModalPopupClickListeners();
-                    });
-
-                    map.on("zoom-end",function(evt){
-                        _currentExtent = evt.extent;
-                        updateFeatureLayerJSON();
-                    });
-
-                    map.on("pan-end",function(evt){
-                       _currentExtent = evt.extent;
-                        updateFeatureLayerJSON();
                     });
 
                     map.on("load",function(evt){
