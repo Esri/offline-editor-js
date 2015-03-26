@@ -1,4 +1,4 @@
-/*! offline-editor-js - v2.5 - 2015-03-24
+/*! offline-editor-js - v2.5 - 2015-03-25
 *   Copyright (c) 2015 Environmental Systems Research Institute, Inc.
 *   Apache License*/
 define([
@@ -635,12 +635,16 @@ define([
                             if(result == true){
                                 resultsArray.deleteResults.push({success: true, error: null, objectId: objectId});
 
+                                // Use the correct key as set by self.DB_UID
+                                var tempIdObject = {};
+                                tempIdObject[self.DB_UID] = objectId;
+
                                 var phantomDelete = new Graphic(
                                     deleteEdit.geometry,
                                     self._getPhantomSymbol(deleteEdit.geometry, self._editStore.DELETE),
-                                    {
-                                        "objectid": objectId
-                                    });
+                                    tempIdObject
+                                );
+
                                 layer._phantomLayer.add(phantomDelete);
 
                                 // Add phantom graphic to the database
@@ -686,12 +690,16 @@ define([
                             if(result == true){
                                 resultsArray.updateResults.push({success: true, error: null, objectId: objectId});
 
+                                // Use the correct key as set by self.DB_UID
+                                var tempIdObject = {};
+                                tempIdObject[self.DB_UID] = objectId;
+
                                 var phantomUpdate = new Graphic(
                                     updateEdit.geometry,
                                     self._getPhantomSymbol(updateEdit.geometry, self._editStore.UPDATE),
-                                    {
-                                        "objectid": objectId
-                                    });
+                                    tempIdObject
+                                );
+
                                 layer._phantomLayer.add(phantomUpdate);
 
                                 // Add phantom graphic to the database
@@ -728,12 +736,15 @@ define([
                             if(result == true){
                                 resultsArray.addResults.push({success: true, error: null, objectId: objectId});
 
+                                // Use the correct key as set by self.DB_UID
+                                var tempIdObject = {};
+                                tempIdObject[self.DB_UID] = objectId;
+
                                 var phantomAdd = new Graphic(
                                     addEdit.geometry,
                                     self._getPhantomSymbol(addEdit.geometry, self._editStore.ADD),
-                                    {
-                                        "objectid": objectId
-                                    });
+                                    tempIdObject
+                                );
 
                                 // Add phantom graphic to the layer
                                 layer._phantomLayer.add(phantomAdd);
@@ -832,7 +843,7 @@ define([
                      */
                     layer._deleteTemporaryFeature = function(graphic,callback){
 
-                        var phantomGraphicId = self._editStore.PHANTOM_GRAPHIC_PREFIX + self._editStore._PHANTOM_PREFIX_TOKEN + graphic.attributes.objectid;
+                        var phantomGraphicId = self._editStore.PHANTOM_GRAPHIC_PREFIX + self._editStore._PHANTOM_PREFIX_TOKEN + graphic.attributes[self.DB_UID];
 
                         function _deleteGraphic(){
                             var deferred = new Deferred();
@@ -1006,11 +1017,14 @@ define([
                         // Added @ v2.5
                         //
                         // Configure database for offline restart
-                        // If options Object is not defined the do nothing.
+                        // Options object allows you to store data that you'll
+                        // use after an offline browser restart.
                         //
+                        // If options Object is not defined then do nothing.
                         //
+                        ////////////////////////////////////////////////////
 
-                        if (typeof options == "object" && result == true) {
+                        if (typeof options === "object" && result == true && (options !== undefined) && (options !== null)) {
                             editStore.pushFeatureLayerJSON(options, function (success, err) {
                                 if (success) {
                                     callback(true, null);
@@ -1326,19 +1340,15 @@ define([
                         }
 
                         // wait for all requests to finish
-                        //
+                        // responses contain {id,layer,tempId,addResults,updateResults,deleteResults}
                         var allPromises = all(promises);
                         allPromises.then(
                             function (responses) {
                                 console.log("OfflineFeaturesManager - all responses are back");
                                 this._cleanSuccessfulEditsDatabaseRecords(responses, function (success, error) {
-                                    console.log("CLEANED EDITS DATABASE");
+                                    // If successful then we delete all phantom graphics in the DB.
                                     if (success) {
-
-                                        this._editStore.resetLimitedPhantomGraphicsQueue(responses, function (success) {
-                                            console.log("CLEAR PHANTOM GRAPHICS " + JSON.stringify(responses))
-                                        });
-
+                                        console.log("_replayStoredEdits: CLEANED EDITS DATABASE");
                                         this._editStore.resetPhantomGraphicsQueue(function (success) {
 
                                             if (success == false) {
@@ -1346,19 +1356,27 @@ define([
                                                 this.emit(this.events.EDITS_SENT_ERROR, {msg: "Problem deleting phantom graphic(s)"});
                                             }
                                             else {
+                                                console.log("CLEANED PHANTOM GRAPHICS DATABASE");
                                                 this.emit(this.events.ALL_EDITS_SENT,responses);
                                             }
                                             callback && callback(true, responses);
                                         }.bind(this))
                                     }
+                                    // If not successful then we only delete the phantom graphics that are related to
+                                    // edits that were successfully synced
                                     else {
+                                        console.error("_replayStoredEdits: There was a problem and not all edits were cleaned.");
+                                        this._editStore.resetLimitedPhantomGraphicsQueue(responses, function (success) {
+                                            if(!success) console.error("_replayStoredEdits.resetLimitedPhantomGraphicsQueue: There was a problem clearing the queue " + JSON.stringify(error))
+                                        });
+
                                         this.emit(this.events.EDITS_SENT_ERROR, {msg: responses}); // There was a problem, some edits were not successfully sent!
                                         callback && callback(false, responses);
                                     }
                                 }.bind(that));
                             }.bind(that),
                             function (errors) {
-                                console.log("OfflineFeaturesManager - ERROR!!");
+                                console.log("OfflineFeaturesManager._replayStoredEdits - ERROR!!");
                                 console.log(errors);
                                 callback && callback(false, errors);
                             }.bind(that)
@@ -1442,7 +1460,8 @@ define([
                 },
 
                 /**
-                 * Deletes items from database
+                 * Deletes edits from database.
+                 * This does not handle phantom graphics!
                  * @param edit
                  * @returns {l.Deferred.promise|*|c.promise|q.promise|promise}
                  * @private
@@ -1451,15 +1470,12 @@ define([
                     var dfd = new Deferred();
                     var fakeGraphic = {};
                     fakeGraphic.attributes = {};
-                    fakeGraphic.attributes.objectid = edit.id;
+
+                    // Use the correct attributes key!
+                    fakeGraphic.attributes[this.DB_UID] = edit.id;
 
                     this._editStore.delete(edit.layer, fakeGraphic, function (success, error) {
                         if (success) {
-
-                            var id = this._editStore.PHANTOM_GRAPHIC_PREFIX + this._editStore._PHANTOM_PREFIX_TOKEN + edit.id;
-                            console.log("PHANTOM DELETE ID " + id);
-                            //this.deletePhantomGraphic()
-
                             dfd.resolve({success: true, error: null});
                         }
                         else {
@@ -1603,10 +1619,6 @@ O.esri.Edit.EditStore = function () {
     this.objectStoreName = "features";
     this.objectId = "objectid"; // set this depending on how your feature service is configured;
 
-    var dbName = this.dbName;
-    var objectStoreName = this.objectStoreName;
-    var objectId = this.objectId;
-
     var _dbIndex = "featureId"; // @private
 
     // ENUMs
@@ -1636,14 +1648,14 @@ O.esri.Edit.EditStore = function () {
     this.pushEdit = function (operation, layerUrl, graphic, callback) {
 
         var edit = {
-            id: layerUrl + "/" + graphic.attributes[objectId],
+            id: layerUrl + "/" + graphic.attributes[this.objectId],
             operation: operation,
             layer: layerUrl,
             type: graphic.geometry.type,
             graphic: graphic.toJson()
         };
 
-        var transaction = this._db.transaction([objectStoreName], "readwrite");
+        var transaction = this._db.transaction([this.objectStoreName], "readwrite");
 
         transaction.oncomplete = function (event) {
             callback(true);
@@ -1653,7 +1665,7 @@ O.esri.Edit.EditStore = function () {
             callback(false, event.target.error.message);
         };
 
-        var objectStore = transaction.objectStore(objectStoreName);
+        var objectStore = transaction.objectStore(this.objectStoreName);
         objectStore.put(edit);
     };
 
@@ -1695,7 +1707,7 @@ O.esri.Edit.EditStore = function () {
 
             if (success && typeof result !== "undefined") {
 
-                var objectStore = db.transaction([objectStoreName], "readwrite").objectStore(objectStoreName);
+                var objectStore = db.transaction([this.objectStoreName], "readwrite").objectStore(this.objectStoreName);
 
                 // Make a copy of the object
                 for (var key in dataObject) {
@@ -1717,7 +1729,7 @@ O.esri.Edit.EditStore = function () {
             }
             else {
 
-                var transaction = db.transaction([objectStoreName], "readwrite");
+                var transaction = db.transaction([this.objectStoreName], "readwrite");
 
                 transaction.oncomplete = function (event) {
                     callback(true, null);
@@ -1727,7 +1739,7 @@ O.esri.Edit.EditStore = function () {
                     callback(false, event.target.error.message);
                 };
 
-                var objectStore = transaction.objectStore(objectStoreName);
+                var objectStore = transaction.objectStore(this.objectStoreName);
 
                 // Protect against data cloning errors since we don't validate the input object
                 // Example: if you attempt to use an esri.Graphic in its native form you'll get a data clone error
@@ -1738,7 +1750,7 @@ O.esri.Edit.EditStore = function () {
                     callback(false, JSON.stringify(err));
                 }
             }
-        });
+        }.bind(this));
     };
 
     /**
@@ -1749,7 +1761,7 @@ O.esri.Edit.EditStore = function () {
 
         console.assert(this._db !== null, "indexeddb not initialized");
 
-        var objectStore = this._db.transaction([objectStoreName], "readwrite").objectStore(objectStoreName);
+        var objectStore = this._db.transaction([this.objectStoreName], "readwrite").objectStore(this.objectStoreName);
 
         //Get the entry associated with the graphic
         var objectStoreGraphicRequest = objectStore.get(this.FEATURE_LAYER_JSON_ID);
@@ -1816,31 +1828,31 @@ O.esri.Edit.EditStore = function () {
             // Step 1 - lets see if record exits. If it does not then return callback. Otherwise,
             // continue on with the deferred.
             self.editExists(id).then(function (result) {
-                    if (result && result.success) {
+                if (result && result.success) {
 
-                        var objectStore = db.transaction([objectStoreName], "readwrite").objectStore(objectStoreName);
+                    var objectStore = db.transaction([self.objectStoreName], "readwrite").objectStore(self.objectStoreName);
 
-                        // Step 2 - go ahead and delete graphic
-                        var objectStoreDeleteRequest = objectStore.delete(id);
+                    // Step 2 - go ahead and delete graphic
+                    var objectStoreDeleteRequest = objectStore.delete(id);
 
-                        // Step 3 - We know that the onsuccess will always fire unless something serious goes wrong.
-                        // So we go ahead and resolve the deferred here.
-                        objectStoreDeleteRequest.onsuccess = function () {
-                            deferred.resolve(true);
-                        };
+                    // Step 3 - We know that the onsuccess will always fire unless something serious goes wrong.
+                    // So we go ahead and resolve the deferred here.
+                    objectStoreDeleteRequest.onsuccess = function () {
+                        deferred.resolve(true);
+                    };
 
-                        objectStoreDeleteRequest.onerror = function (msg) {
-                            deferred.reject({success: false, error: msg});
-                        }
+                    objectStoreDeleteRequest.onerror = function (msg) {
+                        deferred.reject({success: false, error: msg});
                     }
-                    else {
-                        deferred.reject({success: false, message: "id does not exist"})
-                    }
-                },
-                // If there is an error in editExists()
-                function (err) {
-                    deferred.reject({success: false, message: err});
-                });
+                }
+                else {
+                    deferred.reject({success: false, message: "id does not exist"})
+                }
+            },
+            // If there is an error in editExists()
+            function (err) {
+                deferred.reject({success: false, message: err});
+            }.bind(this));
         })
     };
 
@@ -1852,16 +1864,16 @@ O.esri.Edit.EditStore = function () {
      */
     this.pushPhantomGraphic = function (graphic, callback) {
         console.assert(this._db !== null, "indexeddb not initialized");
-        console.log("HAHAHAHA " + graphic.attributes[objectId] + ", " + graphic.attributes.objectId);
+
         var db = this._db;
-        var id = this.PHANTOM_GRAPHIC_PREFIX + this._PHANTOM_PREFIX_TOKEN + graphic.attributes[objectId];
+        var id = this.PHANTOM_GRAPHIC_PREFIX + this._PHANTOM_PREFIX_TOKEN + graphic.attributes[this.objectId];
 
         var object = {
             id: id,
             graphic: graphic.toJson()
         }
 
-        var transaction = db.transaction([objectStoreName], "readwrite");
+        var transaction = db.transaction([this.objectStoreName], "readwrite");
 
         transaction.oncomplete = function (event) {
             callback(true, null);
@@ -1871,7 +1883,7 @@ O.esri.Edit.EditStore = function () {
             callback(false, event.target.error.message);
         };
 
-        var objectStore = transaction.objectStore(objectStoreName);
+        var objectStore = transaction.objectStore(this.objectStoreName);
         objectStore.put(object);
 
     };
@@ -1888,8 +1900,8 @@ O.esri.Edit.EditStore = function () {
 
             var phantomGraphicPrefix = this.PHANTOM_GRAPHIC_PREFIX;
 
-            var transaction = this._db.transaction([objectStoreName])
-                .objectStore(objectStoreName)
+            var transaction = this._db.transaction([this.objectStoreName])
+                .objectStore(this.objectStoreName)
                 .openCursor();
 
             transaction.onsuccess = function (event) {
@@ -1929,8 +1941,8 @@ O.esri.Edit.EditStore = function () {
 
             var phantomGraphicPrefix = this.PHANTOM_GRAPHIC_PREFIX;
 
-            var transaction = this._db.transaction([objectStoreName])
-                .objectStore(objectStoreName)
+            var transaction = this._db.transaction([this.objectStoreName])
+                .objectStore(this.objectStoreName)
                 .openCursor();
 
             transaction.onsuccess = function (event) {
@@ -1998,7 +2010,7 @@ O.esri.Edit.EditStore = function () {
                                 callback(false, err);
                             });
 
-                        var objectStore = db.transaction([objectStoreName], "readwrite").objectStore(objectStoreName);
+                        var objectStore = db.transaction([self.objectStoreName], "readwrite").objectStore(self.objectStoreName);
 
                         // Step 2 - go ahead and delete graphic
                         var objectStoreDeleteRequest = objectStore.delete(id);
@@ -2022,7 +2034,17 @@ O.esri.Edit.EditStore = function () {
     };
 
     /**
-     * Removes some phantom graphics from database
+     * Removes some phantom graphics from database.
+     * The responseObject contains {id,layer,tempId,addResults,updateResults,deleteResults}.
+     * IF there are no results.success then nothing will be deleted.
+     *
+     * WARNING: Can generate false positives. IndexedDB will always return success
+     * even if you attempt to delete a non-existent id.
+     *
+     * CAUTION: This should always be used in conjunction with deleting the phantom graphic's
+     * associated edit entry in the database.
+     *
+     * @param responseObject
      * @param callback boolean
      */
     this.resetLimitedPhantomGraphicsQueue = function (responseObject, callback) {
@@ -2031,8 +2053,8 @@ O.esri.Edit.EditStore = function () {
             var db = this._db;
 
             var errors = 0;
-            var tx = db.transaction([objectStoreName], "readwrite");
-            var objectStore = tx.objectStore(objectStoreName);
+            var tx = db.transaction([this.objectStoreName], "readwrite");
+            var objectStore = tx.objectStore(this.objectStoreName);
 
             objectStore.onerror = function () {
                 errors++;
@@ -2047,35 +2069,22 @@ O.esri.Edit.EditStore = function () {
                 if (responseObject.hasOwnProperty(key)) {
                     var edit = responseObject[key];
                     var id = this.PHANTOM_GRAPHIC_PREFIX + this._PHANTOM_PREFIX_TOKEN + edit.id;
-                    console.log("EDIT " + JSON.stringify(edit))
 
                     // CAUTION:
                     // TO-DO we do NOT match the edit.id with edit's objectId
 
-                    if (edit.updateResults.length > 0) {
-                        if (edit.updateResults[0].success) {
-                            objectStore.delete(id);
-                        }
-                    }
-                    if (edit.deleteResults.length > 0) {
-                        if (edit.deleteResults[0].success) {
-                            objectStore.delete(id);
-                        }
-                    }
-                    if (edit.addResults.length > 0) {
-                        if (edit.addResults[0].success) {
+                    // If we have an add, update or delete success then delete the entry, otherwise we skip it.
+                    if (edit.updateResults.length > 0 || edit.deleteResults.length > 0 || edit.addResults.length > 0) {
+                        if (edit.updateResults[0].success || edit.deleteResults[0].success || edit.addResults[0].success) {
                             objectStore.delete(id);
                         }
                     }
                 }
             }
-            callback(true);
-
         }
         else {
             callback(true);
         }
-
     };
 
 
@@ -2093,8 +2102,8 @@ O.esri.Edit.EditStore = function () {
             if (array != []) {
 
                 var errors = 0;
-                var tx = db.transaction([objectStoreName], "readwrite");
-                var objectStore = tx.objectStore(objectStoreName);
+                var tx = db.transaction([this.objectStoreName], "readwrite");
+                var objectStore = tx.objectStore(this.objectStoreName);
 
                 objectStore.onerror = function () {
                     errors++;
@@ -2112,7 +2121,7 @@ O.esri.Edit.EditStore = function () {
             else {
                 callback(true);
             }
-        });
+        }.bind(this));
     };
 
     /**
@@ -2123,7 +2132,7 @@ O.esri.Edit.EditStore = function () {
     this.getEdit = function(id,callback){
 
         console.assert(this._db !== null, "indexeddb not initialized");
-        var objectStore = this._db.transaction([objectStoreName], "readwrite").objectStore(objectStoreName);
+        var objectStore = this._db.transaction([this.objectStoreName], "readwrite").objectStore(this.objectStoreName);
 
         require(["dojo/Deferred"], function (Deferred) {
 
@@ -2164,8 +2173,8 @@ O.esri.Edit.EditStore = function () {
             var fLayerJSONId = this.FEATURE_LAYER_JSON_ID;
             var phantomGraphicPrefix = this.PHANTOM_GRAPHIC_PREFIX;
 
-            var transaction = this._db.transaction([objectStoreName])
-                .objectStore(objectStoreName)
+            var transaction = this._db.transaction([this.objectStoreName])
+                .objectStore(this.objectStoreName)
                 .openCursor();
 
             transaction.onsuccess = function (event) {
@@ -2205,8 +2214,8 @@ O.esri.Edit.EditStore = function () {
             var fLayerJSONId = this.FEATURE_LAYER_JSON_ID;
             var phantomGraphicPrefix = this.PHANTOM_GRAPHIC_PREFIX;
 
-            var transaction = this._db.transaction([objectStoreName])
-                .objectStore(objectStoreName)
+            var transaction = this._db.transaction([this.objectStoreName])
+                .objectStore(this.objectStoreName)
                 .openCursor();
 
             transaction.onsuccess = function (event) {
@@ -2244,10 +2253,10 @@ O.esri.Edit.EditStore = function () {
 
         console.assert(this._db !== null, "indexeddb not initialized");
 
-        var objectStore = this._db.transaction([objectStoreName], "readwrite").objectStore(objectStoreName);
+        var objectStore = this._db.transaction([this.objectStoreName], "readwrite").objectStore(this.objectStoreName);
 
         //Let's get the entry associated with the graphic
-        var objectStoreGraphicRequest = objectStore.get(graphic.attributes.objectid);
+        var objectStoreGraphicRequest = objectStore.get(graphic.attributes[this.objectId]);
         objectStoreGraphicRequest.onsuccess = function () {
 
             //Grab the data object returned as a result
@@ -2255,7 +2264,7 @@ O.esri.Edit.EditStore = function () {
 
             //Create a new update object
             var update = {
-                id: layer + "/" + graphic.attributes.objectid,
+                id: layer + "/" + graphic.attributes[this.objectId],
                 operation: operation,
                 layer: layer,
                 graphic: graphic.toJson()
@@ -2297,50 +2306,50 @@ O.esri.Edit.EditStore = function () {
         var deferred = null;
         var self = this;
 
-        var id = layerUrl + "/" + graphic.attributes.objectid;
+        var id = layerUrl + "/" + graphic.attributes[this.objectId];
 
         require(["dojo/Deferred"], function (Deferred) {
             deferred = new Deferred();
 
             // Step 1 - lets see if record exits. If it does then return callback.
             self.editExists(id).then(function (result) {
-                    if (result.success) {
-                        // Step 4 - Then we check to see if the record actually exists or not.
-                        deferred.then(function (result) {
+                if (result.success) {
+                    // Step 4 - Then we check to see if the record actually exists or not.
+                    deferred.then(function (result) {
 
-                                // IF the delete was successful, then the record should return 'false' because it doesn't exist.
-                                self.editExists(id).then(function (results) {
-                                        results.success == false ? callback(true) : callback(false);
-                                    },
-                                    function (err) {
-                                        callback(true); //because we want this test to throw an error. That means item deleted.
-                                    })
-                            },
-                            // There was a problem with the delete operation on the database
-                            function (err) {
-                                callback(false, err);
-                            });
+                            // IF the delete was successful, then the record should return 'false' because it doesn't exist.
+                            self.editExists(id).then(function (results) {
+                                    results.success == false ? callback(true) : callback(false);
+                                },
+                                function (err) {
+                                    callback(true); //because we want this test to throw an error. That means item deleted.
+                                })
+                        },
+                        // There was a problem with the delete operation on the database
+                        function (err) {
+                            callback(false, err);
+                        });
 
-                        var objectStore = db.transaction([objectStoreName], "readwrite").objectStore(objectStoreName);
+                    var objectStore = db.transaction([self.objectStoreName], "readwrite").objectStore(self.objectStoreName);
 
-                        // Step 2 - go ahead and delete graphic
-                        var objectStoreDeleteRequest = objectStore.delete(id);
+                    // Step 2 - go ahead and delete graphic
+                    var objectStoreDeleteRequest = objectStore.delete(id);
 
-                        // Step 3 - We know that the onsuccess will always fire unless something serious goes wrong.
-                        // So we go ahead and resolve the deferred here.
-                        objectStoreDeleteRequest.onsuccess = function () {
-                            deferred.resolve(true);
-                        };
+                    // Step 3 - We know that the onsuccess will always fire unless something serious goes wrong.
+                    // So we go ahead and resolve the deferred here.
+                    objectStoreDeleteRequest.onsuccess = function () {
+                        deferred.resolve(true);
+                    };
 
-                        objectStoreDeleteRequest.onerror = function (msg) {
-                            deferred.reject({success: false, error: msg});
-                        }
+                    objectStoreDeleteRequest.onerror = function (msg) {
+                        deferred.reject({success: false, error: msg});
                     }
-                },
-                // If there is an error in editExists()
-                function (err) {
-                    callback(false);
-                });
+                }
+            },
+            // If there is an error in editExists()
+            function (err) {
+                callback(false);
+            });
         });
     };
 
@@ -2354,8 +2363,8 @@ O.esri.Edit.EditStore = function () {
     this.resetEditsQueue = function (callback) {
         console.assert(this._db !== null, "indexeddb not initialized");
 
-        var request = this._db.transaction([objectStoreName], "readwrite")
-            .objectStore(objectStoreName)
+        var request = this._db.transaction([this.objectStoreName], "readwrite")
+            .objectStore(this.objectStoreName)
             .clear();
         request.onsuccess = function (event) {
             setTimeout(function () {
@@ -2374,8 +2383,8 @@ O.esri.Edit.EditStore = function () {
         var id = this.FEATURE_LAYER_JSON_ID;
         var phantomGraphicPrefix = this.PHANTOM_GRAPHIC_PREFIX;
 
-        var transaction = this._db.transaction([objectStoreName], "readwrite")
-        var objectStore = transaction.objectStore(objectStoreName);
+        var transaction = this._db.transaction([this.objectStoreName], "readwrite")
+        var objectStore = transaction.objectStore(this.objectStoreName);
         objectStore.openCursor().onsuccess = function (evt) {
             var cursor = evt.target.result;
 
@@ -2403,11 +2412,12 @@ O.esri.Edit.EditStore = function () {
 
         var db = this._db;
         var deferred = null;
+        var self = this;
 
         require(["dojo/Deferred"], function (Deferred) {
             deferred = new Deferred();
 
-            var objectStore = db.transaction([objectStoreName], "readwrite").objectStore(objectStoreName);
+            var objectStore = db.transaction([self.objectStoreName], "readwrite").objectStore(self.objectStoreName);
 
             //Get the entry associated with the graphic
             var objectStoreGraphicRequest = objectStore.get(id);
@@ -2444,8 +2454,8 @@ O.esri.Edit.EditStore = function () {
 
         var usage = {sizeBytes: 0, editCount: 0};
 
-        var transaction = this._db.transaction([objectStoreName])
-            .objectStore(objectStoreName)
+        var transaction = this._db.transaction([this.objectStoreName])
+            .objectStore(this.objectStoreName)
             .openCursor();
 
         console.log("dumping keys");
@@ -2507,7 +2517,7 @@ O.esri.Edit.EditStore = function () {
     this.init = function (callback) {
         console.log("init editsStore.js");
 
-        var request = indexedDB.open(dbName, 11);
+        var request = indexedDB.open(this.dbName, 11);
         callback = callback || function (success) {
             console.log("EditsStore::init() success:", success);
         }.bind(this);
@@ -2520,11 +2530,11 @@ O.esri.Edit.EditStore = function () {
         request.onupgradeneeded = function (event) {
             var db = event.target.result;
 
-            if (db.objectStoreNames.contains(objectStoreName)) {
-                db.deleteObjectStore(objectStoreName);
+            if (db.objectStoreNames.contains(this.objectStoreName)) {
+                db.deleteObjectStore(this.objectStoreName);
             }
 
-            var objectStore = db.createObjectStore(objectStoreName, {keyPath: "id"});
+            var objectStore = db.createObjectStore(this.objectStoreName, {keyPath: "id"});
             objectStore.createIndex(_dbIndex, _dbIndex, {unique: false});
         }.bind(this);
 
