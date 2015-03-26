@@ -3,7 +3,7 @@ CACHE MANIFEST
 # Time: Wed Nov 26 2014 08:47:17 GMT-0700 (MST)
 
 CACHE:
-# manifest-generator, version: 2.4
+# manifest-generator, version: 2.5
 #
 # Home Page
 appcache-features.html
@@ -37,7 +37,7 @@ http://js.arcgis.com/3.11/esri/nls/jsapi_en-us.js
 //code.jquery.com/jquery-2.1.1.min.js
 
 # Custom feature service
-//services.arcgis.com/IZtlGBUe4KTzLOl4/arcgis/rest/services/BPX_RTD_BusStops2/FeatureServer/0?f=json
+//services1.arcgis.com/M8KJPUwAXP8jhtnM/arcgis/rest/services/Denver_Bus_Stops/FeatureServer/0?f=json
 #
 # required local html
 # /xyz/style.css
