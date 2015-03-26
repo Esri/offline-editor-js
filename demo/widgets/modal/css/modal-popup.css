@@ -29,14 +29,14 @@
     opacity: 0.5;
     background-color: black;
     z-index: 99;
-    display: table;
+    overflow: visible;
 }
 .mod-popup-input {
     border-bottom: solid #ffffff 1px;
     width: 80%;
     display: table-cell;
     vertical-align: middle;
-    padding: 12px;
+    padding-left: 12px;
 }
 .mod-popup-label {
     padding: 12px;
@@ -145,6 +145,12 @@
     .mod-popup-button-cancel:active {
         font-size: small;
     }
+    .mod-popup-stop-input {
+        font-size: small;
+    }
+    .mod-popup-stop-input-disabled {
+        font-size: small;
+    }
 }
 @media (max-width: 450px) {
     .mod-popup-button {
@@ -158,5 +164,35 @@
     }
     .mod-popup-button-cancel:active {
         font-size: x-small;
+    }
+    .mod-popup-stop-input {
+        font-size: small;
+    }
+    .mod-popup-stop-input-disabled {
+        font-size: small;
+    }
+}
+@media (max-height: 500px) {
+
+    .mod-popup-button {
+        font-size: small;
+    }
+    .mod-popup-button:active{
+        font-size: small;
+    }
+    .mod-popup-button-cancel {
+        font-size: small;
+    }
+    .mod-popup-button-cancel:active {
+        font-size: small;
+    }
+    .mod-popup-stop-input {
+        font-size: small;
+    }
+    .mod-popup-stop-input-disabled {
+        font-size: small;
+    }
+    .mod-popup-modal-background {
+
     }
 }
