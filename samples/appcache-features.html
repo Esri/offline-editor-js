@@ -370,6 +370,9 @@
                     });
                 }
 
+                /**
+                 * Load the feature while offline using information stored in database
+                 */
                 function loadFeatureLayerOffline(){
                     busStopFeatureLayer.getFeatureLayerJSONOptions(function(success,optionsObj){
                         if(success){
