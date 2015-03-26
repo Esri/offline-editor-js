@@ -401,7 +401,6 @@
 
                                 setFeatureLayerClickHandler();
                                 setModalPopupClickListeners();
-                                updatePhantomGraphicsLayer();
 
                                 map.centerAt(optionsObj.centerPt);
                                 map.setZoom(optionsObj.zoom);
@@ -780,14 +779,6 @@
                     busStopFeatureLayer.pendingEditsCount(function(count){
                         pendingEdits.innerHTML = count;
                     });
-                }
-
-                function updatePhantomGraphicsLayer(){
-                    var phantomLocalGraphics = localStorage.offlinePhantomGraphics;
-                    if(phantomLocalGraphics){
-                        var graphics = JSON.parse(phantomLocalGraphics);
-                        busStopFeatureLayer.setPhantomLayerGraphics(graphics);
-                    }
                 }
             });
 </script>
