@@ -388,12 +388,10 @@
                                 mode: FeatureLayer.MODE_SNAPSHOT,
                                 outFields: ["GlobalID","BSID","ROUTES","STOPNAME"]
                             });
-
-                            var symbol = new SimpleMarkerSymbol(defaultSymbol);
-
+                            
                             // Set the graphic symbols to red diamond to make it easy to click on them
                             // on a mobile device.
-                            busStopFeatureLayer.setRenderer(new SimpleRenderer(symbol));
+                            busStopFeatureLayer.setRenderer(new SimpleRenderer(defaultSymbol));
 
                             // If/when the update-end event has been thrown then let's finish initializing
                             var mapListen = map.on("update-end",function(evt){
