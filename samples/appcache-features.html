@@ -220,7 +220,14 @@
                  * offline prior to launching any map functionality.
                  */
                 verifyOnline(function(result){ console.log("VERIFY ONLINE " + result)
-                    result == true ? _isOnline = true : _isOnline = false;
+                    if(result){
+                        _isOnline = true;
+                        setUIOnline();
+                    }
+                    else{
+                        _isOnline = false;
+                        setUIOffline();
+                    }
                     startMap();
                 });
 
@@ -255,7 +262,6 @@
                                 SimpleMarkerSymbol.STYLE_DIAMOND).setColor(
                                 new Color([255,0,0,0.5])).setSize(20);
                     }
-
                 }
 
                 function startMap(){
@@ -640,10 +646,7 @@
 
                     offlineFeaturesManager.goOnline(function(success,error){
                         if(error === undefined){
-                            btnOnlineOffline.innerHTML = "2. Go Offline";
-                            imgOfflineIndicator.className = "glyphicon glyphicon-link";
-                            imgOfflineIndicator.innerHTML = " Up";
-                            btnState.className = "btn btn-success btn-large floatRight";
+                            setUIOnline();
                             console.log("offlineFeatureManager is online.");
                         }
                         else{
@@ -662,10 +665,7 @@
                  */
                 function goOffline(){
                     console.log("Going offline...");
-                    btnOnlineOffline.innerHTML = "2. Go Online";
-                    imgOfflineIndicator.className = "glyphicon glyphicon-thumbs-down";
-                    imgOfflineIndicator.innerHTML = " Down";
-                    btnState.className = "btn btn-danger btn-large floatRight";
+                    setUIOffline();
                     offlineFeaturesManager.goOffline();
                     if(typeof tileLayer != "undefined") tileLayer.goOffline();
                 }
@@ -680,6 +680,20 @@
                     else{
                         goOnline();
                     }
+                }
+
+                function setUIOnline(){
+                    btnOnlineOffline.innerHTML = "2. Go Offline";
+                    imgOfflineIndicator.className = "glyphicon glyphicon-link";
+                    imgOfflineIndicator.innerHTML = " Up";
+                    btnState.className = "btn btn-success btn-large floatRight";
+                }
+
+                function setUIOffline(){
+                    btnOnlineOffline.innerHTML = "2. Go Online";
+                    imgOfflineIndicator.className = "glyphicon glyphicon-thumbs-down";
+                    imgOfflineIndicator.innerHTML = " Down";
+                    btnState.className = "btn btn-danger btn-large floatRight";
                 }
 
                 /**
