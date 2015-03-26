@@ -35,6 +35,10 @@ Also, if you have other AMD libraries in your project and you want to refer to o
 ```js
 		
 		var offlineFeaturesManager = new O.esri.Edit.OfflineFeaturesManager();
+		// OPTIONAL - you can change the name of the database
+		// offlineFeaturesManager.DBNAME = "FIELD_SURVEY3";
+		// OPTIONAL - you can change the name of the unique identifier used by the feature service. Default is "objectid".
+		// offlineFeaturesManager.UID = "GlobalID";
 		offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_ENQUEUED, updateStatus);
 		offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_SENT, updateStatus);
 		offlineFeaturesManager.on(offlineFeaturesManager.events.ALL_EDITS_SENT, updateStatus);		              
@@ -50,46 +54,42 @@ NOTE: You can also monitor standard ArcGIS API for JavaScript layer events using
 
 ```
 
-**Step 3** Create an array of FeatureLayers and add them to the map, and listen for the `layers-add-result` event to continue FeatureLayer and editor widgets initialization. In this example we are initializing multiple layers, but you can just as easily initialize a single layer.
+**Step 3** listen for the `layers-add-result` event to continue FeatureLayer initialization. Add the feature layer to the map just like you normally would
 
 ```js
+	
 	map.on('layers-add-result', initEditor);
 	
-	var fsUrl = "http://services2.arcgis.com/CQWCKwrSm5dkM28A/arcgis/rest/services/Military/FeatureServer/";
-		// var layersIds = [0,1,2,3,4,5,6];
-		var layersIds = [1,2,3];
-		var featureLayers = [];
+	var fsUrl = "http://services2.arcgis.com/CQWCKwrSm5dkM28A/arcgis/rest/services/Military/FeatureServer/1";
 
-		layersIds.forEach(function(layerId)
-		{
-			var layer = new FeatureLayer(fsUrl + layerId, {
-				mode: FeatureLayer.MODE_SNAPSHOT,
-				outFields: ['*']
-			});
-			featureLayers.push(layer);			
-		})
+    var layer1 = new FeatureLayer(fsUrl, {
+		mode: FeatureLayer.MODE_SNAPSHOT,
+		outFields: ['*']
+	});
 
-		map.addLayers(featureLayers);
+	map.addLayers(featureLayers);
+	
 ```
 
-**Step 4** After the `layers-add-result` event fires, iterate thru each layer and extend it using the `extend()` method. If you only have one feature layer you can simply just extent it without having to iterate:
+**Step 4** After the `layers-add-result` event fires extend it using the `extend()` method. 
 
 ```js
+		
 		function initEditor(evt)
 		{
-			try {
-				/* extend layer with offline detection functionality */
-				evt.layers.forEach(function(result)
-				{
-					var layer = result.layer;
-					offlineFeaturesManager.extend(layer);
-					layer.on('update-end', logCurrentObjectIds);
-				});
-			catch(err){
-			 	. . .
-			}		
+			// OPTIONAL - for fully offline use you can store a data object
+			// var options = {};
+            // options.graphics = JSON.stringify(layer1.toJson());
+            // options.zoom = map.getZoom();
+			offlineFeaturesManager.extend(layer1,function(success,error){
+				if(success){
+					console.log("layer1 has been extended for offline use.");
+				}
+			}/*,options */);
 		}			
+		
 ```
+
 **Step 5** Once a layer has been extended the offline library will enable it with new methods. Here are a few examples that include code snippets of how to take advantage of some of the library's methods. You can also use a combination of methods from `editsStore` and `offlineFeaturesManager`.
 
 ####offlineFeaturesManager.proxyPath
@@ -133,6 +133,7 @@ Force the library to return to an online condition. If there are pending edits, 
 Within your application you can manually check online status and then update your user interface. By using a switch/case statement you can check against three enums that indicate if the library thinks it is offline, online or in the process of reconnecting.
 
 ```js		
+			
 			switch( offlineFeaturesManager.getOnlineStatus() )
 			{
 				case offlineFeaturesManager.OFFLINE:
