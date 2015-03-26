@@ -65,6 +65,7 @@
         }, false);
 
         // If you need to catch AppCache errors as early as possible to troubleshoot errors.
+        // You should delete this for production use.
 //        window.applicationCache.addEventListener("error",function(err){
 //            console.log("ApplicationCache listener: " + err.toString());
 //            if (confirm('There was a problem setting this app up for offline. Reload?')) {
@@ -612,6 +613,7 @@
                     {
                         btnGetTiles.innerHTML = "Saving to phone 100% - Tap to Cancel";
                         updateOfflineUsage();
+                        updateFeatureLayerJSON();
 
                         if( progress.cancelRequested )
                         {
