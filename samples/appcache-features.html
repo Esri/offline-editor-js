@@ -203,7 +203,6 @@
                 var EXTENT_BUFFER = 0; //buffers the map extent in meters
 
                 // Misc.
-                var appCacheManager;
                 var loading = document.getElementById("loader-gif");
 
                 // Variables for modal popup
@@ -291,25 +290,37 @@
                     //on a mobile device.
                     busStopFeatureLayer.setRenderer(new SimpleRenderer(defaultSymbol));
 
+                    initFeatureUpdateEndListener();
+                    initMapLoadListener();
+
+                    map.addLayer(busStopFeatureLayer);
+                }
+
+                function initFeatureUpdateEndListener(){
+                    //While loading application ONLINE
                     busStopFeatureLayer.on("update-end",function(evt){
 
-                        // Set click listeners
-                        on(btnGetTiles,"click",downloadTiles);
-                        on(btnOnlineOffline, 'click', goOnlineOffline);
+                        if(offlineFeaturesManager == null || _isOnline){
 
-                        if(offlineFeaturesManager == null){
+                            // Set click listeners
+                            on(btnGetTiles,"click",downloadTiles);
+                            on(btnOnlineOffline, 'click', goOnlineOffline);
 
                             initOfflineFeaturesMgr(evt,function(success){
                                 if(success){
-                                    initMapListeners();
+                                    initPanZoomListeners();
+                                    setFeatureLayerClickHandler();
+                                    setModalPopupClickListeners();
+                                }
+                                else{
+                                    alert("There was a problem initializing the map for offline.");
                                 }
                             });
                         }
-
-                        setFeatureLayerClickHandler();
-                        setModalPopupClickListeners();
                     });
+                }
 
+                function initMapLoadListener(){
                     map.on("load",function(evt){
 
                         _currentExtent = evt.map.extent;
@@ -325,12 +336,6 @@
 
                         if(_isOnline == false){
 
-                            // Set the map to the
-
-//                            var featureLayer = JSON.parse(localStorage.offlineLayerDef);
-//                            var featuresArray = JSON.parse(localStorage.offlineFeature);
-//                            var geometryType = "esriGeometryPoint";
-
                             if(offlineFeaturesManager == null){
                                 initOfflineFeaturesMgr(null,function(success){
                                     console.log("Offline Feature Manager initialized.");
@@ -342,11 +347,15 @@
                             }
                         }
                     });
-
-                    map.addLayer(busStopFeatureLayer);
                 }
 
-                function initMapListeners(){
+                /**
+                 * **********************************************
+                 * EVENT LISTENER MANAGEMENT CODE
+                 * **********************************************
+                 */
+
+                function initPanZoomListeners(){
                     updateOfflineUsage();
                     updateStatus();
 
@@ -395,7 +404,7 @@
                             map.addLayer(busStopFeatureLayer);
                         }
                         else{
-                            alert("Sorry there was a problem retrieving feature layer options object. " + optionsObj);
+                            alert("There was a problem retrieving feature layer options object. " + optionsObj);
                         }
                     })
                 }
@@ -415,7 +424,8 @@
 
                     // IMPORTANT!!!
                     // A proxy page may be required to upload attachments.
-                    // If you are using a CORS enabled server you may be ablew to set the proxyPath to null.
+                    // If you are using a CORS enabled feature service you can ignore this.
+                    // If your feature service is not CORS-enabled then you will need to configure this.
                     // Refer to "Using the Proxy Page" for more information:  https://developers.arcgis.com/en/javascript/jshelp/ags_proxy.html
                     offlineFeaturesManager.proxyPath = null;
 
@@ -457,7 +467,7 @@
                             callback(false);
                             alert("Unable to initialize the database. " + error);
                         }
-                    },/* This is the options property */featureLayerJSON);
+                    },/* This is the optional offline configuration property */featureLayerJSON);
 
                 }
 
@@ -483,7 +493,7 @@
 
                     saveBtn.onclick = function(evt){
 
-                        // Best practice is to uncomment these for production use.
+                        //You may need to uncomment this forced offline check for production use.
                         //forceInternalOfflineCheck();
 
                         popup.graphic.attributes.ROUTES = stopRoutes.value;
