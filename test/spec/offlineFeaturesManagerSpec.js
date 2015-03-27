@@ -183,7 +183,7 @@ describe("Offline Editing", function()
         });
 
         async.it("Get feature layer options object", function(done){
-            g_featureLayers[0].getFeatureLayerJSONOptions(function(success,message){
+            g_featureLayers[0].getFeatureLayerJSONDataStore(function(success,message){
                 expect(success).toBe(true);
                 expect(message.zoom).toEqual(10);
                 done();
@@ -194,10 +194,10 @@ describe("Offline Editing", function()
             var object = {
                 "zoom":9
             };
-            g_featureLayers[0].setFeatureLayerJSONOptions(object,function(success,message){
+            g_featureLayers[0].setFeatureLayerJSONDataStore(object,function(success,message){
                 expect(success).toBe(true);
 
-                g_featureLayers[0].getFeatureLayerJSONOptions(function(success,message){
+                g_featureLayers[0].getFeatureLayerJSONDataStore(function(success,message){
                     expect(success).toBe(true);
                     expect(message.zoom).toEqual(9);
 
