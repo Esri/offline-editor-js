@@ -1,4 +1,4 @@
-/*! offline-editor-js - v2.5 - 2015-03-25
+/*! offline-editor-js - v2.5 - 2015-03-26
 *   Copyright (c) 2015 Environmental Systems Research Institute, Inc.
 *   Apache License*/
 define([
@@ -595,14 +595,14 @@ define([
                     };
 
                     /**
-                     * Returns an interable array of all edits stored in the database
+                     * Returns an iterable array of all edits stored in the database
                      * Each item in the array is an object and contains:
                      * {
                      *    id: "internal ID",
                      *    operation: "add, update or delete",
                      *    layer: "layerURL",
                      *    type: "esri Geometry Type",
-                     *    graphic: "esri.Graphic converted to JSON"
+                     *    graphic: "esri.Graphic converted to JSON then serialized"
                      * }
                      * @param callback (true, array) or (false, errorString)
                      */
@@ -662,15 +662,13 @@ define([
                                         console.log("deleted", deletedCount, "attachments of feature", objectId);
                                     });
                                 }
-
-                                deferred.resolve(result);
                             }
                             else{
                                 // If we can't push edit to database then we don't create a phantom graphic
-                                resultsArray.addResults.push({success: false, error: error, objectId: objectId});
-                                deferred.reject(error);
+                                resultsArray.deleteResults.push({success: false, error: error, objectId: objectId});
                             }
 
+                            deferred.resolve(result);
                         });
                     };
 
@@ -710,14 +708,13 @@ define([
 
                                 domAttr.set(phantomUpdate.getNode(), "stroke-dasharray", "5,2");
                                 domStyle.set(phantomUpdate.getNode(), "pointer-events", "none");
-
-                                deferred.resolve(result);
                             }
                             else{
                                 // If we can't push edit to database then we don't create a phantom graphic
-                                resultsArray.addResults.push({success: false, error: error, objectId: objectId});
-                                deferred.reject(error);
+                                resultsArray.updateResults.push({success: false, error: error, objectId: objectId});
                             }
+
+                            deferred.resolve(result);
                         });
                     };
 
@@ -757,14 +754,13 @@ define([
 
                                 domAttr.set(phantomAdd.getNode(), "stroke-dasharray", "10,4");
                                 domStyle.set(phantomAdd.getNode(), "pointer-events", "none");
-
-                                deferred.resolve(result);
                             }
                             else{
                                 // If we can't push edit to database then we don't create a phantom graphic
                                 resultsArray.addResults.push({success: false, error: error, objectId: objectId});
-                                deferred.reject(error);
                             }
+
+                            deferred.resolve(result);
                         });
                     };
 
@@ -1333,54 +1329,54 @@ define([
                                 promises[n] = that._internalApplyEdits(layer, tempArray[n].id, tempObjectIds, adds, updates, deletes);
                             }
 
+                            // wait for all requests to finish
+                            // responses contain {id,layer,tempId,addResults,updateResults,deleteResults}
+                            var allPromises = all(promises);
+                            allPromises.then(
+                                function (responses) {
+                                    console.log("OfflineFeaturesManager - all responses are back");
+                                    this._cleanSuccessfulEditsDatabaseRecords(responses, function (success, error) {
+                                        // If successful then we delete all phantom graphics in the DB.
+                                        if (success) {
+                                            console.log("_replayStoredEdits: CLEANED EDITS DATABASE");
+                                            this._editStore.resetPhantomGraphicsQueue(function (success) {
+
+                                                if (success == false) {
+                                                    console.log("There was a problem deleting phantom graphics in the database.");
+                                                    this.emit(this.events.EDITS_SENT_ERROR, {msg: "Problem deleting phantom graphic(s)"});
+                                                }
+                                                else {
+                                                    console.log("CLEANED PHANTOM GRAPHICS DATABASE");
+                                                    this.emit(this.events.ALL_EDITS_SENT,responses);
+                                                }
+                                                callback && callback(true, responses);
+                                            }.bind(this))
+                                        }
+                                        // If not successful then we only delete the phantom graphics that are related to
+                                        // edits that were successfully synced
+                                        else {
+                                            console.error("_replayStoredEdits: There was a problem and not all edits were cleaned.");
+                                            this._editStore.resetLimitedPhantomGraphicsQueue(responses, function (success) {
+                                                if(!success) console.error("_replayStoredEdits.resetLimitedPhantomGraphicsQueue: There was a problem clearing the queue " + JSON.stringify(error))
+                                            });
+
+                                            this.emit(this.events.EDITS_SENT_ERROR, {msg: responses}); // There was a problem, some edits were not successfully sent!
+                                            callback && callback(false, responses);
+                                        }
+                                    }.bind(that));
+                                }.bind(that),
+                                function (errors) {
+                                    console.log("OfflineFeaturesManager._replayStoredEdits - ERROR!!");
+                                    console.log(errors);
+                                    callback && callback(false, errors);
+                                }.bind(that)
+                            );
+
                         }
                         else{
                             // No edits were found
                             callback(true,[]);
                         }
-
-                        // wait for all requests to finish
-                        // responses contain {id,layer,tempId,addResults,updateResults,deleteResults}
-                        var allPromises = all(promises);
-                        allPromises.then(
-                            function (responses) {
-                                console.log("OfflineFeaturesManager - all responses are back");
-                                this._cleanSuccessfulEditsDatabaseRecords(responses, function (success, error) {
-                                    // If successful then we delete all phantom graphics in the DB.
-                                    if (success) {
-                                        console.log("_replayStoredEdits: CLEANED EDITS DATABASE");
-                                        this._editStore.resetPhantomGraphicsQueue(function (success) {
-
-                                            if (success == false) {
-                                                console.log("There was a problem deleting phantom graphics in the database.");
-                                                this.emit(this.events.EDITS_SENT_ERROR, {msg: "Problem deleting phantom graphic(s)"});
-                                            }
-                                            else {
-                                                console.log("CLEANED PHANTOM GRAPHICS DATABASE");
-                                                this.emit(this.events.ALL_EDITS_SENT,responses);
-                                            }
-                                            callback && callback(true, responses);
-                                        }.bind(this))
-                                    }
-                                    // If not successful then we only delete the phantom graphics that are related to
-                                    // edits that were successfully synced
-                                    else {
-                                        console.error("_replayStoredEdits: There was a problem and not all edits were cleaned.");
-                                        this._editStore.resetLimitedPhantomGraphicsQueue(responses, function (success) {
-                                            if(!success) console.error("_replayStoredEdits.resetLimitedPhantomGraphicsQueue: There was a problem clearing the queue " + JSON.stringify(error))
-                                        });
-
-                                        this.emit(this.events.EDITS_SENT_ERROR, {msg: responses}); // There was a problem, some edits were not successfully sent!
-                                        callback && callback(false, responses);
-                                    }
-                                }.bind(that));
-                            }.bind(that),
-                            function (errors) {
-                                console.log("OfflineFeaturesManager._replayStoredEdits - ERROR!!");
-                                console.log(errors);
-                                callback && callback(false, errors);
-                            }.bind(that)
-                        );
                     });
                 },
 
@@ -1655,18 +1651,24 @@ O.esri.Edit.EditStore = function () {
             graphic: graphic.toJson()
         };
 
-        var transaction = this._db.transaction([this.objectStoreName], "readwrite");
+        if(typeof graphic.attributes[this.objectId] === "undefined") {
+            console.error("editsStore.pushEdit() - failed to insert undefined objectId into database. Did you set offlineFeaturesManager.DB_UID? " + JSON.stringify(graphic.attributes));
+            callback(false,"editsStore.pushEdit() - failed to insert undefined objectId into database. Did you set offlineFeaturesManager.DB_UID? " + JSON.stringify(graphic.attributes));
+        }
+        else{
+            var transaction = this._db.transaction([this.objectStoreName], "readwrite");
 
-        transaction.oncomplete = function (event) {
-            callback(true);
-        };
+            transaction.oncomplete = function (event) {
+                callback(true);
+            };
 
-        transaction.onerror = function (event) {
-            callback(false, event.target.error.message);
-        };
+            transaction.onerror = function (event) {
+                callback(false, event.target.error.message);
+            };
 
-        var objectStore = transaction.objectStore(this.objectStoreName);
-        objectStore.put(edit);
+            var objectStore = transaction.objectStore(this.objectStoreName);
+            objectStore.put(edit);
+        }
     };
 
     /**
