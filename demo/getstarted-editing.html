@@ -728,6 +728,10 @@
                     offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_SENT, updatePendingEditStatus);
                     offlineFeaturesManager.on(offlineFeaturesManager.events.ALL_EDITS_SENT, updatePendingEditStatus);
 
+                    offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_ENQUEUED_ERROR, function(errorsArray){
+                        alert("There was an error attempting to write to the database: " + JSON.stringify(errorsArray));
+                    });
+
                     offlineFeaturesManager.extend(busStopFeatureLayer, function (success, error) {
                         if (success) {
                             console.log("offlineFeaturesManager initialized.");
@@ -1062,6 +1066,10 @@
                     offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_ENQUEUED, updatePendingEditStatus);
                     offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_SENT, updatePendingEditStatus);
                     offlineFeaturesManager.on(offlineFeaturesManager.events.ALL_EDITS_SENT, updatePendingEditStatus);
+
+                    offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_ENQUEUED_ERROR, function(errorsArray){
+                        alert("There was an error attempting to write to the database: " + JSON.stringify(errorsArray));
+                    });
 
                     offlineFeaturesManager.extend(busStopFeatureLayer, function (success, error) {
                         if (success) {
