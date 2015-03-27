@@ -54,7 +54,7 @@ NOTE: You can also monitor standard ArcGIS API for JavaScript layer events using
 
 ```
 
-**Step 3** listen for the `layers-add-result` event to continue FeatureLayer initialization. Add the feature layer to the map just like you normally would
+**Step 3** listen for the `layers-add-result` event to continue FeatureLayer initialization. Then, add the feature layer to the map just like you normally would
 
 ```js
 	
@@ -71,7 +71,7 @@ NOTE: You can also monitor standard ArcGIS API for JavaScript layer events using
 	
 ```
 
-**Step 4** After the `layers-add-result` event fires extend it using the `extend()` method. 
+**Step 4** After the `layers-add-result` event fires extend it using the `extend()` method. Optionally, if you are building a fully offline app then you will need to set the `dataStore` property in the constructor.
 
 ```js
 		
@@ -85,9 +85,38 @@ NOTE: You can also monitor standard ArcGIS API for JavaScript layer events using
 				if(success){
 					console.log("layer1 has been extended for offline use.");
 				}
-			}/*,options */);
+			}/*, dataStore */);
 		}			
 		
+```
+
+The `dataStore` property is an object that is used to store any data related to your app that will assist in restoring the app and any feature layers after a full offline browser restart. The `dataStore` object has one reserved key and that is `id`. If you overwrite the `id` key the application will fail to update the `dataStore` object correctly. Here is an example of one possible `dataStore` object:
+
+```js
+
+	var dataStore = {
+		"featureLayerJSON": featureLayer.toJson(),
+		"zoom": map.getZoom(),
+		"centerPt": (map.extent.getCenter()).toJson()
+	}
+
+```
+
+You can then retrieve this data after an offline restart by using the following pattern:
+
+```js
+
+	featureLayer.getFeatureLayerJSONDataStore(function(success, dataStore){
+		if(success){
+			myFeatureLayer = new 
+				FeatureLayer(JSON.parse(dataStore.featureLayerCollection),{
+            	mode: FeatureLayer.MODE_SNAPSHOT,
+               	outFields: ["GlobalID","BSID","ROUTES","STOPNAME"]
+           	});
+		}
+	});
+
+
 ```
 
 **Step 5** Once a layer has been extended the offline library will enable it with new methods. Here are a few examples that include code snippets of how to take advantage of some of the library's methods. You can also use a combination of methods from `editsStore` and `offlineFeaturesManager`.
