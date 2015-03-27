@@ -381,10 +381,10 @@
                  * Load the feature while offline using information stored in database
                  */
                 function loadFeatureLayerOffline(){
-                    busStopFeatureLayer.getFeatureLayerJSONOptions(function(success,optionsObj){
+                    busStopFeatureLayer.getFeatureLayerJSONDataStore(function(success,dataStore){
                         if(success){
                             // Use the feature layer returns from getFeatureDefinition() to reconstitute the layer
-                            busStopFeatureLayer = new FeatureLayer(JSON.parse(optionsObj.featureLayerCollection),{
+                            busStopFeatureLayer = new FeatureLayer(JSON.parse(dataStore.featureLayerCollection),{
                                 mode: FeatureLayer.MODE_SNAPSHOT,
                                 outFields: ["GlobalID","BSID","ROUTES","STOPNAME"]
                             });
@@ -402,8 +402,8 @@
                                 setFeatureLayerClickHandler();
                                 setModalPopupClickListeners();
 
-                                map.centerAt(optionsObj.centerPt);
-                                map.setZoom(optionsObj.zoom);
+                                map.centerAt(dataStore.centerPt);
+                                map.setZoom(dataStore.zoom);
 
                                 mapListen.remove();
                             });
@@ -411,7 +411,7 @@
                             map.addLayer(busStopFeatureLayer);
                         }
                         else{
-                            alert("There was a problem retrieving feature layer options object. " + optionsObj);
+                            alert("There was a problem retrieving feature layer options object. " + dataStore);
                         }
                     })
                 }
@@ -553,7 +553,7 @@
 
                 function updateFeatureLayerJSON(){
                     var fl = getFeatureLayerJSON();
-                    busStopFeatureLayer.setFeatureLayerJSONOptions(fl,function(result,error){
+                    busStopFeatureLayer.setFeatureLayerJSONDataStore(fl,function(result,error){
                         console.log("updateFeatureLayerJSON - Result: " + result + ", error: " + error);
                     })
                 }
