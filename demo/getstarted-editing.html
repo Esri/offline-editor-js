@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
     <link rel="stylesheet" href="//js.arcgis.com/3.13/esri/css/esri.css">
     <link rel="stylesheet" href="//esri.github.io/bootstrap-map-js/src/css/bootstrapmap.css">
-    <link rel="stylesheet" href="../widgets/modal/css/modal-popup.css">
+    <link rel="stylesheet" href="../samples/widgets/modal/css/modal-popup.css">
 
     <!-- Custom styles for this template -->
     <link href="css/style.css" rel="stylesheet">
@@ -718,6 +718,12 @@
                     //https://developers.arcgis.com/en/javascript/jshelp/ags_proxy.html
                     offlineFeaturesManager.proxyPath = null;
 
+                    // IMPORTANT!!!
+                    // This tells the database which graphic.attribute property to use as a unique identifier
+                    // You can lok this information up in your feature service directory under the "Fields" category.
+                    // Example: http://services1.arcgis.com/M8KJPUwAXP8jhtnM/arcgis/rest/services/Denver_Bus_Stops/FeatureServer/0
+                    offlineFeaturesManager.DB_UID = "FID";
+
                     offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_ENQUEUED, updatePendingEditStatus);
                     offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_SENT, updatePendingEditStatus);
                     offlineFeaturesManager.on(offlineFeaturesManager.events.ALL_EDITS_SENT, updatePendingEditStatus);
@@ -751,13 +757,9 @@
                 }
 
                 function updatePendingEditStatus() {
-                    if (editsStore.hasPendingEdits()) {
-                        var edits = editsStore.retrieveEditsQueue();
-                        pendingEdits.innerHTML = edits.length;
-                    }
-                    else {
-                        pendingEdits.innerHTML = 0;
-                    }
+                    busStopFeatureLayer.pendingEditsCount(function(count){
+                        pendingEdits.innerHTML = count;
+                    });
                 }
 
 
@@ -926,7 +928,7 @@
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
 <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
-<script src="http://js.arcgis.com/3.11/"></script>
+<script src="http://js.arcgis.com/3.13/"></script>
 
 <script>
 
@@ -950,40 +952,32 @@
                 var offlineFeaturesManager;
                 var btnOnlineOffline, btnState, pendingEdits;
                 var imgOfflineIndicator;
-                var closeBtn,saveBtn,deleteBtn,stopMainID,stopID,stopRoutes,stopNames;
+                var closeBtn, saveBtn, deleteBtn, stopMainID, stopID, stopRoutes, stopNames;
+                var busStopFeatureLayer;
 
                 initVars();
-                $(document).ready(function () {
-                    $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
-                        if (e.target.text === "Map") {
-                            showMap();
-                        }
-                    });
-                });
+                initMap();
 
-                function showMap(){
-                    if(map){
-                        map.destroy();
-                    }
+                function initMap() {
 
-                    map = BootstrapMap.create("mapDiv",{
-                        basemap: "topo", // comment out this basemap!
-                        center: [-104.99,39.75], // longitude, latitude
+                    map = BootstrapMap.create("mapDiv", {
+                        basemap: "topo",
+                        center: [-104.99, 39.75], // longitude, latitude
                         zoom: 15
                     });
 
-                    busStopFeatureLayer = new FeatureLayer("http://services.arcgis.com/IZtlGBUe4KTzLOl4/arcgis/rest/services/BPX_RTD_BusStops2/FeatureServer/0", {
+                    busStopFeatureLayer = new FeatureLayer("http://services1.arcgis.com/M8KJPUwAXP8jhtnM/arcgis/rest/services/Denver_Bus_Stops/FeatureServer/0", {
                         mode: FeatureLayer.MODE_SNAPSHOT,
-                        outFields: ["OBJECTID","BSID","ROUTES","STOPNAME"]
+                        outFields: ["OBJECTID", "BSID", "ROUTES", "STOPNAME"]
                     });
 
                     //Set the graphics to red boxes to make it easy to click on them
                     //on a mobile device.
                     busStopFeatureLayer.setRenderer(new SimpleRenderer(defaultSymbol));
-                    busStopFeatureLayer.on("update-end",function(evt){
+                    busStopFeatureLayer.on("update-end", function (evt) {
 
                         // Now we can enable the button click listener
-                        on(btnOnlineOffline,"click",goOnlineOffline);
+                        on(btnOnlineOffline, "click", goOnlineOffline);
 
                         initOfflineFeaturesMgr();
                         setFeatureLayerClickHandler();
@@ -993,17 +987,17 @@
                     map.addLayer(busStopFeatureLayer);
                 }
 
-                function initVars(){
+                function initVars() {
 
                     editsStore = new O.esri.Edit.EditStore();
-                    popup = new ModalPopup({animation: true, animationDuration: 1},"modal-popup");
+                    popup = new ModalPopup({animation: true, animationDuration: 1}, "modal-popup");
                     popup.startup();
 
                     parser.parse();
 
                     // Check if browser state is online or offline
                     Offline.check();
-                    Offline.on('up down', updateState );
+                    Offline.on('up down', updateState);
 
 
                     btnOnlineOffline = document.getElementById("btn-online-offline");
@@ -1022,14 +1016,14 @@
                             || document.body.clientHeight;
 
                     if (height >= 768 || width >= 1024) {
-                        defaultSymbol= new SimpleMarkerSymbol().setStyle(
+                        defaultSymbol = new SimpleMarkerSymbol().setStyle(
                                 SimpleMarkerSymbol.STYLE_DIAMOND).setColor(
-                                new Color([255,0,0,0.5])).setSize(20);
+                                new Color([255, 0, 0, 0.5])).setSize(20);
                     }
-                    else{
-                        defaultSymbol= new SimpleMarkerSymbol().setStyle(
+                    else {
+                        defaultSymbol = new SimpleMarkerSymbol().setStyle(
                                 SimpleMarkerSymbol.STYLE_DIAMOND).setColor(
-                                new Color([255,0,0,0.5])).setSize(35);
+                                new Color([255, 0, 0, 0.5])).setSize(35);
                     }
 
                     // Variables for modal popup
@@ -1043,125 +1037,138 @@
 
                 }
 
-                function initOfflineFeaturesMgr(){
+                /**
+                 * ************************************
+                 * OFFLINE FEATURE SERVICE HANDLER CODE
+                 * ************************************
+                 */
+
+                function initOfflineFeaturesMgr() {
                     offlineFeaturesManager = new O.esri.Edit.OfflineFeaturesManager();
 
                     // IMPORTANT!!!
                     // A proxy page may be required to upload attachments.
-                    // If you are using a CORS enabled server you may be ablew to set the proxyPath to null.
-                    // Refer to "Using the Proxy Page" for more information:  https://developers.arcgis.com/en/javascript/jshelp/ags_proxy.html
+                    // If you are using a CORS enabled server you may be able to set the proxyPath to null.
+                    // Refer to "Using the Proxy Page" for more information:
+                    //https://developers.arcgis.com/en/javascript/jshelp/ags_proxy.html
                     offlineFeaturesManager.proxyPath = null;
+
+                    // IMPORTANT!!!
+                    // This tells the database which graphic.attribute property to use as a unique identifier
+                    // You can lok this information up in your feature service directory under the "Fields" category.
+                    // Example: http://services1.arcgis.com/M8KJPUwAXP8jhtnM/arcgis/rest/services/Denver_Bus_Stops/FeatureServer/0
+                    offlineFeaturesManager.DB_UID = "FID";
 
                     offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_ENQUEUED, updatePendingEditStatus);
                     offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_SENT, updatePendingEditStatus);
                     offlineFeaturesManager.on(offlineFeaturesManager.events.ALL_EDITS_SENT, updatePendingEditStatus);
 
-                    offlineFeaturesManager.extend(busStopFeatureLayer);
-                    console.log("offlineFeaturesManager initialized.");
+                    offlineFeaturesManager.extend(busStopFeatureLayer, function (success, error) {
+                        if (success) {
+                            console.log("offlineFeaturesManager initialized.");
 
-                    Offline.check();
-                    Offline.on('up down', updateState);
+                            Offline.check();
+                            Offline.on('up down', updateState);
+                        }
+                        else {
+                            alert("Unable to enable feature layer for offline usage. " + error);
+                        }
+                    });
                 }
 
-                /**
-                 * Display modal popup when someone clicks on a feature
-                 */
-                function setFeatureLayerClickHandler(){
-                    busStopFeatureLayer.on("click", function(evt) {
-                        currentFeature = evt.graphic
+                // Display modal popup when someone clicks on a feature
+                // and load the fields with data from the feature service.
+                function setFeatureLayerClickHandler() {
+                    busStopFeatureLayer.on("click", function (evt) {
 
-                        var query = new Query();
-                        query.objectIds = [evt.graphic.attributes.OBJECTID];
-                        busStopFeatureLayer.selectFeatures(query,FeatureLayer.SELECTION_NEW,
-                                function(evt){
-                                    console.log("Success: " + JSON.stringify(evt[0].attributes));
-                                    showModalPopup(evt[0]);
-                                    var atts = evt[0].attributes
-                                    stopID.value = atts.OBJECTID;
-                                    stopMainID.value = atts.BSID;
-                                    stopNames.value = atts.STOPNAME;
-                                    stopRoutes.value = atts.ROUTES;
-                                },function(err){
-                                    console.log("ERROR " + JSON.stringify(err));
-                                });
+                        showModalPopup(evt.graphic);
+                        var atts = evt.graphic.attributes;
+                        stopID.value = atts.BSID;
+                        stopMainID.value = atts.FID;
+                        stopNames.value = atts.STOPNAME;
+                        stopRoutes.value = atts.ROUTES;
+
                     }.bind(this));
                 }
 
-                function setModalPopupClickListeners(){
-                    closeBtn.onclick = function(evt){
+                function updatePendingEditStatus() {
+                    busStopFeatureLayer.pendingEditsCount(function(count){
+                        pendingEdits.innerHTML = count;
+                    });
+                }
+
+
+                function setModalPopupClickListeners() {
+                    closeBtn.onclick = function (evt) {
                         hideModalPopup();
-                    }
+                    };
 
-                    saveBtn.onclick = function(evt){
-
+                    saveBtn.onclick = function (evt) {
                         popup.graphic.attributes.ROUTES = stopRoutes.value;
                         popup.graphic.attributes.STOPNAME = stopNames.value;
 
-                        busStopFeatureLayer.applyEdits(null,[popup.graphic],null,function(result){
-                                    console.log("Successfully saved changes to: " + popup.graphic.attributes.STOPNAME);
+                        busStopFeatureLayer.applyEdits(null, [popup.graphic], null, function (result) {
+                                    console.log("Successfully saved changes to: " +
+                                    popup.graphic.attributes.STOPNAME);
                                     hideModalPopup();
                                 },
-                                function(err){
-                                    alert("There was a problem while trying to save: " + popup.graphic.attributes.STOPNAME);
+                                function (err) {
+                                    alert("There was a problem while trying to save: " +
+                                    popup.graphic.attributes.STOPNAME);
                                 })
-                    }
+                    };
 
-                    deleteBtn.onclick = function(evt){
-                        busStopFeatureLayer.applyEdits(null,null,[popup.graphic],function(result){
+                    deleteBtn.onclick = function (evt) {
+                        busStopFeatureLayer.applyEdits(null, null, [popup.graphic], function (result) {
                                     console.log("Successfully deleted: " + popup.graphic.attributes.STOPNAME);
                                     hideModalPopup();
                                 },
-                                function(err){
-                                    alert("There was a problem while trying to delete: " + popup.graphic.attributes.STOPNAME);
+                                function (err) {
+                                    alert("There was a problem while trying to delete: " +
+                                    popup.graphic.attributes.STOPNAME);
                                 })
                     }
+
                 }
 
-                function showModalPopup(graphic){
+                function showModalPopup(graphic) {
                     popup.graphic = graphic; // assign graphic to modPopup as a property.
                     popup.show();
                 }
 
-                function hideModalPopup(){
+                function hideModalPopup() {
                     popup.hide();
                 }
 
-                function updatePendingEditStatus(){
-                    if( editsStore.hasPendingEdits())
-                    {
-                        var edits = editsStore.retrieveEditsQueue();
-                        pendingEdits.innerHTML = edits.length;
-                    }
-                    else
-                    {
-                        pendingEdits.innerHTML = 0;
-                    }
-                }
-
                 /**
-                 * Force the tileLayer between online and offline
+                 * ************************************
+                 * GO OFFLINE/ONLINE HANDLER CODE
+                 * ************************************
                  */
-                function goOnlineOffline(){
 
-                    if(btnOnlineOffline.innerHTML == "Go Offline"){
+                // Force feature service offline
+                function goOnlineOffline() {
+
+                    if (btnOnlineOffline.innerHTML == "Go Offline") {
                         toggleStateUp(false);
                         console.log("Map is offline");
                     }
-                    else{
+                    else {
                         toggleStateUp(true);
                         console.log("Map is online");
                     }
                 }
 
-                function toggleStateUp(state){
-                    if(state){
+                // Set the UX to online or offline state
+                function toggleStateUp(state) {
+                    if (state) {
                         btnOnlineOffline.innerHTML = "Go Offline";
                         offlineFeaturesManager.goOnline();
                         imgOfflineIndicator.className = "glyphicon glyphicon-link";
                         imgOfflineIndicator.innerHTML = " Up";
                         btnState.className = "btn btn-success btn-large floatRight";
                     }
-                    else{
+                    else {
                         btnOnlineOffline.innerHTML = "Go Online";
                         offlineFeaturesManager.goOffline();
                         imgOfflineIndicator.className = "glyphicon glyphicon-thumbs-down";
@@ -1170,14 +1177,12 @@
                     }
                 }
 
-                /**
-                 * Set the map online or offline.
-                 */
-                function updateState(){
-                    if(Offline.state === 'up'){
+                // Automatically set the feature service online or offline.
+                function updateState() {
+                    if (Offline.state === 'up') {
                         toggleStateUp(true);
                     }
-                    else{
+                    else {
                         toggleStateUp(false);
                     }
                 }
@@ -1188,7 +1193,7 @@
 <!-- Bootstrap core JavaScript
 ================================================== -->
 <!-- Placed at the end of the document so the pages load faster -->
-<script src="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+<script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
 <!-- add syntax highlighting to code snippts -->
 <script src="https://google-code-prettify.googlecode.com/svn/loader/run_prettify.js"></script>
 </body>
