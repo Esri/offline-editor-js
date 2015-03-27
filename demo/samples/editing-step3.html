@@ -214,9 +214,18 @@
                     //https://developers.arcgis.com/en/javascript/jshelp/ags_proxy.html
                     offlineFeaturesManager.proxyPath = null;
 
+                    // IMPORTANT!!!
+                    // This tells the database which graphic.attribute property to use as a unique identifier
+                    // You can lok this information up in your feature service directory under the "Fields" category.
+                    // Example: http://services1.arcgis.com/M8KJPUwAXP8jhtnM/arcgis/rest/services/Denver_Bus_Stops/FeatureServer/0
+                    offlineFeaturesManager.DB_UID = "FID";
+
                     offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_ENQUEUED, updatePendingEditStatus);
                     offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_SENT, updatePendingEditStatus);
                     offlineFeaturesManager.on(offlineFeaturesManager.events.ALL_EDITS_SENT, updatePendingEditStatus);
+                    offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_ENQUEUED_ERROR, function(errorsArray){
+                        alert("There was an error attempting to write to the database: " + JSON.stringify(errorsArray));
+                    });
 
                     offlineFeaturesManager.extend(busStopFeatureLayer, function (success, error) {
                         if (success) {
@@ -247,13 +256,9 @@
                 }
 
                 function updatePendingEditStatus() {
-                    if (editsStore.hasPendingEdits()) {
-                        var edits = editsStore.retrieveEditsQueue();
-                        pendingEdits.innerHTML = edits.length;
-                    }
-                    else {
-                        pendingEdits.innerHTML = 0;
-                    }
+                    busStopFeatureLayer.pendingEditsCount(function(count){
+                        pendingEdits.innerHTML = count;
+                    });
                 }
 
 
