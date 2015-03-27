@@ -1,4 +1,4 @@
-/*! offline-editor-js - v2.5 - 2015-03-26
+/*! offline-editor-js - v2.5 - 2015-03-27
 *   Copyright (c) 2015 Environmental Systems Research Institute, Inc.
 *   Apache License*/
 define([
@@ -85,14 +85,16 @@ define([
                  * @param layer
                  * @param updateEndEvent The FeatureLayer's update-end event object
                  * @param callback {true, null} or {false, errorString} Traps whether or not the database initialized
-                 * @param options Optional configuration Object. Added @ v2.5
+                 * @param dataStore Optional configuration Object. Added @ v2.5. There is only one reserved object key and that is "id".
+                 * Use this option to store featureLayerJSON and any other configuration information you'll need access to after
+                 * a full offline browser restart.
                  * @returns deferred
                  */
-                extend: function (layer, callback, options) {
+                extend: function (layer, callback, dataStore) {
                     var self = this;
 
                     // Initialize the database as well as set offline data.
-                    this._initializeDB(options,callback);
+                    this._initializeDB(dataStore,callback);
 
                     // we keep track of the FeatureLayer object
                     this._featureLayers[layer.url] = layer;
@@ -452,7 +454,7 @@ define([
                      * @param jsonObject
                      * @param callback
                      */
-                    layer.setFeatureLayerJSONOptions = function(jsonObject, callback){
+                    layer.setFeatureLayerJSONDataStore = function(jsonObject, callback){
                         self._editStore.pushFeatureLayerJSON(jsonObject,function(success,error){
                             callback(success,error);
                         });
@@ -462,30 +464,11 @@ define([
                      * Retrieves the optional feature layer storage object
                      * @param callback callback(true, object) || callback(false, error)
                      */
-                    layer.getFeatureLayerJSONOptions = function(callback){
+                    layer.getFeatureLayerJSONDataStore = function(callback){
                         self._editStore.getFeatureLayerJSON(function(success,message){
                             callback(success,message);
                         })
                     };
-
-                    ///**
-                    //* Serialize the feature layer graphics
-                    //* @param features Array of features
-                    //* @param callback
-                    //*/
-                    //layer.convertFeatureGraphicsToJSON = function (features, callback) {
-                    //    var length = features.length;
-                    //    var jsonArray = [];
-                    //    for (var i = 0; i < length; i++) {
-                    //        var jsonGraphic = features[i].toJson();
-                    //        jsonArray.push(jsonGraphic);
-                    //        if (i == (length - 1)) {
-                    //            var featureJSON = JSON.stringify(jsonArray);
-                    //            callback(featureJSON);
-                    //            break;
-                    //        }
-                    //    }
-                    //};
 
                     /**
                      * Sets the phantom layer with new features.
@@ -992,11 +975,11 @@ define([
 
                 /**
                  * Intialize the database and push featureLayer JSON to DB if required
-                 * @param options
+                 * @param dataStore Object
                  * @param callback
                  * @private
                  */
-                _initializeDB: function(options,callback){
+                _initializeDB: function(dataStore,callback){
 
                     var editStore = this._editStore;
 
@@ -1020,8 +1003,8 @@ define([
                         //
                         ////////////////////////////////////////////////////
 
-                        if (typeof options === "object" && result == true && (options !== undefined) && (options !== null)) {
-                            editStore.pushFeatureLayerJSON(options, function (success, err) {
+                        if (typeof dataStore === "object" && result == true && (dataStore !== undefined) && (dataStore !== null)) {
+                            editStore.pushFeatureLayerJSON(dataStore, function (success, err) {
                                 if (success) {
                                     callback(true, null);
                                 }
@@ -1692,18 +1675,18 @@ O.esri.Edit.EditStore = function () {
      * }
      *
      * NOTE: "dataObject.id" is a reserved property. If you use "id" in your object this method will break.
-     * @param dataObject Object
+     * @param dataStore Object
      * @param callback callback(true, null) or callback(false, error)
      */
-    this.pushFeatureLayerJSON = function (dataObject /*Object*/, callback) {
+    this.pushFeatureLayerJSON = function (dataStore /*Object*/, callback) {
 
         console.assert(this._db !== null, "indexeddb not initialized");
-        if (typeof dataObject != "object") {
+        if (typeof dataStore != "object") {
             callback(false, "dataObject type is not an object.");
         }
 
         var db = this._db;
-        dataObject.id = this.FEATURE_LAYER_JSON_ID;
+        dataStore.id = this.FEATURE_LAYER_JSON_ID;
 
         this.getFeatureLayerJSON(function (success, result) {
 
@@ -1712,9 +1695,9 @@ O.esri.Edit.EditStore = function () {
                 var objectStore = db.transaction([this.objectStoreName], "readwrite").objectStore(this.objectStoreName);
 
                 // Make a copy of the object
-                for (var key in dataObject) {
-                    if (dataObject.hasOwnProperty(key)) {
-                        result[key] = dataObject[key];
+                for (var key in dataStore) {
+                    if (dataStore.hasOwnProperty(key)) {
+                        result[key] = dataStore[key];
                     }
                 }
 
@@ -1746,7 +1729,7 @@ O.esri.Edit.EditStore = function () {
                 // Protect against data cloning errors since we don't validate the input object
                 // Example: if you attempt to use an esri.Graphic in its native form you'll get a data clone error
                 try {
-                    objectStore.put(dataObject);
+                    objectStore.put(dataStore);
                 }
                 catch (err) {
                     callback(false, JSON.stringify(err));
