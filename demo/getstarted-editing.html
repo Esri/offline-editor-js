@@ -89,7 +89,7 @@
                 <div class="tab-pane active" id="Step1">
                     <h3>Step 1: Fill in the basics</h3>
                     <p>Add library references and build basic layout. Then test to make sure map loads.
-                        A full working version of this step is included in /demo/samples/editing-step1.html.</p>
+                        A fully working and editable version of this step is included in /demo/samples/editing-step1.html.</p>
                     <br>
                     <pre class="prettyprint">
                         <code>
@@ -831,15 +831,15 @@
                 // Set the UX to online or offline state
                 function toggleStateUp(state) {
                     if (state) {
-                        btnOnlineOffline.innerHTML = "Go Offline";
                         offlineFeaturesManager.goOnline();
+                        btnOnlineOffline.innerHTML = "Go Offline";
                         imgOfflineIndicator.className = "glyphicon glyphicon-link";
                         imgOfflineIndicator.innerHTML = " Up";
                         btnState.className = "btn btn-success btn-large floatRight";
                     }
                     else {
-                        btnOnlineOffline.innerHTML = "Go Online";
                         offlineFeaturesManager.goOffline();
+                        btnOnlineOffline.innerHTML = "Go Online";
                         imgOfflineIndicator.className = "glyphicon glyphicon-thumbs-down";
                         imgOfflineIndicator.innerHTML = " Down";
                         btnState.className = "btn btn-danger btn-large floatRight";
