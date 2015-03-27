@@ -5,7 +5,9 @@ How to use the edit library
 
 The `edit` library allows a developer to extend a feature layer with offline editing support. You can combine this functionality with offline tiles. For a complete list of features consult the [OfflineFeaturesManager API doc](offlinefeaturesmanager.md).
 
-**Step 1** Include `offline.min.js`, `offline-tiles-basic-min.js` and `offline-edit-min.js` in your app. `ofline.mins.js` is another 3rd party library for detecting if the browser is online or offline. The pattern for how we include the tiles and edit library within the `require` statement is called generic script injection.
+**Step 1** Include `offline.min.js`, `offline-tiles-basic-min.js` and `offline-edit-min.js` in your app's require contstructor. Be sure to include `ofline.mins.js` which is a 3rd party library for detecting if the browser is online or offline. 
+
+The pattern for how we include the tiles and edit library within the `require` statement is called generic script injection. Note that we do assign any of the editing or tile libraries an alias name. For example, we specified the mobile path "esri/map" and we gave it an alias called "Map." But, we did not do the equivalent for `offline-tiles-based-min.js` or `offline-edit-min.js`.
 
 ```html	
 	<script src="../vendor/offline/offline.min.js"></script>
@@ -20,7 +22,7 @@ The `edit` library allows a developer to extend a feature layer with offline edi
 	});
 ```
 
-Also, if you have other AMD libraries in your project and you want to refer to offline-editor-js within a `define` statement you can use the following pattern for importing the library. Note you can leave off the `.js` from the module identifier, for example:
+You can also refer to the offline-editor-js within a `define` statement using the following pattern for importing the library. Note you can leave off the `.js` from the module identifier, for example:
 
 ```js
 
@@ -40,7 +42,7 @@ Also, if you have other AMD libraries in your project and you want to refer to o
 		// OPTIONAL - you can change the name of the unique identifier used by the feature service. Default is "objectid".
 		// offlineFeaturesManager.UID = "GlobalID";
 		offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_ENQUEUED, updateStatus);
-		offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_SENT, updateStatus);
+updateStatus);
 		offlineFeaturesManager.on(offlineFeaturesManager.events.ALL_EDITS_SENT, updateStatus);		              
 		offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_SENT_ERROR, handleEditsSentError);
 		
@@ -54,7 +56,7 @@ NOTE: You can also monitor standard ArcGIS API for JavaScript layer events using
 
 ```
 
-**Step 3** listen for the `layers-add-result` event to continue FeatureLayer initialization. Then, add the feature layer to the map just like you normally would
+**Step 3** Set a listener for the `layers-add-result` event. Then, add the feature layer to the map just like you normally would:
 
 ```js
 	
@@ -71,7 +73,7 @@ NOTE: You can also monitor standard ArcGIS API for JavaScript layer events using
 	
 ```
 
-**Step 4** After the `layers-add-result` event fires extend it using the `extend()` method. Optionally, if you are building a fully offline app then you will need to set the `dataStore` property in the constructor.
+**Step 4** After the `layers-add-result` event fires extend the feature layer using the `extend()` method. Optionally, if you are building a fully offline app then you will also need to set the `dataStore` property in the constructor.
 
 ```js
 		
@@ -81,6 +83,7 @@ NOTE: You can also monitor standard ArcGIS API for JavaScript layer events using
 			// var options = {};
             // options.graphics = JSON.stringify(layer1.toJson());
             // options.zoom = map.getZoom();
+            
 			offlineFeaturesManager.extend(layer1,function(success,error){
 				if(success){
 					console.log("layer1 has been extended for offline use.");
@@ -90,7 +93,7 @@ NOTE: You can also monitor standard ArcGIS API for JavaScript layer events using
 		
 ```
 
-The `dataStore` property is an object that is used to store any data related to your app that will assist in restoring the app and any feature layers after a full offline browser restart. The `dataStore` object has one reserved key and that is `id`. If you overwrite the `id` key the application will fail to update the `dataStore` object correctly. Here is an example of one possible `dataStore` object:
+The `dataStore` property is an object that is used to store any data related to your app that will assist in restoring it and any feature layers after a full offline browser restart. The `dataStore` object has one reserved key and that is `id`. If you overwrite the `id` key the application will fail to update the `dataStore` object correctly. Here is an example of one possible `dataStore` object:
 
 ```js
 
