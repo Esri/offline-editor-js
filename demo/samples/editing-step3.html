@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no"/>
+    <title>Offline Features</title>
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+    <link rel="stylesheet" href="//js.arcgis.com/3.13/esri/css/esri.css">
+    <link rel="stylesheet" href="//esri.github.io/bootstrap-map-js/src/css/bootstrapmap.css">
+    <link rel="stylesheet" href="../widgets/modal/css/modal-popup.css">
+    <style>
+        #mapDiv {
+            min-height: 500px;
+            max-height: 1000px;
+        }
+
+        #img-offline-indicator {
+            padding: 8px;
+            position: relative;
+            float: right;
+        }
+
+        /* Override mod-popup default */
+        .mod-popup-stop-input {
+            color: black;
+        }
+
+        .span-pending {
+            color: blue;
+            padding-left: 1em;
+        }
+
+        .voffset20px {
+            margin-top: 20px;
+        }
+
+        .floatRight {
+            float: right
+        }
+    </style>
+
+    <!-- Include a reference to offline.js which detects online/offline conditions -->
+    <script src="../../vendor/offline/offline.min.js"></script>
+    <script>
+        // Set how we pull in custom AMD modules
+        var path = location.pathname.replace(/[^\/]+$/, '');
+        var dojoConfig =
+        {
+            debug: true,
+            packages: [
+                {
+                    name: "widgets",
+                    location: path + "../widgets/modal/"
+                }]
+        }
+
+        // Set the online/offline detection options.
+        // More info at: http://github.hubspot.com/offline/docs/welcome/
+        Offline.options = {
+            checks: {
+                image: {
+                    url: function () {
+                        return 'http://esri.github.io/offline-editor-js/tiny-image.png?_=' +
+                                (Math.floor(Math.random() * 1000000000));
+                    }
+                },
+                active: 'image'
+            }
+        }
+    </script>
+
+    <script src="//js.arcgis.com/3.13/"></script>
+</head>
+
+<body>
+
+<div class="container voffset20px">
+    <div class="row">
+        <div class="col-xs-8">
+            <button class="btn btn-success" id="btn-online-offline">Go Offline</button>
+            <span class="span-pending">Pending Edits <span id="span-pending-edits" class="badge">0</span></span>
+        </div>
+        <div class="col-xs-4">
+            <button id="btn-state" class="btn btn-success btn-large floatRight">
+                <span id="state-span" class="glyphicon glyphicon-link"> Up</span>
+            </button>
+        </div>
+    </div>
+    <div class="row voffset20px">
+        <div class="col-xs-12">
+            <div id="mapDiv"></div>
+        </div>
+    </div>
+</div>
+<!-- Stub for modal popup -->
+<div id="modal-popup"></div>
+
+<script>
+
+    require([
+                "esri/map", "esri/tasks/query",
+                "dojo/on", "dojo/parser", "esri/renderers/SimpleRenderer",
+                "esri/symbols/SimpleMarkerSymbol", "esri/Color",
+                "widgets/popup", "esri/layers/FeatureLayer",
+                "//esri.github.com/bootstrap-map-js/src/js/bootstrapmap.js",
+                "../../dist/offline-edit-src.js",
+                "dojo/domReady!"],
+            function (Map, Query, on, parser, SimpleRenderer, SimpleMarkerSymbol,
+                      Color, ModalPopup, FeatureLayer, BootstrapMap) {
+
+                var map, popup, editsStore;
+                var defaultSymbol;
+                var offlineFeaturesManager;
+                var btnOnlineOffline, btnState, pendingEdits;
+                var imgOfflineIndicator;
+                var closeBtn, saveBtn, deleteBtn, stopMainID, stopID, stopRoutes, stopNames;
+                var busStopFeatureLayer;
+
+                initVars();
+                initMap();
+
+                function initMap() {
+
+                    map = BootstrapMap.create("mapDiv", {
+                        basemap: "topo",
+                        center: [-104.99, 39.75], // longitude, latitude
+                        zoom: 15
+                    });
+
+                    busStopFeatureLayer = new FeatureLayer("http://services1.arcgis.com/M8KJPUwAXP8jhtnM/arcgis/rest/services/Denver_Bus_Stops/FeatureServer/0", {
+                        mode: FeatureLayer.MODE_SNAPSHOT,
+                        outFields: ["OBJECTID", "BSID", "ROUTES", "STOPNAME"]
+                    });
+
+                    //Set the graphics to red boxes to make it easy to click on them
+                    //on a mobile device.
+                    busStopFeatureLayer.setRenderer(new SimpleRenderer(defaultSymbol));
+                    busStopFeatureLayer.on("update-end", function (evt) {
+
+                        // Now we can enable the button click listener
+                        on(btnOnlineOffline, "click", goOnlineOffline);
+
+                        initOfflineFeaturesMgr();
+                        setFeatureLayerClickHandler();
+                        setModalPopupClickListeners();
+                    });
+
+                    map.addLayer(busStopFeatureLayer);
+                }
+
+                function initVars() {
+
+                    editsStore = new O.esri.Edit.EditStore();
+                    popup = new ModalPopup({animation: true, animationDuration: 1}, "modal-popup");
+                    popup.startup();
+
+                    parser.parse();
+
+                    // Check if browser state is online or offline
+                    Offline.check();
+                    Offline.on('up down', updateState);
+
+
+                    btnOnlineOffline = document.getElementById("btn-online-offline");
+                    imgOfflineIndicator = document.getElementById("state-span");
+                    btnState = document.getElementById("btn-state");
+                    pendingEdits = document.getElementById("span-pending-edits");
+
+                    // Modify symbol size based on screen size.
+                    // Bigger screens get smaller symbols. Smaller screens get larger symbols.
+                    var width = window.innerWidth
+                            || document.documentElement.clientWidth
+                            || document.body.clientWidth;
+
+                    var height = window.innerHeight
+                            || document.documentElement.clientHeight
+                            || document.body.clientHeight;
+
+                    if (height >= 768 || width >= 1024) {
+                        defaultSymbol = new SimpleMarkerSymbol().setStyle(
+                                SimpleMarkerSymbol.STYLE_DIAMOND).setColor(
+                                new Color([255, 0, 0, 0.5])).setSize(20);
+                    }
+                    else {
+                        defaultSymbol = new SimpleMarkerSymbol().setStyle(
+                                SimpleMarkerSymbol.STYLE_DIAMOND).setColor(
+                                new Color([255, 0, 0, 0.5])).setSize(35);
+                    }
+
+                    // Variables for modal popup
+                    closeBtn = document.getElementById("mod-popup-close-btn");
+                    saveBtn = document.getElementById("mod-popup-save-btn");
+                    deleteBtn = document.getElementById("mod-popup-delete-btn");
+                    stopMainID = document.getElementById("stop-main-id");
+                    stopID = document.getElementById("stop-id");
+                    stopRoutes = document.getElementById("stop-routes");
+                    stopNames = document.getElementById("stop-names");
+
+                }
+
+                /**
+                 * ************************************
+                 * OFFLINE FEATURE SERVICE HANDLER CODE
+                 * ************************************
+                 */
+
+                function initOfflineFeaturesMgr() {
+                    offlineFeaturesManager = new O.esri.Edit.OfflineFeaturesManager();
+
+                    // IMPORTANT!!!
+                    // A proxy page may be required to upload attachments.
+                    // If you are using a CORS enabled server you may be able to set the proxyPath to null.
+                    // Refer to "Using the Proxy Page" for more information:
+                    //https://developers.arcgis.com/en/javascript/jshelp/ags_proxy.html
+                    offlineFeaturesManager.proxyPath = null;
+
+                    // IMPORTANT!!!
+                    // This tells the database which graphic.attribute property to use as a unique identifier
+                    // You can lok this information up in your feature service directory under the "Fields" category.
+                    // Example: http://services1.arcgis.com/M8KJPUwAXP8jhtnM/arcgis/rest/services/Denver_Bus_Stops/FeatureServer/0
+                    offlineFeaturesManager.DB_UID = "FID";
+
+                    offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_ENQUEUED, updatePendingEditStatus);
+                    offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_SENT, updatePendingEditStatus);
+                    offlineFeaturesManager.on(offlineFeaturesManager.events.ALL_EDITS_SENT, updatePendingEditStatus);
+                    offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_ENQUEUED_ERROR, function(errorsArray){
+                        alert("There was an error attempting to write to the database: " + JSON.stringify(errorsArray));
+                    });
+
+                    offlineFeaturesManager.extend(busStopFeatureLayer, function (success, error) {
+                        if (success) {
+                            console.log("offlineFeaturesManager initialized.");
+
+                            Offline.check();
+                            Offline.on('up down', updateState);
+                        }
+                        else {
+                            alert("Unable to enable feature layer for offline usage. " + error);
+                        }
+                    });
+                }
+
+                // Display modal popup when someone clicks on a feature
+                // and load the fields with data from the feature service.
+                function setFeatureLayerClickHandler() {
+                    busStopFeatureLayer.on("click", function (evt) {
+
+                        showModalPopup(evt.graphic);
+                        var atts = evt.graphic.attributes;
+                        stopID.value = atts.BSID;
+                        stopMainID.value = atts.FID;
+                        stopNames.value = atts.STOPNAME;
+                        stopRoutes.value = atts.ROUTES;
+
+                    }.bind(this));
+                }
+
+                function updatePendingEditStatus() {
+                    busStopFeatureLayer.pendingEditsCount(function(count){
+                        pendingEdits.innerHTML = count;
+                    });
+                }
+
+
+                function setModalPopupClickListeners() {
+                    closeBtn.onclick = function (evt) {
+                        hideModalPopup();
+                    };
+
+                    saveBtn.onclick = function (evt) {
+                        popup.graphic.attributes.ROUTES = stopRoutes.value;
+                        popup.graphic.attributes.STOPNAME = stopNames.value;
+
+                        busStopFeatureLayer.applyEdits(null, [popup.graphic], null, function (result) {
+                                    console.log("Successfully saved changes to: " +
+                                    popup.graphic.attributes.STOPNAME);
+                                    hideModalPopup();
+                                },
+                                function (err) {
+                                    alert("There was a problem while trying to save: " +
+                                    popup.graphic.attributes.STOPNAME);
+                                })
+                    };
+
+                    deleteBtn.onclick = function (evt) {
+                        busStopFeatureLayer.applyEdits(null, null, [popup.graphic], function (result) {
+                                    console.log("Successfully deleted: " + popup.graphic.attributes.STOPNAME);
+                                    hideModalPopup();
+                                },
+                                function (err) {
+                                    alert("There was a problem while trying to delete: " +
+                                    popup.graphic.attributes.STOPNAME);
+                                })
+                    }
+
+                }
+
+                function showModalPopup(graphic) {
+                    popup.graphic = graphic; // assign graphic to modPopup as a property.
+                    popup.show();
+                }
+
+                function hideModalPopup() {
+                    popup.hide();
+                }
+
+                /**
+                 * ************************************
+                 * GO OFFLINE/ONLINE HANDLER CODE
+                 * ************************************
+                 */
+
+                // Force feature service offline
+                function goOnlineOffline() {
+
+                    if (btnOnlineOffline.innerHTML == "Go Offline") {
+                        toggleStateUp(false);
+                        console.log("Map is offline");
+                    }
+                    else {
+                        toggleStateUp(true);
+                        console.log("Map is online");
+                    }
+                }
+
+                // Set the UX to online or offline state
+                function toggleStateUp(state) {
+                    if (state) {
+                        offlineFeaturesManager.goOnline();
+                        btnOnlineOffline.innerHTML = "Go Offline";
+                        imgOfflineIndicator.className = "glyphicon glyphicon-link";
+                        imgOfflineIndicator.innerHTML = " Up";
+                        btnState.className = "btn btn-success btn-large floatRight";
+                    }
+                    else {
+                        offlineFeaturesManager.goOffline();
+                        btnOnlineOffline.innerHTML = "Go Online";
+                        imgOfflineIndicator.className = "glyphicon glyphicon-thumbs-down";
+                        imgOfflineIndicator.innerHTML = " Down";
+                        btnState.className = "btn btn-danger btn-large floatRight";
+                    }
+                }
+
+                // Automatically set the feature service online or offline.
+                function updateState() {
+                    if (Offline.state === 'up') {
+                        toggleStateUp(true);
+                    }
+                    else {
+                        toggleStateUp(false);
+                    }
+                }
+            }
+    );
+
+</script>
+<!-- Bootstrap core JavaScript
+================================================== -->
+<!-- Placed at the end of the document so the pages load faster -->
+<script src="//code.jquery.com/jquery-2.1.3.min.js"></script>
+<script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+</body>
+</html>

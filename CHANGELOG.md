@@ -1,5 +1,42 @@
 # offline-editor-js - Changelog
 
+## Version 2.5 - March 27, 2015
+
+v2.5 focused on updating OfflineFeaturesManager from using localStorage to IndexedDB. Additional information is available in the [API Doc](https://github.com/Esri/offline-editor-js/blob/master/doc/offlinefeaturesmanager.md). Feature edit storage capabilities have been increased from 5 MBs to approximately 50 - 100 MBs or more, and the changes made allow for additional functionality and capabilities to be implemented that weren't possible under the previous architecture.**
+
+Closes #292, #289, #285, #281, #280, #275, #261
+
+**BREAKING CHANGES:** In order to accomplish the v2.5 update the following **breaking** changes were made. All common `EditStore` functionality was migrated to the FeatureLayer so that under most circumstances there is no need to use or access the `EditStore` library directly anymore. In fact, as of v2.5 accessing it directly is discouraged. 
+
+* `OfflineFeatureManager.getReadableEdit()` deprecated. Use `featureLayer.getAllEditsArray()`.
+* `editsStore.hasPendingEdits()` deprecated. Use `featureLayer.pendingEdits()`.
+* `editsStore.retrieveEditsQueue()` deprecated. Use `featureLayer.getAllEditsArray()`.
+* `editsStore.getEditsStoreSizeBytes()` deprecated. Use `featureLayer.getUsage()`.
+* `editsStore.getLocalStorageSizeBytes()` deprecated. Use `featureLayer.getUsage()`.
+
+**New Functionality in OfflineFeatureManager**
+
+* `OfflineFeaturesManager.DB_NAME`. Allows you to set the database name of the edits library.
+* `OfflineFeaturesManager.DB_OBJECTSTORE_NAME`. Set an internal object store within the database that allows access to a set of data. 
+* `OfflineFeaturesManager.DB_UID`. **IMPORTANT**. This tells the database which `id` to use as a unique identifier for each feature service. 
+* `OfflineFeaturesManager.events.EDITS_SENT`. **Updated**. Now this event is only triggered when an edit is synced with the server while online.
+* `OfflineFeaturesManager.events.EDITS_SENT_ERROR`. Indicates there was an error when syncing with the server. If there was an error, the edit will remain in the database.
+* `OfflineFeaturesManager.events.EDITS_ENQUEUED_ERROR`. Indicates an error occurred while trying to store an edit in offline mode. 
+
+**New Functionality in FeatureLayer** When you use `OfflineFeatureManager.extend()` to extend a feature layer it will be enabled with the following new functionality:
+
+* `featureLayer.resetDatabase()`. Full database reset.
+* `featureLayer.pendingEditsCount()`. Returns the number of pending edits.
+* `featureLayer.getUsage()`. Returns the approximate size of the database and number of edits.
+* `featureLayer.getPhantomGraphicsArray()`. Used with offline browser restarts. Returns an array of phantom graphics. Complimentary to `featureLayer.getPhantomLayerGraphics()`.
+* `featureLayer.getAllEditsArray()`. Returns an array of all edits stored in the database.
+* `featureLayer.getFeatureLayerJSON()`. A helper function for retrieving a feature layers JSON using the REST `f=json` parameter. Note you can also retrieve feature layer JSON using the ArcGIS API for JavaScript's `featureLayer.toJson()` method.
+* `featureLayer.setFeatureLayerJSONDataStore()`. Sets or updates the optional feature layer storage object. You can also set the dataStore using the `OfflineFeatureManager` constructor's `dataStore` property.
+* `featureLayer.getFeatureLayerJSONDataStore()`. Retrieves the optional feature layer storage object.
+* `featureLayer.convertFeatureGraphicsToJSON()`. Helper function that converts an array of graphics to a JSON string.
+
+** Footnote on browser storage capabilities. The amount of storage varies from device to device. It depends on multiple factors related to the browser including how much memory space the browser has consumed, how large the browser cache has grown, how many other tabs may be open, and how much memory other applications are already consuming.
+
 ## Version 2.4 - Nov 26, 2014
 - Closes #274 phantom symbols not working correctly
 	- Updated offlineFeaturesManager.js
