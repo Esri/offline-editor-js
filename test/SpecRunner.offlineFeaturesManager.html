@@ -19,9 +19,9 @@
 		}
 	</script>
 
-		<link rel="stylesheet" href="http://js.arcgis.com/3.10/js/dojo/dijit/themes/claro/claro.css">
-		<link rel="stylesheet" href="http://js.arcgis.com/3.10/js/esri/css/esri.css">
-		<script src="http://js.arcgis.com/3.10/"></script>
+		<link rel="stylesheet" href="http://js.arcgis.com/3.12/dijit/themes/claro/claro.css">
+		<link rel="stylesheet" href="http://js.arcgis.com/3.12/esri/css/esri.css">
+		<script src="http://js.arcgis.com/3.12/"></script>
 
 	<!-- include spec files here... -->
 	<script type="text/javascript" src="spec/offlineFeaturesManagerSpec.js"></script>
@@ -39,7 +39,7 @@
 		"esri/layers/FeatureLayer", "esri/geometry", "esri/request",
 		"dojo/dom", "dojo/on", "dojo/query",
 		"dojo/dom-construct",
-        "../dist/offline-edit-min.js",
+        "../dist/offline-edit-src.js",
         "dojo/domReady!"],
 		function(Map, 
 			GraphicsLayer, Graphic, 
@@ -51,7 +51,9 @@
 			g_modules.esriRequest = esriRequest;
 			g_modules.Graphic = Graphic;
 			g_offlineFeaturesManager = new O.esri.Edit.OfflineFeaturesManager();
+            g_offlineFeaturesManager.DB_NAME = "FEATURES_TEST";
 			g_editsStore = new O.esri.Edit.EditStore();
+            g_editsStore.dbName = "FEATURES_TEST";
 
 			g_map = new Map("map", {
 				basemap: "satellite",
@@ -61,8 +63,10 @@
 			});
 
 			var fsUrl = "http://services2.arcgis.com/CQWCKwrSm5dkM28A/arcgis/rest/services/Military/FeatureServer/";
-			// var layersIds = [0,1,2,3,4,5,6];
-			var layersIds = [1,2,3,6];
+			// Layer 1 = points
+            // Layer 2 = lines
+            // Layer 3 = polygons
+			var layersIds = [1,2,3];
 
 			layersIds.forEach(function(layerId)
 			{
@@ -77,14 +81,23 @@
 
 			g_map.on('layers-add-result', test);
 
-			function test() 
+			function test(evt)
 			{
 				try
 				{
 					g_featureLayers.forEach(function(layer)
 					{
-						g_offlineFeaturesManager.extend(layer);
-					});		
+
+                        var options = {};
+                        // Uncomment the line below to test if extend() throws an error!
+                        // options.graphics = evt.target.graphics.graphics;
+                        options.graphics = JSON.stringify(layer.toJson());
+                        options.zoom = g_map.getZoom();
+
+                        g_offlineFeaturesManager.extend(layer,function(result){
+                            if(result == false) console.error("WARNING: Unable to initialize database");
+                        },options);
+					});
 				}
 				catch(err)
 				{
@@ -95,7 +108,7 @@
 				{					
 				var jasmineEnv = jasmine.getEnv();
 				jasmineEnv.updateInterval = 1000;
-				jasmineEnv.defaultTimeoutInterval = 5000; // 10 sec
+				jasmineEnv.defaultTimeoutInterval = 10000; // 10 sec
 				var htmlReporter = new jasmine.HtmlReporter();
 
 				jasmineEnv.addReporter(htmlReporter);

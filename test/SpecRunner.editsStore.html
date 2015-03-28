@@ -17,25 +17,26 @@
 	}
   </script>
 
-	<link rel="stylesheet" href="http://js.arcgis.com/3.10/js/dojo/dijit/themes/claro/claro.css">
-	<link rel="stylesheet" href="http://js.arcgis.com/3.10/js/esri/css/esri.css">
-	<script src="http://js.arcgis.com/3.10/"></script>
+	<link rel="stylesheet" href="http://js.arcgis.com/3.12/dijit/themes/claro/claro.css">
+	<link rel="stylesheet" href="http://js.arcgis.com/3.12/esri/css/esri.css">
+	<script src="http://js.arcgis.com/3.12/"></script>
 
   <!-- include spec files here... -->
-  <script type="text/javascript" src="spec/editsStoreSpec.js"></script>
+  <script type="text/javascript" src="spec/editsStoreSpec2.js"></script>
   <script type="text/javascript">
 	"use strict"
 
 	var g_map;
 	var g_test = {};
 	var g_editsStore;
+    var esriGraphic;
 
 	require(["esri/map", 
 	"esri/layers/GraphicsLayer", "esri/graphic", "esri/symbols/SimpleFillSymbol", "esri/symbols/SimpleMarkerSymbol", "esri/symbols/SimpleLineSymbol",
 	"esri/SpatialReference","esri/geometry",
 	"dojo/dom", "dojo/on", "dojo/query", 
 	"dojo/dom-construct",
-    "../dist/offline-edit-min.js",
+    "../dist/offline-edit-src.js",
     "dojo/domReady!"],
 	function(Map, 
 		GraphicsLayer, Graphic, SimpleFillSymbol, SimpleMarkerSymbol, SimpleLineSymbol,
@@ -53,6 +54,8 @@
 
 		g_map.on('load', test);
 		*/
+        esriGraphic = Graphic;
+
 		g_editsStore = new O.esri.Edit.EditStore();
 		test();
 
