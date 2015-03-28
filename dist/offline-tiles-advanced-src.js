@@ -1,5 +1,5 @@
-/*! offline-editor-js - v2.4 - 2014-11-26
-*   Copyright (c) 2014 Environmental Systems Research Institute, Inc.
+/*! offline-editor-js - v2.5 - 2015-03-27
+*   Copyright (c) 2015 Environmental Systems Research Institute, Inc.
 *   Apache License*/
 define([
     "dojo/query",

@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no"/>
+    <title>Offline Features</title>
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+    <link rel="stylesheet" href="//js.arcgis.com/3.13/esri/css/esri.css">
+    <link rel="stylesheet" href="../widgets/modal/css/modal-popup.css">
+    <link rel="stylesheet" type="text/css" href="http://esri.github.io/bootstrap-map-js/src/css/bootstrapmap.css">
+    <style>
+        #mapDiv {
+            min-height: 500px;
+            max-height: 1000px;
+        }
+
+        #img-offline-indicator {
+            padding: 8px;
+            position: relative; float: right;
+        }
+
+        /* Override mod-popup default */
+        .mod-popup-stop-input {color: black;}
+        .span-pending {color: blue; padding-left: 1em;}
+        .voffset20px { margin-top: 20px; }
+        .floatRight { float: right}
+    </style>
+
+    <!-- Include a reference to offline.js which detects online/offline conditions -->
+    <script src="../../vendor/offline/offline.min.js"></script>
+    <script>
+        // Set how we pull in custom AMD modules
+        var path = location.pathname.replace(/[^\/]+$/, '');
+        var dojoConfig =
+        {
+            debug: true,
+            packages:[
+                {
+                    name: "widgets",
+                    location: path + "../widgets/modal/"
+                }]
+        }
+
+        // Set the online/offline detection options.
+        // More info at: http://github.hubspot.com/offline/docs/welcome/
+        Offline.options = {
+            checks: {
+                image: {
+                    url: function() {
+                        return 'http://esri.github.io/offline-editor-js/tiny-image.png?_=' +
+                                (Math.floor(Math.random() * 1000000000));
+                    }
+                },
+                active: 'image'
+            }
+        }
+    </script>
+
+    <script src="//js.arcgis.com/3.13/"></script>
+</head>
+
+<body>
+
+<div class="container voffset20px">
+    <div class="row">
+        <div class="col-xs-8">
+            <button class="btn btn-success" id="btn-online-offline">Go Offline</button>
+            <span class="span-pending">Pending Edits <span id="span-pending-edits" class="badge">0</span></span>
+        </div>
+        <div class="col-xs-4">
+            <button id="btn-state" class="btn btn-success btn-large floatRight">
+                <span id="state-span" class="glyphicon glyphicon-link"> Up</span>
+            </button>
+        </div>
+    </div>
+    <div class="row voffset20px">
+        <div class="col-xs-12">
+            <div id="mapDiv"></div>
+        </div>
+    </div>
+</div>
+<!-- Stub for modal popup -->
+<div id="modal-popup"></div>
+
+<script>
+
+    require([
+                "esri/map","esri/tasks/query",
+                "dojo/on","dojo/parser", "esri/renderers/SimpleRenderer",
+                "esri/symbols/SimpleMarkerSymbol","esri/Color",
+                "widgets/popup","esri/layers/FeatureLayer",
+                "//esri.github.com/bootstrap-map-js/src/js/bootstrapmap.js",
+                "../../dist/offline-edit-src.js",
+                "dojo/domReady!"],
+            function(Map,Query,on,parser,SimpleRenderer,SimpleMarkerSymbol,
+                     Color,ModalPopup,FeatureLayer,BootstrapMap){
+
+                var map, popup, editsStore;
+                var defaultSymbol;
+                var offlineFeaturesManager;
+                var btnOnlineOffline, btnState, pendingEdits;
+                var imgOfflineIndicator;
+                var closeBtn,saveBtn,deleteBtn,stopMainID,stopID,stopRoutes,stopNames;
+
+                initMap();
+
+                function initMap(){
+
+                    map = BootstrapMap.create("mapDiv",{
+                        basemap: "topo",
+                        center: [-104.99,39.75], // longitude, latitude
+                        zoom: 15
+                    });
+                }
+            }
+    );
+
+</script>
+<!-- Bootstrap core JavaScript
+================================================== -->
+<!-- Placed at the end of the document so the pages load faster -->
+<script src="//code.jquery.com/jquery-2.1.3.min.js"></script>
+<script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+</body>
+</html>

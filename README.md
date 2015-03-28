@@ -1,7 +1,7 @@
 offline-editor-js
 =================
 
-Offline-editor-js is a set of JavaScript libraries for using the ArcGIS API for JavaScript offline. It offers both lightweight editing and tile management capabilities while offline or intermittently offline. It's a work-in-progress so if you have suggestions open an issue or if you want to make a pull request we welcome your proposed modifications. 
+Offline-editor-js is a set of JavaScript libraries for using the ArcGIS API for JavaScript offline. It uses browser-based storage to offer both lightweight editing and tile management capabilities while offline or intermittently offline. It's a work-in-progress so if you have suggestions open an issue or if you want to make a pull request we welcome your proposed modifications. 
 
 Online samples and getting started tutorials are available here: **[http://esri.github.io/offline-editor-js/demo/](http://esri.github.io/offline-editor-js/demo/)**
 
@@ -40,10 +40,6 @@ Go __[here](demo/api-doc.html)__ to get links to the API docs and How to use doc
 ## Architecture
 
 ![Architecture](demo/images/offline_arch.png)
-
-## Migrating from v1 to v2
-
-If you are migrating your v1 code to v2 then go [here](doc/migratefromv1tov2.md) for some pointers.
 
 ##Setup Instructions
 
@@ -94,7 +90,7 @@ Anyone and everyone is welcome to contribute. Please see our [guidelines for con
 
 
 ## Licensing
-Copyright 2014 Esri
+Copyright 2015 Esri
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
