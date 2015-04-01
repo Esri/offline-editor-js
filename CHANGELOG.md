@@ -1,5 +1,9 @@
 # offline-editor-js - Changelog
 
+## Version 2.5.0.1 - April 1, 2015
+
+Minor doc update. Added references to attachments documentation. Misc. clarifications.
+
 ## Version 2.5 - March 27, 2015
 
 v2.5 focused on updating OfflineFeaturesManager from using localStorage to IndexedDB. Additional information is available in the [API Doc](https://github.com/Esri/offline-editor-js/blob/master/doc/offlinefeaturesmanager.md). Feature edit storage capabilities have been increased from 5 MBs to approximately 50 - 100 MBs or more, and the changes made allow for additional functionality and capabilities to be implemented that weren't possible under the previous architecture.**

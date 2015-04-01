@@ -22,7 +22,7 @@ The following workflow is currently supported for both both features and tiles:
 
 1) Load web application while online.
  
-2) Once all tiles and features are loaded then programmatically take application offline. 
+2) Once all tiles, features and attachments are loaded then programmatically take application offline.
 
 3) Make edits while offline.
 
