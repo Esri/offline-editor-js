@@ -56,7 +56,9 @@ NOTE: You can also monitor standard ArcGIS API for JavaScript layer events using
 
 ```
 
-**Step 3** Set a listener for the `layers-add-result` event. Then, add the feature layer to the map just like you normally would:
+**Step 3** Set a listener for the `layers-add-result` event. Then, add the feature layer to the map just like you normally would.
+
+**IMPORTANT:** The library currently only works offline when the `mode` is set to `FeatureLayer.MODE_SNAPSHOT`:
 
 ```js
 	
