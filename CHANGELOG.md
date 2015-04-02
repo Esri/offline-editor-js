@@ -1,5 +1,9 @@
 # offline-editor-js - Changelog
 
+## Version 2.5.0.2 - April 2, 2015
+
+Minor doc update. Clarification in OfflineFeaturesManager on requiring `mode` be set to `FeatureLayer.MODE_SNAPSHOT`.
+
 ## Version 2.5.0.1 - April 1, 2015
 
 Minor doc update. Added references to attachments documentation. Misc. clarifications.

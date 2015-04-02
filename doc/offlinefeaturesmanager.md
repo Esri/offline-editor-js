@@ -32,6 +32,8 @@ Property | Value | Description
 
 OfflineFeaturesManager provides the following functionality.
 
+**IMPORTANT:** The library currently only works offline when the feature layer's `mode` is set to `FeatureLayer.MODE_SNAPSHOT`.
+
 Methods | Returns | Description
 --- | --- | ---
 `extend(layer,callback,dataStore)`|`callback( boolean, errors )`| **Updated @ v2.5** Overrides a feature layer, by replacing the `applyEdits()` method of the layer. You can use the FeatureLayer as always, but it's behaviour will be enhanced according to the online status of the manager and the capabilities included in this library. `Callback` is related to initialization the library. `dataStore` is an optional Object that contains any information you need when reconsistuting the layer after an offline browser restart. Refer to the [How to use the edit library doc](howtouseeditlibrary.md) for addition information.
