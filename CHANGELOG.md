@@ -1,5 +1,9 @@
 # offline-editor-js - Changelog
 
+## Version 2.5.1 - April 7, 2015
+
+Closes #301 - OfflineFeaturesManager failed on _validateFeature during an attachment ADD operation.
+
 ## Version 2.5.0.2 - April 2, 2015
 
 Minor doc update. Clarification in OfflineFeaturesManager on requiring `mode` be set to `FeatureLayer.MODE_SNAPSHOT`.
