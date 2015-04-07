@@ -452,7 +452,7 @@ describe("Attachments", function()
 			});
 		});
 
-		it("go Online", function(done)
+		async.it("go Online", function(done)
 		{
 			expect(g_featureLayers[3].graphics.length).toBe(2);
 
@@ -477,8 +477,8 @@ describe("Attachments", function()
 				expect(attachmentResults[1].addAttachmentResult).not.toBeUndefined();
 				expect(attachmentResults[1].addAttachmentResult.success).toBeTruthy();
 
-				expect(result.features.responses[g_featureLayers[3].url]).not.toBeUndefined();
-				var featureResults = result.features.responses[g_featureLayers[3].url];
+				expect(result.features.responses[0]).not.toBeUndefined();
+				var featureResults = result.features.responses[0];
 				expect(featureResults.addResults.length).toBe(1);
 				expect(featureResults.updateResults.length).toBe(0);
 				expect(featureResults.deleteResults.length).toBe(0);
@@ -492,7 +492,7 @@ describe("Attachments", function()
 				{
 					expect(success).toBeTruthy();
 					expect(result.count).toBe(2);
-//			 		done();
+			 		done();
 			 	});
 			});
 			expect(g_offlineFeaturesManager.getOnlineStatus()).toBe(g_offlineFeaturesManager.RECONNECTING);
@@ -500,8 +500,9 @@ describe("Attachments", function()
 			
 		it("no edits pending", function(done)
 		{
-			expect(g_editsStore.pendingEditsCount()).toBe(0);
-//			done();
+			expect(g_featureLayers[3].pendingEditsCount(function(count){
+				expect(count).toBe(0);
+			}));
 		});
 
 		it("no attachments pending", function(done)

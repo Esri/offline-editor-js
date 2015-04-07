@@ -40,7 +40,7 @@
 		"esri/layers/FeatureLayer", "esri/geometry", "esri/request",
 		"dojo/dom", "dojo/on", "dojo/query",
 		"dojo/dom-construct",
-        "../dist/offline-edit-min.js",
+        "../dist/offline-edit-src.js",
         "dojo/domReady!"],
 		function(Map, 
 			GraphicsLayer, Graphic, 
@@ -90,7 +90,11 @@
 				{
 					g_featureLayers.forEach(function(layer)
 					{
-						g_offlineFeaturesManager.extend(layer);
+						g_offlineFeaturesManager.extend(layer,function(success,message){
+							if(!success){
+								alert("There was a problem extending the layer: " + layer);
+							}
+						});
 					});		
 				}
 				catch(err)

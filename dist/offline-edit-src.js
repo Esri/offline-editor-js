@@ -1,4 +1,4 @@
-/*! offline-editor-js - v2.5 - 2015-03-27
+/*! offline-editor-js - v2.5.1 - 2015-04-07
 *   Copyright (c) 2015 Environmental Systems Research Institute, Inc.
 *   Apache License*/
 define([
@@ -790,7 +790,7 @@ define([
                                         if(result.operation == self._editStore.ADD){
                                             // If we are deleting a new feature that has not been added to the
                                             // server yet we need to delete it and its phantom graphic.
-                                            self._deleteTemporaryFeature(graphic,function(success){
+                                            layer._deleteTemporaryFeature(graphic,function(success){
                                                 if(success == false){
                                                     resolved = false;
                                                 }
@@ -1013,11 +1013,11 @@ define([
                                 }
                             })
                         }
-                        else if(result == false){
-                            callback(false, error);
-                        }
-                        else if(result == true){
+                        else if(result){
                             callback(true, null);
+                        }
+                        else{
+                            callback(false, error);
                         }
                     });
                 },
