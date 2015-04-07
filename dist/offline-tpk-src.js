@@ -1,4 +1,4 @@
-/*! offline-editor-js - v2.5 - 2015-03-27
+/*! offline-editor-js - v2.5.1 - 2015-04-07
 *   Copyright (c) 2015 Environmental Systems Research Institute, Inc.
 *   Apache License*/
 /**
