@@ -97,6 +97,7 @@ module.exports = function(grunt) {
                 compress: {
                     drop_console: true //remove console.log statements :)
                 },
+                preserveComments: 'some',
                 wrap: false
 //                mangle: {
 //                    except: ['O']
@@ -123,4 +124,4 @@ module.exports = function(grunt) {
     grunt.registerTask('build',['concat','uglify']);
     // JSHint not currently working. Needs alot of cleanup.
 //    grunt.registerTask('buildAll',['jshint','concat','uglify']);
-}
+};
