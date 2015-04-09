@@ -1,20 +1,20 @@
 {
-    "name": "offline-editor-js",
-    "version": "2.5.1",
-    "description": "Lightweight set of libraries for working offline with map tiles and ArcGIS feature services",
-    "author": "Andy Gup <agup@esri.com> (http://blog.andygup.net)",
-    "license": "Apache 2",
-    "contributors": [
-        "Javier Abadia <javier.abadia@esri.es>"
-    ],
-    "readmeFilename": "README.md",
-    "dependencies": {},
-    "devDependencies": {
-        "grunt": "~0.4.4",
-        "grunt-contrib-concat":"^0.3.0",
-        "grunt-contrib-uglify": "^0.2.0",
-        "grunt-contrib-compress": "^v0.10.0",
-        "grunt-contrib-watch": "^0.6.1",
-        "grunt-contrib-jshint": "^0.4.3"
-    }
+  "name": "offline-editor-js",
+  "version": "2.6.0",
+  "description": "Lightweight set of libraries for working offline with map tiles and ArcGIS feature services",
+  "author": "Andy Gup <agup@esri.com> (http://blog.andygup.net)",
+  "license": "Apache 2",
+  "contributors": [
+    "Javier Abadia <javier.abadia@esri.es>"
+  ],
+  "readmeFilename": "README.md",
+  "dependencies": {},
+  "devDependencies": {
+    "grunt": "^0.4.5",
+    "grunt-contrib-compress": "^0.13.0",
+    "grunt-contrib-concat": "^0.5.1",
+    "grunt-contrib-jshint": "^0.11.1",
+    "grunt-contrib-uglify": "^0.9.1",
+    "grunt-contrib-watch": "^0.6.1"
+  }
 }
