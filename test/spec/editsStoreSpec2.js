@@ -152,7 +152,11 @@ describe("Public Interface", function()
                     g_test.lineFeature = new Graphic( g_test.line, g_test.lineSymbol, {"nombre": "America","objectid":5});
                     g_editsStore.updateExistingEdit(g_editsStore.DELETE,2, g_test.lineFeature, function(result){
                         expect(result).toEqual(true);
-                        done();
+
+                        g_editsStore.pendingEditsCount(function(count){
+                            expect(count).toBe(3);
+                            done();
+                        });
                     });
                 });
             });
@@ -248,20 +252,20 @@ describe("Public Interface", function()
         describe("Handle Phantom Graphics", function(){
            async.it("add a phantom graphic", function(done){
 
-               g_test.pointFeature2 = new esriGraphic( g_test.point, g_test.pointSymbol, {"name": "the name of the feature", "objectId":200});
+               g_test.pointFeature2 = new esriGraphic( g_test.point, g_test.pointSymbol, {"name": "the name of the feature", "objectid":200});
 
                g_editsStore.pushPhantomGraphic(g_test.pointFeature2,function(success,err){
                    expect(success).toBe(true);
-                   expect(err).toBe(null);
+                   expect(err).toBe(null); console.log("ADD PHANTOM GRAPHIC 1: " + success)
                    done();
                });
            });
 
             async.it("add another phantom graphic", function(done){
 
-                g_test.pointFeature3 = new esriGraphic( g_test.point, g_test.pointSymbol, {"name": "the name of the feature", "objectId":300});
+                g_test.pointFeature3 = new esriGraphic( g_test.point, g_test.pointSymbol, {"name": "the name of the feature", "objectid":300});
                 g_editsStore.pushPhantomGraphic(g_test.pointFeature3,function(success,err){
-                    expect(success).toBe(true);
+                    expect(success).toBe(true); console.log("ADD PHANTOM GRAPHIC 2: " + success)
                     expect(err).toBe(null);
                     done();
                 });
@@ -367,7 +371,7 @@ describe("Public Interface", function()
                 g_editsStore.getUsage(function(result,error){
                     console.log("RESULT IS " + result.sizeBytes);
                     expect(result).toEqual(jasmine.any(Object));
-                    expect(result.sizeBytes).toEqual(1174);
+                    expect(result.sizeBytes).toEqual(1549);
                     expect(result.editCount).toEqual(3);
                     done();
                 })
@@ -398,7 +402,7 @@ describe("Public Interface", function()
             async.it("get size", function(done){
                 g_editsStore.getUsage(function(success){
                     expect(success).toEqual(jasmine.any(Object));
-                    expect(success.sizeBytes).toEqual(1251);
+                    expect(success.sizeBytes).toEqual(1626);
                     expect(success.editCount).toEqual(3);
                     done();
                 })
@@ -418,7 +422,7 @@ describe("Public Interface", function()
             async.it("get size", function(done){
                 g_editsStore.getUsage(function(success){
                     expect(success).toEqual(jasmine.any(Object));
-                    expect(success.sizeBytes).toEqual(1174);
+                    expect(success.sizeBytes).toEqual(1549);
                     expect(success.editCount).toEqual(3);
                     done();
                 })
