@@ -1,6 +1,7 @@
-/*! offline-editor-js - v2.5.1 - 2015-04-07
+/*! offline-editor-js - v2.6.0 - 2015-04-09
 *   Copyright (c) 2015 Environmental Systems Research Institute, Inc.
 *   Apache License*/
+/*jshint -W030 */
 define([
         "dojo/Evented",
         "dojo/_base/Deferred",
@@ -383,13 +384,15 @@ define([
                             var success = true;
                             var length = r.length;
                             for (var v = 0; v < length; v++) {
-                                if (r[v] == false) success = false;
+                                if (r[v] === false) {
+                                    success = false;
+                                }
                             }
 
                             // we already pushed the edits into the database, now we let the FeatureLayer to do the local updating of the layer graphics
                             // EDITS_ENQUEUED = callback(true, edit), and EDITS_ENQUEUED_ERROR = callback(false, /*String */ error)
                             this._editHandler(results, adds, updatesMap, callback, errback, deferred1);
-                            success == true ? self.emit(self.events.EDITS_ENQUEUED, results) : self.emit(self.events.EDITS_ENQUEUED_ERROR, results);
+                            success === true ? self.emit(self.events.EDITS_ENQUEUED, results) : self.emit(self.events.EDITS_ENQUEUED_ERROR, results);
                         }.bind(this));
 
                         return deferred1;
@@ -446,7 +449,7 @@ define([
                                 console.log("Error: ", error.message);
                                 callback(false, error.message);
                             });
-                        })
+                        });
                     };
 
                     /**
@@ -467,7 +470,7 @@ define([
                     layer.getFeatureLayerJSONDataStore = function(callback){
                         self._editStore.getFeatureLayerJSON(function(success,message){
                             callback(success,message);
-                        })
+                        });
                     };
 
                     /**
@@ -553,7 +556,7 @@ define([
                     layer.pendingEditsCount = function(callback){
                         self._editStore.pendingEditsCount(function(count){
                             callback(count);
-                        })
+                        });
                     };
 
                     /**
@@ -597,7 +600,7 @@ define([
                             else{
                                 callback(false,message);
                             }
-                        })
+                        });
                     };
 
                     /* internal methods */
@@ -615,7 +618,7 @@ define([
                     layer._pushValidatedDeleteFeatureToDB = function(layer,deleteEdit,operation,resultsArray,objectId,deferred){
                         self._editStore.pushEdit(operation, layer.url, deleteEdit, function (result, error) {
 
-                            if(result == true){
+                            if(result){
                                 resultsArray.deleteResults.push({success: true, error: null, objectId: objectId});
 
                                 // Use the correct key as set by self.DB_UID
@@ -632,7 +635,9 @@ define([
 
                                 // Add phantom graphic to the database
                                 self._editStore.pushPhantomGraphic(phantomDelete, function (result) {
-                                    if (!result)console.log("There was a problem adding phantom graphic id: " + objectId);
+                                    if (!result) {
+                                        console.log("There was a problem adding phantom graphic id: " + objectId);
+                                    }
                                     console.log("Phantom graphic " + objectId + " added to database as a deletion.");
                                 });
 
@@ -668,7 +673,7 @@ define([
                     layer._pushValidatedUpdateFeatureToDB = function(layer,updateEdit,operation,resultsArray,objectId,deferred){
                         self._editStore.pushEdit(operation, layer.url, updateEdit, function (result, error) {
 
-                            if(result == true){
+                            if(result){
                                 resultsArray.updateResults.push({success: true, error: null, objectId: objectId});
 
                                 // Use the correct key as set by self.DB_UID
@@ -685,7 +690,9 @@ define([
 
                                 // Add phantom graphic to the database
                                 self._editStore.pushPhantomGraphic(phantomUpdate, function (result) {
-                                    if (!result)console.log("There was a problem adding phantom graphic id: " + objectId);
+                                    if (!result) {
+                                        console.log("There was a problem adding phantom graphic id: " + objectId);
+                                    }
                                     console.log("Phantom graphic " + objectId + " added to database as an update.");
                                 });
 
@@ -713,7 +720,7 @@ define([
                      */
                     layer._pushValidatedAddFeatureToDB = function(layer,addEdit,operation,resultsArray,objectId,deferred){
                         self._editStore.pushEdit(operation, layer.url, addEdit, function (result, error) {
-                            if(result == true){
+                            if(result){
                                 resultsArray.addResults.push({success: true, error: null, objectId: objectId});
 
                                 // Use the correct key as set by self.DB_UID
@@ -731,7 +738,9 @@ define([
 
                                 // Add phantom graphic to the database
                                 self._editStore.pushPhantomGraphic(phantomAdd, function (result) {
-                                    if (!result)console.log("There was a problem adding phantom graphic id: " + objectId);
+                                    if (!result) {
+                                        console.log("There was a problem adding phantom graphic id: " + objectId);
+                                    }
                                     console.log("Phantom graphic " + objectId + " added to database as an add.");
                                 });
 
@@ -791,7 +800,7 @@ define([
                                             // If we are deleting a new feature that has not been added to the
                                             // server yet we need to delete it and its phantom graphic.
                                             layer._deleteTemporaryFeature(graphic,function(success){
-                                                if(success == false){
+                                                if(!success){
                                                     resolved = false;
                                                 }
                                             });
@@ -1003,7 +1012,7 @@ define([
                         //
                         ////////////////////////////////////////////////////
 
-                        if (typeof dataStore === "object" && result == true && (dataStore !== undefined) && (dataStore !== null)) {
+                        if (typeof dataStore === "object" && result === true && (dataStore !== undefined) && (dataStore !== null)) {
                             editStore.pushFeatureLayerJSON(dataStore, function (success, err) {
                                 if (success) {
                                     callback(true, null);
@@ -1011,7 +1020,7 @@ define([
                                 else {
                                     callback(false, err);
                                 }
-                            })
+                            });
                         }
                         else if(result){
                             callback(true, null);
@@ -1034,7 +1043,7 @@ define([
                             // https://code.google.com/p/chromium/issues/detail?id=35705#c40
                             XMLHttpRequest.prototype.sendAsBinary = function (datastr) {
                                 function byteValue(x) {
-                                    return x.charCodeAt(0) & 0xff;
+                                    return x.charCodeAt(0) & 0xff; // jshint ignore:line
                                 }
 
                                 var ords = Array.prototype.map.call(datastr, byteValue);
@@ -1070,55 +1079,55 @@ define([
                         var color = [0, 255, 0, 255];
                         var width = 1.5;
 
-                        this._phantomSymbols['point'] = [];
-                        this._phantomSymbols['point'][this._editStore.ADD] = new SimpleMarkerSymbol({
+                        this._phantomSymbols.point = [];
+                        this._phantomSymbols.point[this._editStore.ADD] = new SimpleMarkerSymbol({
                             "type": "esriSMS", "style": "esriSMSCross",
                             "xoffset": 10, "yoffset": 10,
                             "color": [255, 255, 255, 0], "size": 15,
                             "outline": {"color": color, "width": width, "type": "esriSLS", "style": "esriSLSSolid"}
                         });
-                        this._phantomSymbols['point'][this._editStore.UPDATE] = new SimpleMarkerSymbol({
+                        this._phantomSymbols.point[this._editStore.UPDATE] = new SimpleMarkerSymbol({
                             "type": "esriSMS", "style": "esriSMSCircle",
                             "xoffset": 0, "yoffset": 0,
                             "color": [255, 255, 255, 0], "size": 15,
                             "outline": {"color": color, "width": width, "type": "esriSLS", "style": "esriSLSSolid"}
                         });
-                        this._phantomSymbols['point'][this._editStore.DELETE] = new SimpleMarkerSymbol({
+                        this._phantomSymbols.point[this._editStore.DELETE] = new SimpleMarkerSymbol({
                             "type": "esriSMS", "style": "esriSMSX",
                             "xoffset": 0, "yoffset": 0,
                             "color": [255, 255, 255, 0], "size": 15,
                             "outline": {"color": color, "width": width, "type": "esriSLS", "style": "esriSLSSolid"}
                         });
-                        this._phantomSymbols['multipoint'] = null;
+                        this._phantomSymbols.multipoint = null;
 
-                        this._phantomSymbols['polyline'] = [];
-                        this._phantomSymbols['polyline'][this._editStore.ADD] = new SimpleLineSymbol({
+                        this._phantomSymbols.polyline = [];
+                        this._phantomSymbols.polyline[this._editStore.ADD] = new SimpleLineSymbol({
                             "type": "esriSLS", "style": "esriSLSSolid",
                             "color": color, "width": width
                         });
-                        this._phantomSymbols['polyline'][this._editStore.UPDATE] = new SimpleLineSymbol({
+                        this._phantomSymbols.polyline[this._editStore.UPDATE] = new SimpleLineSymbol({
                             "type": "esriSLS", "style": "esriSLSSolid",
                             "color": color, "width": width
                         });
-                        this._phantomSymbols['polyline'][this._editStore.DELETE] = new SimpleLineSymbol({
+                        this._phantomSymbols.polyline[this._editStore.DELETE] = new SimpleLineSymbol({
                             "type": "esriSLS", "style": "esriSLSSolid",
                             "color": color, "width": width
                         });
 
-                        this._phantomSymbols['polygon'] = [];
-                        this._phantomSymbols['polygon'][this._editStore.ADD] = new SimpleFillSymbol({
+                        this._phantomSymbols.polygon = [];
+                        this._phantomSymbols.polygon[this._editStore.ADD] = new SimpleFillSymbol({
                             "type": "esriSFS",
                             "style": "esriSFSSolid",
                             "color": [255, 255, 255, 0],
                             "outline": {"type": "esriSLS", "style": "esriSLSSolid", "color": color, "width": width}
                         });
-                        this._phantomSymbols['polygon'][this._editStore.UPDATE] = new SimpleFillSymbol({
+                        this._phantomSymbols.polygon[this._editStore.UPDATE] = new SimpleFillSymbol({
                             "type": "esriSFS",
                             "style": "esriSFSSolid",
                             "color": [255, 255, 255, 0],
                             "outline": {"type": "esriSLS", "style": "esriSLSDash", "color": color, "width": width}
                         });
-                        this._phantomSymbols['polygon'][this._editStore.DELETE] = new SimpleFillSymbol({
+                        this._phantomSymbols.polygon[this._editStore.DELETE] = new SimpleFillSymbol({
                             "type": "esriSFS",
                             "style": "esriSFSSolid",
                             "color": [255, 255, 255, 0],
@@ -1324,7 +1333,7 @@ define([
                                             console.log("_replayStoredEdits: CLEANED EDITS DATABASE");
                                             this._editStore.resetPhantomGraphicsQueue(function (success) {
 
-                                                if (success == false) {
+                                                if (!success) {
                                                     console.log("There was a problem deleting phantom graphics in the database.");
                                                     this.emit(this.events.EDITS_SENT_ERROR, {msg: "Problem deleting phantom graphic(s)"});
                                                 }
@@ -1333,14 +1342,16 @@ define([
                                                     this.emit(this.events.ALL_EDITS_SENT,responses);
                                                 }
                                                 callback && callback(true, responses);
-                                            }.bind(this))
+                                            }.bind(this));
                                         }
                                         // If not successful then we only delete the phantom graphics that are related to
                                         // edits that were successfully synced
                                         else {
                                             console.error("_replayStoredEdits: There was a problem and not all edits were cleaned.");
                                             this._editStore.resetLimitedPhantomGraphicsQueue(responses, function (success) {
-                                                if(!success) console.error("_replayStoredEdits.resetLimitedPhantomGraphicsQueue: There was a problem clearing the queue " + JSON.stringify(error))
+                                                if(!success) {
+                                                    console.error("_replayStoredEdits.resetLimitedPhantomGraphicsQueue: There was a problem clearing the queue " + JSON.stringify(error));
+                                                }
                                             });
 
                                             this.emit(this.events.EDITS_SENT_ERROR, {msg: responses}); // There was a problem, some edits were not successfully sent!
@@ -1488,7 +1499,7 @@ define([
                             console.log("Error: ", error.message);
                             callback(false, error.message);
                         });
-                    })
+                    });
                 },
 
                 /**
@@ -1572,24 +1583,22 @@ define([
 /**
  * Creates a namespace for the non-AMD libraries in this directory
  */
-
-
+/*jshint -W020 */
 if(typeof O != "undefined"){
-    O.esri.Edit = {}
+    O.esri.Edit = {};
 }
 else{
     O = {};
     O.esri = {
         Edit: {}
-    }
+    };
 }
-
-"use strict";
-
-/*global IDBKeyRange,indexedDB */
-
-"use strict";
+/*global indexedDB */
+/*jshint -W030 */
 O.esri.Edit.EditStore = function () {
+
+    "use strict";
+
     this._db = null;
 
     // Public properties
@@ -1690,9 +1699,11 @@ O.esri.Edit.EditStore = function () {
 
         this.getFeatureLayerJSON(function (success, result) {
 
+            var objectStore;
+
             if (success && typeof result !== "undefined") {
 
-                var objectStore = db.transaction([this.objectStoreName], "readwrite").objectStore(this.objectStoreName);
+                objectStore = db.transaction([this.objectStoreName], "readwrite").objectStore(this.objectStoreName);
 
                 // Make a copy of the object
                 for (var key in dataStore) {
@@ -1706,7 +1717,7 @@ O.esri.Edit.EditStore = function () {
 
                 updateFeatureLayerDataRequest.onsuccess = function () {
                     callback(true, null);
-                }
+                };
 
                 updateFeatureLayerDataRequest.onerror = function (err) {
                     callback(false, err);
@@ -1724,7 +1735,7 @@ O.esri.Edit.EditStore = function () {
                     callback(false, event.target.error.message);
                 };
 
-                var objectStore = transaction.objectStore(this.objectStoreName);
+                objectStore = transaction.objectStore(this.objectStoreName);
 
                 // Protect against data cloning errors since we don't validate the input object
                 // Example: if you attempt to use an esri.Graphic in its native form you'll get a data clone error
@@ -1763,7 +1774,7 @@ O.esri.Edit.EditStore = function () {
 
         objectStoreGraphicRequest.onerror = function (msg) {
             callback(false, msg);
-        }
+        };
     };
 
     /**
@@ -1796,13 +1807,13 @@ O.esri.Edit.EditStore = function () {
                     self.editExists(id).then(function (results) {
                             // If the result is false then in theory the id no longer exists
                             // and we should return 'true' to indicate a successful delete operation.
-                            results.success == false ? callback(true, {message: "id does not exist"}) : callback(false, {message: null});
+                            results.success === false ? callback(true, {message: "id does not exist"}) : callback(false, {message: null});
                         },
                         function (err) {
                             // If the result is false then in theory the id no longer exists
                             // and we should return 'true' to indicate a successful delete operation.
                             callback(true, {message: "id does not exist"}); //because we want this test to throw an error. That means item deleted.
-                        })
+                        });
                 },
                 // There was a problem with the delete operation on the database
                 // This error message will come from editExists();
@@ -1828,17 +1839,17 @@ O.esri.Edit.EditStore = function () {
 
                     objectStoreDeleteRequest.onerror = function (msg) {
                         deferred.reject({success: false, error: msg});
-                    }
+                    };
                 }
                 else {
-                    deferred.reject({success: false, message: "id does not exist"})
+                    deferred.reject({success: false, message: "id does not exist"});
                 }
             },
             // If there is an error in editExists()
             function (err) {
                 deferred.reject({success: false, message: err});
             }.bind(this));
-        })
+        });
     };
 
     /**
@@ -1856,7 +1867,7 @@ O.esri.Edit.EditStore = function () {
         var object = {
             id: id,
             graphic: graphic.toJson()
-        }
+        };
 
         var transaction = db.transaction([this.objectStoreName], "readwrite");
 
@@ -1984,11 +1995,11 @@ O.esri.Edit.EditStore = function () {
 
                                 // IF the delete was successful, then the record should return 'false' because it doesn't exist.
                                 self.editExists(id).then(function (results) {
-                                        results.success == false ? callback(true) : callback(false);
+                                        results.success === false ? callback(true) : callback(false);
                                     },
                                     function (err) {
                                         callback(true); //because we want this test to throw an error. That means item deleted.
-                                    })
+                                    });
                             },
                             // There was a problem with the delete operation on the database
                             function (err) {
@@ -2008,7 +2019,7 @@ O.esri.Edit.EditStore = function () {
 
                         objectStoreDeleteRequest.onerror = function (msg) {
                             deferred.reject({success: false, error: msg});
-                        }
+                        };
                     }
                 },
                 // If there is an error in editExists()
@@ -2043,11 +2054,11 @@ O.esri.Edit.EditStore = function () {
 
             objectStore.onerror = function () {
                 errors++;
-                console.log("PHANTOM GRAPHIC ERROR")
+                console.log("PHANTOM GRAPHIC ERROR");
             };
 
             tx.oncomplete = function () {
-                errors == 0 ? callback(true) : callback(false);
+                errors === 0 ? callback(true) : callback(false);
             };
 
             for (var key in responseObject) {
@@ -2059,8 +2070,20 @@ O.esri.Edit.EditStore = function () {
                     // TO-DO we do NOT match the edit.id with edit's objectId
 
                     // If we have an add, update or delete success then delete the entry, otherwise we skip it.
-                    if (edit.updateResults.length > 0 || edit.deleteResults.length > 0 || edit.addResults.length > 0) {
-                        if (edit.updateResults[0].success || edit.deleteResults[0].success || edit.addResults[0].success) {
+                    if(edit.updateResults.length > 0){
+                        if (edit.updateResults[0].success){
+                            objectStore.delete(id);
+                        }
+                    }
+
+                    if(edit.deleteResults.length > 0){
+                        if (edit.deleteResults[0].success){
+                            objectStore.delete(id);
+                        }
+                    }
+
+                    if(edit.addResults.length > 0){
+                        if (edit.addResults[0].success){
                             objectStore.delete(id);
                         }
                     }
@@ -2092,11 +2115,11 @@ O.esri.Edit.EditStore = function () {
 
                 objectStore.onerror = function () {
                     errors++;
-                }
+                };
 
                 tx.oncomplete = function () {
-                    errors == 0 ? callback(true) : callback(false);
-                }
+                    errors === 0 ? callback(true) : callback(false);
+                };
 
                 var length = array.length;
                 for (var i = 0; i < length; i++) {
@@ -2141,7 +2164,7 @@ O.esri.Edit.EditStore = function () {
 
             objectStoreGraphicRequest.onerror = function (msg) {
                 callback(false,msg);
-            }
+            };
         });
     };
 
@@ -2245,7 +2268,8 @@ O.esri.Edit.EditStore = function () {
         objectStoreGraphicRequest.onsuccess = function () {
 
             //Grab the data object returned as a result
-            var data = objectStoreGraphicRequest.result;
+            // TO-DO Do we keep this??
+            objectStoreGraphicRequest.result;
 
             //Create a new update object
             var update = {
@@ -2260,12 +2284,12 @@ O.esri.Edit.EditStore = function () {
 
             updateGraphicRequest.onsuccess = function () {
                 callback(true);
-            }
+            };
 
             updateGraphicRequest.onerror = function (err) {
                 callback(false, err);
             };
-        }
+        }.bind(this);
     };
 
     /**
@@ -2304,11 +2328,11 @@ O.esri.Edit.EditStore = function () {
 
                             // IF the delete was successful, then the record should return 'false' because it doesn't exist.
                             self.editExists(id).then(function (results) {
-                                    results.success == false ? callback(true) : callback(false);
+                                    results.success === false ? callback(true) : callback(false);
                                 },
                                 function (err) {
                                     callback(true); //because we want this test to throw an error. That means item deleted.
-                                })
+                                });
                         },
                         // There was a problem with the delete operation on the database
                         function (err) {
@@ -2328,7 +2352,7 @@ O.esri.Edit.EditStore = function () {
 
                     objectStoreDeleteRequest.onerror = function (msg) {
                         deferred.reject({success: false, error: msg});
-                    }
+                    };
                 }
             },
             // If there is an error in editExists()
@@ -2368,7 +2392,7 @@ O.esri.Edit.EditStore = function () {
         var id = this.FEATURE_LAYER_JSON_ID;
         var phantomGraphicPrefix = this.PHANTOM_GRAPHIC_PREFIX;
 
-        var transaction = this._db.transaction([this.objectStoreName], "readwrite")
+        var transaction = this._db.transaction([this.objectStoreName], "readwrite");
         var objectStore = transaction.objectStore(this.objectStoreName);
         objectStore.openCursor().onsuccess = function (evt) {
             var cursor = evt.target.result;
@@ -2419,7 +2443,7 @@ O.esri.Edit.EditStore = function () {
 
             objectStoreGraphicRequest.onerror = function (msg) {
                 deferred.reject({success: false, error: msg});
-            }
+            };
         });
 
         //We return a deferred object so that when calling this function you can chain it with a then() statement.
@@ -2593,8 +2617,9 @@ O.esri.Edit.EditStore = function () {
 
 /*global IDBKeyRange,indexedDB */
 
-"use strict";
 O.esri.Edit.AttachmentsStore = function () {
+    "use strict";
+
     this._db = null;
 
     var DB_NAME = "attachments_store";
