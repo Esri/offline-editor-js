@@ -1,6 +1,27 @@
 # offline-editor-js - Changelog
 
-## Version 2.5.1 - April 7, 2015
+## Version 2.6 - April 9, 2015
+
+Recommended update. No breaking changes. 
+
+**Bug Fixes**
+
+* Closes #308 - resetLimitedPhantomGraphicsQueue failing. Could cause fatal errors.
+
+**Updates**
+
+* Closes #304 - preserve version number in minified builds
+* Closes #307 - package.json updated devDependencies
+* Updated editsStoreSpec2 to accommodate the fix for #308
+* jshint updates:
+    * jshint now working for /edit directory. Initial step towards piping all files thru jshint!
+    * jshint fix to attachmentsStore.js - moved "use strict" into function
+    * jshint fix to OfflineEditNS.js - removed "use strict" & added jshint exception
+    * Many jshint fixes in offlineFeaturesManager.js
+    * jshint fix to .jshintrc
+* Deleted editsStore_old.js
+
+## Version 2.5.1 - April 7, 2015 
 
 Closes #301 - OfflineFeaturesManager failed on _validateFeature during an attachment ADD operation.
 
