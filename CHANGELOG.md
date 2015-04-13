@@ -1,5 +1,13 @@
 # offline-editor-js - Changelog
 
+## Version 2.6.1 - April 13, 2015
+
+Patch release. Recommended update. No breaking changes.
+
+**Bug Fixes**
+
+* Closes #315 - editsStore.pushEdit() - failed to insert undefined objectId into database. 
+
 ## Version 2.6 - April 9, 2015
 
 Recommended update. No breaking changes. 
