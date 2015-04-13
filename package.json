@@ -1,6 +1,6 @@
 {
   "name": "offline-editor-js",
-  "version": "2.6.0",
+  "version": "2.6.1",
   "description": "Lightweight set of libraries for working offline with map tiles and ArcGIS feature services",
   "author": "Andy Gup <agup@esri.com> (http://blog.andygup.net)",
   "license": "Apache 2",
