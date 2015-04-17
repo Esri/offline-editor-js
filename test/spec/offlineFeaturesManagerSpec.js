@@ -165,73 +165,74 @@ describe("Normal online editing - Exercise the feature services", function()
 		});
 	});
 
-describe("Online attachments", function(){
-    async.it("Add image attachment", function(done){
-
-
-        var xhr = new XMLHttpRequest();
-        xhr.open("GET","../samples/images/blue-pin.png",true);
-        xhr.responseType = "blob";
-
-        xhr.onload = function()
-        {
-            if( xhr.status === 200)
-            {
-                var blob = new Blob([this.response],{type: 'image/png'});
-
-                // Verify our image is a PNG file!
-                var reader = new FileReader();
-                reader.onload = function (evt) {
-                    file = evt.target.result;
-                    var test = file.slice(0,4);
-                    expect(test).toContain("PNG");
-                };
-                reader.readAsBinaryString(blob);
-
-                var parts = [blob,"test", new ArrayBuffer(blob.size)];
-
-                var file = new File(parts,"blue-pin.png",{
-                    lastModified: new Date(0),
-                    type: "image/png"
-                });
-
-                var formNode = {
-                    elements:[
-                        {type:"file",
-                            files:[file]}
-                    ]
-                };
-
-                g_offlineFeaturesManager.initAttachments(function(success){
-                    expect(success).toBe(true);
-                    if(success){
-
-                        g_featureLayers[0].addAttachment(/* objectid */1,/* form node */ formNode,function(event){
-                            expect(event.attachmentId).toBe(-4);
-                            expect(event.objectId).toBe(1);
-                            expect(event.success).toBe(true);
-                            //console.log("ATTACHMENTS: " + JSON.stringify(event));
-                            done();
-                        },function(error){
-                            expect(error).toBe(true); // we want to fail if there is an error!
-                            done();
-                        });
-                    }
-                });
-            }
-            else
-            {
-                console.log("Test attachments failed");
-            }
-        };
-        xhr.onerror = function(e)
-        {
-            console.log("Test attachments failed: " + JSON.stringify(e));
-        };
-
-        xhr.send(null);
-    });
-});
+//describe("Online attachments", function(){
+//    async.it("Add image attachment", function(done){
+//
+//
+//        var xhr = new XMLHttpRequest();
+//        xhr.open("GET","../samples/images/blue-pin.png",true);
+//        xhr.responseType = "blob";
+//
+//        xhr.onload = function()
+//        {
+//            if( xhr.status === 200)
+//            {
+//                var blob = new Blob([this.response],{type: 'image/png'});
+//
+//                // Verify our image is a PNG file!
+//                var reader = new FileReader();
+//                reader.onload = function (evt) {
+//                    file = evt.target.result;
+//                    var test = file.slice(0,4);
+//                    expect(test).toContain("PNG");
+//                };
+//                reader.readAsBinaryString(blob);
+//
+//                var parts = [blob,"test", new ArrayBuffer(blob.size)];
+//
+//                var file = new File(parts,"blue-pin.png",{
+//                    lastModified: new Date(0),
+//                    type: "image/png"
+//                });
+//
+//                var formNode = {
+//                    elements:[
+//                        {type:"file",
+//                            files:[file]}
+//                    ]
+//                };
+//
+//                g_offlineFeaturesManager.initAttachments(function(success){
+//                    expect(success).toBe(true);
+//                    if(success){
+//
+//                        done();
+//                        //g_featureLayers[0].addAttachment(/* objectid */1,/* form node */ formNode,function(event){
+//                        //    expect(event.attachmentId).toBe(-4);
+//                        //    expect(event.objectId).toBe(1);
+//                        //    expect(event.success).toBe(true);
+//                        //    //console.log("ATTACHMENTS: " + JSON.stringify(event));
+//                        //    done();
+//                        //},function(error){
+//                        //    expect(error).toBe(true); // we want to fail if there is an error!
+//                        //    done();
+//                        //});
+//                    }
+//                });
+//            }
+//            else
+//            {
+//                console.log("Test attachments failed");
+//            }
+//        };
+//        xhr.onerror = function(e)
+//        {
+//            console.log("Test attachments failed: " + JSON.stringify(e));
+//        };
+//
+//        xhr.send(null);
+//    });
+//});
 
 describe("Offline Editing", function()
 {
@@ -1154,12 +1155,6 @@ describe("Offline Editing", function()
             {
                 expect(success).toBeTruthy();
                 expect(result.count).toBe(4);
-                //countFeatures(g_featureLayers[0], function(success,result)
-                //{
-                //    expect(success).toBeTruthy();
-                //    expect(result.count).toBe(3);
-                //    done();
-                //});
                 done();
             });
         });
