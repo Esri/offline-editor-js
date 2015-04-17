@@ -145,7 +145,7 @@ Methods | Returns | Description
 
 ##O.esri.Edit.AttachmentsStore
 
-Provides a number of public methods that are used by `OfflineFeaturesManager` library for storing attachments in the browser. Instiantiate this library using a `new` statement. Instiantiate this library using a `new` statement. 
+Provides a number of public methods that are used by `OfflineFeaturesManager` library for storing attachments in the browser. Instiantiate this library using a `new` statement. Instiantiate this library using a `new` statement.
 
 ###Constructor
 Constructor | Description
@@ -156,8 +156,8 @@ Constructor | Description
 
 Property | Value | Description
 --- | --- | ---
-`DB_NAME` | "attachments_store" | Represents a FeatureLayer.add() operation.
-`OBJECT_STORE_NAME` | "attachments" | Represents a FeatureLayer.update() operation.
+`dbName` | "attachments_store" | **Updated @ v2.7** Represents a FeatureLayer.add() operation.
+`objectStoreName` | "attachments" | **Updated @ v2.7** Represents a FeatureLayer.update() operation.
 
 ###Public Methods
 Methods | Returns | Description
