@@ -19,9 +19,9 @@
 		}
 	</script>
 
-    <link rel="stylesheet" href="http://http://js.arcgis.com/3.13/dijit/themes/claro/claro.css">
-    <link rel="stylesheet" href="http://js.arcgis.com/3.13/esri/css/esri.css">
-    <script src="http://js.arcgis.com/3.13/"></script>
+		<link rel="stylesheet" href="http://js.arcgis.com/3.12/dijit/themes/claro/claro.css">
+		<link rel="stylesheet" href="http://js.arcgis.com/3.12/esri/css/esri.css">
+		<script src="http://js.arcgis.com/3.12/"></script>
 
 	<!-- include spec files here... -->
 	<script type="text/javascript" src="spec/offlineFeaturesManagerSpec.js"></script>
@@ -73,6 +73,9 @@
 
 			var fsUrl = "http://services2.arcgis.com/CQWCKwrSm5dkM28A/arcgis/rest/services/Military/FeatureServer/";
             var fsUrlAttachmentsEnabled = "http://services1.arcgis.com/M8KJPUwAXP8jhtnM/arcgis/rest/services/Simple_Point_Service/FeatureServer/";
+			// Layer 1 = points
+            // Layer 2 = lines
+            // Layer 3 = polygons
 			g_layersIds = [0];
 
 			g_layersIds.forEach(function(layerId)
