@@ -27,8 +27,18 @@ The only differences in your code are:
 			console.log("layer extended", success? "success" : "failed");
 		});
 
+You can also modified the database's name and object store name. This functionality is typically reserved for advanced
+users that have a requirement to run multiple databases:
+
+            var offlineFeaturesManager = new esri.OfflineFeaturesManager();
+            offlineFeaturesManager.ATTACHMENTS_DB_NAME = "attachment-store-two";
+            offlineFeaturesManager.ATTACHMENTS_DB_OBJECTSTORE_NAME = "attachments-two";
+            
+            offlineFeaturesManager.initAttachments();
+
 ###Using the FeatureLayer API
-The FeatureLayer API for handling attachments consists primarily of three methods:
+The FeatureLayer API for handling attachments consists primarily of three methods. In general you should let `OfflineFeaturesManager`
+handle interactions with attachments and it's not recommended to interact with the attachments database directly. 
 
 * `layer.queryAttachmentInfos(objectId,callback,errback)` [doc](https://developers.arcgis.com/javascript/jsapi/featurelayer.html#queryattachmentinfos)
 * `layer.addAttachment(objectId, formNode, callback, errback)` [doc](https://developers.arcgis.com/javascript/jsapi/featurelayer.html#addattachment)
@@ -59,5 +69,5 @@ The widget internally uses the FeatureLayer API, and it works well in OFFLINE mo
 ##Limitations
 Attachment support in OFFLINE mode has some limitations:
 
-* while in OFFLINE mode, features in a featureLayer don't know whether they have any attachments in the server or any other information about attachments. Therefore queryAttachmentInfos() and deleteAttachments() can't take those attachments into account. Calling queryAttachmentInfos() will only return attachments that are stored in local storage and deleteAttachments() can only remove local attachments.
-* in order to see local attachments, the library uses [window.URL.createObjectURL() API](https://developer.mozilla.org/en-US/docs/Web/API/URL.createObjectURL). This API generates an opaque URL that represents the content of the File passed as parameter. This allows the user of the app to see and download attachments that are still in local browser storage as if they were actual files accessible through a URL. However, the lifetime of this URL is tied to the page where it is created. This means that if the user reloads (while still offline) the page after adding some local attachments, then these URLs will be invalid.
+* while in OFFLINE mode, features in a featureLayer don't know whether they have any attachments in the server or any other 
+information about attachments. Therefore queryAttachmentInfos() and deleteAttachments() can't take those attachments into account. Calling queryAttachmentInfos() will only return attachments that are stored in local storage and deleteAttachments() can only remove local attachments.
