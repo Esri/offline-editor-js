@@ -61,7 +61,7 @@
 				console.log("attachments inited", success);
 			});
 
-			g_formNode = dom.byId('theForm');
+//			g_formNode = dom.byId('theForm');
 
 			g_map = new Map("map", {
 				basemap: "topo",
@@ -121,13 +121,58 @@
 					}
 
 					// execJasmine();
-					on(dom.byId('theFile'),'change',execJasmine);
+//					on(dom.byId('theFile'),'change',execJasmine);
+
+					function retrieveFile(){
+
+						var xhr = new XMLHttpRequest();
+						xhr.open("GET","images/blue-pin.png",true);
+						xhr.responseType = "blob";
+
+						xhr.onload = function()
+						{
+							if( xhr.status === 200)
+							{
+								var blob = new Blob([this.response],{type: 'image/png'});
+								var parts = [blob,"test", new ArrayBuffer(blob.size)];
+								var files = [];
+								var file = new File(parts,"blue-pin.png",{
+									lastModified: new Date(0),
+									type: "image/png"
+								});
+
+								files.push(file);
+
+                                // Fake a form node for our custom parser in offlineFeaturesManager.js
+                                g_formNode = {
+                                    elements:[
+                                        {type:"file",
+                                            files:files}
+                                    ]
+                                };
+
+								execJasmine();
+
+							}
+							else
+							{
+								console.log("Retrieve file failed");
+							}
+						};
+						xhr.onerror = function(e)
+						{
+							console.log("Retrieved file failed: " + JSON.stringify(e));
+						};
+
+						xhr.send(null);
+					}
 				}
 				catch(err)
 				{
 					console.log(err);
 				}
 
+                retrieveFile();
 
 			}; // test()
 
@@ -136,10 +181,10 @@
 </head>
 
 <body>
-	<form id="theForm">
-	<input type="file" name="attachment" id="theFile"><br/>
-	<span>Select any file (.png, .jpg,...) to launch unit testing</span>
-	</form>
+	<!--<form id="theForm">-->
+	<!--<input type="file" name="attachment" id="theFile"><br/>-->
+	<!--<span>Select any file (.png, .jpg,...) to launch unit testing</span>-->
+	<!--</form>-->
 	<div id="map" style="position: absolute; bottom: 0; right: 0; height:200px; width: 200px;"></div>
 	<img src="" alt="" id="fakeTile" style="display:none;">
 </body>
