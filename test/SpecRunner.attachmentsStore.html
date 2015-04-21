@@ -27,7 +27,7 @@
 	"use strict"
 
 	var g_attachmentsStore;
-	var g_inputNode;
+	var g_inputNode = {};
 
 	require(["esri/map", 
 	"esri/layers/GraphicsLayer", "esri/graphic", "esri/symbols/SimpleFillSymbol", "esri/symbols/SimpleMarkerSymbol", "esri/symbols/SimpleLineSymbol",
@@ -43,7 +43,6 @@
 		domConstruct) 
 	{
 		g_attachmentsStore = new O.esri.Edit.AttachmentsStore();
-		g_inputNode = dom.byId('theFile');
 
 		test();
 
@@ -76,7 +75,9 @@
 				*/
 
 				// execJasmine();
-				on(dom.byId('theFile'),'change',execJasmine);
+				retrieveFile();
+
+//				on(dom.byId('theFile'),'change',execJasmine);
 			}
 			catch(err)	
 			{
@@ -85,16 +86,63 @@
 			function execJasmine() {
 				jasmineEnv.execute();
 			}
-		}; // test()
 
+            function retrieveFile(){
+
+                var xhr = new XMLHttpRequest();
+                xhr.open("GET","images/blue-pin.png",true);
+                xhr.responseType = "blob";
+
+                xhr.onload = function()
+                {
+                    if( xhr.status === 200)
+                    {
+                        var blob = new Blob([this.response],{type: 'image/png'});
+
+                        var parts = [blob,"test", new ArrayBuffer(blob.size)];
+
+                        var files = [];
+
+                        var file = new File(parts,"blue-pin.png",{
+                            lastModified: new Date(0),
+                            type: "image/png"
+                        });
+
+//                    var formNode = {
+//                        elements:[
+//                            {type:"file",
+//                                files:[file]}
+//                        ]
+//                    };
+
+                        files.push(file);
+
+                        g_inputNode.files = files;
+
+                        execJasmine();
+
+                    }
+                    else
+                    {
+                        console.log("Retrieve file failed");
+                    }
+                };
+                xhr.onerror = function(e)
+                {
+                    console.log("Retrieved file failed: " + JSON.stringify(e));
+                };
+
+                xhr.send(null);
+            }
+		}; // test()
 	}); // require()
   </script>
 </head>
 
 <body>
-	<form id="theForm">
-	<input type="file" id="theFile"><br/>
-	<span>Select any file (.png, .jpg,...) to launch unit testing</span>
-	</form>
+	<!--<form id="theForm">-->
+	<!--<input type="file" id="theFile"><br/>-->
+	<!--<span>Select any file (.png, .jpg,...) to launch unit testing</span>-->
+	<!--</form>-->
 </body>
 </html>
