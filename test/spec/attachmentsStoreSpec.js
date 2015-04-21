@@ -100,6 +100,15 @@ describe("attachments store module", function()
 		g_attachmentsStore.store(testData[i][0],testData[i][1],testData[i][2],testData[i][3], addAttachment);
 	});
 
+    async.it("Check usage", function(done){
+        g_attachmentsStore.getUsage(function(usage)
+        {
+            expect(usage.sizeBytes).toBeGreaterThan(0);
+            expect(usage.attachmentCount).toBe(5);
+            done();
+        })
+    });
+
 	async.it("query attachments of a feature", function(done)
 	{
 		g_attachmentsStore.getAttachmentsByFeatureId("layer1", 300, function(attachments)
@@ -212,6 +221,15 @@ describe("attachments store module", function()
 		});
 	});
 
+    async.it("Check usage", function(done){
+        g_attachmentsStore.getUsage(function(usage)
+        {
+            expect(usage.sizeBytes).toBeGreaterThan(0);
+            expect(usage.attachmentCount).toBe(4);
+            done();
+        })
+    });
+
 	async.it("delete attachments of a single feature", function(done)
 	{
 		g_attachmentsStore.deleteAttachmentsByFeatureId("layer1", 300, function(deletedCount)
@@ -258,5 +276,14 @@ describe("attachments store module", function()
 			},1);
 		});
 	});
+
+    async.it("Check usage", function(done){
+        g_attachmentsStore.getUsage(function(usage)
+        {
+            expect(usage.sizeBytes).toBe(0);
+            expect(usage.attachmentCount).toBe(0);
+            done();
+        })
+    });
 
 });
