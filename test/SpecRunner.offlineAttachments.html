@@ -123,25 +123,25 @@
 					// execJasmine();
 //					on(dom.byId('theFile'),'change',execJasmine);
 
-					function retrieveFile(){
+                    function retrieveFile(){
 
-						var xhr = new XMLHttpRequest();
-						xhr.open("GET","images/blue-pin.png",true);
-						xhr.responseType = "blob";
+                        var xhr = new XMLHttpRequest();
+                        xhr.open("GET","images/blue-pin.png",true);
+                        xhr.responseType = "blob";
 
-						xhr.onload = function()
-						{
-							if( xhr.status === 200)
-							{
-								var blob = new Blob([this.response],{type: 'image/png'});
-								var parts = [blob,"test", new ArrayBuffer(blob.size)];
-								var files = [];
-								var file = new File(parts,"blue-pin.png",{
-									lastModified: new Date(0),
-									type: "image/png"
-								});
+                        xhr.onload = function()
+                        {
+                            if( xhr.status === 200)
+                            {
+                                var blob = new Blob([this.response],{type: this.response.type});
+                                var parts = [blob,"test", new ArrayBuffer(blob.size)];
+                                var files = [];
+                                var file = new File(parts,"blue-pin.png",{
+                                    lastModified: new Date(0),
+                                    type: this.response.type
+                                });
 
-								files.push(file);
+                                files.push(file);
 
                                 // Fake a form node for our custom parser in offlineFeaturesManager.js
                                 g_formNode = {
@@ -151,21 +151,21 @@
                                     ]
                                 };
 
-								execJasmine();
+                                execJasmine();
 
-							}
-							else
-							{
-								console.log("Retrieve file failed");
-							}
-						};
-						xhr.onerror = function(e)
-						{
-							console.log("Retrieved file failed: " + JSON.stringify(e));
-						};
+                            }
+                            else
+                            {
+                                console.log("Retrieve file failed");
+                            }
+                        };
+                        xhr.onerror = function(e)
+                        {
+                            console.log("Retrieved file failed: " + JSON.stringify(e));
+                        };
 
-						xhr.send(null);
-					}
+                        xhr.send(null);
+                    }
 				}
 				catch(err)
 				{
