@@ -45,13 +45,13 @@ describe("attachments store module", function()
 		{
 			e.push(file);
 		});
-		console.log(testData);
+		console.log("TEST DATA " + JSON.stringify(testData));
 		done();
 	});
 
 	async.it("store one attachment", function(done)
 	{
-		g_attachmentsStore.store(testData[0][0],testData[0][1],testData[0][2],testData[0][3], function(success)
+		g_attachmentsStore.store(testData[0][0],testData[0][1],testData[0][2],testData[0][3], "add",function(success)
 		{
 			expect(success).toBeTruthy();
 			g_attachmentsStore.getUsage(function(usage)
@@ -67,7 +67,7 @@ describe("attachments store module", function()
 
 		var form = document.getElementById("theForm");
 
-		g_attachmentsStore.store(testData[0][0],testData[0][1],testData[0][2],form, function(success)
+		g_attachmentsStore.store(testData[0][0],testData[0][1],testData[0][2],form,"add", function(success)
 		{
 			expect(success).toBe(false);
 			g_attachmentsStore.getUsage(function(usage)
@@ -94,10 +94,10 @@ describe("attachments store module", function()
 				if( i == n)
 					done();
 				else
-					g_attachmentsStore.store(testData[i][0],testData[i][1],testData[i][2],testData[i][3], addAttachment);
+					g_attachmentsStore.store(testData[i][0],testData[i][1],testData[i][2],testData[i][3],"add", addAttachment);
 			})
 		};
-		g_attachmentsStore.store(testData[i][0],testData[i][1],testData[i][2],testData[i][3], addAttachment);
+		g_attachmentsStore.store(testData[i][0],testData[i][1],testData[i][2],testData[i][3],"add", addAttachment);
 	});
 
     async.it("Check usage", function(done){
