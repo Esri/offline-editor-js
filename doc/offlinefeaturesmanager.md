@@ -38,9 +38,9 @@ OfflineFeaturesManager provides the following functionality.
 
 Methods | Returns | Description
 --- | --- | ---
-`extend(layer,callback,dataStore)`|`callback( boolean, errors )`| Overrides a feature layer, by replacing the `applyEdits()` method of the layer. You can use the FeatureLayer as always, but it's behaviour will be enhanced according to the online status of the manager and the capabilities included in this library. `Callback` is related to initialization the library. `dataStore` is an optional Object that contains any information you need when reconsistuting the layer after an offline browser restart. Refer to the [How to use the edit library doc](howtouseeditlibrary.md) for addition information.
+`extend(layer,callback,dataStore)`|`callback( boolean, errors )`| Overrides a feature layer, by replacing the `applyEdits()` method of the layer. You can use the FeatureLayer as always, but it's behaviour will be enhanced according to the online status of the manager and the capabilities included in this library. `Callback` is related to initialization the library. <br><br>`dataStore` is an optional Object that contains any information you need when reconsistuting the layer after an offline browser restart. Refer to the [How to use the edit library doc](howtouseeditlibrary.md) for addition information.
 `goOffline()` | nothing | Forces library into an offline state. Any edits applied to extended FeatureLayers during this condition will be stored locally.
-`goOnline(callback)` | `callback( boolean, errors )` | Forces library to return to an online state. If there are pending edits, an attempt will be made to sync them with the remote feature server. Callback function will be called when resync process is done.
+`goOnline(callback)` | `callback( boolean, results )` | Forces library to return to an online state. If there are pending edits, an attempt will be made to sync them with the remote feature server. Callback function will be called when resync process is done. <br><br>The `results` Object contains ```   {features:{success : boolean, responses : responses}, attachments{ success : boolean, uploadResponses : uploadResponses, dbResponses : dbResponses }```
 `getOnlineStatus()` | `ONLINE`, `OFFLINE` or `RECONNECTING`| Determines the current state of the manager. Please, note that this library doesn't detect actual browser offline/online condition. You need to use the `offline.min.js` library included in `vendor\offline` directory to detect connection status and connect events to goOffline() and goOnline() methods. See `military-offline.html` sample.
 `getReadableEdit()` | String | **DEPRECATED** @ v2.5. A string value representing human readable information on pending edits. Use `featureLayer.getAllEditsArray()`.
 
@@ -160,6 +160,7 @@ Property | Value | Description
 --- | --- | ---
 `dbName` | "attachments_store" | **Updated @ v2.7** Represents a FeatureLayer.add() operation.
 `objectStoreName` | "attachments" | **Updated @ v2.7** Represents a FeatureLayer.update() operation.
+`TYPE` | "ADD", "UPDATE" or "DELETE" | **New @ v2.7** Specifies the type of operation against an attachment. 
 
 ###Public Methods
 Methods | Returns | Description
