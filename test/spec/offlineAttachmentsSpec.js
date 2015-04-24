@@ -318,16 +318,20 @@ describe("Attachments", function()
 				});
 		});
 
+        async.it("Verify attachment g3_offline", function(done) {
+            g_offlineFeaturesManager.attachmentsStore.getAttachmentsByFeatureId(g_featureLayer.url, g3_offline.attributes.objectid, function(attachments)
+            {
+                expect(attachments.length).toBe(1);
+                console.log("attached file:", attachments[0]);
+                done();
+            });
+        });
+
         async.it("Verify Attachment DB usage", function(done){
             g_offlineFeaturesManager.attachmentsStore.getUsage(function(usage)
             {
                 expect(usage.attachmentCount).toBe(3);
-                g_offlineFeaturesManager.attachmentsStore.getAttachmentsByFeatureId(g_featureLayer.url, g3_offline.attributes.objectid, function(attachments)
-                {
-                    expect(attachments.length).toBe(1);
-                    console.log("attached file:", attachments[0]);
-                    done();
-                });
+                done();
             });
         });
 
