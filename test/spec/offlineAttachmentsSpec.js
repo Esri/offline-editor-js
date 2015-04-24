@@ -111,6 +111,24 @@ describe("Attachments", function()
 				done();			
 			});
 		});
+
+        async.it("add online attachment", function(done){
+            g_featureLayer.addAttachment( g1_online.attributes.objectid, g_formData,
+                function(result)
+                {
+                    g1_online.attributes.attachmentsId = result.attachmentId;
+                    expect(result.success).toBe(true);
+                    expect(result.objectId).toBeGreaterThan(0);
+                    expect(result.attachmentId).toBeGreaterThan(0);
+                    expect(result.objectId).toBe( g1_online.attributes.objectid );
+                    done();
+                },
+                function(err)
+                {
+                    expect(true).toBeFalsy();
+                    done();
+                });
+        });
     });
 
     describe("Go offline", function(){
@@ -409,7 +427,7 @@ describe("Attachments", function()
         });
 	});
 
-	describe("delete attachments", function()
+	describe("delete new attachments", function()
 	{
 		var attachmentId;
 
@@ -487,6 +505,24 @@ describe("Attachments", function()
             });
         });
 	});
+
+    describe("Delete existing attachment", function(){
+        async.it("Delete attachment g1_online", function(done){
+            g_featureLayer.deleteAttachments( g1_online.attributes.objectid, [g1_online.attributes.attachmentsId],
+                function(result)
+                {
+                    console.log(result);
+                    expect(result).not.toBeUndefined();
+                    done();
+                },
+                function(err)
+                {
+                    expect(true).toBeFalsy();
+                    done();
+                }
+            );
+        });
+    });
 
 	describe("go Online and finish all", function()
 	{
