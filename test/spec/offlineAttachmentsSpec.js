@@ -534,9 +534,12 @@ describe("Attachments", function()
 		{
 			g_offlineFeaturesManager.attachmentsStore.getAttachmentsByFeatureLayer(g_featureLayer.url, function(attachments)
 			{
-				expect(attachments.length).toBe(2);
+				// This should be 3 because we are doing a delete existing attachment operation
+                // which means that DELETE will be queued in the database and will not be
+                // removed until we do a successful sync.
+                expect(attachments.length).toBe(3);
 				var objectIds = attachments.map(function(a){ return a.objectId; }).sort();
-				expect(objectIds).toEqual([g1_online.attributes.objectid, g2_offline.attributes.objectid].sort());
+				expect(objectIds).toEqual([g1_online.attributes.objectid,g1_online.attributes.objectid, g2_offline.attributes.objectid].sort());
 				done();
 			});
 		});
@@ -556,11 +559,11 @@ describe("Attachments", function()
 				expect(result.features.success).toBeTruthy();
 				expect(result.attachments.success).toBeTruthy();
 				expect(Object.keys(result.features.responses).length).toBe(1);
-				expect(Object.keys(result.attachments.responses).length).toBe(2);
+				expect(Object.keys(result.attachments.responses).length).toBe(3);
 
 				var attachmentResults = result.attachments.responses;
 				expect(attachmentResults).not.toBeUndefined();
-				expect(attachmentResults.length).toBe(2);
+				expect(attachmentResults.length).toBe(3);
 				//expect(attachmentResults[0].addAttachmentResult).not.toBeUndefined();
 				//expect(attachmentResults[0].addAttachmentResult.success).toBeTruthy();
 				//expect(attachmentResults[1].addAttachmentResult).not.toBeUndefined();
