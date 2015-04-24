@@ -34,7 +34,7 @@
 	var g_offlineFeaturesManager;
 	var g_modules = {};
 	var g_editsStore;
-	var g_formNode;
+	var g_formNode, g_formData;
 
 	require(["esri/map", 
 		"esri/layers/GraphicsLayer", "esri/graphic",
@@ -150,6 +150,9 @@
                                             files:files}
                                     ]
                                 };
+
+                                g_formData = new FormData();
+                                g_formData.append("attachment",file);
 
                                 execJasmine();
 
