@@ -129,6 +129,43 @@ describe("Attachments", function()
                     done();
                 });
         });
+
+        async.it("add a second online attachment", function(done){
+            g_featureLayer.addAttachment( g1_online.attributes.objectid, g_formData2,
+                function(result)
+                {
+                    g1_online.attributes.attachmentsId2 = result.attachmentId;
+                    expect(result.success).toBe(true);
+                    expect(result.objectId).toBeGreaterThan(0);
+                    expect(result.attachmentId).toBeGreaterThan(0);
+                    expect(result.objectId).toBe( g1_online.attributes.objectid );
+                    done();
+                },
+                function(err)
+                {
+                    expect(true).toBeFalsy();
+                    done();
+                });
+        });
+
+        async.it("Update second online attachment", function(done){
+            //g_formData2.append("lat",2);
+            g_featureLayer.updateAttachment( g1_online.attributes.objectid, g1_online.attributes.attachmentsId2, g_formData2,
+                function(result)
+                {
+                    g1_online.attributes.attachmentsId2 = result.attachmentId;
+                    expect(result.success).toBe(true);
+                    expect(result.objectId).toBeGreaterThan(0);
+                    expect(result.attachmentId).toBeGreaterThan(0);
+                    expect(result.objectId).toBe( g1_online.attributes.objectid );
+                    done();
+                },
+                function(err)
+                {
+                    expect(true).toBeFalsy();
+                    done();
+                });
+        });
     });
 
     describe("Go offline", function(){
@@ -528,7 +565,29 @@ describe("Attachments", function()
         });
     });
 
-	describe("go Online and finish all", function()
+    describe("Update existing attachment", function(){
+        async.it("Update attachment g1_online", function(done){
+
+            g_formData.append("attachmentId",g1_online.attributes.attachmentsId2);
+
+            g_featureLayer.updateAttachment( g1_online.attributes.objectid, g1_online.attributes.attachmentsId2, g_formData2,
+                function(result)
+                {
+                    console.log(result);
+                    expect(result).not.toBeUndefined();
+                    done();
+                },
+                function(err)
+                {
+                    expect(true).toBeFalsy();
+                    done();
+                }
+            );
+        });
+    });
+
+
+    describe("go Online and finish all", function()
 	{
 		async.it("query offline attachments of layer", function(done)
 		{
@@ -537,9 +596,9 @@ describe("Attachments", function()
 				// This should be 3 because we are doing a delete existing attachment operation
                 // which means that DELETE will be queued in the database and will not be
                 // removed until we do a successful sync.
-                expect(attachments.length).toBe(3);
+                expect(attachments.length).toBe(4);
 				var objectIds = attachments.map(function(a){ return a.objectId; }).sort();
-				expect(objectIds).toEqual([g1_online.attributes.objectid,g1_online.attributes.objectid, g2_offline.attributes.objectid].sort());
+				expect(objectIds).toEqual([g1_online.attributes.objectid,g1_online.attributes.objectid, g1_online.attributes.objectid, g2_offline.attributes.objectid].sort());
 				done();
 			});
 		});
@@ -559,11 +618,11 @@ describe("Attachments", function()
 				expect(result.features.success).toBeTruthy();
 				expect(result.attachments.success).toBeTruthy();
 				expect(Object.keys(result.features.responses).length).toBe(1);
-				expect(Object.keys(result.attachments.responses).length).toBe(3);
+				expect(Object.keys(result.attachments.responses).length).toBe(4);
 
 				var attachmentResults = result.attachments.responses;
 				expect(attachmentResults).not.toBeUndefined();
-				expect(attachmentResults.length).toBe(3);
+				expect(attachmentResults.length).toBe(4);
 				//expect(attachmentResults[0].addAttachmentResult).not.toBeUndefined();
 				//expect(attachmentResults[0].addAttachmentResult.success).toBeTruthy();
 				//expect(attachmentResults[1].addAttachmentResult).not.toBeUndefined();
@@ -619,7 +678,7 @@ describe("Attachments", function()
 			g_featureLayer.queryAttachmentInfos(g1_online.attributes.objectid,
 				function(attachmentsInfo)
 				{
-                    expect(attachmentsInfo.length).toBe(1);
+                    expect(attachmentsInfo.length).toBe(2);
 					expect(attachmentsInfo[0].objectId).toBe(g1_online.attributes.objectid);
 					expect(attachmentsInfo[0].id).toBeGreaterThan(0);
                     done();

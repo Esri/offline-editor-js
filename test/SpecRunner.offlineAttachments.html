@@ -34,7 +34,7 @@
 	var g_offlineFeaturesManager;
 	var g_modules = {};
 	var g_editsStore;
-	var g_formNode, g_formData;
+	var g_formNode, g_formData, g_formData2, g_formNode2;
 
 	require(["esri/map", 
 		"esri/layers/GraphicsLayer", "esri/graphic",
@@ -61,7 +61,9 @@
 				console.log("attachments inited", success);
 			});
 
-//			g_formNode = dom.byId('theForm');
+			var form = dom.byId('theForm');
+
+            on(dom.byId('theFile'),'change',test);
 
 			g_map = new Map("map", {
 				basemap: "topo",
@@ -80,7 +82,9 @@
                 outFields: ['*']
             });
 
-            g_map.on('layers-add-result', test);
+            g_map.on('layers-add-result', function(evt){
+                console.log("layers ready");
+            });
 
 			g_map.addLayers([g_featureLayer]);
 
@@ -154,8 +158,11 @@
                                 g_formData = new FormData();
                                 g_formData.append("attachment",file);
 
-                                execJasmine();
 
+                                g_formData2 = form;
+
+//                                retrieveFile2();
+                                execJasmine();
                             }
                             else
                             {
@@ -184,10 +191,10 @@
 </head>
 
 <body>
-	<!--<form id="theForm">-->
-	<!--<input type="file" name="attachment" id="theFile"><br/>-->
-	<!--<span>Select any file (.png, .jpg,...) to launch unit testing</span>-->
-	<!--</form>-->
+	<form id="theForm">
+	<input type="file" name="attachment" id="theFile"><br/>
+	<span>Select any file (.png, .jpg,...) to launch unit testing</span>
+	</form>
 	<div id="map" style="position: absolute; bottom: 0; right: 0; height:200px; width: 200px;"></div>
 	<img src="" alt="" id="fakeTile" style="display:none;">
 </body>
