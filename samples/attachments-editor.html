@@ -5,10 +5,10 @@
     <!--The viewport meta tag is used to improve the presentation and behavior of the samples 
       on iOS devices-->
     <meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no">
-    <title>SanFrancisco311 - Incidents</title>
+    <title>Basic Attachments</title>
 
     <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" >
-    <link rel="stylesheet" href="http://js.arcgis.com/3.12/esri/css/esri.css">
+    <link rel="stylesheet" href="http://js.arcgis.com/3.13/esri/css/esri.css">
     <style>
         html, body { height: 100%; width: 100%; margin: 0; overflow: hidden; font-family: Arial; }
         #map { height: 100%; padding: 0;}
@@ -43,7 +43,7 @@
         }
     </style>
 
-    <script src="http://js.arcgis.com/3.12/"></script>
+    <script src="http://js.arcgis.com/3.13/"></script>
     <script src="../vendor/offline/offline.min.js"></script>
     <script>
         Offline.options = {
@@ -124,8 +124,7 @@
             function mapLoaded() 
             {
                 featureLayer = new FeatureLayer("http://sampleserver6.arcgisonline.com/arcgis/rest/services/ServiceRequest/FeatureServer/0",{
-                    mode: FeatureLayer.MODE_ONDEMAND
-                    //mode: FeatureLayer.MODE_SNAPSHOT
+                    mode: FeatureLayer.MODE_SNAPSHOT
                 });
 
                 map.infoWindow.setContent("<div id='content' style='width:100%'></div>");
@@ -309,10 +308,10 @@
             <div id='storage-info'>Storage used: 0 MBs</div>
         </div>
         <div id='local-attachments-list-pane' data-dojo-type="dijit/layout/ContentPane" data-dojo-propos="region:'top'">
-            <button style="width:60%" id="clear-local-attachments-btn" class="btn1">Clear Attachments</button>
-            <button style="width:38%" id="go-offline-btn" class="btn1">Go Offline</button>
-            <button style="width:60%" id="refresh-feature-layers-btn" class="btn1">Refresh Layers</button>
-            <button style="width:38%" id="go-online-btn" class="btn1">Go Online</button>
+            <button style="width:100%" id="clear-local-attachments-btn" class="btn1">Clear Attachments</button>
+            <button style="width:100%" id="go-offline-btn" class="btn1">Go Offline</button>
+            <button style="width:100%" id="refresh-feature-layers-btn" class="btn1">Refresh Layers</button>
+            <button style="width:100%" id="go-online-btn" class="btn1">Go Online</button>
             <ul id='local-attachments-list'></ul>
         </div>
     </div>
