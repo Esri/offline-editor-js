@@ -168,7 +168,7 @@ describe("Attachments", function()
         });
 
         async.it("Get attachments database usage", function(done){
-            g_featureLayer.getAttachmentsUage(function(usage,error){
+            g_featureLayer.getAttachmentsUsage(function(usage,error){
                 expect(usage.sizeBytes).toBe(0);
                 expect(usage.attachmentCount).toBe(0);
                 done();
@@ -594,7 +594,7 @@ describe("Attachments", function()
         });
 
         async.it("Get attachments database usage", function(done){
-            g_featureLayer.getAttachmentsUage(function(usage,error){
+            g_featureLayer.getAttachmentsUsage(function(usage,error){
                 expect(usage.sizeBytes).toBe(129627);
                 expect(usage.attachmentCount).toBe(4);
                 done();
@@ -691,7 +691,7 @@ describe("Attachments", function()
 		});
 
         async.it("Get attachments database usage via the feature layer", function(done){
-            g_featureLayer.getAttachmentsUage(function(usage,error){
+            g_featureLayer.getAttachmentsUsage(function(usage,error){
                 expect(usage.sizeBytes).toBe(0);
                 expect(usage.attachmentCount).toBe(0);
                 done();
