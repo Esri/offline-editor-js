@@ -166,6 +166,14 @@ describe("Attachments", function()
                     done();
                 });
         });
+
+        async.it("Get attachments database usage", function(done){
+            g_featureLayer.getAttachmentsUage(function(usage,error){
+                expect(usage.sizeBytes).toBe(0);
+                expect(usage.attachmentCount).toBe(0);
+                done();
+            });
+        });
     });
 
     describe("Go offline", function(){
@@ -584,6 +592,14 @@ describe("Attachments", function()
                 }
             );
         });
+
+        async.it("Get attachments database usage", function(done){
+            g_featureLayer.getAttachmentsUage(function(usage,error){
+                expect(usage.sizeBytes).toBe(129627);
+                expect(usage.attachmentCount).toBe(4);
+                done();
+            });
+        });
     });
 
 
@@ -664,14 +680,23 @@ describe("Attachments", function()
 			}));
 		});
 
-		async.it("no attachments pending", function(done)
+		async.it("Get attachments database usage - check directly via attachmentsStore", function(done)
 		{
 			g_offlineFeaturesManager.attachmentsStore.getUsage(function(usage)
 			{
 				expect(usage.attachmentCount).toBe(0);
                 done();
 			});
+
 		});
+
+        async.it("Get attachments database usage via the feature layer", function(done){
+            g_featureLayer.getAttachmentsUage(function(usage,error){
+                expect(usage.sizeBytes).toBe(0);
+                expect(usage.attachmentCount).toBe(0);
+                done();
+            });
+        });
 		
 		async.it("query attachments info - online - 1", function(done)
 		{
