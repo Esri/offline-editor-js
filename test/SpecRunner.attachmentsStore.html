@@ -2,99 +2,147 @@
   "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-  <title>Jasmine Spec Runner - Graphics Store</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Jasmine Spec Runner - Graphics Store</title>
 
-	<link rel="shortcut icon" type="image/png" href="../vendor/jasmine-1.3.1/jasmine_favicon.png">
-	<link rel="stylesheet" type="text/css" href="../vendor/jasmine-1.3.1/jasmine.css">
-	<script type="text/javascript" src="../vendor/jasmine-1.3.1/jasmine.js"></script>
-	<script type="text/javascript" src="../vendor/jasmine-1.3.1/jasmine-html.js"></script>
-	<script type="text/javascript" src="../vendor/jasmine.async/lib/jasmine.async.js"></script>
+    <link rel="shortcut icon" type="image/png" href="../vendor/jasmine-1.3.1/jasmine_favicon.png">
+    <link rel="stylesheet" type="text/css" href="../vendor/jasmine-1.3.1/jasmine.css">
+    <script type="text/javascript" src="../vendor/jasmine-1.3.1/jasmine.js"></script>
+    <script type="text/javascript" src="../vendor/jasmine-1.3.1/jasmine-html.js"></script>
+    <script type="text/javascript" src="../vendor/jasmine.async/lib/jasmine.async.js"></script>
 
-  <script>
-	var dojoConfig = {
-		paths: { edit: location.pathname.replace(/\/[^/]+$/, "") + "../../lib/edit" }
-	}
-  </script>
+    <script>
+    var dojoConfig = {
+        paths: { edit: location.pathname.replace(/\/[^/]+$/, "") + "../../lib/edit" }
+    }
+    </script>
 
-	<link rel="stylesheet" href="http://js.arcgis.com/3.10/js/dojo/dijit/themes/claro/claro.css">
-	<link rel="stylesheet" href="http://js.arcgis.com/3.10/js/esri/css/esri.css">
-	<script src="http://js.arcgis.com/3.10/"></script>
+    <link rel="stylesheet" href="http://js.arcgis.com/3.13/dijit/themes/claro/claro.css">
+    <link rel="stylesheet" href="http://js.arcgis.com/3.13/esri/css/esri.css">
+    <script src="http://js.arcgis.com/3.13/"></script>
 
-  <!-- include spec files here... -->
-  <script type="text/javascript" src="spec/attachmentsStoreSpec.js"></script>
-  <script type="text/javascript">
-	"use strict"
+    <!-- include spec files here... -->
+    <script type="text/javascript" src="spec/attachmentsStoreSpec.js"></script>
+    <script type="text/javascript">
+        "use strict";
 
-	var g_attachmentsStore;
-	var g_inputNode;
+        var g_attachmentsStore;
+        var g_inputNode = {};
 
-	require(["esri/map", 
-	"esri/layers/GraphicsLayer", "esri/graphic", "esri/symbols/SimpleFillSymbol", "esri/symbols/SimpleMarkerSymbol", "esri/symbols/SimpleLineSymbol",
-	"esri/SpatialReference","esri/geometry",
-	"dojo/dom", "dojo/on", "dojo/query", 
-	"dojo/dom-construct",
-    "../dist/offline-edit-min.js",
-    "dojo/domReady!"],
-	function(Map, 
-		GraphicsLayer, Graphic, SimpleFillSymbol, SimpleMarkerSymbol, SimpleLineSymbol,
-		SpatialReference, geometry,
-		dom, on, query, 
-		domConstruct) 
-	{
-		g_attachmentsStore = new O.esri.Edit.AttachmentsStore();
-		g_inputNode = dom.byId('theFile');
+        require(["esri/map",
+        "esri/layers/GraphicsLayer", "esri/graphic", "esri/symbols/SimpleFillSymbol", "esri/symbols/SimpleMarkerSymbol", "esri/symbols/SimpleLineSymbol",
+        "esri/SpatialReference","esri/geometry",
+        "dojo/dom", "dojo/on", "dojo/query",
+        "dojo/dom-construct",
+        "../dist/offline-edit-src.js",
+        "dojo/domReady!"],
+        function(Map,
+            GraphicsLayer, Graphic, SimpleFillSymbol, SimpleMarkerSymbol, SimpleLineSymbol,
+            SpatialReference, geometry,
+            dom, on, query,
+            domConstruct)
+        {
+            g_attachmentsStore = new O.esri.Edit.AttachmentsStore();
 
-		test();
+            test();
 
-		function test() 
-		{
-			try
-			{
-				console.log("everything ok!");
+            function test()
+            {
+                try
+                {
+                    console.log("everything ok!");
 
-				var jasmineEnv = jasmine.getEnv();
-				jasmineEnv.updateInterval = 1000;
-				jasmineEnv.defaultTimeoutInterval = 1000; // 1 sec
-				var htmlReporter = new jasmine.HtmlReporter();
+                    var jasmineEnv = jasmine.getEnv();
+                    jasmineEnv.updateInterval = 1000;
+                    jasmineEnv.defaultTimeoutInterval = 1000; // 1 sec
+                    var htmlReporter = new jasmine.HtmlReporter();
 
-				jasmineEnv.addReporter(htmlReporter);
+                    jasmineEnv.addReporter(htmlReporter);
 
-				jasmineEnv.specFilter = function(spec) {
-					return htmlReporter.specFilter(spec);
-				};
+                    jasmineEnv.specFilter = function(spec) {
+                        return htmlReporter.specFilter(spec);
+                    };
 
-				/*
-				var currentWindowOnload = window.onload;
+                    /*
+                    var currentWindowOnload = window.onload;
 
-				window.onload = function() {
-					if (currentWindowOnload) {
-						currentWindowOnload();
-					}
-					execJasmine();
-				};
-				*/
+                    window.onload = function() {
+                        if (currentWindowOnload) {
+                            currentWindowOnload();
+                        }
+                        execJasmine();
+                    };
+                    */
 
-				// execJasmine();
-				on(dom.byId('theFile'),'change',execJasmine);
-			}
-			catch(err)	
-			{
-				alert(err);
-			}
-			function execJasmine() {
-				jasmineEnv.execute();
-			}
-		}; // test()
+                    // execJasmine();
+                    retrieveFile();
 
-	}); // require()
+    //				on(dom.byId('theFile'),'change',execJasmine);
+                }
+                catch(err)
+                {
+                    alert(err);
+                }
+                function execJasmine() {
+                    jasmineEnv.execute();
+                }
+
+                function retrieveFile(){
+
+                    var xhr = new XMLHttpRequest();
+                    xhr.open("GET","images/blue-pin.png",true);
+                    xhr.responseType = "blob";
+
+                    xhr.onload = function()
+                    {
+                        if( xhr.status === 200)
+                        {
+                            var blob = new Blob([this.response],{type: 'image/png'});
+
+                            var parts = [blob,"test", new ArrayBuffer(blob.size)];
+
+                            var files = [];
+
+                            var file = new File(parts,"blue-pin.png",{
+                                lastModified: new Date(0),
+                                type: "image/png"
+                            });
+
+    //                    var formNode = {
+    //                        elements:[
+    //                            {type:"file",
+    //                                files:[file]}
+    //                        ]
+    //                    };
+
+                            files.push(file);
+
+                            g_inputNode.files = files;
+
+                            execJasmine();
+
+                        }
+                        else
+                        {
+                            console.log("Retrieve file failed");
+                        }
+                    };
+                    xhr.onerror = function(e)
+                    {
+                        console.log("Retrieved file failed: " + JSON.stringify(e));
+                    };
+
+                    xhr.send(null);
+                }
+            } // test()
+        }); // require()
   </script>
 </head>
 
 <body>
-	<form id="theForm">
-	<input type="file" id="theFile"><br/>
-	<span>Select any file (.png, .jpg,...) to launch unit testing</span>
-	</form>
+	<!--<form id="theForm">-->
+	<!--<input type="file" id="theFile"><br/>-->
+	<!--<span>Select any file (.png, .jpg,...) to launch unit testing</span>-->
+	<!--</form>-->
 </body>
 </html>
