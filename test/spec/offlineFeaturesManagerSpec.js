@@ -61,13 +61,18 @@ describe("Normal online editing - Exercise the feature services", function()
 				if(count==g_layersIds.length)
 					done();
 			}
-			clearFeatureLayer( g_featureLayers[0], function(success,response)
-			{
-				expect(success).toBeTruthy();
-				var listener = g_featureLayers[0].on('update-end', function(){ listener.remove(); completedOne();})
-				g_featureLayers[0].refresh();
 
-			});
+            // Run clear twice because of current bug in ArcGIS Online related to clearing feature services with attachments.
+            clearFeatureLayer(g_featureLayers[0], function(success){
+                clearFeatureLayer( g_featureLayers[0], function(success,response)
+                {
+                    expect(success).toBeTruthy();
+                    var listener = g_featureLayers[0].on('update-end', function(){ listener.remove(); completedOne();})
+                    g_featureLayers[0].refresh();
+
+                });
+            });
+
 			//clearFeatureLayer( g_featureLayers[1], function(success,response)
 			//{
 			//	expect(success).toBeTruthy();
@@ -651,7 +656,7 @@ describe("Offline Editing", function()
 
         async.it("check db size", function(done){
             g_featureLayers[0].getUsage(function(usage,error){
-                expect(usage.sizeBytes).toBe(3835);
+                expect(usage.sizeBytes).toBe(3847);
                 expect(usage.editCount).toBe(5);
                 expect(error).toBe(null);
                 done();
