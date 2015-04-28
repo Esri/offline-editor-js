@@ -13,7 +13,7 @@ module.exports = function(grunt) {
                     'lib/tpk/*.js'
                 ],
 
-                tasks: ['concat', 'uglify'],
+                tasks: ['jshint','concat', 'uglify'],
                 options: {
                     spawn: false
                 }
@@ -120,8 +120,8 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-watch');
     grunt.loadNpmTasks('grunt-contrib-jshint');
 
-    grunt.registerTask('build',['concat','uglify']);
+    grunt.registerTask('build',['jshint','concat','uglify']);
     grunt.registerTask('test',['jshint']);
 
-    grunt.registerTask('buildAll',['jshint','concat','uglify']);
+    //grunt.registerTask('buildAll',['jshint','concat','uglify']);
 };

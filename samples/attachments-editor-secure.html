@@ -1,13 +1,24 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <!--
+
+        This example is essentially the same as attachments-editor.html however
+        it's configured to work with a secure feature service.
+
+        NOTE: You will need your own secure feature service with attachments enabled.
+        If you are using a feature service hosted on ArcGIS Online you may not need a proxy.
+        If you are hosting the feature service on a non-CORS enabled server you will need a proxy.
+
+    -->
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <!--The viewport meta tag is used to improve the presentation and behavior of the samples 
       on iOS devices-->
     <meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no">
-    <title>Basic Attachments</title>
+    <title>Secure Attachments</title>
 
     <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" >
+    <link rel="stylesheet" href="//js.arcgis.com/3.13/dijit/themes/claro/claro.css">
     <link rel="stylesheet" href="http://js.arcgis.com/3.13/esri/css/esri.css">
     <style>
         html, body { height: 100%; width: 100%; margin: 0; overflow: hidden; font-family: Arial; }
@@ -41,6 +52,13 @@
         #local-attachments-list li {
             border-bottom: 1px solid #ddd;
         }
+
+        .action {
+            color: blue;
+            cursor: pointer;
+            text-decoration: underline;
+            z-index: 999;
+        }
     </style>
 
     <script src="http://js.arcgis.com/3.13/"></script>
@@ -58,7 +76,7 @@
         }
     </script>
     <script>
-    "use strict";
+        "use strict";
 
         var map;
 
@@ -67,8 +85,10 @@
             "esri/layers/FeatureLayer",
             "esri/dijit/editing/AttachmentEditor",
             "esri/config",
+            "esri/arcgis/OAuthInfo", "esri/IdentityManager",
 
             "dojo/parser", "dojo/dom", "dojo/dom-class",
+            "dojo/dom-style", "dojo/dom-attr",
             "dojo/dom-construct",
 
             "dojo/on",
@@ -79,14 +99,14 @@
 
             "dojo/domReady!"
         ], function(
-            Map,FeatureLayer,AttachmentEditor,esriConfig,
-            parser,dom,domClass,domConstruct,on
-        ) 
+                Map,FeatureLayer,AttachmentEditor,esriConfig,OAuthInfo, esriId,
+                parser,dom,domClass,domStyle,domAttr,domConstruct,on
+        )
         {
             parser.parse();
 
             var featureLayer,
-                attachmentsInited = false;
+                    attachmentsInited = false;
 
 //            window.proxyPath = null; //can be set to null when using a CORS-enabled server
 //            esriConfig.defaults.io.proxyUrl = null; //can be set to null when using a CORS-enabled server
@@ -109,8 +129,8 @@
 
             map = new Map("map", {
                 basemap: "streets",
-                center: [-88.1,41.7],
-                zoom: 11
+                center: [-104.99,39.74],
+                zoom: 13
             });
 
             map.on("load", mapLoaded);
@@ -121,9 +141,9 @@
             offlineFeaturesManager.on(offlineFeaturesManager.events.ATTACHMENT_ENQUEUED, updateStatus);
             offlineFeaturesManager.on(offlineFeaturesManager.events.ATTACHMENTS_SENT, updateStatus);
 
-            function mapLoaded() 
+            function mapLoaded()
             {
-                featureLayer = new FeatureLayer("http://sampleserver6.arcgisonline.com/arcgis/rest/services/ServiceRequest/FeatureServer/0",{
+                featureLayer = new FeatureLayer("Enter your own secure feature service here that has attachments enabled.",{
                     mode: FeatureLayer.MODE_SNAPSHOT
                 });
 
@@ -228,10 +248,10 @@
                     {
                         attachments.forEach(function(attachment)
                         {
-                            var readableAttachment = 
-                                "<a target='_blank' href='" + attachment.url + "'>" + attachment.name + "</a>, " +
-                                "feature: <a target='_blank' href='" + attachment.featureId + "'>" + attachment.objectId + "</a>";
-                                
+                            var readableAttachment =
+                                    "<a target='_blank' href='" + attachment.url + "'>" + attachment.name + "</a>, " +
+                                    "feature: <a target='_blank' href='" + attachment.featureId + "'>" + attachment.objectId + "</a>";
+
                             li = "<li>" + readableAttachment + "</li>";
                             domConstruct.place(li, 'local-attachments-list','last');
                         },this);
@@ -269,7 +289,7 @@
             {
                 if( sizeInBytes < 1024 )
                 {
-                    return sizeInBytes + " bytes";                    
+                    return sizeInBytes + " bytes";
                 }
                 else if( sizeInBytes < 1024 * 1024 )
                 {
@@ -295,12 +315,24 @@
     </script>
 </head>
 
-<body>
+<body class="claro">
+
 <div data-dojo-type="dijit/layout/BorderContainer"
      data-dojo-props="design:'headline'"
      style="width:100%;height:100%;">
 
     <div data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:'left'" style="width: 200px;overflow:hidden;">
+
+
+        <div id="anonymousPanel" style="display: none; padding: 5px; text-align: center;">
+            <span id="sign-in" class="action">Sign In</span> and view your ArcGIS Online items.
+        </div>
+        <div id="personalizedPanel" style="display: none; padding: 5px; text-align: center;">
+            Welcome <span id="userId" style="font-weight: bold;"></span>
+            -
+            <span id="sign-out" class="action">Sign Out</span>
+        </div>
+
         <div id='connectivity-pane' data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:'top'">
             <div id='connectivity-indicator' >unknown</div>
         </div>
@@ -325,6 +357,9 @@
          data-dojo-props="region:'bottom'">
         Click point to view/create/delete attachments.
     </div>
+</div>
+
+
 </div>
 </body>
 </html>

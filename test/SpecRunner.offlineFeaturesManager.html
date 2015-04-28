@@ -18,10 +18,9 @@
 			}
 		}
 	</script>
-
-		<link rel="stylesheet" href="http://js.arcgis.com/3.12/dijit/themes/claro/claro.css">
-		<link rel="stylesheet" href="http://js.arcgis.com/3.12/esri/css/esri.css">
-		<script src="http://js.arcgis.com/3.12/"></script>
+	
+    <link rel="stylesheet" href="http://js.arcgis.com/3.13/esri/css/esri.css">
+    <script src="http://js.arcgis.com/3.13/"></script>
 
 	<!-- include spec files here... -->
 	<script type="text/javascript" src="spec/offlineFeaturesManagerSpec.js"></script>
@@ -31,8 +30,10 @@
 	var g_map;
 	var g_featureLayers = [];
 	var g_offlineFeaturesManager;
+    var g_offlineFeaturesManagerAttach;
 	var g_modules = {};
 	var g_editsStore;
+    var g_layersIds = [];
 
 	require(["esri/map", 
 		"esri/layers/GraphicsLayer", "esri/graphic",
@@ -52,6 +53,13 @@
 			g_modules.Graphic = Graphic;
 			g_offlineFeaturesManager = new O.esri.Edit.OfflineFeaturesManager();
             g_offlineFeaturesManager.DB_NAME = "FEATURES_TEST";
+            g_offlineFeaturesManager.DB_UID = "OBJECTID"; //VERY IMPORTANT! We get this from the Service Directory "Fields" section.
+
+            // For testing attachments
+            g_offlineFeaturesManagerAttach = new O.esri.Edit.OfflineFeaturesManager();
+            g_offlineFeaturesManagerAttach.DB_NAME = "ATTACH_TEST";
+
+			// We are also validating the OfflineFeatureManager directly against the database
 			g_editsStore = new O.esri.Edit.EditStore();
             g_editsStore.dbName = "FEATURES_TEST";
 
@@ -63,19 +71,20 @@
 			});
 
 			var fsUrl = "http://services2.arcgis.com/CQWCKwrSm5dkM28A/arcgis/rest/services/Military/FeatureServer/";
+            var fsUrlAttachmentsEnabled = "http://services1.arcgis.com/M8KJPUwAXP8jhtnM/arcgis/rest/services/Simple_Point_Service/FeatureServer/";
 			// Layer 1 = points
             // Layer 2 = lines
             // Layer 3 = polygons
-			var layersIds = [1,2,3];
+			g_layersIds = [0];
 
-			layersIds.forEach(function(layerId)
+			g_layersIds.forEach(function(layerId)
 			{
-				var layer = new FeatureLayer(fsUrl + layerId, {
+				var layer = new FeatureLayer(fsUrlAttachmentsEnabled + layerId, {
 					mode: FeatureLayer.MODE_SNAPSHOT,
 					outFields: ['*']
 				});
 				g_featureLayers.push(layer);			
-			})
+			});
 
 			g_map.addLayers(g_featureLayers);
 
