@@ -1,10 +1,14 @@
 # offline-editor-js - Changelog
 
+## Version 2.7.0.1
+
+Closes #323 - Add an FAQ doc.
+
 ## Version 2.7
 
 This release focused on improving the handling of attachments. Has breaking changes.
 
-** Enhancements **
+**Enhancements**
 * Added a new sample attachments-editor-secure.html to demonstrate the pattern for working with secure feature services and attachments.
 * Closes #286 - support for secure services (HTTPS) when working with attachments
 * Closes #305 - Support both ADD and UPDATE attachment. 
@@ -17,7 +21,7 @@ This release focused on improving the handling of attachments. Has breaking chan
 * Closes #328 - add layer.resestAttachmentsDatabase().
 * Closes #329 - add layer.getAttachmentsUsage().
 
-** Breaking Changes **
+**Breaking Changes**
 * attachmentsStore.DB_NAME has been renamed to attachmentsStore.dbName to be consistent with editStore.
 * attachmentsStore.OBJECTSTORE_NAME has been renamed to attachmentsStore.objectStoreName to be consistent with editStore.
 * Added use of the browser's [FormData() API](https://developer.mozilla.org/en-US/docs/Web/API/FormData) along with `FormData.append`. This may cause 
