@@ -1,4 +1,4 @@
-/*! offline-editor-js - v2.6.1 - 2015-04-13
+/*! offline-editor-js - v2.7.0 - 2015-04-27
 *   Copyright (c) 2015 Environmental Systems Research Institute, Inc.
 *   Apache License*/
 /*jshint -W030 */
@@ -38,6 +38,13 @@ define([
                 DB_OBJECTSTORE_NAME: "features",// Represents an object store that allows access to a set of data in the IndexedDB database
                 DB_UID: "objectid",        // Set this based on the unique identifier is set up in the feature service
 
+                ATTACHMENTS_DB_NAME: "attachments_store", //Sets attachments database name
+                ATTACHMENTS_DB_OBJECTSTORE_NAME: "attachments",
+                // NOTE: attachments don't have the same issues as Graphics as related to UIDs.
+                // You can manually create a graphic, but it would be very rare for someone to
+                // manually create an attachment. So, we don't provide a public property for
+                // the attachments database UID.
+
                 // manager emits event when...
                 events: {
                     EDITS_SENT: "edits-sent",           // ...whenever any edit is actually sent to the server
@@ -66,6 +73,8 @@ define([
 
                     try {
                         this.attachmentsStore = new O.esri.Edit.AttachmentsStore();
+                        this.attachmentsStore.dbName = this.ATTACHMENTS_DB_NAME;
+                        this.attachmentsStore.objectStoreName = this.ATTACHMENTS_DB_OBJECTSTORE_NAME;
 
                         if (/*false &&*/ this.attachmentsStore.isSupported()) {
                             this.attachmentsStore.init(callback);
@@ -81,8 +90,8 @@ define([
 
                 /**
                  * Overrides a feature layer. Call this AFTER the FeatureLayer's 'update-end' event.
-                 * IMPORTANT: If options are specified they will be saved to the database. Any complex
-                 * objects such as [esri.Graphic] will need to be serialized or you will get an error.
+                 * IMPORTANT: If dataStore is specified it will be saved to the database. Any complex
+                 * objects such as [esri.Graphic] will need to be serialized or you will get an IndexedDB error.
                  * @param layer
                  * @param updateEndEvent The FeatureLayer's update-end event object
                  * @param callback {true, null} or {false, errorString} Traps whether or not the database initialized
@@ -115,6 +124,7 @@ define([
                     layer._addAttachment = layer.addAttachment;
                     layer._queryAttachmentInfos = layer.queryAttachmentInfos;
                     layer._deleteAttachments = layer.deleteAttachments;
+                    layer._updateAttachment = layer.updateAttachment;
 
                     /*
                      operations supported offline:
@@ -166,6 +176,7 @@ define([
                     };
 
                     layer.addAttachment = function (objectId, formNode, callback, errback) {
+
                         if (self.getOnlineStatus() === self.ONLINE) {
                             return this._addAttachment(objectId, formNode,
                                 function () {
@@ -181,7 +192,7 @@ define([
                         }
 
                         if (!self.attachmentsStore) {
-                            console.log("in order to support attachments you need to call initAttachments() method of offlineFeaturesManager");
+                            console.error("in order to support attachments you need to call initAttachments() method of offlineFeaturesManager");
                             return;
                         }
 
@@ -190,7 +201,7 @@ define([
 
                         var deferred = new Deferred();
                         var attachmentId = this._getNextTempId();
-                        self.attachmentsStore.store(this.url, attachmentId, objectId, file, function (success, newAttachment) {
+                        self.attachmentsStore.store(this.url, attachmentId, objectId, file,self.attachmentsStore.TYPE.ADD, function (success, newAttachment) {
                             var returnValue = {attachmentId: attachmentId, objectId: objectId, success: success};
                             if (success) {
                                 self.emit(self.events.ATTACHMENT_ENQUEUED, returnValue);
@@ -204,6 +215,51 @@ define([
                             }
                             else {
                                 returnValue.error = "can't store attachment";
+                                errback && errback(returnValue);
+                                deferred.reject(returnValue);
+                            }
+                        }.bind(this));
+
+                        return deferred;
+                    };
+
+                    layer.updateAttachment = function(objectId, attachmentId, formNode, callback, errback) {
+                        if (self.getOnlineStatus() === self.ONLINE) {
+                            return this._updateAttachment(objectId, attachmentId, formNode,
+                                function () {
+                                    callback && callback.apply(this, arguments);
+                                },
+                                function (err) {
+                                    console.log("updateAttachment: " + err);
+                                    errback && errback.apply(this, arguments);
+                                });
+                            //return def;
+                        }
+
+                        if (!self.attachmentsStore) {
+                            console.error("in order to support attachments you need to call initAttachments() method of offlineFeaturesManager");
+                            return;
+                        }
+
+                        var files = this._getFilesFromForm(formNode);
+                        var file = files[0]; // addAttachment can only add one file, so the rest -if any- are ignored
+
+                        var deferred = new Deferred();
+
+                        self.attachmentsStore.store(this.url, attachmentId, objectId, file, self.attachmentsStore.TYPE.UPDATE, function (success, newAttachment) {
+                            var returnValue = {attachmentId: attachmentId, objectId: objectId, success: success};
+                            if (success) {
+                                self.emit(self.events.ATTACHMENT_ENQUEUED, returnValue);
+                                callback && callback(returnValue);
+                                deferred.resolve(returnValue);
+
+                                // replace the default URL that is set by attachmentEditor with the local file URL
+                                var attachmentUrl = this._url.path + "/" + objectId + "/attachments/" + attachmentId;
+                                var attachmentElement = query("[href=" + attachmentUrl + "]");
+                                attachmentElement.attr("href", newAttachment.url);
+                            }
+                            else {
+                                returnValue.error = "layer.updateAttachment::attachmentStore can't store attachment";
                                 errback && errback(returnValue);
                                 deferred.reject(returnValue);
                             }
@@ -232,22 +288,42 @@ define([
 
                         // case 1.- it is a new attachment
                         // case 2.- it is an already existing attachment
-                        // only case 1 is supported right now
 
                         // asynchronously delete each of the attachments
                         var promises = [];
                         attachmentsIds.forEach(function (attachmentId) {
                             attachmentId = parseInt(attachmentId, 10); // to number
-                            console.assert(attachmentId < 0, "we only support deleting local attachments");
+
                             var deferred = new Deferred();
-                            self.attachmentsStore.delete(attachmentId, function (success) {
-                                var result = {objectId: objectId, attachmentId: attachmentId, success: success};
-                                deferred.resolve(result);
-                            });
+
+                            // IMPORTANT: If attachmentId < 0 then it's a local/new attachment
+                            // and we can simply delete it from the attachmentsStore.
+                            // However, if the attachmentId > 0 then we need to store the DELETE
+                            // so that it can be processed and sync'd correctly during _uploadAttachments().
+                            if(attachmentId < 0) {
+                                self.attachmentsStore.delete(attachmentId, function (success) {
+                                    var result = {objectId: objectId, attachmentId: attachmentId, success: success};
+                                    deferred.resolve(result);
+                                });
+                            }
+                            else {
+                                var dummyBlob = new Blob([],{type: "image/png"}); //TO-DO just a placeholder. Need to consider add a null check.
+                                self.attachmentsStore.store(this.url, attachmentId, objectId, dummyBlob,self.attachmentsStore.TYPE.DELETE, function (success, newAttachment) {
+                                    var returnValue = {attachmentId: attachmentId, objectId: objectId, success: success};
+                                    if (success) {
+                                        deferred.resolve(returnValue);
+                                    }
+                                    else {
+                                        deferred.reject(returnValue);
+                                    }
+                                }.bind(this));
+                            }
+                            //console.assert(attachmentId < 0, "we only support deleting local attachments");
                             promises.push(deferred);
                         }, this);
 
                         // call callback once all deletes have finished
+                        // IMPORTANT: This returns an array!!!
                         var allPromises = all(promises);
                         allPromises.then(function (results) {
                             callback && callback(results);
@@ -543,7 +619,30 @@ define([
                     };
 
                     /**
-                     * Returns the approximate size of the database in bytes
+                     * Returns the approximate size of the attachments database in bytes
+                     * @param callback callback({usage}, error) Whereas, the usage Object is {sizeBytes: number, attachmentCount: number}
+                     */
+                    layer.getAttachmentsUsage = function(callback) {
+                        self.attachmentsStore.getUsage(function(usage,error){
+                            callback(usage,error);
+                        });
+                    };
+
+                    /**
+                     * Full attachments database reset.
+                     * CAUTION! If some attachments weren't successfully sent, then their record
+                     * will still exist in the database. If you use this function you
+                     * will also delete those records.
+                     * @param callback (boolean, error)
+                     */
+                    layer.resetAttachmentsDatabase = function(callback){
+                        self.attachmentsStore.resetAttachmentsQueue(function(result,error){
+                            callback(result,error);
+                        });
+                    };
+
+                    /**
+                     * Returns the approximate size of the edits database in bytes
                      * @param callback callback({usage}, error) Whereas, the usage Object is {sizeBytes: number, editCount: number}
                      */
                     layer.getUsage = function(callback){
@@ -553,7 +652,7 @@ define([
                     };
 
                     /**
-                     * Full database reset.
+                     * Full edits database reset.
                      * CAUTION! If some edits weren't successfully sent, then their record
                      * will still exist in the database. If you use this function you
                      * will also delete those records.
@@ -954,11 +1053,12 @@ define([
                     this._onlineStatus = this.RECONNECTING;
                     this._replayStoredEdits(function (success, responses) {
                         var result = {features: {success: success, responses: responses}};
+                        this._onlineStatus = this.ONLINE;
                         if (this.attachmentsStore != null) {
                             console.log("sending attachments");
-                            this._sendStoredAttachments(function (success, responses) {
+                            this._sendStoredAttachments(function (success, uploadedResponses, dbResponses) {
                                 this._onlineStatus = this.ONLINE;
-                                result.attachments = {success: success, responses: responses};
+                                result.attachments = {success: success, responses: uploadedResponses, dbResponses: dbResponses};
                                 callback && callback(result);
                             }.bind(this));
                         }
@@ -1021,10 +1121,10 @@ define([
                         // Added @ v2.5
                         //
                         // Configure database for offline restart
-                        // Options object allows you to store data that you'll
+                        // dataStore object allows you to store data that you'll
                         // use after an offline browser restart.
                         //
-                        // If options Object is not defined then do nothing.
+                        // If dataStore Object is not defined then do nothing.
                         //
                         ////////////////////////////////////////////////////
 
@@ -1172,83 +1272,171 @@ define([
                 _uploadAttachment: function (attachment) {
                     var dfd = new Deferred();
 
-                    var segments = [];
-                    segments.push(this._fieldSegment("f", "json"));
-                    segments.push(this._fileSegment("attachment", attachment.name, attachment.contentType, attachment.content));
+                    var layer = this._featureLayers[attachment.featureLayerUrl];
 
-                    var oAjaxReq = new XMLHttpRequest();
+                    var formData = new FormData();
+                    formData.append("attachment",attachment.file);
 
-                    // surprisingly, sometimes the oAjaxReq object doesn't have the sendAsBinary() method, even if we added it to the XMLHttpRequest.prototype
-                    if (!oAjaxReq.sendAsBinary) {
-                        this._extendAjaxReq(oAjaxReq);
+                    switch(attachment.type){
+                        case this.attachmentsStore.TYPE.ADD:
+                            layer.addAttachment(attachment.objectId,formData,function(evt){
+                                dfd.resolve({attachmentResult:evt,id:attachment.id});
+                            },function(err){
+                                dfd.reject(err);
+                            });
+                            break;
+                        case this.attachmentsStore.TYPE.UPDATE:
+                            formData.append("attachmentId", attachment.id);
+
+                            // NOTE:
+                            // We need to handle updates different from ADDS and DELETES because of how the JS API
+                            // parses the DOM formNode property.
+                            layer._sendAttachment("update",/* objectid */attachment.objectId, formData,function(evt){
+                                dfd.resolve({attachmentResult:evt,id:attachment.id});
+                            },function(err){
+                                dfd.reject(err);
+                            });
+
+                            break;
+                        case this.attachmentsStore.TYPE.DELETE:
+                            // IMPORTANT: This method returns attachmentResult as an Array. Whereas ADD and UPDATE do not!!
+                            layer.deleteAttachments(attachment.objectId,[attachment.id],function(evt){
+                                dfd.resolve({attachmentResult:evt,id:attachment.id});
+                            },function(err){
+                                dfd.reject(err);
+                            });
+                            break;
                     }
 
-                    oAjaxReq.onload = function (result) {
-                        dfd.resolve(JSON.parse(result.target.response));
-                    };
-                    oAjaxReq.onerror = function (err) {
-                        dfd.reject(err);
-                    };
-
-                    // IMPORTANT!
-                    // Proxy path can be set to null if feature service is CORS enabled
-                    // Refer to "Using the Proxy Page" for more information:  https://developers.arcgis.com/en/javascript/jshelp/ags_proxy.html
-                    var proxy = this.proxyPath || esriConfig.defaults.io.proxyUrl || "";
-                    if (proxy !== "") {
-                        proxy += "?";
-                    }
-                    console.log("proxy:", proxy);
-                    oAjaxReq.open("post", proxy + attachment.featureId + "/addAttachment", true);
-                    var sBoundary = "---------------------------" + Date.now().toString(16);
-                    oAjaxReq.setRequestHeader("Content-Type", "multipart\/form-data; boundary=" + sBoundary);
-                    oAjaxReq.sendAsBinary("--" + sBoundary + "\r\n" + segments.join("--" + sBoundary + "\r\n") + "--" + sBoundary + "--\r\n");
-
-                    return dfd;
+                    return dfd.promise;
                 },
 
-                _deleteAttachment: function (attachmentId, uploadResult) {
+                _deleteAttachmentFromDB: function (attachmentId, uploadResult) {
                     var dfd = new Deferred();
 
                     console.log("upload complete", uploadResult, attachmentId);
                     this.attachmentsStore.delete(attachmentId, function (success) {
                         console.assert(success === true, "can't delete attachment already uploaded");
                         console.log("delete complete", success);
-                        dfd.resolve(uploadResult);
+                        dfd.resolve({success:success,result:uploadResult});
                     });
 
                     return dfd;
                 },
 
+                /**
+                 * Removes attachments from DB if they were successfully uploaded
+                 * @param results promises.results
+                 * @callback callback callback( {errors: boolean, attachmentsDBResults: results, uploadResults: results} )
+                 * @private
+                 */
+                _cleanAttachmentsDB: function(results,callback){
+
+                    var self = this;
+                    var promises = [];
+                    var count = 0;
+
+                    results.forEach(function(value){
+
+                        if(typeof value.attachmentResult == "object" && value.attachmentResult.success){
+                            // Delete an attachment from the database if it was successfully
+                            // submitted to the server.
+                            promises.push(self._deleteAttachmentFromDB(value.id,null));
+                        }
+                        // NOTE: layer.deleteAttachments returns an array rather than an object
+                        else if(value.attachmentResult instanceof Array){
+
+                            // Because we get an array we have to cycle thru it to verify all results
+                            value.attachmentResult.forEach(function(deleteValue){
+                                if(deleteValue.success){
+                                    // Delete an attachment from the database if it was successfully
+                                    // submitted to the server.
+                                    promises.push(self._deleteAttachmentFromDB(value.id,null));
+                                }
+                                else {
+                                    count++;
+                                }
+                            });
+                        }
+                        else{
+                            // Do nothing. Don't delete attachments from DB if we can't upload them
+                            count++;
+                        }
+                    });
+
+                    var allPromises = all(promises);
+                    allPromises.then(function(dbResults){
+                       if(count > 0){
+                           // If count is greater than zero then we have errors and need to set errors to true
+                           callback({errors: true, attachmentsDBResults: dbResults, uploadResults: results});
+                       }
+                       else{
+                           callback({errors: false, attachmentsDBResults: dbResults, uploadResults: results});
+                       }
+                    });
+                },
+
+                /**
+                 * Attempts to upload stored attachments when the library goes back on line.
+                 * @param callback callback({success: boolean, uploadResults: results, dbResults: results})
+                 * @private
+                 */
                 _sendStoredAttachments: function (callback) {
                     this.attachmentsStore.getAllAttachments(function (attachments) {
+
+                        var self = this;
+
                         console.log("we have", attachments.length, "attachments to upload");
 
                         var promises = [];
                         attachments.forEach(function (attachment) {
                             console.log("sending attachment", attachment.id, "to feature", attachment.featureId);
-                            var deleteCompleted =
-                                this._uploadAttachment(attachment)
-                                    .then(function (uploadResult) {
-                                        if (uploadResult.addAttachmentResult && uploadResult.addAttachmentResult.success === true) {
-                                            console.log("upload success", uploadResult.addAttachmentResult.success);
-                                            return this._deleteAttachment(attachment.id, uploadResult);
-                                        }
-                                        else {
-                                            console.log("upload failed", uploadResult);
-                                            return null;
-                                        }
-                                    }.bind(this),
-                                    function (err) {
-                                        console.log("failed uploading attachment", attachment);
-                                    }
-                                );
-                            promises.push(deleteCompleted);
+
+                            var uploadAttachmentComplete =
+                                this._uploadAttachment(attachment);
+                                    //.then(function (uploadResult) {
+                                    //    if (uploadResult.addAttachmentResult && uploadResult.addAttachmentResult.success === true) {
+                                    //        console.log("upload success", uploadResult.addAttachmentResult.success);
+                                    //        return this._deleteAttachment(attachment.id, uploadResult);
+                                    //    }
+                                    //    else {
+                                    //        console.log("upload failed", uploadResult);
+                                    //        return null;
+                                    //    }
+                                    //}.bind(this),
+                                    //function (err) {
+                                    //    console.log("failed uploading attachment", attachment);
+                                    //    return null;
+                                    //}
+                                //);
+                            promises.push(uploadAttachmentComplete);
                         }, this);
                         console.log("promises", promises.length);
                         var allPromises = all(promises);
-                        allPromises.then(function (results) {
-                                console.log(results);
-                                callback && callback(true, results);
+                        allPromises.then(function (uploadResults) {
+                                console.log(uploadResults);
+                                self._cleanAttachmentsDB(uploadResults,function(dbResults){
+                                    if(dbResults.errors){
+                                        callback && callback(false, uploadResults,dbResults);
+                                    }
+                                    else{
+                                        callback && callback(true, uploadResults,dbResults);
+                                    }
+                                });
+                                //results.forEach(function(value){
+                                //    if(value.attachmentResult.success){
+                                //        // Delete an attachment from the database if it was successfully
+                                //        // submitted to the server.
+                                //        self._deleteAttachmentFromDB(value.id,null).then(function(result){
+                                //            if(result.success){
+                                //                callback && callback(true, results);
+                                //            }
+                                //            else{
+                                //                callback && callback(false, results);
+                                //            }
+                                //        });
+                                //    }
+                                //});
                             },
                             function (err) {
                                 console.log("error!", err);
@@ -1295,6 +1483,10 @@ define([
                                 // If the layer has attachments then check to see if the attachmentsStore has been initialized
                                 if (attachmentsStore == null && layer.hasAttachments) {
                                     console.log("NOTICE: you may need to run OfflineFeaturesManager.initAttachments(). Check the Attachments doc for more info. Layer id: " + layer.id + " accepts attachments");
+                                }
+                                else if(layer.hasAttachments === false){
+                                    console.error("WARNING: Layer " + layer.id + "doesn't seem to accept attachments. Recheck the layer permissions.");
+                                    callback(false,"WARNING: Attachments not supported in layer: " + layer.id);
                                 }
 
                                 // Assign the attachmentsStore to the layer as a private var so we can access it from
@@ -2638,8 +2830,14 @@ O.esri.Edit.AttachmentsStore = function () {
 
     this._db = null;
 
-    var DB_NAME = "attachments_store";
-    var OBJECT_STORE_NAME = "attachments";
+    this.dbName = "attachments_store";
+    this.objectStoreName = "attachments";
+
+    this.TYPE = {
+        "ADD" : "add",
+        "UPDATE" : "update",
+        "DELETE" : "delete"
+    };
 
     this.isSupported = function () {
         if (!window.indexedDB) {
@@ -2648,40 +2846,70 @@ O.esri.Edit.AttachmentsStore = function () {
         return true;
     };
 
-    this.store = function (featureLayerUrl, attachmentId, objectId, attachmentFile, callback) {
+    /**
+     * Stores an attachment in the database.
+     * In theory, this abides by the query-attachment-infos-complete Object which can be found here:
+     * https://developers.arcgis.com/javascript/jsapi/featurelayer-amd.html#event-query-attachment-infos-complete
+     * @param featureLayerUrl
+     * @param attachmentId The temporary or actual attachmentId issued by the feature service
+     * @param objectId The actual ObjectId issues by the feature service
+     * @param attachmentFile
+     * @param type Type of operation: "add", "update" or "delete"
+     * @param callback
+     */
+    this.store = function (featureLayerUrl, attachmentId, objectId, attachmentFile, type, callback) {
         try {
-            // first of all, read file content
-            this._readFile(attachmentFile, function (fileContent) {
-                // now, store it in the db
-                var newAttachment =
-                {
-                    id: attachmentId,
-                    objectId: objectId,
-                    featureId: featureLayerUrl + "/" + objectId,
-                    contentType: attachmentFile.type,
-                    name: attachmentFile.name,
-                    size: attachmentFile.size,
-                    url: this._createLocalURL(attachmentFile),
-                    content: fileContent
-                };
+            // Avoid allowing the wrong type to be stored
+            if(type == this.TYPE.ADD || type == this.TYPE.UPDATE || type == this.TYPE.DELETE) {
 
-                var transaction = this._db.transaction([OBJECT_STORE_NAME], "readwrite");
+                // first of all, read file content
+                this._readFile(attachmentFile, function (success, fileContent) {
 
-                transaction.oncomplete = function (event) {
-                    callback(true, newAttachment);
-                };
+                    if (success) {
+                        // now, store it in the db
+                        var newAttachment =
+                        {
+                            id: attachmentId,
+                            objectId: objectId,
+                            type: type,
 
-                transaction.onerror = function (event) {
-                    callback(false, event.target.error.message);
-                };
+                            // Unique ID - don't use the ObjectId
+                            // multiple features services could have an a feature with the same ObjectId
+                            featureId: featureLayerUrl + "/" + objectId,
+                            contentType: attachmentFile.type,
+                            name: attachmentFile.name,
+                            size: attachmentFile.size,
+                            featureLayerUrl: featureLayerUrl,
+                            content: fileContent,
+                            file: attachmentFile
+                        };
 
-                var objectStore = transaction.objectStore(OBJECT_STORE_NAME);
-                var request = objectStore.put(newAttachment);
-                request.onsuccess = function (event) {
-                    //console.log("item added to db " + event.target.result);
-                };
+                        var transaction = this._db.transaction([this.objectStoreName], "readwrite");
 
-            }.bind(this));
+                        transaction.oncomplete = function (event) {
+                            callback(true, newAttachment);
+                        };
+
+                        transaction.onerror = function (event) {
+                            callback(false, event.target.error.message);
+                        };
+
+                        var objectStore = transaction.objectStore(this.objectStoreName);
+                        var request = objectStore.put(newAttachment);
+                        request.onsuccess = function (event) {
+                            //console.log("item added to db " + event.target.result);
+                        };
+
+                    }
+                    else {
+                        callback(false, fileContent);
+                    }
+                }.bind(this));
+            }
+            else{
+                console.error("attachmentsStore.store() Invalid type in the constructor!");
+                callback(false,"attachmentsStore.store() Invalid type in the constructor!");
+            }
         }
         catch (err) {
             console.log("AttachmentsStore: " + err.stack);
@@ -2692,7 +2920,7 @@ O.esri.Edit.AttachmentsStore = function () {
     this.retrieve = function (attachmentId, callback) {
         console.assert(this._db !== null, "indexeddb not initialized");
 
-        var objectStore = this._db.transaction([OBJECT_STORE_NAME]).objectStore(OBJECT_STORE_NAME);
+        var objectStore = this._db.transaction([this.objectStoreName]).objectStore(this.objectStoreName);
         var request = objectStore.get(attachmentId);
         request.onsuccess = function (event) {
             var result = event.target.result;
@@ -2715,7 +2943,7 @@ O.esri.Edit.AttachmentsStore = function () {
         var featureId = featureLayerUrl + "/" + objectId;
         var attachments = [];
 
-        var objectStore = this._db.transaction([OBJECT_STORE_NAME]).objectStore(OBJECT_STORE_NAME);
+        var objectStore = this._db.transaction([this.objectStoreName]).objectStore(this.objectStoreName);
         var index = objectStore.index("featureId");
         var keyRange = IDBKeyRange.only(featureId);
         index.openCursor(keyRange).onsuccess = function (evt) {
@@ -2735,9 +2963,9 @@ O.esri.Edit.AttachmentsStore = function () {
 
         var attachments = [];
 
-        var objectStore = this._db.transaction([OBJECT_STORE_NAME]).objectStore(OBJECT_STORE_NAME);
-        var index = objectStore.index("featureId");
-        var keyRange = IDBKeyRange.bound(featureLayerUrl + "/", featureLayerUrl + "/A");
+        var objectStore = this._db.transaction([this.objectStoreName]).objectStore(this.objectStoreName);
+        var index = objectStore.index("featureLayerUrl");
+        var keyRange = IDBKeyRange.only(featureLayerUrl);
         index.openCursor(keyRange).onsuccess = function (evt) {
             var cursor = evt.target.result;
             if (cursor) {
@@ -2755,7 +2983,7 @@ O.esri.Edit.AttachmentsStore = function () {
 
         var attachments = [];
 
-        var objectStore = this._db.transaction([OBJECT_STORE_NAME]).objectStore(OBJECT_STORE_NAME);
+        var objectStore = this._db.transaction([this.objectStoreName]).objectStore(this.objectStoreName);
         objectStore.openCursor().onsuccess = function (evt) {
             var cursor = evt.target.result;
             if (cursor) {
@@ -2773,15 +3001,15 @@ O.esri.Edit.AttachmentsStore = function () {
 
         var featureId = featureLayerUrl + "/" + objectId;
 
-        var objectStore = this._db.transaction([OBJECT_STORE_NAME], "readwrite").objectStore(OBJECT_STORE_NAME);
+        var objectStore = this._db.transaction([this.objectStoreName], "readwrite").objectStore(this.objectStoreName);
         var index = objectStore.index("featureId");
         var keyRange = IDBKeyRange.only(featureId);
         var deletedCount = 0;
         index.openCursor(keyRange).onsuccess = function (evt) {
             var cursor = evt.target.result;
             if (cursor) {
-                var attachment = cursor.value;
-                this._revokeLocalURL(attachment);
+                //var attachment = cursor.value;
+                //this._revokeLocalURL(attachment);
                 objectStore.delete(cursor.primaryKey);
                 deletedCount++;
                 cursor.continue();
@@ -2805,10 +3033,10 @@ O.esri.Edit.AttachmentsStore = function () {
                 return;
             }
 
-            this._revokeLocalURL(attachment);
+            //this._revokeLocalURL(attachment);
 
-            var request = this._db.transaction([OBJECT_STORE_NAME], "readwrite")
-                .objectStore(OBJECT_STORE_NAME)
+            var request = this._db.transaction([this.objectStoreName], "readwrite")
+                .objectStore(this.objectStoreName)
                 .delete(attachmentId);
             request.onsuccess = function (event) {
                 setTimeout(function () {
@@ -2825,12 +3053,12 @@ O.esri.Edit.AttachmentsStore = function () {
         console.assert(this._db !== null, "indexeddb not initialized");
 
         this.getAllAttachments(function (attachments) {
-            attachments.forEach(function (attachment) {
-                this._revokeLocalURL(attachment);
-            }, this);
+            //attachments.forEach(function (attachment) {
+            //    this._revokeLocalURL(attachment);
+            //}, this);
 
-            var request = this._db.transaction([OBJECT_STORE_NAME], "readwrite")
-                .objectStore(OBJECT_STORE_NAME)
+            var request = this._db.transaction([this.objectStoreName], "readwrite")
+                .objectStore(this.objectStoreName)
                 .clear();
             request.onsuccess = function (event) {
                 setTimeout(function () {
@@ -2848,7 +3076,7 @@ O.esri.Edit.AttachmentsStore = function () {
 
         var featureId = featureLayerUrl + "/" + oldId;
 
-        var objectStore = this._db.transaction([OBJECT_STORE_NAME], "readwrite").objectStore(OBJECT_STORE_NAME);
+        var objectStore = this._db.transaction([this.objectStoreName], "readwrite").objectStore(this.objectStoreName);
         var index = objectStore.index("featureId");
         var keyRange = IDBKeyRange.only(featureId);
         var replacedCount = 0;
@@ -2877,8 +3105,8 @@ O.esri.Edit.AttachmentsStore = function () {
 
         var usage = {sizeBytes: 0, attachmentCount: 0};
 
-        var transaction = this._db.transaction([OBJECT_STORE_NAME])
-            .objectStore(OBJECT_STORE_NAME)
+        var transaction = this._db.transaction([this.objectStoreName])
+            .objectStore(this.objectStoreName)
             .openCursor();
 
         console.log("dumping keys");
@@ -2902,28 +3130,55 @@ O.esri.Edit.AttachmentsStore = function () {
         };
     };
 
+    /**
+     * Full attachments database reset.
+     * CAUTION! If some attachments weren't successfully sent, then their record
+     * will still exist in the database. If you use this function you
+     * will also delete those records.
+     * @param callback boolean
+     */
+    this.resetAttachmentsQueue = function (callback) {
+        console.assert(this._db !== null, "indexeddb not initialized");
+
+        var request = this._db.transaction([this.objectStoreName], "readwrite")
+            .objectStore(this.objectStoreName)
+            .clear();
+        request.onsuccess = function (event) {
+            setTimeout(function () {
+                callback(true);
+            }, 0);
+        };
+        request.onerror = function (err) {
+            callback(false, err);
+        };
+    };
+
     // internal methods
 
     this._readFile = function (attachmentFile, callback) {
         var reader = new FileReader();
         reader.onload = function (evt) {
-            callback(evt.target.result);
+            callback(true,evt.target.result);
+        };
+        reader.onerror = function (evt) {
+            callback(false,evt.target.result);
         };
         reader.readAsBinaryString(attachmentFile);
     };
 
-    this._createLocalURL = function (attachmentFile) {
-        return window.URL.createObjectURL(attachmentFile);
-    };
+    // Deprecated @ v2.7
+    //this._createLocalURL = function (attachmentFile) {
+    //    return window.URL.createObjectURL(attachmentFile);
+    //};
 
-    this._revokeLocalURL = function (attachment) {
-        window.URL.revokeObjectURL(attachment.url);
-    };
+    //this._revokeLocalURL = function (attachment) {
+    //    window.URL.revokeObjectURL(attachment.url);
+    //};
 
     this.init = function (callback) {
         console.log("init AttachmentStore");
 
-        var request = indexedDB.open(DB_NAME, 11);
+        var request = indexedDB.open(this.dbName, 12);
         callback = callback || function (success) {
             console.log("AttachmentsStore::init() success:", success);
         }.bind(this);
@@ -2936,12 +3191,13 @@ O.esri.Edit.AttachmentsStore = function () {
         request.onupgradeneeded = function (event) {
             var db = event.target.result;
 
-            if (db.objectStoreNames.contains(OBJECT_STORE_NAME)) {
-                db.deleteObjectStore(OBJECT_STORE_NAME);
+            if (db.objectStoreNames.contains(this.objectStoreName)) {
+                db.deleteObjectStore(this.objectStoreName);
             }
 
-            var objectStore = db.createObjectStore(OBJECT_STORE_NAME, {keyPath: "id"});
+            var objectStore = db.createObjectStore(this.objectStoreName, {keyPath: "id"});
             objectStore.createIndex("featureId", "featureId", {unique: false});
+            objectStore.createIndex("featureLayerUrl", "featureLayerUrl", {unique: false});
         }.bind(this);
 
         request.onsuccess = function (event) {
