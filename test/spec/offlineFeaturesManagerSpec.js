@@ -58,39 +58,48 @@ describe("Normal online editing - Exercise the feature services", function()
 			function completedOne()
 			{
 				count += 1;
-				if(count==3)
+				if(count==g_layersIds.length)
 					done();
 			}
-			clearFeatureLayer( g_featureLayers[0], function(success,response)
-			{
-				expect(success).toBeTruthy();
-				var listener = g_featureLayers[0].on('update-end', function(){ listener.remove(); completedOne();})
-				g_featureLayers[0].refresh();
 
-			});
-			clearFeatureLayer( g_featureLayers[1], function(success,response)
-			{
-				expect(success).toBeTruthy();
-				var listener = g_featureLayers[1].on('update-end', function(){ listener.remove(); completedOne();})
-				g_featureLayers[1].refresh();
-			});
-			clearFeatureLayer( g_featureLayers[2], function(success,response)
-			{
-				expect(success).toBeTruthy();
-				var listener = g_featureLayers[2].on('update-end', function(){ listener.remove(); completedOne();})
-				g_featureLayers[2].refresh();
-			});
+            // Run clear twice because of current bug in ArcGIS Online related to clearing feature services with attachments.
+            clearFeatureLayer(g_featureLayers[0], function(success){
+                clearFeatureLayer( g_featureLayers[0], function(success,response)
+                {
+                    expect(success).toBeTruthy();
+                    var listener = g_featureLayers[0].on('update-end', function(){ listener.remove(); completedOne();})
+                    g_featureLayers[0].refresh();
+
+                });
+            });
+
+			//clearFeatureLayer( g_featureLayers[1], function(success,response)
+			//{
+			//	expect(success).toBeTruthy();
+			//	var listener = g_featureLayers[1].on('update-end', function(){ listener.remove(); completedOne();})
+			//	g_featureLayers[1].refresh();
+			//});
+			//clearFeatureLayer( g_featureLayers[2], function(success,response)
+			//{
+			//	expect(success).toBeTruthy();
+			//	var listener = g_featureLayers[2].on('update-end', function(){ listener.remove(); completedOne();})
+			//	g_featureLayers[2].refresh();
+			//});
 		});
 
 		async.it("add test features", function(done)
 		{
 			expect(g_featureLayers[0].graphics.length).toBe(0);
 
-			g1 = new g_modules.Graphic({"geometry":{"x":-105400,"y":5137000,"spatialReference":{"wkid":102100}},"attributes":{"symbolname":"Ground Zero","z":null,"additionalinformation":null,"eny":null,"datetimevalid":null,"datetimeexpired":null,"distance":null,"azimuth":null,"uniquedesignation":null,"x":null,"y":null}});
-			g2 = new g_modules.Graphic({"geometry":{"x":-105600,"y":5137000,"spatialReference":{"wkid":102100}},"attributes":{"symbolname":"Ground Zero","z":null,"additionalinformation":null,"eny":null,"datetimevalid":null,"datetimeexpired":null,"distance":null,"azimuth":null,"uniquedesignation":null,"x":null,"y":null}});
-			g3 = new g_modules.Graphic({"geometry":{"x":-105800,"y":5137000,"spatialReference":{"wkid":102100}},"attributes":{"symbolname":"Ground Zero","z":null,"additionalinformation":null,"eny":null,"datetimevalid":null,"datetimeexpired":null,"distance":null,"azimuth":null,"uniquedesignation":null,"x":null,"y":null}});
+			//g1 = new g_modules.Graphic({"geometry":{"x":-105400,"y":5137000,"spatialReference":{"wkid":102100}},"attributes":{"symbolname":"Ground Zero","z":null,"additionalinformation":null,"eny":null,"datetimevalid":null,"datetimeexpired":null,"distance":null,"azimuth":null,"uniquedesignation":null,"x":null,"y":null}});
+			//g2 = new g_modules.Graphic({"geometry":{"x":-105600,"y":5137000,"spatialReference":{"wkid":102100}},"attributes":{"symbolname":"Ground Zero","z":null,"additionalinformation":null,"eny":null,"datetimevalid":null,"datetimeexpired":null,"distance":null,"azimuth":null,"uniquedesignation":null,"x":null,"y":null}});
+			//g3 = new g_modules.Graphic({"geometry":{"x":-105800,"y":5137000,"spatialReference":{"wkid":102100}},"attributes":{"symbolname":"Ground Zero","z":null,"additionalinformation":null,"eny":null,"datetimevalid":null,"datetimeexpired":null,"distance":null,"azimuth":null,"uniquedesignation":null,"x":null,"y":null}});
 
-			var adds = [g1,g2,g3];
+            g1 = new g_modules.Graphic({"geometry":{"x":-105400,"y":5137000,"spatialReference":{"wkid":102100}},"attributes":{"OBJECTID":1,"lat":0.0,"lng":0.0,"description":"g1"}});
+            g2 = new g_modules.Graphic({"geometry":{"x":-105600,"y":5137000,"spatialReference":{"wkid":102100}},"attributes":{"OBJECTID":2,"lat":0.0,"lng":0.0,"description":"g2"}});
+            g3 = new g_modules.Graphic({"geometry":{"x":-105800,"y":5137000,"spatialReference":{"wkid":102100}},"attributes":{"OBJECTID":3,"lat":0.0,"lng":0.0,"description":"g3"}});
+
+            var adds = [g1,g2,g3];
 			g_featureLayers[0]._applyEdits(adds,null,null,function(addResults,updateResults,deleteResults)
 			{
 				expect(addResults.length).toBe(3);
@@ -161,6 +170,75 @@ describe("Normal online editing - Exercise the feature services", function()
 		});
 	});
 
+//describe("Online attachments", function(){
+//    async.it("Add image attachment", function(done){
+//
+//
+//        var xhr = new XMLHttpRequest();
+//        xhr.open("GET","../samples/images/blue-pin.png",true);
+//        xhr.responseType = "blob";
+//
+//        xhr.onload = function()
+//        {
+//            if( xhr.status === 200)
+//            {
+//                var blob = new Blob([this.response],{type: 'image/png'});
+//
+//                // Verify our image is a PNG file!
+//                var reader = new FileReader();
+//                reader.onload = function (evt) {
+//                    file = evt.target.result;
+//                    var test = file.slice(0,4);
+//                    expect(test).toContain("PNG");
+//                };
+//                reader.readAsBinaryString(blob);
+//
+//                var parts = [blob,"test", new ArrayBuffer(blob.size)];
+//
+//                var file = new File(parts,"blue-pin.png",{
+//                    lastModified: new Date(0),
+//                    type: "image/png"
+//                });
+//
+//                var formNode = {
+//                    elements:[
+//                        {type:"file",
+//                            files:[file]}
+//                    ]
+//                };
+//
+//                g_offlineFeaturesManager.initAttachments(function(success){
+//                    expect(success).toBe(true);
+//                    if(success){
+//
+//                        done();
+//                        //g_featureLayers[0].addAttachment(/* objectid */1,/* form node */ formNode,function(event){
+//                        //    expect(event.attachmentId).toBe(-4);
+//                        //    expect(event.objectId).toBe(1);
+//                        //    expect(event.success).toBe(true);
+//                        //    //console.log("ATTACHMENTS: " + JSON.stringify(event));
+//                        //    done();
+//                        //},function(error){
+//                        //    expect(error).toBe(true); // we want to fail if there is an error!
+//                        //    done();
+//                        //});
+//                    }
+//                });
+//            }
+//            else
+//            {
+//                console.log("Test attachments failed");
+//            }
+//        };
+//        xhr.onerror = function(e)
+//        {
+//            console.log("Test attachments failed: " + JSON.stringify(e));
+//        };
+//
+//        xhr.send(null);
+//    });
+//});
+
 describe("Offline Editing", function()
 {
 
@@ -205,7 +283,7 @@ describe("Offline Editing", function()
 
                     //Verify that we did not overwrite the options object.
                     //If this tests passes then it's still there!
-                    expect(graphics.layerDefinition.id).toEqual(3);
+                    expect(graphics.layerDefinition.id).toEqual(0);
 
                     done();
                 });
@@ -231,7 +309,7 @@ describe("Offline Editing", function()
             function completedOne()
             {
                 count += 1;
-                if(count==3)
+                if(count== g_layersIds.length)
                     done();
             }
             clearFeatureLayer( g_featureLayers[0], function(success,response)
@@ -241,27 +319,32 @@ describe("Offline Editing", function()
                 g_featureLayers[0].refresh();
 
             });
-            clearFeatureLayer( g_featureLayers[1], function(success,response)
-            {
-                expect(success).toBeTruthy();
-                var listener = g_featureLayers[1].on('update-end', function(){ listener.remove(); completedOne();})
-                g_featureLayers[1].refresh();
-            });
-            clearFeatureLayer( g_featureLayers[2], function(success,response)
-            {
-                expect(success).toBeTruthy();
-                var listener = g_featureLayers[2].on('update-end', function(){ listener.remove(); completedOne();})
-                g_featureLayers[2].refresh();
-            });
+            //clearFeatureLayer( g_featureLayers[1], function(success,response)
+            //{
+            //    expect(success).toBeTruthy();
+            //    var listener = g_featureLayers[1].on('update-end', function(){ listener.remove(); completedOne();})
+            //    g_featureLayers[1].refresh();
+            //});
+            //clearFeatureLayer( g_featureLayers[2], function(success,response)
+            //{
+            //    expect(success).toBeTruthy();
+            //    var listener = g_featureLayers[2].on('update-end', function(){ listener.remove(); completedOne();})
+            //    g_featureLayers[2].refresh();
+            //});
         });
 
         async.it("Prepare feature service. Add some features online - points", function(done)
         {
             expect(g_offlineFeaturesManager.getOnlineStatus()).toBe(g_offlineFeaturesManager.ONLINE);
 
-            g1 = new g_modules.Graphic({"geometry":{"x":-105400,"y":5137000,"spatialReference":{"wkid":102100}},"attributes":{"symbolname":"Ground Zero","z":null,"additionalinformation":null,"eny":null,"datetimevalid":null,"datetimeexpired":null,"distance":null,"azimuth":null,"uniquedesignation":null,"x":null,"y":null}});
-            g2 = new g_modules.Graphic({"geometry":{"x":-105600,"y":5137000,"spatialReference":{"wkid":102100}},"attributes":{"symbolname":"Ground Zero","z":null,"additionalinformation":null,"eny":null,"datetimevalid":null,"datetimeexpired":null,"distance":null,"azimuth":null,"uniquedesignation":null,"x":null,"y":null}});
-            g3 = new g_modules.Graphic({"geometry":{"x":-105800,"y":5137000,"spatialReference":{"wkid":102100}},"attributes":{"symbolname":"Ground Zero","z":null,"additionalinformation":null,"eny":null,"datetimevalid":null,"datetimeexpired":null,"distance":null,"azimuth":null,"uniquedesignation":null,"x":null,"y":null}});
+            //g1 = new g_modules.Graphic({"geometry":{"x":-105400,"y":5137000,"spatialReference":{"wkid":102100}},"attributes":{"symbolname":"Ground Zero","z":null,"additionalinformation":null,"eny":null,"datetimevalid":null,"datetimeexpired":null,"distance":null,"azimuth":null,"uniquedesignation":null,"x":null,"y":null}});
+            //g2 = new g_modules.Graphic({"geometry":{"x":-105600,"y":5137000,"spatialReference":{"wkid":102100}},"attributes":{"symbolname":"Ground Zero","z":null,"additionalinformation":null,"eny":null,"datetimevalid":null,"datetimeexpired":null,"distance":null,"azimuth":null,"uniquedesignation":null,"x":null,"y":null}});
+            //g3 = new g_modules.Graphic({"geometry":{"x":-105800,"y":5137000,"spatialReference":{"wkid":102100}},"attributes":{"symbolname":"Ground Zero","z":null,"additionalinformation":null,"eny":null,"datetimevalid":null,"datetimeexpired":null,"distance":null,"azimuth":null,"uniquedesignation":null,"x":null,"y":null}});
+
+
+            g1 = new g_modules.Graphic({"geometry":{"x":-105400,"y":5137000,"spatialReference":{"wkid":102100}},"attributes":{"OBJECTID":1,"lat":0.0,"lng":0.0,"description":"g1"}});
+            g2 = new g_modules.Graphic({"geometry":{"x":-105600,"y":5137000,"spatialReference":{"wkid":102100}},"attributes":{"OBJECTID":2,"lat":0.0,"lng":0.0,"description":"g2"}});
+            g3 = new g_modules.Graphic({"geometry":{"x":-105800,"y":5137000,"spatialReference":{"wkid":102100}},"attributes":{"OBJECTID":3,"lat":0.0,"lng":0.0,"description":"g3"}});
 
             var adds = [g1,g2,g3];
             g_featureLayers[0].applyEdits(adds,null,null,function(addResults,updateResults,deleteResults)
@@ -282,32 +365,33 @@ describe("Offline Editing", function()
                 });
         });
 
-        async.it("Prepare feature service. Add some features online - lines", function(done)
-        {
-            expect(g_offlineFeaturesManager.getOnlineStatus()).toBe(g_offlineFeaturesManager.ONLINE);
-
-            l1 = new g_modules.Graphic({"geometry":{"paths":[[[-101300,5136900],[-108400,5136900]]],"spatialReference":{"wkid":102100}},"attributes":{"ruleid":40,"zmax":null,"additionalinformation":null,"eny":null,"uniquedesignation":null,"datetimevalid":null,"datetimeexpired":null,"distance":null,"azimuth":null,"echelon":null,"x":null,"y":null,"z":null,"zmin":null}});
-            l2 = new g_modules.Graphic({"geometry":{"paths":[[[-101300,5136800],[-108400,5136800]]],"spatialReference":{"wkid":102100}},"attributes":{"ruleid":40,"zmax":null,"additionalinformation":null,"eny":null,"uniquedesignation":null,"datetimevalid":null,"datetimeexpired":null,"distance":null,"azimuth":null,"echelon":null,"x":null,"y":null,"z":null,"zmin":null}});
-            l3 = new g_modules.Graphic({"geometry":{"paths":[[[-101300,5136700],[-108400,5136700]]],"spatialReference":{"wkid":102100}},"attributes":{"ruleid":40,"zmax":null,"additionalinformation":null,"eny":null,"uniquedesignation":null,"datetimevalid":null,"datetimeexpired":null,"distance":null,"azimuth":null,"echelon":null,"x":null,"y":null,"z":null,"zmin":null}});
-
-            var adds = [l1,l2,l3];
-            g_featureLayers[1].applyEdits(adds,null,null,function(addResults,updateResults,deleteResults)
-                {
-                    expect(addResults.length).toBe(3);
-                    expect(getObjectIds(g_featureLayers[1].graphics)).toEqual(getObjectIds([l1,l2,l3]));
-                    expect(g_featureLayers[1].graphics.length).toBe(3);
-                    countFeatures(g_featureLayers[1], function(success,result)
-                    {
-                        expect(success).toBeTruthy();
-                        expect(result.count).toBe(3);
-                        done();
-                    });
-                },
-                function(error)
-                {
-                    expect(true).toBeFalsy();
-                });
-        });
+        // Temporarily comment out. We have switched to a Point-based service only that accepts attachments
+        //async.it("Prepare feature service. Add some features online - lines", function(done)
+        //{
+        //    expect(g_offlineFeaturesManager.getOnlineStatus()).toBe(g_offlineFeaturesManager.ONLINE);
+        //
+        //    l1 = new g_modules.Graphic({"geometry":{"paths":[[[-101300,5136900],[-108400,5136900]]],"spatialReference":{"wkid":102100}},"attributes":{"ruleid":40,"zmax":null,"additionalinformation":null,"eny":null,"uniquedesignation":null,"datetimevalid":null,"datetimeexpired":null,"distance":null,"azimuth":null,"echelon":null,"x":null,"y":null,"z":null,"zmin":null}});
+        //    l2 = new g_modules.Graphic({"geometry":{"paths":[[[-101300,5136800],[-108400,5136800]]],"spatialReference":{"wkid":102100}},"attributes":{"ruleid":40,"zmax":null,"additionalinformation":null,"eny":null,"uniquedesignation":null,"datetimevalid":null,"datetimeexpired":null,"distance":null,"azimuth":null,"echelon":null,"x":null,"y":null,"z":null,"zmin":null}});
+        //    l3 = new g_modules.Graphic({"geometry":{"paths":[[[-101300,5136700],[-108400,5136700]]],"spatialReference":{"wkid":102100}},"attributes":{"ruleid":40,"zmax":null,"additionalinformation":null,"eny":null,"uniquedesignation":null,"datetimevalid":null,"datetimeexpired":null,"distance":null,"azimuth":null,"echelon":null,"x":null,"y":null,"z":null,"zmin":null}});
+        //
+        //    var adds = [l1,l2,l3];
+        //    g_featureLayers[1].applyEdits(adds,null,null,function(addResults,updateResults,deleteResults)
+        //        {
+        //            expect(addResults.length).toBe(3);
+        //            expect(getObjectIds(g_featureLayers[1].graphics)).toEqual(getObjectIds([l1,l2,l3]));
+        //            expect(g_featureLayers[1].graphics.length).toBe(3);
+        //            countFeatures(g_featureLayers[1], function(success,result)
+        //            {
+        //                expect(success).toBeTruthy();
+        //                expect(result.count).toBe(3);
+        //                done();
+        //            });
+        //        },
+        //        function(error)
+        //        {
+        //            expect(true).toBeFalsy();
+        //        });
+        //});
     });
 
     describe("Go offline", function()
@@ -346,7 +430,7 @@ describe("Offline Editing", function()
             g3.geometry.y -= 200;
             var updates = [g1,g2,g3];
             g_featureLayers[0].applyEdits(null,updates,null,function(addResults,updateResults,deleteResults)
-                {   console.log("LINE 298: " + JSON.stringify(updateResults))
+                {   console.log("update existing features - points: " + JSON.stringify(updateResults))
                     expect(updateResults.length).toBe(3);
                     expect(updateResults[0].success).toBeTruthy();
                     expect(updateResults[1].success).toBeTruthy();
@@ -365,37 +449,38 @@ describe("Offline Editing", function()
                 });
         });
 
-        async.it("update existing features - lines", function(done)
-        {
-            expect(getObjectIds(g_featureLayers[1].graphics)).toEqual(getObjectIds([l1,l2,l3]));
-            expect(g_featureLayers[1].graphics.length).toBe(3);
-            expect(g_offlineFeaturesManager.getOnlineStatus()).toBe(g_offlineFeaturesManager.OFFLINE);
-
-
-            l1.geometry.y += 300; // jabadia: change
-            l2.geometry.y += 100;
-            l3.geometry.y -= 200;
-
-            var updates = [l1,l2,l3];
-            g_featureLayers[1].applyEdits(null,updates,null,function(addResults,updateResults,deleteResults)
-                {
-                    expect(updateResults.length).toBe(3);
-                    expect(updateResults[0].success).toBeTruthy();
-                    expect(updateResults[1].success).toBeTruthy();
-                    expect(updateResults[2].success).toBeTruthy();
-                    expect(getObjectIds(g_featureLayers[1].graphics)).toEqual(getObjectIds([l1,l2,l3]));
-                    expect(g_featureLayers[1].graphics.length).toBe(3);
-                    g_editsStore.pendingEditsCount(function(result){
-                        expect(result).toBe(6);
-                        done();
-                    });
-                },
-                function(error)
-                {
-                    expect(true).toBeFalsy();
-                    done();
-                });
-        });
+        // NOTE: We are only dealing with points!
+        //async.it("update existing features - lines", function(done)
+        //{
+        //    expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([l1,l2,l3]));
+        //    expect(g_featureLayers[1].graphics.length).toBe(3);
+        //    expect(g_offlineFeaturesManager.getOnlineStatus()).toBe(g_offlineFeaturesManager.OFFLINE);
+        //
+        //
+        //    l1.geometry.y += 300; // jabadia: change
+        //    l2.geometry.y += 100;
+        //    l3.geometry.y -= 200;
+        //
+        //    var updates = [l1,l2,l3];
+        //    g_featureLayers[1].applyEdits(null,updates,null,function(addResults,updateResults,deleteResults)
+        //        {
+        //            expect(updateResults.length).toBe(3);
+        //            expect(updateResults[0].success).toBeTruthy();
+        //            expect(updateResults[1].success).toBeTruthy();
+        //            expect(updateResults[2].success).toBeTruthy();
+        //            expect(getObjectIds(g_featureLayers[1].graphics)).toEqual(getObjectIds([l1,l2,l3]));
+        //            expect(g_featureLayers[1].graphics.length).toBe(3);
+        //            g_editsStore.pendingEditsCount(function(result){
+        //                expect(result).toBe(6);
+        //                done();
+        //            });
+        //        },
+        //        function(error)
+        //        {
+        //            expect(true).toBeFalsy();
+        //            done();
+        //        });
+        //});
 
         async.it("delete existing features - points", function(done)
         {
@@ -412,7 +497,7 @@ describe("Offline Editing", function()
 
                         // Expected count will stil be 6! This record is the database gets overwritten
                         // with the latest edit request. Last edit wins.
-                        expect(result).toBe(6);
+                        expect(result).toBe(3);
                         done();
                     });
                 },
@@ -429,9 +514,13 @@ describe("Offline Editing", function()
             expect(g_featureLayers[0].graphics.length).toBe(2);
             expect(g_offlineFeaturesManager.getOnlineStatus()).toBe(g_offlineFeaturesManager.OFFLINE);
 
-            g4 = new g_modules.Graphic({"geometry":{"x":-109100,"y":5137000,"spatialReference":{"wkid":102100}},"attributes":{"symbolname":"Reference Point DLRP","z":null,"additionalinformation":null,"eny":null,"datetimevalid":null,"datetimeexpired":null,"distance":null,"azimuth":null,"uniquedesignation":null,"x":null,"y":null}} );
-            g5 = new g_modules.Graphic({"geometry":{"x":-109500,"y":5137000,"spatialReference":{"wkid":102100}},"attributes":{"symbolname":"Reference Point DLRP","z":null,"additionalinformation":null,"eny":null,"datetimevalid":null,"datetimeexpired":null,"distance":null,"azimuth":null,"uniquedesignation":null,"x":null,"y":null}} );
-            g6 = new g_modules.Graphic({"geometry":{"x":-109900,"y":5137000,"spatialReference":{"wkid":102100}},"attributes":{"symbolname":"Reference Point DLRP","z":null,"additionalinformation":null,"eny":null,"datetimevalid":null,"datetimeexpired":null,"distance":null,"azimuth":null,"uniquedesignation":null,"x":null,"y":null}} );
+            //g4 = new g_modules.Graphic({"geometry":{"x":-109100,"y":5137000,"spatialReference":{"wkid":102100}},"attributes":{"symbolname":"Reference Point DLRP","z":null,"additionalinformation":null,"eny":null,"datetimevalid":null,"datetimeexpired":null,"distance":null,"azimuth":null,"uniquedesignation":null,"x":null,"y":null}} );
+            //g5 = new g_modules.Graphic({"geometry":{"x":-109500,"y":5137000,"spatialReference":{"wkid":102100}},"attributes":{"symbolname":"Reference Point DLRP","z":null,"additionalinformation":null,"eny":null,"datetimevalid":null,"datetimeexpired":null,"distance":null,"azimuth":null,"uniquedesignation":null,"x":null,"y":null}} );
+            //g6 = new g_modules.Graphic({"geometry":{"x":-109900,"y":5137000,"spatialReference":{"wkid":102100}},"attributes":{"symbolname":"Reference Point DLRP","z":null,"additionalinformation":null,"eny":null,"datetimevalid":null,"datetimeexpired":null,"distance":null,"azimuth":null,"uniquedesignation":null,"x":null,"y":null}} );
+
+            g4 = new g_modules.Graphic({"geometry":{"x":-109100,"y":5137000,"spatialReference":{"wkid":102100}},"attributes":{"OBJECTID":4,"lat":0.0,"lng":0.0,"description":"g4"}});
+            g5 = new g_modules.Graphic({"geometry":{"x":-109500,"y":5137000,"spatialReference":{"wkid":102100}},"attributes":{"OBJECTID":5,"lat":0.0,"lng":0.0,"description":"g5"}});
+            g6 = new g_modules.Graphic({"geometry":{"x":-109900,"y":5137000,"spatialReference":{"wkid":102100}},"attributes":{"OBJECTID":6,"lat":0.0,"lng":0.0,"description":"g6"}});
 
             var adds = [g4,g5,g6];
             g_featureLayers[0].applyEdits(adds,null,null,function(addResults,updateResults,deleteResults)
@@ -441,7 +530,7 @@ describe("Offline Editing", function()
                     g_editsStore.pendingEditsCount(function(result){
 
                         // Should be 9 since we added 3 three edits and we had 6 edits in the previous test
-                        expect(result).toBe(9);
+                        expect(result).toBe(6);
                         done();
                     });
 
@@ -474,7 +563,7 @@ describe("Offline Editing", function()
                         // Should be the exact same as previous test
                         // An update to a new feature should be a single entry in the database.
                         // We simply update the existing entry with the new information.
-                        expect(result).toBe(9);
+                        expect(result).toBe(6);
                         done();
                     });
                 },
@@ -567,8 +656,8 @@ describe("Offline Editing", function()
 
         async.it("check db size", function(done){
             g_featureLayers[0].getUsage(function(usage,error){
-                expect(usage.sizeBytes).toBe(7083);
-                expect(usage.editCount).toBe(8);
+                expect(usage.sizeBytes).toBe(3847);
+                expect(usage.editCount).toBe(5);
                 expect(error).toBe(null);
                 done();
             })
@@ -576,9 +665,147 @@ describe("Offline Editing", function()
     });
 
     // TO-DO!!
-    //describe("Test attachments", function(){
-    //    //TO-DO
-    //});
+    describe("Test attachments", function(){
+        async.it("Add image attachment", function(done){
+
+
+            var xhr = new XMLHttpRequest();
+            xhr.open("GET","../samples/images/blue-pin.png",true);
+            xhr.responseType = "blob";
+
+            xhr.onload = function()
+            {
+                if( xhr.status === 200)
+                {
+                    var blob = new Blob([this.response],{type: 'image/png'});
+
+                    // Verify our image is a PNG file!
+                    var reader = new FileReader();
+                    reader.onload = function (evt) {
+                        file = evt.target.result;
+                        var test = file.slice(0,4);
+                        expect(test).toContain("PNG");
+                    };
+                    reader.readAsBinaryString(blob);
+
+                    var parts = [blob,"test", new ArrayBuffer(blob.size)];
+
+                    var file = new File(parts,"blue-pin.png",{
+                        lastModified: new Date(0),
+                        type: "image/png"
+                    });
+
+                    var formNode = {
+                        elements:[
+                            {type:"file",
+                                files:[file]}
+                        ]
+                    };
+
+                    g_offlineFeaturesManager.initAttachments(function(success){
+                        expect(success).toBe(true);
+                        if(success){
+
+                            g_featureLayers[0].addAttachment(/* objectid */1,/* form node */ formNode,function(event){
+                                expect(event.attachmentId).toBe(-4);
+                                expect(event.objectId).toBe(1);
+                                expect(event.success).toBe(true);
+                                //console.log("ATTACHMENTS: " + JSON.stringify(event));
+                                done();
+                            },function(error){
+                                expect(error).toBe(true); // we want to fail if there is an error!
+                                done();
+                            });
+                        }
+                    });
+                }
+                else
+                {
+                    console.log("Test attachments failed");
+                }
+            };
+            xhr.onerror = function(e)
+            {
+                console.log("Test attachments failed: " + JSON.stringify(e));
+            };
+
+            xhr.send(null);
+        });
+
+        // Change the image to a GIF
+        async.it("Update image attachment", function(done){
+
+            var xhr = new XMLHttpRequest();
+            xhr.open("GET","../samples/images/loading.gif",true);
+            xhr.responseType = "blob";
+
+            xhr.onload = function()
+            {
+                if( xhr.status === 200)
+                {
+                    var blob = new Blob([this.response],{type: 'image/png'});
+
+                    // Verify our image is a GIF file!
+                    var reader = new FileReader();
+                    reader.onload = function (evt) {
+                        file = evt.target.result;
+                        var test = file.slice(0,6);
+                        expect(test).toContain("GIF89a");
+                    };
+                    reader.readAsBinaryString(blob);
+
+                    var parts = [blob,"test", new ArrayBuffer(blob.size)];
+
+                    var file = new File(parts,"loading.gif",{
+                        lastModified: new Date(0),
+                        type: "image/png"
+                    });
+
+                    var formNode = {
+                        elements:[
+                            {type:"file",
+                                files:[file]}
+                        ]
+                    };
+
+                    g_featureLayers[0].updateAttachment(/* objectid */1,/* attachmentId */-4,/* form node */ formNode,function(event){
+                        expect(event.attachmentId).toBe(-4);
+                        expect(event.objectId).toBe(1);
+                        expect(event.success).toBe(true);
+                        //console.log("ATTACHMENTS: " + JSON.stringify(event));
+                        done();
+                    },function(error){
+                        expect(error).toBe(true); // we want to fail if there is an error!
+                        done();
+                    });
+
+                }
+                else
+                {
+                    console.log("Test attachments failed");
+                }
+            };
+            xhr.onerror = function(e)
+            {
+                console.log("Test attachments failed: " + JSON.stringify(e));
+            };
+
+            xhr.send(null);
+        });
+
+        async.it("Delete image attachment", function(done){
+            g_featureLayers[0].deleteAttachments(1,[-4],function(event) {
+                expect(event[0].attachmentId).toBe(-4);
+                expect(event[0].objectId).toBe(1);
+                expect(event[0].success).toBe(true);
+                console.log("DELETE DELETE " + JSON.stringify(event));
+                done();
+            }, function(error) {
+                expect(error).toBe(true);
+                done();
+            });
+        });
+    });
 
     describe("Test PhantomGraphicsLayer using editsStore directly", function()
     {
@@ -586,15 +813,15 @@ describe("Offline Editing", function()
             g_editsStore.getPhantomGraphicsArray(function(results,errors){
 
                 // Should be the same size as the number of edits!!
-                expect(results.length).toBe(8);
+                expect(results.length).toBe(5);
                 expect(results[0].id).toBe("phantom-layer|@|-1");
                 //expect(results[1].id).toBe("phantom-layer|@|-2");
                 expect(results[1].id).toBe("phantom-layer|@|-3");
                 expect((results[2].id).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
                 expect((results[3].id).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
                 expect((results[4].id).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
-                expect((results[5].id).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
-                expect((results[6].id).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
+                //expect((results[5].id).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
+                //expect((results[6].id).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
                 //expect((results[8].id).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
                 expect(errors).toBe("end");
                 done();
@@ -606,15 +833,15 @@ describe("Offline Editing", function()
             g_featureLayers[0].getPhantomGraphicsArray(function(result,array){
                 expect(result).toBe(true);
                 expect(typeof array).toBe("object");
-                expect(array.length).toBe(8);
+                expect(array.length).toBe(5);
                 expect(array[0].id).toBe("phantom-layer|@|-1");
                 //expect(results[1].id).toBe("phantom-layer|@|-2");
                 expect(array[1].id).toBe("phantom-layer|@|-3");
                 expect((array[2].id).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
                 expect((array[3].id).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
                 expect((array[4].id).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
-                expect((array[5].id).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
-                expect((array[6].id).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
+                //expect((array[5].id).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
+                //expect((array[6].id).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
                 //expect((results[8].id).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
                 done();
             });
@@ -633,17 +860,16 @@ describe("Offline Editing", function()
            g_editsStore._getPhantomGraphicsArraySimple(function(results,errors){
 
                // Should be the previous size + 1 additional phantom graphic.
-               expect(results.length).toBe(9);
+               expect(results.length).toBe(6);
                expect(results[0]).toBe("phantom-layer|@|-1");
-               //expect(results[1]).toBe("phantom-layer|@|-2");
                expect(results[1]).toBe("phantom-layer|@|-3");
                expect((results[2]).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
                expect((results[3]).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
                expect((results[4]).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
-               expect((results[5]).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
-               expect((results[6]).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
-               expect((results[7]).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
-               expect(results[8]).toBe("phantom-layer|@|test001");
+               //expect((results[5]).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
+               //expect((results[6]).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
+               //expect((results[7]).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
+               expect(results[5]).toBe("phantom-layer|@|test001");
                expect(errors).toBe("end");
                done();
            })
@@ -670,19 +896,19 @@ describe("Offline Editing", function()
             g_editsStore._getPhantomGraphicsArraySimple(function(results,errors){
 
                 // We added two phantom graphics to previous result
-                expect(results.length).toBe(11);
+                expect(results.length).toBe(8);
                 expect(results[0]).toBe("phantom-layer|@|-1");
                 //expect(results[1]).toBe("phantom-layer|@|-2");
                 expect(results[1]).toBe("phantom-layer|@|-3");
                 expect((results[2]).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
                 expect((results[3]).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
                 expect((results[4]).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
-                expect((results[5]).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
-                expect((results[6]).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
-                expect((results[7]).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
-                expect(results[8]).toBe("phantom-layer|@|test001");
-                expect(results[9]).toBe("phantom-layer|@|test002");
-                expect(results[10]).toBe("phantom-layer|@|test003");
+                //expect((results[5]).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
+                //expect((results[6]).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
+                //expect((results[7]).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
+                expect(results[5]).toBe("phantom-layer|@|test001");
+                expect(results[6]).toBe("phantom-layer|@|test002");
+                expect(results[7]).toBe("phantom-layer|@|test003");
                 expect(errors).toBe("end");
                 done();
             })
@@ -695,18 +921,18 @@ describe("Offline Editing", function()
                g_editsStore._getPhantomGraphicsArraySimple(function(results,errors){
 
                    // We remove one graphic from the previous result of 12
-                   expect(results.length).toBe(10);
+                   expect(results.length).toBe(7);
                    expect(results[0]).toBe("phantom-layer|@|-1");
                    //expect(results[1]).toBe("phantom-layer|@|-2");
                    expect(results[1]).toBe("phantom-layer|@|-3");
                    expect((results[2]).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
                    expect((results[3]).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
                    expect((results[4]).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
-                   expect((results[5]).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
-                   expect((results[6]).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
-                   expect((results[7]).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
-                   expect(results[8]).toBe("phantom-layer|@|test002");
-                   expect(results[9]).toBe("phantom-layer|@|test003");
+                   //expect((results[5]).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
+                   //expect((results[6]).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
+                   //expect((results[7]).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
+                   expect(results[5]).toBe("phantom-layer|@|test002");
+                   expect(results[6]).toBe("phantom-layer|@|test003");
                    expect(errors).toBe("end");
                    done();
                })
@@ -753,17 +979,17 @@ describe("Offline Editing", function()
             g_editsStore._getPhantomGraphicsArraySimple(function(results,errors){
 
                 // We remove one graphic from the previous result and should now be @ 9
-                expect(results.length).toBe(9);
+                expect(results.length).toBe(6);
                 //expect(results[0]).toBe("phantom-layer|@|-1");
                 expect(results[0]).toBe("phantom-layer|@|-3");
                 expect((results[1]).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
                 expect((results[2]).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
                 expect((results[3]).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
-                expect((results[4]).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
-                expect((results[5]).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
-                expect((results[6]).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
-                expect(results[7]).toBe("phantom-layer|@|test002");
-                expect(results[8]).toBe("phantom-layer|@|test003");
+                //expect((results[4]).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
+                //expect((results[5]).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
+                //expect((results[6]).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
+                expect(results[4]).toBe("phantom-layer|@|test002");
+                expect(results[5]).toBe("phantom-layer|@|test003");
                 expect(errors).toBe("end");
                 done();
             })
@@ -855,17 +1081,17 @@ describe("Offline Editing", function()
         async.it("Before going online validate graphic layer properties", function(done){
             // Remember we deleted g3! So our total count is 8 not 9. HOWEVER, there should be 9 records in the database!
             expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2,g4,g5,g6]));
-            expect(getObjectIds(g_featureLayers[1].graphics)).toEqual(getObjectIds([l1,l2,l3]));
+            //expect(getObjectIds(g_featureLayers[1].graphics)).toEqual(getObjectIds([l1,l2,l3]));
             expect(g_featureLayers[0].graphics.length).toBe(5);
-            expect(g_featureLayers[1].graphics.length).toBe(3);
-            expect(g_featureLayers[2].graphics.length).toBe(0);
+            //expect(g_featureLayers[1].graphics.length).toBe(3);
+            //expect(g_featureLayers[2].graphics.length).toBe(0);
             done();
         });
 
         async.it("Retrieve edits array from the layer", function(done){
             g_featureLayers[0].getAllEditsArray(function(success,array){
                 expect(success).toBe(true); console.log("ARRAY " + JSON.stringify(array))
-                expect(array.length).toBe(8);
+                expect(array.length).toBe(5);
                 done();
             });
         });
@@ -889,7 +1115,7 @@ describe("Offline Editing", function()
 
                 //console.log("RESPONSES " + JSON.stringify(responses) + ", " + JSON.stringify(results))
 
-                expect(Object.keys(results.features.responses).length).toBe(8);
+                expect(Object.keys(results.features.responses).length).toBe(5);
                 for (var key in results.features.responses) {
 
                     var response = results.features.responses[key];
@@ -926,20 +1152,15 @@ describe("Offline Editing", function()
     describe("After online", function(){
         async.it("After online - verify feature layer graphic counts",function(done){
             // all of them are positive
-            expect(getObjectIds(g_featureLayers[0].graphics).filter(function(id){ return id<0; })).toEqual([-2]);
-            expect(getObjectIds(g_featureLayers[1].graphics).filter(function(id){ return id<0; })).toEqual([]);
+            expect(getObjectIds(g_featureLayers[0].graphics).filter(function(id){ return id<0; })).toEqual([-2,-3]);
+            //expect(getObjectIds(g_featureLayers[1].graphics).filter(function(id){ return id<0; })).toEqual([]);
             expect(g_featureLayers[0].graphics.length).toBe(5);
-            expect(g_featureLayers[1].graphics.length).toBe(3);
+            //expect(g_featureLayers[1].graphics.length).toBe(3);
             countFeatures(g_featureLayers[0], function(success,result)
             {
                 expect(success).toBeTruthy();
                 expect(result.count).toBe(4);
-                countFeatures(g_featureLayers[1], function(success,result)
-                {
-                    expect(success).toBeTruthy();
-                    expect(result.count).toBe(3);
-                    done();
-                });
+                done();
             });
         });
 

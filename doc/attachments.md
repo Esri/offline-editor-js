@@ -5,36 +5,61 @@ The __offline-edit-min.js__ has support for attachments in offline mode. See [at
 While your application is in `OFFLINE` mode, you can:
 
 * add attachments to any feature, either a feature that already exists in the server or a newly added feature.
-* remove attachments from features. It only works for attachments that have been added while offline.
+* delete attachments from features if you have pre-cached the attachments or if you have added a feature while offline you can delete it from the local database. 
 * query for attachments of a particular feature. It will only return attachments that have been added while offline.
 * view the attached files (see __limitations__ below)
-* when the app goes to `ONLINE` mode, all attachments are sent back to the server and removed from local browser storage
+* when the app goes to `ONLINE` mode, all attachments are sent back to the server and removed from the local database.
 
-##How you do that:
-You can either use the ArcGIS FeatureLayer API _(esri.layers.FeatureLayer)_ directly or use the built-in [AttachmentEditor](https://developers.arcgis.com/javascript/jsapi/attachmenteditor-amd.html) widget that support feature attachment editing. Both approaches work well, and the code you write works the same either if you are on `ONLINE` or `OFFLINE` modes.
+##How you do use it:
+You can either use the ArcGIS FeatureLayer API _(esri.layers.FeatureLayer)_ directly or use the [AttachmentEditor](https://developers.arcgis.com/javascript/jsapi/attachmenteditor-amd.html) widget that supports feature attachment editing. Both approaches work well, and the code you write works the same either if you are on `ONLINE` or `OFFLINE` modes.
 
 The only differences in your code are:
 
-* create an offlineFeaturesManager enabled for attachment support:
+* create an offlineFeaturesManager enabled for attachment support. Make sure you initialize the attachments database:
 
             var offlineFeaturesManager = new esri.OfflineFeaturesManager();
             offlineFeaturesManager.initAttachments();
 
 * extend your featureLayers with offline editing functionality:
 
-		offlineFeaturesManager.extend(featureLayer, function(success)
+		offlineFeaturesManager.extend(featureLayer, function(success, error)
 		{
 			console.log("layer extended", success? "success" : "failed");
 		});
 
+You can also modified the database's name and object store name. This functionality is typically used for advanced
+users that have a requirement to run multiple databases:
+
+            var offlineFeaturesManager = new esri.OfflineFeaturesManager();
+            offlineFeaturesManager.ATTACHMENTS_DB_NAME = "attachment-store-two";
+            offlineFeaturesManager.ATTACHMENTS_DB_OBJECTSTORE_NAME = "attachments-two";
+            
+            offlineFeaturesManager.initAttachments();
+
 ###Using the FeatureLayer API
-The FeatureLayer API for handling attachments consists primarily of three methods:
+The FeatureLayer API for handling attachments consists primarily of four methods. In general you should let `OfflineFeaturesManager`
+handle interactions with attachments and it's not recommended to interact with the attachments database directly. 
 
 * `layer.queryAttachmentInfos(objectId,callback,errback)` [doc](https://developers.arcgis.com/javascript/jsapi/featurelayer.html#queryattachmentinfos)
 * `layer.addAttachment(objectId, formNode, callback, errback)` [doc](https://developers.arcgis.com/javascript/jsapi/featurelayer.html#addattachment)
+* `layer.updateAttachment(objectId, attachmentId, formNode, callback, errback)` - as of April 2015 the ArcGIS API for JavaScript document has this functionality but it's not documented. That should hopefully be fixed in the next release of the JS API.
 * `layer.deleteAttachments(objectId, attachmentIds, callback, errback)` [doc](https://developers.arcgis.com/javascript/jsapi/featurelayer.html#deleteattachments)
 
-They work the same both in ONLINE and OFFLINE mode. In OFFLINE mode, attachments will be kept in the local browser storage (indexeddb) and sent back to the server when you call `offlineFeaturesManager.goOnline()`
+They work the same both in ONLINE and OFFLINE mode. In OFFLINE mode, attachments will be kept in the local database (indexeddb) and sent back to the server when you call `offlineFeaturesManager.goOnline()`
+
+##Getting database usage
+Once a feature layer is extended you can find out how big the database and how many attachments are stored by using the following pattern:
+
+			layer.getAttachmentsUsage(function(usage, error) {
+				console.log("Size: " + usage.sizeBytes + ", attachmentCount: " + usage.attachmentCount);
+			});
+
+##Resetting the database
+Under certain circumstances you may want to force the database to delete everything.
+
+			layer.resetAttachmentsDatabase(function(result, error) { 
+				console.log("Reset succes: " + result); // result is a boolean
+			});
 
 ###Using the AttachmentEditor widget
 The [AttachmentEditor](https://developers.arcgis.com/javascript/jsapi/attachmenteditor-amd.html) is not very fancy, but it's easy to work with:
@@ -59,5 +84,5 @@ The widget internally uses the FeatureLayer API, and it works well in OFFLINE mo
 ##Limitations
 Attachment support in OFFLINE mode has some limitations:
 
-* while in OFFLINE mode, features in a featureLayer don't know whether they have any attachments in the server or any other information about attachments. Therefore queryAttachmentInfos() and deleteAttachments() can't take those attachments into account. Calling queryAttachmentInfos() will only return attachments that are stored in local storage and deleteAttachments() can only remove local attachments.
-* in order to see local attachments, the library uses [window.URL.createObjectURL() API](https://developer.mozilla.org/en-US/docs/Web/API/URL.createObjectURL). This API generates an opaque URL that represents the content of the File passed as parameter. This allows the user of the app to see and download attachments that are still in local browser storage as if they were actual files accessible through a URL. However, the lifetime of this URL is tied to the page where it is created. This means that if the user reloads (while still offline) the page after adding some local attachments, then these URLs will be invalid.
+* while in OFFLINE mode, features in a featureLayer don't know whether they have any attachments in the server or any other 
+information about attachments unless you specifically build out that functionality. Therefore queryAttachmentInfos() and deleteAttachments() can't take those attachments into account. Calling queryAttachmentInfos() will only return attachments that are stored in local storage and deleteAttachments() can only remove local attachments.

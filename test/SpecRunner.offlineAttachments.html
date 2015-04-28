@@ -19,9 +19,9 @@
 		}
 	</script>
 
-		<link rel="stylesheet" href="http://js.arcgis.com/3.10/js/dojo/dijit/themes/claro/claro.css">
-		<link rel="stylesheet" href="http://js.arcgis.com/3.10/js/esri/css/esri.css">
-		<script src="http://js.arcgis.com/3.10/"></script>
+		<link rel="stylesheet" href="http://js.arcgis.com/3.13/dijit/themes/claro/claro.css">
+		<link rel="stylesheet" href="http://js.arcgis.com/3.13/esri/css/esri.css">
+		<script src="http://js.arcgis.com/3.13/"></script>
 
 	<!-- include spec files here... -->
 	<script type="text/javascript" src="spec/offlineAttachmentsSpec.js"></script>
@@ -30,10 +30,11 @@
 
 	var g_map;
 	var g_featureLayers = [];
+	var g_featureLayer = null;
 	var g_offlineFeaturesManager;
 	var g_modules = {};
 	var g_editsStore;
-	var g_formNode;
+	var g_formNode, g_formData, g_formData2, g_formNode2;
 
 	require(["esri/map", 
 		"esri/layers/GraphicsLayer", "esri/graphic",
@@ -51,6 +52,8 @@
 			g_modules.esriRequest = esriRequest;
 			g_modules.Graphic = Graphic;
 			g_offlineFeaturesManager = new O.esri.Edit.OfflineFeaturesManager();
+            g_offlineFeaturesManager.DB_UID = "OBJECTID";
+
 			g_editsStore = new O.esri.Edit.EditStore();
 
 			g_offlineFeaturesManager.initAttachments(function(success)
@@ -58,7 +61,9 @@
 				console.log("attachments inited", success);
 			});
 
-			g_formNode = dom.byId('theForm');
+			var form = dom.byId('theForm');
+
+            on(dom.byId('theFile'),'change',test);
 
 			g_map = new Map("map", {
 				basemap: "topo",
@@ -67,46 +72,36 @@
 				sliderStyle: "small"
 			});
 
-			var fsUrl = "http://services2.arcgis.com/CQWCKwrSm5dkM28A/arcgis/rest/services/Military/FeatureServer/";
+			var fsUrl = "http://services2.arcgis.com/CQWCKwrSm5dkM28A/arcgis/rest/services/Military/FeatureServer/3";
+            var fsUrl2 = "http://services1.arcgis.com/M8KJPUwAXP8jhtnM/arcgis/rest/services/Simple_Point_Service/FeatureServer/0";
 			// var layersIds = [0,1,2,3,4,5,6];
-			var layersIds = [1,2,3,6];
+//			var layersIds = [1,2,3,6];
 
-			layersIds.forEach(function(layerId)
-			{
-				var layer = new FeatureLayer(fsUrl + layerId, {
-					mode: FeatureLayer.MODE_SNAPSHOT,
-					outFields: ['*']
-				});
-				g_featureLayers.push(layer);			
-			})
+            g_featureLayer = new FeatureLayer(fsUrl2, {
+                mode: FeatureLayer.MODE_SNAPSHOT,
+                outFields: ['*']
+            });
 
-			g_map.addLayers(g_featureLayers);
+            g_map.on('layers-add-result', function(evt){
+                console.log("layers ready");
+            });
 
-			g_map.on('layers-add-result', test);
+			g_map.addLayers([g_featureLayer]);
 
 			function test() 
 			{
-				try
-				{
-					g_featureLayers.forEach(function(layer)
-					{
-						g_offlineFeaturesManager.extend(layer,function(success,message){
-							if(!success){
-								alert("There was a problem extending the layer: " + layer);
-							}
-						});
-					});		
-				}
-				catch(err)
-				{
-					console.log(err);
-				}
+
+                g_offlineFeaturesManager.extend(g_featureLayer,function(success,message){
+                    if(!success){
+                        alert("There was a problem extending the layer: " + layer);
+                    }
+                });
 
 				try
 				{					
 					var jasmineEnv = jasmine.getEnv();
 					jasmineEnv.updateInterval = 1000;
-					jasmineEnv.defaultTimeoutInterval = 5000; // 10 sec
+					jasmineEnv.defaultTimeoutInterval = 10000; // 10 sec
 					var htmlReporter = new jasmine.HtmlReporter();
 
 					jasmineEnv.addReporter(htmlReporter);
@@ -130,13 +125,65 @@
 					}
 
 					// execJasmine();
-					on(dom.byId('theFile'),'change',execJasmine);
+//					on(dom.byId('theFile'),'change',execJasmine);
+
+                    function retrieveFile(){
+
+                        var xhr = new XMLHttpRequest();
+                        xhr.open("GET","images/blue-pin.png",true);
+                        xhr.responseType = "blob";
+
+                        xhr.onload = function()
+                        {
+                            if( xhr.status === 200)
+                            {
+                                var blob = new Blob([this.response],{type: this.response.type});
+                                var parts = [blob,"test", new ArrayBuffer(blob.size)];
+                                var files = [];
+                                var file = new File(parts,"blue-pin.png",{
+                                    lastModified: new Date(0),
+                                    type: this.response.type
+                                });
+
+                                files.push(file);
+
+                                // Fake a form node for our custom parser in offlineFeaturesManager.js
+                                g_formNode = {
+                                    elements:[
+                                        {type:"file",
+                                            files:files}
+                                    ]
+                                };
+
+                                g_formData = new FormData();
+                                g_formData.append("attachment",file);
+
+
+                                g_formData2 = form;
+
+//                                retrieveFile2();
+                                 execJasmine();
+
+                            }
+                            else
+                            {
+                                console.log("Retrieve file failed");
+                            }
+                        };
+                        xhr.onerror = function(e)
+                        {
+                            console.log("Retrieved file failed: " + JSON.stringify(e));
+                        };
+
+                        xhr.send(null);
+                    }
 				}
 				catch(err)
 				{
 					console.log(err);
 				}
 
+                retrieveFile();
 
 			}; // test()
 
@@ -146,7 +193,7 @@
 
 <body>
 	<form id="theForm">
-	<input type="file" id="theFile"><br/>
+	<input type="file" name="attachment" id="theFile"><br/>
 	<span>Select any file (.png, .jpg,...) to launch unit testing</span>
 	</form>
 	<div id="map" style="position: absolute; bottom: 0; right: 0; height:200px; width: 200px;"></div>
