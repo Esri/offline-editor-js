@@ -1,5 +1,29 @@
 # offline-editor-js - Changelog
 
+## Version 2.7
+
+This release focused on improving the handling of attachments. Has breaking changes.
+
+** Enhancements **
+* Added a new sample attachments-editor-secure.html to demonstrate the pattern for working with secure feature services and attachments.
+* Closes #286 - support for secure services (HTTPS) when working with attachments
+* Closes #305 - Support both ADD and UPDATE attachment. 
+* Closes #306 - removes createObjectURL functionality from attachmentsStore. This allows for attachments to be used in full offline scenarios.
+* Closes #318 - added OfflineFeaturesManager.ATTACHMENTS_DB_NAME and ATTACHMENTS_DB_OBJECSTORE_NAME.
+* Closes #321 - switch offlineFeaturesManager unit test to a different feature service that's attachments enabled.
+* Closes #322 - rewrite offlineAttachmentsSpec.
+* Closes #324 - attachmentsStore._readFile() can indicate false positives.
+* Closes #325 - support DELETE an existing attachment.
+* Closes #328 - add layer.resestAttachmentsDatabase().
+* Closes #329 - add layer.getAttachmentsUsage().
+
+** Breaking Changes **
+* attachmentsStore.DB_NAME has been renamed to attachmentsStore.dbName to be consistent with editStore.
+* attachmentsStore.OBJECTSTORE_NAME has been renamed to attachmentsStore.objectStoreName to be consistent with editStore.
+* Added use of the browser's [FormData() API](https://developer.mozilla.org/en-US/docs/Web/API/FormData) along with `FormData.append`. This may cause 
+attachment support to break in certain older browsers. This is a courtesy heads-up because as a rule this library only
+supports the latest version of Chrome, Firefox and Safari. 
+
 ## Version 2.6 - April 9, 2015
 
 Recommended update. No breaking changes. 
