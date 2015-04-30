@@ -1,10 +1,17 @@
 # offline-editor-js - Changelog
 
-## Version 2.7.0.1
+## Version 2.7.1 - April 29, 2015
+
+This release has enhancements and has no breaking changes.
+
+**Enhancements**
+* Added `OfflineFeaturesManager.getFeatureLayerJSONDataStore()` for use in full offline browser restarts.
+
+## Version 2.7.0.1 - April 28, 2015
 
 Closes #323 - Add an FAQ doc.
 
-## Version 2.7
+## Version 2.7 - April 27, 2015
 
 This release focused on improving the handling of attachments. Has breaking changes.
 
