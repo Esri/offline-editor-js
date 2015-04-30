@@ -42,6 +42,7 @@ Methods | Returns | Description
 `goOffline()` | nothing | Forces library into an offline state. Any edits applied to extended FeatureLayers during this condition will be stored locally.
 `goOnline(callback)` | `callback( boolean, results )` | Forces library to return to an online state. If there are pending edits, an attempt will be made to sync them with the remote feature server. Callback function will be called when resync process is done. <br><br>Refer to the [How to use the edit library doc](howtouseeditlibrary.md) for addition information on the `results` object.
 `getOnlineStatus()` | `ONLINE`, `OFFLINE` or `RECONNECTING`| Determines the current state of the manager. Please, note that this library doesn't detect actual browser offline/online condition. You need to use the `offline.min.js` library included in `vendor\offline` directory to detect connection status and connect events to goOffline() and goOnline() methods. See `military-offline.html` sample.
+`getFeatureLayerJSONDataStore` | `callback( boolean, Object)` | **New @ v2.7.1** Returns the feature layer's dataStore Object.
 `getReadableEdit()` | String | **DEPRECATED** @ v2.5. A string value representing human readable information on pending edits. Use `featureLayer.getAllEditsArray()`.
 
 
