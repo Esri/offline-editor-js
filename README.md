@@ -1,11 +1,11 @@
 offline-editor-js
 =================
 
-Offline-editor-js is a set of JavaScript libraries for using the ArcGIS API for JavaScript offline. It uses browser-based storage to offer both lightweight editing and tile management capabilities while offline or intermittently offline. It's a work-in-progress so if you have suggestions open an issue or if you want to make a pull request we welcome your proposed modifications. 
+Offline-editor-js is an open source family of libraries for building offline capabilities into web mapping applications. It's specifically designed to work with the ArcGIS API for JavaScript and ArcGIS Online. It enables you to store features, attachments, map tiles and TPKs (Tile Packages). 
 
 Online samples and getting started tutorials are available here: **[http://esri.github.io/offline-editor-js/demo/](http://esri.github.io/offline-editor-js/demo/)**
 
-*IMPORTANT:* If you need a fully integrated robust offline solution then you should be using our ArcGIS Runtime SDKs for .NET, WPF, Java, iOS, Android and Qt.
+*IMPORTANT:* This is an R&D project. If you need a fully integrated, robust offline solution then you should be using our ArcGIS Runtime SDKs for .NET, WPF, Java, iOS, Android and Qt.
 
 This repo contains the following libraries:
 
@@ -37,6 +37,10 @@ __Attachment Support__: Attachments are supported with some limitations. See doc
 
 Go __[here](demo/api-doc.html)__ to get links to the API docs and How to use docs.
 
+## FAQ
+
+Go __[here](https://github.com/Esri/offline-editor-js/wiki/FAQ)__ for answers to frequently asked questions.
+
 ## Architecture
 
 ![Architecture](demo/images/offline_arch.png)
@@ -58,7 +62,7 @@ Go __[here](demo/api-doc.html)__ to get links to the API docs and How to use doc
 * ArcGIS API for JavaScript (v3.8+)
 * Node.js required for building the source
 * NOTE: browser limitations and technical dependencies. The offline capabilities in this toolkit depend on certain HTML5 capabilities being present in the browser. Go [here](doc/dependencies.md) for a detailed breakdown of the information.
-* We offer browser support for Chrome and Safari only, at this time. Some of the capabilities in the repository will not work on Internet Explorer. We continue to evaluate IE's capabilities as new releases become available to try and identify a point where we might be able to support it.  	
+* We offer browser support for Chrome, Firefox and Safari only, at this time. Some of the capabilities in the repository will not work on Internet Explorer. 	
 
 * Sub-modules (see `/vendor` directory)
 
@@ -106,7 +110,7 @@ limitations under the License.
 
 A copy of the license is available in the repository's [license.txt]( license.txt) file.
 
-[](Esri Tags: ArcGIS Web Mapping Editing FeatureServices Offline)
+[](Esri Tags: ArcGIS Web Mapping Editing FeatureServices Tiles Offline)
 [](Esri Language: JavaScript)
 
 

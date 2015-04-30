@@ -1,4 +1,4 @@
-/*! offline-editor-js - v2.7.0 - 2015-04-27
+/*! offline-editor-js - v2.7.1 - 2015-04-29
 *   Copyright (c) 2015 Environmental Systems Research Institute, Inc.
 *   Apache License*/
 /*jshint -W030 */
@@ -111,7 +111,9 @@ define([
                     layer.objectIdField = this.DB_UID;
 
                     // Initialize the database as well as set offline data.
-                    this._initializeDB(dataStore,callback);
+                    if(!this._editStore._isDBInit) {
+                        this._initializeDB(dataStore,callback);
+                    }
 
                     // we keep track of the FeatureLayer object
                     this._featureLayers[layer.url] = layer;
@@ -1096,6 +1098,28 @@ define([
                     }
                 },
 
+                /**
+                 * Retrieves the optional feature layer storage object
+                 * For use in full offline scenarios.
+                 * @param callback callback(true, object) || callback(false, error)
+                 */
+                getFeatureLayerJSONDataStore: function(callback){
+                    if(!this._editStore._isDBInit){
+                        this._initializeDB(null,function(success) {
+                            if(success){
+                                this._editStore.getFeatureLayerJSON(function(success,message){
+                                    callback(success,message);
+                                });
+                            }
+                        }.bind(this));
+                    }
+                    else {
+                        this._editStore.getFeatureLayerJSON(function(success,message){
+                            callback(success,message);
+                        });
+                    }
+                },
+
                 /* internal methods */
 
                 /**
@@ -1808,6 +1832,7 @@ O.esri.Edit.EditStore = function () {
     "use strict";
 
     this._db = null;
+    this._isDBInit = false;
 
     // Public properties
 
@@ -2757,6 +2782,7 @@ O.esri.Edit.EditStore = function () {
 
         request.onsuccess = function (event) {
             this._db = event.target.result;
+            this._isDBInit = true;
             console.log("database opened successfully");
             callback(true);
         }.bind(this);

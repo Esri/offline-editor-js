@@ -47,6 +47,7 @@
     <script>
         // DO NOT DELETE!
         // Listen for application cache update events
+        // We want to place this as early in the application life-cycle as possible!
         window.addEventListener('load', function(evt) {
 
             window.applicationCache.addEventListener('updateready', function(evt) {
@@ -220,19 +221,19 @@
                  * This is a utility check to 100% validate if the application is online or
                  * offline prior to launching any map functionality.
                  */
-                verifyOnline(function(result){ console.log("VERIFY ONLINE " + result)
-                    if(result){
+                verifyOnline(function(result) {
+                    if(result) {
                         _isOnline = true;
                         setUIOnline();
                     }
-                    else{
+                    else {
                         _isOnline = false;
                         setUIOffline();
                     }
                     startMap();
                 });
 
-                function initModalPopup(){
+                function initModalPopup() {
                     popup = new ModalPopup({animation: true, animationDuration: 1},"modal-popup");
 
                     // Variables for modal popup
@@ -249,7 +250,7 @@
                  * Modify symbol size to devices. Make them easier to touch on.
                  * Feel free to tweak this based on your requirements
                  */
-                function mediaQueries(){
+                function mediaQueries() {
                     var widthQuery = window.matchMedia("(max-width: 768px)");
                     var orientation = window.matchMedia("(orientation:portrait)");
 
@@ -265,7 +266,10 @@
                     }
                 }
 
-                function startMap(){
+                /**
+                 * We run this code both online and offline.
+                 */
+                function startMap() {
 
                     //Make sure map shows up after a browser refresh
                     Offline.check();
@@ -303,34 +307,15 @@
                     map.addLayer(busStopFeatureLayer);
                 }
 
-                function initFeatureUpdateEndListener(){
-                    //While loading application ONLINE
+                /**
+                 * If we are offline then the attempt to add the feature layer will fail. The error
+                 * will show up in the 'update-end' event.
+                 * Having that error is okay because we want to explicitly control the order in which events happen.
+                 * In production usage it would be a best practices to check any other errors and handle them appropriately.
+                 */
+                function initFeatureUpdateEndListener() {
+
                     busStopFeatureLayer.on("update-end",function(evt){
-
-                        if(offlineFeaturesManager == null || _isOnline){
-
-                            // Set click listeners
-                            on(btnGetTiles,"click",downloadTiles);
-                            on(btnOnlineOffline, 'click', goOnlineOffline);
-
-                            initOfflineFeaturesMgr(evt,function(success){
-                                if(success){
-                                    initPanZoomListeners();
-                                    setFeatureLayerClickHandler();
-                                    setModalPopupClickListeners();
-                                }
-                                else{
-                                    alert("There was a problem initializing the map for offline.");
-                                }
-                            });
-                        }
-                    });
-                }
-
-                function initMapLoadListener(){
-                    map.on("load",function(evt){
-
-                        _currentExtent = evt.map.extent;
 
                         //**************************************************
                         //
@@ -341,18 +326,50 @@
                         //
                         //**************************************************
 
-                        if(_isOnline == false){
+                        //
+                        // Extend the feature layer with offline capabilities.
+                        //
 
-                            if(offlineFeaturesManager == null){
-                                initOfflineFeaturesMgr(null,function(success){
-                                    console.log("Offline Feature Manager initialized.");
-                                    loadFeatureLayerOffline();
-                                });
-                            }
-                            else{
-                                loadFeatureLayerOffline();
-                            }
+                        initOfflineFeaturesMgr();
+
+                        // If app is online then we ONLY need to extend the feature layer.
+                        if(_isOnline){
+                            extendFeatureLayer(_isOnline, function(success) {
+                                if(success){
+
+                                    // Set click listeners
+                                    on(btnGetTiles,"click",downloadTiles);
+                                    on(btnOnlineOffline, 'click', goOnlineOffline);
+
+                                    initPanZoomListeners();
+                                    setFeatureLayerClickHandler();
+                                    setModalPopupClickListeners();
+                                }
+                                else{
+                                    alert("There was a problem initializing the map for offline.");
+                                }
+                            });
                         }
+                        // If the app is offline then we need to retrieve the dataStore from OfflineFeaturesManager
+                        // and then extend the feature layer using that information.
+                        else {
+                            loadFeatureLayerOffline(function(success) {
+                                if(success) {
+                                    extendFeatureLayer(_isOnline, function(success) {
+                                        console.log("Feature Layer extended successfully OFFLINE!");
+                                    });
+                                }
+                                else {
+                                    alert("There was a problem initializing the map for offline.");
+                                }
+                            });
+                        }
+                    });
+                }
+
+                function initMapLoadListener() {
+                    map.on("load",function(evt) {
+                        _currentExtent = evt.map.extent;
                     });
                 }
 
@@ -362,16 +379,20 @@
                  * **********************************************
                  */
 
-                function initPanZoomListeners(){
+                /**
+                 * When panning or zooming let's update certain properties in our offline featureLayerJSON dataStore. This
+                 * dataStore is available once a feature layer has been extended.
+                 */
+                function initPanZoomListeners() {
                     updateOfflineUsage();
                     updateStatus();
 
-                    map.on("zoom-end",function(evt){
+                    map.on("zoom-end",function(evt) {
                         _currentExtent = evt.extent;
                         updateFeatureLayerJSON();
                     });
 
-                    map.on("pan-end",function(evt){
+                    map.on("pan-end",function(evt) {
                         _currentExtent = evt.extent;
                         updateFeatureLayerJSON();
                     });
@@ -380,11 +401,11 @@
                 /**
                  * Load the feature while offline using information stored in database
                  */
-                function loadFeatureLayerOffline(){
-                    busStopFeatureLayer.getFeatureLayerJSONDataStore(function(success,dataStore){
+                function loadFeatureLayerOffline(callback) {
+                    offlineFeaturesManager.getFeatureLayerJSONDataStore(function(success,dataStore) {
                         if(success){
                             // Use the feature layer returns from getFeatureDefinition() to reconstitute the layer
-                            busStopFeatureLayer = new FeatureLayer(JSON.parse(dataStore.featureLayerCollection),{
+                            busStopFeatureLayer = new FeatureLayer(JSON.parse(dataStore.featureLayerCollection), {
                                 mode: FeatureLayer.MODE_SNAPSHOT,
                                 outFields: ["GlobalID","BSID","ROUTES","STOPNAME"]
                             });
@@ -394,7 +415,7 @@
                             busStopFeatureLayer.setRenderer(new SimpleRenderer(defaultSymbol));
 
                             // If/when the update-end event has been thrown then let's finish initializing
-                            var mapListen = map.on("update-end",function(evt){
+                            var mapListen = map.on("update-end",function(evt) {
                                 console.log("Feature has been added back to the map while offline.");
                                 on(btnGetTiles,"click",downloadTiles);
                                 on(btnOnlineOffline, 'click', goOnlineOffline);
@@ -406,12 +427,14 @@
                                 map.setZoom(dataStore.zoom);
 
                                 mapListen.remove();
+                                callback(true);
                             });
 
                             map.addLayer(busStopFeatureLayer);
                         }
                         else{
                             alert("There was a problem retrieving feature layer options object. " + dataStore);
+                            callback(false);
                         }
                     })
                 }
@@ -422,7 +445,7 @@
                  * **********************************************
                  */
 
-                function initOfflineFeaturesMgr(event,callback){
+                function initOfflineFeaturesMgr(callback) {
                     offlineFeaturesManager = new O.esri.Edit.OfflineFeaturesManager();
 
                     // IMPORTANT!!!
@@ -442,28 +465,34 @@
                     offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_SENT, updateStatus);
                     offlineFeaturesManager.on(offlineFeaturesManager.events.ALL_EDITS_SENT, allEditsSent);
                     offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_SENT_ERROR, editsError);
+                }
 
+                function extendFeatureLayer(online,callback){
                     var featureLayerJSON = null;
 
-                    if(event != null){
+                    if(online === true) {
 
                         // This object contains everything we need to restore the map and feature layer after an offline restart
                         //
                         // There are two caveats:
                         // First, you cannot use the object key 'id'. That's a reserved key for internal offline library use.
                         // Second, complex objects need to be serialized or you'll get a database cloning error.
+                        //
+                        // We do not want to (re)set this if are offline. We can modify it but we don't want to overwrite it.
                         featureLayerJSON = getFeatureLayerJSON();
                     }
 
-                    offlineFeaturesManager.extend(busStopFeatureLayer,function(result, error){
-                        if(result){
+                    // NOTE: if app is offline then we want the dataStore object to be null
+                    offlineFeaturesManager.extend(busStopFeatureLayer,function(result, error) {
+                        if(result) {
                             console.log("offlineFeaturesManager initialized.");
 
+                            // This sets listeners to detect if the app goes online or offline.
                             Offline.check();
                             Offline.on('up', goOnline);
                             Offline.on('down', goOffline);
 
-                            // If the app is online then set offlineFeaturesManager to its online state
+                            // If the app is online then force offlineFeaturesManager to its online state
                             // This will force the library to check for pending edits and attempt to
                             // resend them to the Feature Service.
                             if(_isOnline == true){
@@ -472,18 +501,17 @@
 
                             callback(true);
                         }
-                        else{
+                        else {
                             callback(false);
                             alert("Unable to initialize the database. " + error);
                         }
                     },/* This is the optional offline configuration property */featureLayerJSON);
-
                 }
 
                 /**
                  * Display modal popup when someone clicks on a feature
                  */
-                function setFeatureLayerClickHandler(){
+                function setFeatureLayerClickHandler() {
                     busStopFeatureLayer.on("click", function(evt) {
                         currentFeature = evt.graphic;
                         showModalPopup(currentFeature);
@@ -495,12 +523,12 @@
                     }.bind(this));
                 }
 
-                function setModalPopupClickListeners(){
-                    closeBtn.onclick = function(evt){
+                function setModalPopupClickListeners() {
+                    closeBtn.onclick = function(evt) {
                         hideModalPopup();
                     }
 
-                    saveBtn.onclick = function(evt){
+                    saveBtn.onclick = function(evt) {
 
                         //You may need to uncomment this forced offline check for production use.
                         //forceInternalOfflineCheck();
@@ -508,7 +536,7 @@
                         popup.graphic.attributes.ROUTES = stopRoutes.value;
                         popup.graphic.attributes.STOPNAME = stopNames.value;
 
-                        busStopFeatureLayer.applyEdits(null,[popup.graphic],null,function(result){
+                        busStopFeatureLayer.applyEdits(null,[popup.graphic],null,function(result) {
                                     updateFeatureLayerJSON();
                                     console.log("Successfully saved changes to: " + popup.graphic.attributes.STOPNAME);
                                     hideModalPopup();
@@ -518,32 +546,32 @@
                                 })
                     }
 
-                    deleteBtn.onclick = function(evt){
+                    deleteBtn.onclick = function(evt) {
 
                         // Best practice is to uncomment these for production use
                         //forceInternalOfflineCheck();
 
-                        busStopFeatureLayer.applyEdits(null,null,[popup.graphic],function(result){
+                        busStopFeatureLayer.applyEdits(null,null,[popup.graphic],function(result) {
                                     updateFeatureLayerJSON();
                                     console.log("Successfully deleted: " + popup.graphic.attributes.STOPNAME);
                                     hideModalPopup();
                                 },
-                                function(err){
+                                function(err) {
                                     alert("There was a problem while trying to delete: " + popup.graphic.attributes.STOPNAME);
                                 })
                     }
                 }
 
-                function showModalPopup(graphic){
+                function showModalPopup(graphic) {
                     popup.graphic = graphic; // assign graphic to popup as a property.
                     popup.show();
                 }
 
-                function hideModalPopup(){
+                function hideModalPopup() {
                     popup.hide();
                 }
 
-                function getFeatureLayerJSON(){
+                function getFeatureLayerJSON() {
                     return {
                         "featureLayerCollection": JSON.stringify(busStopFeatureLayer.toJson()),
                         "zoomLevel": map.getZoom(),
@@ -551,7 +579,7 @@
                     }
                 }
 
-                function updateFeatureLayerJSON(){
+                function updateFeatureLayerJSON() {
                     var fl = getFeatureLayerJSON();
                     busStopFeatureLayer.setFeatureLayerJSONDataStore(fl,function(result,error){
                         console.log("updateFeatureLayerJSON - Result: " + result + ", error: " + error);
@@ -568,12 +596,12 @@
                  * Manually starts the process to download and store tiles
                  * in the local database
                  */
-                function downloadTiles(){
-                    tileLayer.deleteAllTiles(function(success,err){
-                        if(success == false){
+                function downloadTiles() {
+                    tileLayer.deleteAllTiles(function(success,err) {
+                        if(success == false) {
                             alert("There was a problem deleting the tile cache");
                         }
-                        else{
+                        else {
                             console.log("success deleting tile cache");
 
                             if( globalState.downloadState == 'downloading')
@@ -598,27 +626,23 @@
                 /**
                  * Reports the process while downloading tiles.
                  */
-                function reportProgress(progress)
-                {
+                function reportProgress(progress) {
                     console.log("downloading tiles...");
                     if(progress.hasOwnProperty("countNow")){
                         var percent = Math.floor(progress.countNow / progress.countMax * 100);
                         btnGetTiles.innerHTML = 'Saving to phone ' + percent + "% - Tap to Cancel";
                     }
 
-                    if( progress.finishedDownloading )
-                    {
+                    if( progress.finishedDownloading ) {
                         btnGetTiles.innerHTML = "Saving to phone 100% - Tap to Cancel";
                         updateOfflineUsage();
                         updateFeatureLayerJSON();
 
-                        if( progress.cancelRequested )
-                        {
+                        if( progress.cancelRequested ) {
                             globalState.downloadState = 'cancelled';
                             alert("Tile download was cancelled");
                         }
-                        else
-                        {
+                        else {
                             globalState.downloadState = 'downloaded';
                             btnOnlineOffline.disabled = false;
                             alert("Tile download complete");
@@ -636,19 +660,21 @@
                  */
 
                 /**
-                 * Forces offlineFeaturesManager online
+                 * Forces offlineFeaturesManager to go online.
+                 * When invoking featureLayer.goOnline() we force library to sync any edits that were
+                 * stored while offline.
                  */
-                function goOnline(){
+                function goOnline() {
                     console.log("Going online...");
 
                     loading.style.visibility = "visible";
 
-                    offlineFeaturesManager.goOnline(function(success,error){
-                        if(error === undefined){
+                    offlineFeaturesManager.goOnline(function(success,error) {
+                        if(error === undefined) {
                             setUIOnline();
                             console.log("offlineFeatureManager is online.");
                         }
-                        else{
+                        else {
                             alert("There was a problem syncing offline edits: " + JSON.stringify(error));
                         }
 
@@ -662,7 +688,7 @@
                 /**
                  * Forces offlineFeaturesManager offline
                  */
-                function goOffline(){
+                function goOffline() {
                     console.log("Going offline...");
                     setUIOffline();
                     offlineFeaturesManager.goOffline();
@@ -672,7 +698,7 @@
                 /**
                  * Toggles offlineFeaturesManager online/offline
                  */
-                function goOnlineOffline(){
+                function goOnlineOffline() {
                     if(offlineFeaturesManager.getOnlineStatus() == offlineFeaturesManager.ONLINE){
                         goOffline();
                     }
@@ -681,14 +707,14 @@
                     }
                 }
 
-                function setUIOnline(){
+                function setUIOnline() {
                     btnOnlineOffline.innerHTML = "2. Go Offline";
                     imgOfflineIndicator.className = "glyphicon glyphicon-link";
                     imgOfflineIndicator.innerHTML = " Up";
                     btnState.className = "btn btn-success btn-large floatRight";
                 }
 
-                function setUIOffline(){
+                function setUIOffline() {
                     btnOnlineOffline.innerHTML = "2. Go Online";
                     imgOfflineIndicator.className = "glyphicon glyphicon-thumbs-down";
                     imgOfflineIndicator.innerHTML = " Down";
@@ -698,13 +724,12 @@
                 /**
                  * For internal use - detecting amount of storage used and number of tiles stored.
                  */
-                function updateOfflineUsage()
-                {
+                function updateOfflineUsage() {
                     tileLayer.offline.store.usedSpace(function(result,err){
-                        if(result != null){
+                        if(result != null) {
                             console.log( "DB Tile count: " + result.tileCount + ", DB Bytes: " +  result.sizeBytes);
                         }
-                        else{
+                        else {
                             console.log("DB Tile count: " + count + ", DB Bytes: Error");
                         }
                     })
@@ -713,12 +738,12 @@
                 /**
                  * Forces a check of the Offline.js state
                  */
-                function forceInternalOfflineCheck(){
+                function forceInternalOfflineCheck() {
                     Offline.check();
-                    if(Offline.state == "up"){
+                    if(Offline.state == "up") {
                         goOnline();
                     }
-                    if(Offline.state == "down"){
+                    if(Offline.state == "down") {
                         goOffline();
                     }
                 }
@@ -728,23 +753,19 @@
                  * Use this in conjunction with the offline checker library: offline.min.js
                  * @param callback
                  */
-                function verifyOnline(callback){
+                function verifyOnline(callback) {
                     var req = new XMLHttpRequest();
                     req.open("GET", "http://esri.github.io/offline-editor-js/samples/images/blue-pin.png?" + (Math.floor(Math.random() * 1000000000)), true);
-                    req.onload = function()
-                    {
-                        if( req.status === 200 && req.responseText !== "")
-                        {
+                    req.onload = function() {
+                        if( req.status === 200 && req.responseText !== "") {
                             callback(true);
                         }
-                        else
-                        {
+                        else {
                             console.log("verifyOffline failed");
                             callback(false);
                         }
                     };
-                    req.onerror = function(e)
-                    {
+                    req.onerror = function(e) {
                         console.log("appcache-features.html verifyOnline failed: " + e);
                         callback(false);
                     };
@@ -757,26 +778,26 @@
                  * ***********************************************å
                  */
 
-                function editsEnqueued(){
+                function editsEnqueued() {
 
-                    busStopFeatureLayer.pendingEditsCount(function(count){
+                    busStopFeatureLayer.pendingEditsCount(function(count) {
                         pendingEdits.innerHTML = count;
                     });
                 }
 
                 function allEditsSent(){
 
-                    busStopFeatureLayer.pendingEditsCount(function(count){
+                    busStopFeatureLayer.pendingEditsCount(function(count) {
                         pendingEdits.innerHTML = count;
                     });
                 }
 
-                function editsError(evt){
+                function editsError(evt) {
                     alert("There was a problem. Not all edits were synced with the server. " + JSON.stringify(evt));
                 }
 
-                function updateStatus(){
-                    busStopFeatureLayer.pendingEditsCount(function(count){
+                function updateStatus() {
+                    busStopFeatureLayer.pendingEditsCount(function(count) {
                         pendingEdits.innerHTML = count;
                     });
                 }
