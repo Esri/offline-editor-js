@@ -111,13 +111,19 @@ You can then retrieve this data after an offline restart by using the following 
 
 ```js
 
-	featureLayer.getFeatureLayerJSONDataStore(function(success, dataStore){
+	offlineFeaturesManager.getFeatureLayerJSONDataStore(function(success, dataStore){
 		if(success){
 			myFeatureLayer = new 
 				FeatureLayer(JSON.parse(dataStore.featureLayerCollection),{
             	mode: FeatureLayer.MODE_SNAPSHOT,
                	outFields: ["GlobalID","BSID","ROUTES","STOPNAME"]
            	});
+           	
+           	offlineFeaturesManager.extend(myFeatureLayer,function(result, error) {
+           		if(result) {
+           			console.log("Layer has been successfully rebuilt while offline!");
+           		}
+           	}
 		}
 	});
 
