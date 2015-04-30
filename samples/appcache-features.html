@@ -315,7 +315,9 @@
                  */
                 function initFeatureUpdateEndListener() {
 
-                    busStopFeatureLayer.on("update-end",function(evt){
+                    var listener = busStopFeatureLayer.on("update-end",function(evt){
+
+                        listener.remove();
 
                         //**************************************************
                         //
@@ -404,6 +406,7 @@
                 function loadFeatureLayerOffline(callback) {
                     offlineFeaturesManager.getFeatureLayerJSONDataStore(function(success,dataStore) {
                         if(success){
+
                             // Use the feature layer returns from getFeatureDefinition() to reconstitute the layer
                             busStopFeatureLayer = new FeatureLayer(JSON.parse(dataStore.featureLayerCollection), {
                                 mode: FeatureLayer.MODE_SNAPSHOT,
@@ -414,23 +417,19 @@
                             // on a mobile device.
                             busStopFeatureLayer.setRenderer(new SimpleRenderer(defaultSymbol));
 
-                            // If/when the update-end event has been thrown then let's finish initializing
-                            var mapListen = map.on("update-end",function(evt) {
-                                console.log("Feature has been added back to the map while offline.");
-                                on(btnGetTiles,"click",downloadTiles);
-                                on(btnOnlineOffline, 'click', goOnlineOffline);
-
-                                setFeatureLayerClickHandler();
-                                setModalPopupClickListeners();
-
-                                map.centerAt(dataStore.centerPt);
-                                map.setZoom(dataStore.zoom);
-
-                                mapListen.remove();
-                                callback(true);
-                            });
-
                             map.addLayer(busStopFeatureLayer);
+
+                            console.log("Feature has been added back to the map while offline.");
+                            on(btnGetTiles,"click",downloadTiles);
+                            on(btnOnlineOffline, 'click', goOnlineOffline);
+
+                            setFeatureLayerClickHandler();
+                            setModalPopupClickListeners();
+
+                            map.centerAt(dataStore.centerPt);
+                            map.setZoom(dataStore.zoom);
+
+                            callback(true);
                         }
                         else{
                             alert("There was a problem retrieving feature layer options object. " + dataStore);
@@ -470,7 +469,7 @@
                 function extendFeatureLayer(online,callback){
                     var featureLayerJSON = null;
 
-                    if(online === true) {
+                    if(online) {
 
                         // This object contains everything we need to restore the map and feature layer after an offline restart
                         //
@@ -495,7 +494,7 @@
                             // If the app is online then force offlineFeaturesManager to its online state
                             // This will force the library to check for pending edits and attempt to
                             // resend them to the Feature Service.
-                            if(_isOnline == true){
+                            if(_isOnline){
                                 offlineFeaturesManager.goOnline();
                             }
 
