@@ -221,7 +221,7 @@
                  * This is a utility check to 100% validate if the application is online or
                  * offline prior to launching any map functionality.
                  */
-                verifyOnline(function(result) {
+                validateOnline(function(result) {
                     if(result) {
                         _isOnline = true;
                         setUIOnline();
@@ -270,9 +270,6 @@
                  * We run this code both online and offline.
                  */
                 function startMap() {
-
-                    //Make sure map shows up after a browser refresh
-                    Offline.check();
 
                     tileLayer = new O.esri.Tiles.OfflineTileEnablerLayer("http://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer",function(evt){
                         console.log("Tile Layer initialized for offline. App state is: " + Offline.state);
@@ -408,10 +405,13 @@
                         if(success){
 
                             // Use the feature layer returns from getFeatureDefinition() to reconstitute the layer
-                            busStopFeatureLayer = new FeatureLayer(JSON.parse(dataStore.featureLayerCollection), {
-                                mode: FeatureLayer.MODE_SNAPSHOT,
-                                outFields: ["GlobalID","BSID","ROUTES","STOPNAME"]
-                            });
+                            // We don't have to set any other properties on the layer because we are using it
+                            // in SNAPSHOT mode which downloads all features within the given extent.
+                            busStopFeatureLayer = new FeatureLayer(JSON.parse(dataStore.featureLayerCollection));
+
+                            if(busStopFeatureLayer.url == null){
+                                busStopFeatureLayer.url = dataStore.featureLayerUrl;
+                            }
 
                             // Set the graphic symbols to red diamond to make it easy to click on them
                             // on a mobile device.
@@ -460,9 +460,9 @@
                     // Refer to "Using the Proxy Page" for more information:  https://developers.arcgis.com/en/javascript/jshelp/ags_proxy.html
                     offlineFeaturesManager.proxyPath = null;
 
-                    offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_ENQUEUED, editsEnqueued);
+                    offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_ENQUEUED, updateStatus);
                     offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_SENT, updateStatus);
-                    offlineFeaturesManager.on(offlineFeaturesManager.events.ALL_EDITS_SENT, allEditsSent);
+                    offlineFeaturesManager.on(offlineFeaturesManager.events.ALL_EDITS_SENT, updateStatus);
                     offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_SENT_ERROR, editsError);
                 }
 
@@ -495,7 +495,14 @@
                             // This will force the library to check for pending edits and attempt to
                             // resend them to the Feature Service.
                             if(_isOnline){
-                                offlineFeaturesManager.goOnline();
+                                offlineFeaturesManager.goOnline(function(result){
+                                    if(!result.success){
+                                        alert("There was a problem when attempting to go back online.");
+                                    }
+                                });
+                            }
+                            else {
+                                offlineFeaturesManager.goOffline();
                             }
 
                             callback(true);
@@ -504,7 +511,7 @@
                             callback(false);
                             alert("Unable to initialize the database. " + error);
                         }
-                    },/* This is the optional offline configuration property */featureLayerJSON);
+                    }.bind(this),/* This is the optional offline configuration property */featureLayerJSON);
                 }
 
                 /**
@@ -571,10 +578,12 @@
                 }
 
                 function getFeatureLayerJSON() {
+
                     return {
                         "featureLayerCollection": JSON.stringify(busStopFeatureLayer.toJson()),
                         "zoomLevel": map.getZoom(),
-                        "centerPt" : (map.extent.getCenter()).toJson()
+                        "centerPt" : (map.extent.getCenter()).toJson(),
+                        "featureLayerUrl": busStopFeatureLayer.url
                     }
                 }
 
@@ -752,15 +761,17 @@
                  * Use this in conjunction with the offline checker library: offline.min.js
                  * @param callback
                  */
-                function verifyOnline(callback) {
+                function validateOnline(callback) {
                     var req = new XMLHttpRequest();
                     req.open("GET", "http://esri.github.io/offline-editor-js/samples/images/blue-pin.png?" + (Math.floor(Math.random() * 1000000000)), true);
                     req.onload = function() {
                         if( req.status === 200 && req.responseText !== "") {
+                            req = null;
                             callback(true);
                         }
                         else {
                             console.log("verifyOffline failed");
+                            req = null;
                             callback(false);
                         }
                     };
@@ -795,10 +806,11 @@
                     alert("There was a problem. Not all edits were synced with the server. " + JSON.stringify(evt));
                 }
 
-                function updateStatus() {
-                    busStopFeatureLayer.pendingEditsCount(function(count) {
-                        pendingEdits.innerHTML = count;
-                    });
+                function updateStatus(evt) {
+                    console.log("TEST");
+//                    busStopFeatureLayer.pendingEditsCount(function(count) {
+//                        pendingEdits.innerHTML = count;
+//                    });
                 }
             });
 </script>
