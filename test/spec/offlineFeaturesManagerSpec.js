@@ -1111,14 +1111,14 @@ describe("Offline Editing", function()
                 console.log("Library is now back online");
                 expect(g_offlineFeaturesManager.getOnlineStatus()).toBe(g_offlineFeaturesManager.ONLINE);
                 expect(listener).toHaveBeenCalled();
-                expect(results.features.success).toBeTruthy();
+                expect(results.success).toBeTruthy();
 
                 //console.log("RESPONSES " + JSON.stringify(responses) + ", " + JSON.stringify(results))
 
-                expect(Object.keys(results.features.responses).length).toBe(5);
-                for (var key in results.features.responses) {
+                expect(Object.keys(results.responses).length).toBe(5);
+                for (var key in results.responses) {
 
-                    var response = results.features.responses[key];
+                    var response = results.responses[key];
 
                     console.log("RESPONSE " + JSON.stringify(response))
 
