@@ -1,4 +1,4 @@
-/*! offline-editor-js - v2.7.1 - 2015-04-29
+/*! offline-editor-js - v2.8 - 2015-05-05
 *   Copyright (c) 2015 Environmental Systems Research Institute, Inc.
 *   Apache License*/
 /*jshint -W030 */
@@ -14,17 +14,19 @@ define([
         "esri/config",
         "esri/layers/GraphicsLayer",
         "esri/graphic",
+        "esri/request",
         "esri/symbols/SimpleMarkerSymbol",
         "esri/symbols/SimpleLineSymbol",
         "esri/symbols/SimpleFillSymbol",
         "esri/urlUtils"],
     function (Evented, Deferred, all, declare, array, domAttr, domStyle, query,
-              esriConfig, GraphicsLayer, Graphic, SimpleMarkerSymbol, SimpleLineSymbol, SimpleFillSymbol, urlUtils) {
+              esriConfig, GraphicsLayer, Graphic, esriRequest, SimpleMarkerSymbol, SimpleLineSymbol, SimpleFillSymbol, urlUtils) {
         "use strict";
         return declare("O.esri.Edit.OfflineFeaturesManager", [Evented],
             {
                 _onlineStatus: "online",
                 _featureLayers: {},
+                _featureCollectionUsageFlag: false, // if a feature collection was used to create the feature layer.
                 _editStore: new O.esri.Edit.EditStore(),
 
                 ONLINE: "online",				// all edits will directly go to the server
@@ -40,7 +42,7 @@ define([
 
                 ATTACHMENTS_DB_NAME: "attachments_store", //Sets attachments database name
                 ATTACHMENTS_DB_OBJECTSTORE_NAME: "attachments",
-                // NOTE: attachments don't have the same issues as Graphics as related to UIDs.
+                // NOTE: attachments don't have the same issues as Graphics as related to UIDs (e.g. the need for DB_UID).
                 // You can manually create a graphic, but it would be very rare for someone to
                 // manually create an attachment. So, we don't provide a public property for
                 // the attachments database UID.
@@ -53,7 +55,8 @@ define([
                     EDITS_SENT_ERROR: "edits-sent-error",         // ...there was a problem with one or more edits!
                     ALL_EDITS_SENT: "all-edits-sent",   // ...after going online and there are no pending edits in the queue
                     ATTACHMENT_ENQUEUED: "attachment-enqueued",
-                    ATTACHMENTS_SENT: "attachments-sent"
+                    ATTACHMENTS_SENT: "attachments-sent",
+                    EXTEND_COMPLETE: "extend-complete"  // ...when the libary has completed its initialization
                 },
 
                 /**
@@ -101,22 +104,43 @@ define([
                  * @returns deferred
                  */
                 extend: function (layer, callback, dataStore) {
+
+                    var extendPromises = []; // deferred promises related to initializing this method
+
                     var self = this;
+                    layer.offlineExtended = true; // to identify layer has been extended
 
                     // NOTE: At v2.6.1 we've discovered that not all feature layers support objectIdField.
-                    // However, we want to try to be consistent here with how the library is managing Ids.
-                    // So, we force the layer.objectIdField to DB_UID. This should be consistent with
+                    // However, to try to be consistent here with how the library is managing Ids
+                    // we force the layer.objectIdField to DB_UID. This should be consistent with
                     // how esri.Graphics assign a unique ID to a graphic. If it is not, then this
-                    // library will break and we'll have to re-architect how we manage UIDs.
+                    // library will break and we'll have to re-architect how it manages UIDs.
                     layer.objectIdField = this.DB_UID;
+
+                    var url = null;
+
+                    // There have been reproducible use cases showing when a browser is restarted offline that
+                    // for some reason the layer.url may be undefined.
+                    // This is an attempt to minimize the possibility of that situation causing errors.
+                    if(layer.url) {
+                        url = layer.url;
+                        // we keep track of the FeatureLayer object
+                        this._featureLayers[layer.url] = layer;
+                    }
+
+                    // This is a potentially brittle solution to detecting if a feature layer collection
+                    // was used to create the feature layer.
+                    // Is there a better way??
+                    if(layer._mode.featureLayer.hasOwnProperty("_collection")){
+                        // This means a feature collection was used to create the feature layer and it will
+                        // require different handling when running applyEdit()
+                        this._featureCollectionUsageFlag = true;
+                    }
 
                     // Initialize the database as well as set offline data.
                     if(!this._editStore._isDBInit) {
-                        this._initializeDB(dataStore,callback);
+                        extendPromises.push(this._initializeDB(dataStore, url));
                     }
-
-                    // we keep track of the FeatureLayer object
-                    this._featureLayers[layer.url] = layer;
 
                     // replace the applyEdits() method
                     layer._applyEdits = layer.applyEdits;
@@ -135,7 +159,7 @@ define([
                      3. remove an attachment that is already in the server... (DONE)
                      4. remove an attachment that is not in the server yet (DONE)
                      5. update an existing attachment to an existing feature (DONE)
-                     6. update a new attachment (NOT YET)
+                     6. update a new attachment (DONE)
 
                      concerns:
                      - manage the relationship between offline features and attachments: what if the user wants to add
@@ -143,9 +167,6 @@ define([
                      the feature is sent to the server and receives a final objectid we replace the temporary negative id
                      by its final objectid (DONE)
                      - what if the user deletes an offline feature that had offline attachments? we need to discard the attachment  (DONE)
-
-                     pending tasks:
-                     - check for hasAttachments attribute in the FeatureLayer (NOT YET)
                      */
 
                     //
@@ -284,7 +305,7 @@ define([
                         }
 
                         if (!self.attachmentsStore) {
-                            console.log("in order to support attachments you need to call initAttachments() method of offlineFeaturesManager");
+                            console.error("in order to support attachments you need to call initAttachments() method of offlineFeaturesManager");
                             return;
                         }
 
@@ -468,8 +489,7 @@ define([
                         all(promises).then(function (r) {
                             // Make sure all edits were successful. If not throw an error.
                             var success = true;
-                            var length = r.length;
-                            for (var v = 0; v < length; v++) {
+                            for (var v = 0; v < r.length; v++) {
                                 if (r[v] === false) {
                                     success = false;
                                 }
@@ -723,7 +743,7 @@ define([
                     /* internal methods */
 
                     /**
-                     * Pushes an DELETE request to the database after it's been validated
+                     * Pushes a DELETE request to the database after it's been validated
                      * @param layer
                      * @param deleteEdit
                      * @param operation
@@ -1035,6 +1055,33 @@ define([
 
                     _initPhantomLayer();
 
+                    // We are currently only passing in a single deferred.
+                    all(extendPromises).then(function (r) {
+                        if(r.length === 0){
+                            callback(true, null);
+                        }
+                        else if(r[0].success && !url){
+
+                            // This functionality is specifically for offline restarts
+                            // and attempts to retrieve a feature layer url.
+                            // It's a hack because layer.toJson() doesn't convert layer.url.
+                            this._editStore.getFeatureLayerJSON(function(success,message){
+                                if(success) {
+                                    this._featureLayers[message.__featureLayerURL] = layer;
+                                    layer.url = message.__featureLayerURL;
+                                    callback(true, null);
+                                }
+                                else {
+                                    console.error("getFeatureLayerJSON() failed.");
+                                    callback(false, message);
+                                }
+                            }.bind(this));
+                        }
+                        else if(r[0].success){
+                            callback(true, null);
+                        }
+                    }.bind(this));
+
                 }, // extend
 
                 /**
@@ -1054,7 +1101,7 @@ define([
                     console.log("offlineFeaturesManager going online");
                     this._onlineStatus = this.RECONNECTING;
                     this._replayStoredEdits(function (success, responses) {
-                        var result = {features: {success: success, responses: responses}};
+                        var result = {success: success, responses: responses};
                         this._onlineStatus = this.ONLINE;
                         if (this.attachmentsStore != null) {
                             console.log("sending attachments");
@@ -1105,13 +1152,16 @@ define([
                  */
                 getFeatureLayerJSONDataStore: function(callback){
                     if(!this._editStore._isDBInit){
-                        this._initializeDB(null,function(success) {
-                            if(success){
+
+                        this._initializeDB(null,null).then(function(result){
+                            if(result.success){
                                 this._editStore.getFeatureLayerJSON(function(success,message){
                                     callback(success,message);
                                 });
                             }
-                        }.bind(this));
+                        }.bind(this), function(err){
+                            callback(false, err);
+                        });
                     }
                     else {
                         this._editStore.getFeatureLayerJSON(function(success,message){
@@ -1123,12 +1173,16 @@ define([
                 /* internal methods */
 
                 /**
-                 * Intialize the database and push featureLayer JSON to DB if required
+                 * Initialize the database and push featureLayer JSON to DB if required.
+                 * NOTE: also stores feature layer url in hidden dataStore property dataStore.__featureLayerURL.
                  * @param dataStore Object
+                 * @param url Feature Layer's url. This is used by this library for internal feature identification.
                  * @param callback
                  * @private
                  */
-                _initializeDB: function(dataStore,callback){
+                //_initializeDB: function(dataStore,url,callback){
+                _initializeDB: function(dataStore,url){
+                    var deferred = new Deferred();
 
                     var editStore = this._editStore;
 
@@ -1153,22 +1207,32 @@ define([
                         ////////////////////////////////////////////////////
 
                         if (typeof dataStore === "object" && result === true && (dataStore !== undefined) && (dataStore !== null)) {
+
+                            // Add a hidden property to hold the feature layer's url
+                            // When converting a feature layer to json (layer.toJson()) we lose this information.
+                            // This library needs to know the feature layer url.
+                            if(url) {
+                                dataStore.__featureLayerURL = url;
+                            }
+
                             editStore.pushFeatureLayerJSON(dataStore, function (success, err) {
                                 if (success) {
-                                    callback(true, null);
+                                    deferred.resolve({success:true, error: null});
                                 }
                                 else {
-                                    callback(false, err);
+                                    deferred.reject({success:false, error: err});
                                 }
                             });
                         }
                         else if(result){
-                            callback(true, null);
+                            deferred.resolve({success:true, error: null});
                         }
                         else{
-                            callback(false, error);
+                            deferred.reject({success:false, error: null});
                         }
                     });
+
+                    return deferred;
                 },
 
                 /**
@@ -1416,23 +1480,7 @@ define([
                         attachments.forEach(function (attachment) {
                             console.log("sending attachment", attachment.id, "to feature", attachment.featureId);
 
-                            var uploadAttachmentComplete =
-                                this._uploadAttachment(attachment);
-                                    //.then(function (uploadResult) {
-                                    //    if (uploadResult.addAttachmentResult && uploadResult.addAttachmentResult.success === true) {
-                                    //        console.log("upload success", uploadResult.addAttachmentResult.success);
-                                    //        return this._deleteAttachment(attachment.id, uploadResult);
-                                    //    }
-                                    //    else {
-                                    //        console.log("upload failed", uploadResult);
-                                    //        return null;
-                                    //    }
-                                    //}.bind(this),
-                                    //function (err) {
-                                    //    console.log("failed uploading attachment", attachment);
-                                    //    return null;
-                                    //}
-                                //);
+                            var uploadAttachmentComplete = this._uploadAttachment(attachment);
                             promises.push(uploadAttachmentComplete);
                         }, this);
                         console.log("promises", promises.length);
@@ -1447,20 +1495,6 @@ define([
                                         callback && callback(true, uploadResults,dbResults);
                                     }
                                 });
-                                //results.forEach(function(value){
-                                //    if(value.attachmentResult.success){
-                                //        // Delete an attachment from the database if it was successfully
-                                //        // submitted to the server.
-                                //        self._deleteAttachmentFromDB(value.id,null).then(function(result){
-                                //            if(result.success){
-                                //                callback && callback(true, results);
-                                //            }
-                                //            else{
-                                //                callback && callback(false, results);
-                                //            }
-                                //        });
-                                //    }
-                                //});
                             },
                             function (err) {
                                 console.log("error!", err);
@@ -1508,10 +1542,6 @@ define([
                                 if (attachmentsStore == null && layer.hasAttachments) {
                                     console.log("NOTICE: you may need to run OfflineFeaturesManager.initAttachments(). Check the Attachments doc for more info. Layer id: " + layer.id + " accepts attachments");
                                 }
-                                else if(layer.hasAttachments === false){
-                                    console.error("WARNING: Layer " + layer.id + "doesn't seem to accept attachments. Recheck the layer permissions.");
-                                    callback(false,"WARNING: Attachments not supported in layer: " + layer.id);
-                                }
 
                                 // Assign the attachmentsStore to the layer as a private var so we can access it from
                                 // the promises applyEdits() method.
@@ -1550,7 +1580,13 @@ define([
                                         break;
                                 }
 
-                                promises[n] = that._internalApplyEdits(layer, tempArray[n].id, tempObjectIds, adds, updates, deletes);
+                                if(that._featureCollectionUsageFlag){
+                                    // Note: when the feature layer is created with a feature collection we have to handle applyEdits() differently
+                                    promises[n] = that._internalApplyEditsFeatureCollection(layer, tempArray[n].id, tempObjectIds, adds, updates, deletes);
+                                }
+                                else {
+                                    promises[n] = that._internalApplyEdits(layer, tempArray[n].id, tempObjectIds, adds, updates, deletes);
+                                }
                             }
 
                             // wait for all requests to finish
@@ -1735,7 +1771,7 @@ define([
                 },
 
                 /**
-                 * Executes the _applyEdits() method
+                 * Executes the _applyEdits() method when a feature layer is created using a REST endpoint
                  * @param layer
                  * @param id the unique id that identifies the Graphic in the database
                  * @param tempObjectIds
@@ -1788,6 +1824,126 @@ define([
                         }
                     );
                     return dfd.promise;
+                },
+
+                /**
+                 * Executes the _applyEdits() method when a feature layer is created using a feature collection.
+                 * This works around specific behaviors in esri.layers.FeatureLayer when using the pattern
+                 * new FeatureLayer(featureCollectionObject).
+                 *
+                 * Details on the specific behaviors can be found here:
+                 * https://developers.arcgis.com/javascript/jsapi/featurelayer-amd.html#featurelayer2
+                 *
+                 * @param layer
+                 * @param id
+                 * @param tempObjectIds
+                 * @param adds
+                 * @param updates
+                 * @param deletes
+                 * @returns {*|r}
+                 * @private
+                 */
+                _internalApplyEditsFeatureCollection: function (layer, id, tempObjectIds, adds, updates, deletes) {
+                    var dfd = new Deferred();
+
+                    this._makeEditRequest(layer.url, adds, updates, deletes,
+                        function (addResults, updateResults, deleteResults) {
+                            layer._phantomLayer.clear();
+
+                            var newObjectIds = addResults.map(function (r) {
+                                return r.objectId;
+                            });
+
+                            // We use a different pattern if the attachmentsStore is valid and the layer has attachments
+                            if (layer._attachmentsStore != null && layer.hasAttachments && tempObjectIds.length > 0) {
+                                layer._replaceFeatureIds(tempObjectIds, newObjectIds, function (success) {
+                                    dfd.resolve({
+                                        id: id,
+                                        layer: layer.url,
+                                        tempId: tempObjectIds, // let's us internally match an ADD to it's new ObjectId
+                                        addResults: addResults,
+                                        updateResults: updateResults,
+                                        deleteResults: deleteResults
+                                    }); // wrap three arguments in a single object
+                                });
+                            }
+                            else {
+                                dfd.resolve({
+                                    id: id,
+                                    layer: layer.url,
+                                    tempId: tempObjectIds, // let's us internally match an ADD to it's new ObjectId
+                                    addResults: addResults,
+                                    updateResults: updateResults,
+                                    deleteResults: deleteResults
+                                }); // wrap three arguments in a single object
+                            }
+                        },
+                        function (error) {
+                            layer.onEditsComplete = layer.__onEditsComplete;
+                            delete layer.__onEditsComplete;
+
+                            dfd.reject(error);
+                        }
+                    );
+                    return dfd.promise;
+                },
+
+                /**
+                 * Used when a feature layer is created with a feature collection.
+                 *
+                 * In the current version of the ArcGIS JSAPI 3.12+ the applyEdit() method doesn't send requests
+                 * to the server when a feature layer is created with a feature collection.
+                 *
+                 * The use case for using this is: clean start app > go offline and make edits > offline restart browser >
+                 * go online.
+                 *
+                 * @param url
+                 * @param adds
+                 * @param updates
+                 * @param deletes
+                 * @returns {*|r}
+                 * @private
+                 */
+                _makeEditRequest: function(url,adds, updates, deletes, callback, errback) {
+
+                    //var dfd = new Deferred();
+
+                    var data = new FormData();
+                    data.append("f", "json");
+                    if(adds.length > 0) {
+                        data.append("adds", JSON.stringify(adds));
+                    }
+                    if(updates.length > 0) {
+                        data.append("updates", JSON.stringify(updates));
+                    }
+                    if(deletes.length > 0) {
+                        data.append("deletes", JSON.stringify(deletes));
+                    }
+
+                    var req = new XMLHttpRequest();
+                    req.open("POST", url + "/applyEdits", true);
+                    req.onload = function()
+                    {
+                        if( req.status === 200 && req.responseText !== "")
+                        {
+                            var obj = JSON.parse(this.response);
+                            //dfd.resolve(obj);
+                            callback(obj.addResults, obj.updateResults, obj.deleteResults);
+                            //callback(this.response);
+                            //Object.keys(this.response).forEach(function(key) {
+                            //    console.log(key, this.response[key]);
+                            //});
+                        }
+                    };
+                    req.onerror = function(e)
+                    {
+                        console.log("_getTileInfoPrivate failed: " + e);
+                        errback(e);
+                        //dfd.error(e);
+                    };
+                    req.send(data);
+
+                    //return dfd.promise;
                 },
 
                 /**
@@ -2784,7 +2940,7 @@ O.esri.Edit.EditStore = function () {
             this._db = event.target.result;
             this._isDBInit = true;
             console.log("database opened successfully");
-            callback(true);
+            callback(true, null);
         }.bind(this);
     };
 
