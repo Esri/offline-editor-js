@@ -460,27 +460,6 @@
                     offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_SENT, updateStatus);
                     offlineFeaturesManager.on(offlineFeaturesManager.events.ALL_EDITS_SENT, updateStatus);
                     offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_SENT_ERROR, editsError);
-                    offlineFeaturesManager.on(offlineFeaturesManager.events.EXTEND_COMPLETE, function(evt) {
-                        if(evt) {
-                            // If the app is online then force offlineFeaturesManager to its online state
-                            // This will force the library to check for pending edits and attempt to
-                            // resend them to the Feature Service.
-                            if(_isOnline){
-                                offlineFeaturesManager.goOnline(function(result){
-                                    if(!result.success){
-                                        alert("There was a problem when attempting to go back online.");
-                                    }
-                                    else {
-                                        updateStatus();
-                                    }
-                                });
-                            }
-                            else {
-                                offlineFeaturesManager.goOffline();
-                                updateStatus();
-                            }
-                        }
-                    });
                 }
 
                 function extendFeatureLayer(online,callback){
@@ -506,6 +485,24 @@
                             // This sets listeners to detect if the app goes online or offline.
                             Offline.on('up', goOnline);
                             Offline.on('down', goOffline);
+
+                                // If the app is online then force offlineFeaturesManager to its online state
+                                // This will force the library to check for pending edits and attempt to
+                                // resend them to the Feature Service.
+                                if(_isOnline){
+                                    offlineFeaturesManager.goOnline(function(result){
+                                        if(!result.success){
+                                            alert("There was a problem when attempting to go back online.");
+                                        }
+                                        else {
+                                            updateStatus();
+                                        }
+                                    });
+                                }
+                                else {
+                                    offlineFeaturesManager.goOffline();
+                                    updateStatus();
+                                }
 
                             callback(true);
                         }
@@ -789,7 +786,7 @@
 
                     // Depending on application life cycle busStopFeatureLayer may or may not be extended
                     // So we have to protect pendingEditsCount() from throwing an "is not a function" error.
-                    if(busStopFeatureLayer.hasOwnProperty("pendingEditsCount")) {
+                    if("pendingEditsCount" in busStopFeatureLayer) {
                         busStopFeatureLayer.pendingEditsCount(function(count) {
                             pendingEdits.innerHTML = count;
                         });
