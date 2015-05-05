@@ -75,7 +75,9 @@ NOTE: You can also monitor standard ArcGIS API for JavaScript layer events using
 	
 ```
 
-**Step 4** After the `layers-add-result` event fires extend the feature layer using the `extend()` method. Optionally, if you are building a fully offline app then you will also need to set the `dataStore` property in the constructor.
+**Step 4** After the `layers-add-result` event fires extend the feature layer using the `extend()` method. Optionally, if you are building a fully offline app then you will also need to set the `dataStore` property in the constructor. 
+
+Note: the `layer.extend()` callback only indicates that the edits database has been successfully initialized.
 
 ```js
 		
@@ -86,7 +88,7 @@ NOTE: You can also monitor standard ArcGIS API for JavaScript layer events using
             // options.graphics = JSON.stringify(layer1.toJson());
             // options.zoom = map.getZoom();
             
-			offlineFeaturesManager.extend(layer1,function(success,error){
+			offlineFeaturesManager.extend(layer1,function(success, error){
 				if(success){
 					console.log("layer1 has been extended for offline use.");
 				}
@@ -94,6 +96,34 @@ NOTE: You can also monitor standard ArcGIS API for JavaScript layer events using
 		}			
 		
 ```
+
+When working with fully offline browser restarts you should wait until the layer has been successfully extended before forcing the library to go back online. The workflow for this coding pattern is you start out online > offline > browser restart > then back online.
+
+```js
+
+    offlineFeaturesManager.extend(layer1, function(success, error) {
+        if(success) {
+            // If the app is online then force offlineFeaturesManager to its online state
+            // This will force the library to check for pending edits and attempt to
+            // resend them to the Feature Service.
+            if(_isOnline){ // Check if app is online or offline
+                offlineFeaturesManager.goOnline(function(result){
+                    if(!result.success){
+                        alert("There was a problem when attempting to go back online.");
+                    }
+                    else {
+                        // Do somthing good!
+                    }
+                });
+            }
+            else {
+                offlineFeaturesManager.goOffline();
+            }
+        }
+    });
+
+```
+
 
 The `dataStore` property is an object that is used to store any data related to your app that will assist in restoring it and any feature layers after a full offline browser restart. The `dataStore` object has one reserved key and that is `id`. If you overwrite the `id` key the application will fail to update the `dataStore` object correctly. Here is an example of one possible `dataStore` object:
 
@@ -160,9 +190,9 @@ Force the library to return to an online condition. If there are pending edits, 
 ```js
 		function goOnline()
 		{			
-			offlineFeaturesManager.goOnline(function(success,results)
+			offlineFeaturesManager.goOnline(function(result)
 			{
-				if(success){
+				if(result.success){
 				    //Modify user inteface depending on success/failure
 				}				
 			});
