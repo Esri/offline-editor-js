@@ -631,9 +631,9 @@ describe("Attachments", function()
 				console.log("went online");
 				expect(g_offlineFeaturesManager.getOnlineStatus()).toBe(g_offlineFeaturesManager.ONLINE);
 				expect(listener).toHaveBeenCalled();
-				expect(result.features.success).toBeTruthy();
+				expect(result.success).toBeTruthy();
 				expect(result.attachments.success).toBeTruthy();
-				expect(Object.keys(result.features.responses).length).toBe(1);
+				expect(Object.keys(result.responses).length).toBe(1);
 				expect(Object.keys(result.attachments.responses).length).toBe(4);
 
 				var attachmentResults = result.attachments.responses;
@@ -644,8 +644,8 @@ describe("Attachments", function()
 				//expect(attachmentResults[1].addAttachmentResult).not.toBeUndefined();
 				//expect(attachmentResults[1].addAttachmentResult.success).toBeTruthy();
 
-				expect(result.features.responses[0]).not.toBeUndefined();
-				var featureResults = result.features.responses[0];
+				expect(result.responses[0]).not.toBeUndefined();
+				var featureResults = result.responses[0];
 				expect(featureResults.addResults.length).toBe(1);
 				expect(featureResults.updateResults.length).toBe(0);
 				expect(featureResults.deleteResults.length).toBe(0);
