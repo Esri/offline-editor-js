@@ -88,7 +88,7 @@ Note: the `layer.extend()` callback only indicates that the edits database has b
             // options.graphics = JSON.stringify(layer1.toJson());
             // options.zoom = map.getZoom();
             
-			offlineFeaturesManager.extend(layer1,function(success,error){
+			offlineFeaturesManager.extend(layer1,function(success, error){
 				if(success){
 					console.log("layer1 has been extended for offline use.");
 				}
@@ -97,12 +97,12 @@ Note: the `layer.extend()` callback only indicates that the edits database has b
 		
 ```
 
-When working with fully offline browser restarts you may want to verify that a layer has been successfully extended:
+When working with fully offline browser restarts you should wait until the layer has been successfully extended before forcing the library to go back online. The workflow for this coding pattern is you start out online > offline > browser restart > then back online.
 
 ```js
 
-    offlineFeaturesManager.on(offlineFeaturesManager.events.EXTEND_COMPLETE, function(evt) {
-        if(evt) {
+    offlineFeaturesManager.extend(layer1, function(success, error) {
+        if(success) {
             // If the app is online then force offlineFeaturesManager to its online state
             // This will force the library to check for pending edits and attempt to
             // resend them to the Feature Service.
