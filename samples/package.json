@@ -9,7 +9,7 @@
   "appHomePage": "appcache-features.html",
   "optimizedApiURL": "../samples/jsolib",
   "arcGISBaseURL": "http://js.arcgis.com/3.11",
-  "version": "2.8",
+  "version": "2.8.1",
   "private": true,
   "description": "manifest generator project",
   "repository": {

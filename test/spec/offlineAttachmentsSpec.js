@@ -49,12 +49,13 @@ var async = new AsyncSpec(this);
 /* move into separate test suite, so that we can have an <input> to use during tests */
 describe("Attachments", function()
 {
-	var g1_online,g2_offline,g3_offline;
+	var g1_online,g2_offline,g3_offline, g4_offline;
 
 	describe("Prepare Test", function()
 	{
 		async.it("delete all features", function(done)
 		{
+			g_featureLayer.clear();
 			clearFeatureLayer(g_featureLayer,function(success){
 				clearFeatureLayer( g_featureLayer, function(success)
 				{
@@ -192,6 +193,7 @@ describe("Attachments", function()
 
 			g2_offline = new g_modules.Graphic({"geometry":{"x":-105600,"y":5137000,"spatialReference":{"wkid":102100}},"attributes":{"OBJECTID":2,"lat":0.0,"lng":0.0,"description":"g2"}});
 			g3_offline = new g_modules.Graphic({"geometry":{"x":-105800,"y":5137000,"spatialReference":{"wkid":102100}},"attributes":{"OBJECTID":3,"lat":0.0,"lng":0.0,"description":"g3"}});
+            g4_offline = new g_modules.Graphic({"geometry":{"x":-105800,"y":5137000,"spatialReference":{"wkid":102100}},"attributes":{"OBJECTID":4,"lat":0.0,"lng":0.0,"description":"g4"}});
 
 			//g2_offline = new g_modules.Graphic({
 			//	"geometry": {
@@ -209,16 +211,17 @@ describe("Attachments", function()
 			//	"attributes":{"ruleid":2,"name":"to delete"}
 			//});
 
-			var adds = [g2_offline, g3_offline];
+			var adds = [g2_offline, g3_offline, g4_offline];
 			g_featureLayer.applyEdits(adds,null,null,function(addResults,updateResults,deleteResults)
 			{
-				expect(addResults.length).toBe(2);
+				expect(addResults.length).toBe(3);
 				expect(addResults[0].success).toBeTruthy();
 				expect(addResults[1].success).toBeTruthy();
 				g2_offline.attributes.objectid = addResults[0].objectId;
 				g3_offline.attributes.objectid = addResults[1].objectId;
-				expect(getObjectIds(g_featureLayer.graphics)).toEqual(getObjectIds([g1_online,g2_offline,g3_offline]));
-				expect(g_featureLayer.graphics.length).toBe(3);
+                g4_offline.attributes.objectid = addResults[2].objectId;
+				expect(getObjectIds(g_featureLayer.graphics)).toEqual(getObjectIds([g1_online,g2_offline,g3_offline,g4_offline]));
+				expect(g_featureLayer.graphics.length).toBe(4);
 				done();
 			},
 			function(error)
@@ -271,7 +274,7 @@ describe("Attachments", function()
 
 		async.it("add attachment to (online) feature", function(done)
 		{
-			expect(g_featureLayer.graphics.length).toBe(3);
+			expect(g_featureLayer.graphics.length).toBe(4);
 			expect(g_offlineFeaturesManager.attachmentsStore).not.toBeUndefined();
             expect(g_offlineFeaturesManager.getOnlineStatus()).toBe(g_offlineFeaturesManager.OFFLINE);
 			expect(g1_online.attributes.objectid).toBeGreaterThan(0);
@@ -304,9 +307,9 @@ describe("Attachments", function()
             });
         });
 
-		async.it("add attachment to (offline) feature", function(done)
+		async.it("add attachment to (offline) feature g2_offline", function(done)
 		{
-			expect(g_featureLayer.graphics.length).toBe(3);
+			expect(g_featureLayer.graphics.length).toBe(4);
 			expect(g_offlineFeaturesManager.attachmentsStore).not.toBeUndefined();
 
 			expect(g2_offline.attributes.objectid).toBeLessThan(0);
@@ -327,7 +330,7 @@ describe("Attachments", function()
 				});
 		});
 
-        async.it("Verify Attachment DB usage", function(done){
+        async.it("Verify attachment g2_offline exists in DB", function(done){
             g_offlineFeaturesManager.attachmentsStore.getUsage(function(usage)
             {
                 expect(usage.attachmentCount).toBe(2);
@@ -340,9 +343,9 @@ describe("Attachments", function()
             });
         });
 
-		async.it("add attachment to (offline) feature (to be deleted)", function(done)
+		async.it("add attachment to (offline) feature g3_offline (to be deleted)", function(done)
 		{
-			expect(g_featureLayer.graphics.length).toBe(3);
+			expect(g_featureLayer.graphics.length).toBe(4);
 			expect(g_offlineFeaturesManager.attachmentsStore).not.toBeUndefined();
 
 			expect(g3_offline.attributes.objectid).toBeLessThan(0);
@@ -372,10 +375,46 @@ describe("Attachments", function()
             });
         });
 
+
+        async.it("add attachment to (offline) feature g4_offline (to be deleted)", function(done)
+        {
+            expect(g_featureLayer.graphics.length).toBe(4);
+            expect(g_offlineFeaturesManager.attachmentsStore).not.toBeUndefined();
+
+            expect(g4_offline.attributes.objectid).toBeLessThan(0);
+
+            g_featureLayer.addAttachment( g4_offline.attributes.objectid, g_formNode,
+                function(result)
+                {
+                    console.log(result);
+                    expect(result).not.toBeUndefined();
+                    expect(result.attachmentId).toBeLessThan(0);
+                    expect(result.objectId).toBe( g4_offline.attributes.objectid );
+
+                    g4_offline.attributes.attachmentsId2 = result.attachmentId;
+
+                    done();
+                },
+                function(err)
+                {
+                    expect(true).toBeFalsy();
+                    done();
+                });
+        });
+
+        async.it("Verify attachment g4_offline", function(done) {
+            g_offlineFeaturesManager.attachmentsStore.getAttachmentsByFeatureId(g_featureLayer.url, g4_offline.attributes.objectid, function(attachments)
+            {
+                expect(attachments.length).toBe(1);
+                console.log("attached file:", attachments[0]);
+                done();
+            });
+        });
+
         async.it("Verify Attachment DB usage", function(done){
             g_offlineFeaturesManager.attachmentsStore.getUsage(function(usage)
             {
-                expect(usage.attachmentCount).toBe(3);
+                expect(usage.attachmentCount).toBe(4);
                 done();
             });
         });
@@ -384,9 +423,9 @@ describe("Attachments", function()
 		{
             g_offlineFeaturesManager.attachmentsStore.getAttachmentsByFeatureLayer(g_featureLayer.url, function(attachments)
             {
-                expect(attachments.length).toBe(3);
+                expect(attachments.length).toBe(4);
                 var objectIds = attachments.map(function(a){ return a.objectId; }).sort();
-                expect(objectIds).toEqual([g1_online.attributes.objectid, g2_offline.attributes.objectid, g3_offline.attributes.objectid].sort());
+                expect(objectIds).toEqual([g1_online.attributes.objectid, g2_offline.attributes.objectid, g3_offline.attributes.objectid, g4_offline.attributes.objectid].sort());
                 done();
             });
 		});
@@ -451,8 +490,8 @@ describe("Attachments", function()
 			{
 				expect(deleteResults.length).toBe(1);
 				expect(deleteResults[0].success).toBeTruthy();
-				expect(getObjectIds(g_featureLayer.graphics)).toEqual(getObjectIds([g1_online,g2_offline]));
-				expect(g_featureLayer.graphics.length).toBe(2);
+				expect(getObjectIds(g_featureLayer.graphics)).toEqual(getObjectIds([g1_online,g2_offline,g4_offline]));
+				expect(g_featureLayer.graphics.length).toBe(3);
 				done();
 			},
 			function(error)
@@ -465,7 +504,7 @@ describe("Attachments", function()
         async.it("Verify Attachment DB usage", function(done){
             g_offlineFeaturesManager.attachmentsStore.getUsage(function(usage)
             {
-                expect(usage.attachmentCount).toBe(2);
+                expect(usage.attachmentCount).toBe(3);
                 g_offlineFeaturesManager.attachmentsStore.getAttachmentsByFeatureId(g_featureLayer.url, g3_offline.attributes.objectid, function(attachments)
                 {
                     expect(attachments.length).toBe(0);
@@ -482,7 +521,7 @@ describe("Attachments", function()
 
 		async.it("add attachment", function(done)
 		{
-			expect(g_featureLayer.graphics.length).toBe(2);
+			expect(g_featureLayer.graphics.length).toBe(3);
 			expect(g_offlineFeaturesManager.attachmentsStore).not.toBeUndefined();
 
 			expect(g2_offline.attributes.objectid).toBeLessThan(0);
@@ -509,7 +548,7 @@ describe("Attachments", function()
         async.it("Verify Attachment DB usage",function(done){
             g_offlineFeaturesManager.attachmentsStore.getUsage(function(usage)
             {
-                expect(usage.attachmentCount).toBe(3);
+                expect(usage.attachmentCount).toBe(4);
                 g_offlineFeaturesManager.attachmentsStore.getAttachmentsByFeatureId(g_featureLayer.url, g2_offline.attributes.objectid, function(attachments)
                 {
                     expect(attachments.length).toBe(2);
@@ -520,7 +559,7 @@ describe("Attachments", function()
 
 		async.it("delete attachment", function(done)
 		{
-			expect(g_featureLayer.graphics.length).toBe(2);
+			expect(g_featureLayer.graphics.length).toBe(3);
 			expect(g_offlineFeaturesManager.attachmentsStore).not.toBeUndefined();
 
 			g_featureLayer.deleteAttachments( g2_offline.attributes.objectid, [attachmentId],
@@ -541,7 +580,7 @@ describe("Attachments", function()
         async.it("Verify Attachment DB usage", function(done){
             g_offlineFeaturesManager.attachmentsStore.getUsage(function(usage)
             {
-                expect(usage.attachmentCount).toBe(2);
+                expect(usage.attachmentCount).toBe(3);
                 done();
             });
         });
@@ -576,8 +615,6 @@ describe("Attachments", function()
     describe("Update existing attachment", function(){
         async.it("Update attachment g1_online", function(done){
 
-            g_formData.append("attachmentId",g1_online.attributes.attachmentsId2);
-
             g_featureLayer.updateAttachment( g1_online.attributes.objectid, g1_online.attributes.attachmentsId2, g_formData2,
                 function(result)
                 {
@@ -595,13 +632,40 @@ describe("Attachments", function()
 
         async.it("Get attachments database usage", function(done){
             g_featureLayer.getAttachmentsUsage(function(usage,error){
-                expect(usage.sizeBytes).toBe(129627);
-                expect(usage.attachmentCount).toBe(4);
+                expect(usage.sizeBytes).toBe(135282);
+                expect(usage.attachmentCount).toBe(5);
                 done();
             });
         });
     });
 
+    describe("Update new attachment", function(){
+        async.it("Update attachment g4_offline", function(done){
+
+            g_featureLayer.updateAttachment( g4_offline.attributes.objectid, g4_offline.attributes.attachmentsId2, g_formData2,
+                function(result)
+                {
+                    console.log(result);
+                    expect(result).not.toBeUndefined();
+                    done();
+                },
+                function(err)
+                {
+                    expect(true).toBeFalsy();
+                    done();
+                }
+            );
+        });
+
+        async.it("Get attachments database usage", function(done){
+            g_featureLayer.getAttachmentsUsage(function(usage,error){
+                expect(usage.sizeBytes).toBe(247593);
+                expect(usage.attachmentCount).toBe(5);
+                done();
+            });
+        });
+
+    });
 
     describe("go Online and finish all", function()
 	{
@@ -612,16 +676,16 @@ describe("Attachments", function()
 				// This should be 3 because we are doing a delete existing attachment operation
                 // which means that DELETE will be queued in the database and will not be
                 // removed until we do a successful sync.
-                expect(attachments.length).toBe(4);
+                expect(attachments.length).toBe(5);
 				var objectIds = attachments.map(function(a){ return a.objectId; }).sort();
-				expect(objectIds).toEqual([g1_online.attributes.objectid,g1_online.attributes.objectid, g1_online.attributes.objectid, g2_offline.attributes.objectid].sort());
+				expect(objectIds).toEqual([g1_online.attributes.objectid,g1_online.attributes.objectid, g1_online.attributes.objectid, g2_offline.attributes.objectid, g4_offline.attributes.objectid].sort());
 				done();
 			});
 		});
 
 		async.it("go Online", function(done)
 		{
-			expect(g_featureLayer.graphics.length).toBe(2);
+			expect(g_featureLayer.graphics.length).toBe(3);
 
 			var listener = jasmine.createSpy('event listener');
 			g_offlineFeaturesManager.on(g_offlineFeaturesManager.events.ALL_EDITS_SENT, listener);
@@ -633,12 +697,12 @@ describe("Attachments", function()
 				expect(listener).toHaveBeenCalled();
 				expect(result.success).toBeTruthy();
 				expect(result.attachments.success).toBeTruthy();
-				expect(Object.keys(result.responses).length).toBe(1);
-				expect(Object.keys(result.attachments.responses).length).toBe(4);
+				expect(Object.keys(result.responses).length).toBe(2);
+				expect(Object.keys(result.attachments.responses).length).toBe(5);
 
 				var attachmentResults = result.attachments.responses;
 				expect(attachmentResults).not.toBeUndefined();
-				expect(attachmentResults.length).toBe(4);
+				expect(attachmentResults.length).toBe(5);
 				//expect(attachmentResults[0].addAttachmentResult).not.toBeUndefined();
 				//expect(attachmentResults[0].addAttachmentResult.success).toBeTruthy();
 				//expect(attachmentResults[1].addAttachmentResult).not.toBeUndefined();
@@ -652,9 +716,9 @@ describe("Attachments", function()
 				expect(featureResults.addResults[0].success).toBeTruthy();
 				g2_offline.attributes.objectid = featureResults.addResults[0].objectId;
 
-				expect(getObjectIds(g_featureLayer.graphics)).toEqual(getObjectIds([g1_online,g2_offline]));
+				expect(getObjectIds(g_featureLayer.graphics)).toEqual(getObjectIds([g1_online,g2_offline,g4_offline]));
 				expect(getObjectIds(g_featureLayer.graphics).filter(function(id){ return id<0; })).toEqual([]); //all of them are positive
-				expect(g_featureLayer.graphics.length).toBe(2);
+				expect(g_featureLayer.graphics.length).toBe(3);
                 done();
 			});
 			expect(g_offlineFeaturesManager.getOnlineStatus()).toBe(g_offlineFeaturesManager.RECONNECTING);
@@ -667,7 +731,7 @@ describe("Attachments", function()
             countFeatures(g_featureLayer, function(success,result)
             {
                 expect(success).toBeTruthy();
-                expect(result.count).toBe(2);
+                expect(result.count).toBe(3);
                 done();
             });
         });

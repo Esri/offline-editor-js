@@ -1,4 +1,4 @@
-/*! offline-editor-js - v2.8 - 2015-05-05
+/*! offline-editor-js - v2.8.1 - 2015-05-11
 *   Copyright (c) 2015 Environmental Systems Research Institute, Inc.
 *   Apache License*/
 /*jshint -W030 */
@@ -266,10 +266,17 @@ define([
 
                         var files = this._getFilesFromForm(formNode);
                         var file = files[0]; // addAttachment can only add one file, so the rest -if any- are ignored
+                        var action = self.attachmentsStore.TYPE.UPDATE; // Is this an ADD or an UPDATE?
 
                         var deferred = new Deferred();
 
-                        self.attachmentsStore.store(this.url, attachmentId, objectId, file, self.attachmentsStore.TYPE.UPDATE, function (success, newAttachment) {
+                        // If the attachment has a temporary ID we want to keep it's action as an ADD.
+                        // Otherwise we'll get an error when we try to UPDATE an ObjectId that doesn't exist in ArcGIS Online or Server.
+                        if(attachmentId < 0) {
+                            action = self.attachmentsStore.TYPE.ADD;
+                        }
+
+                        self.attachmentsStore.store(this.url, attachmentId, objectId, file, action, function (success, newAttachment) {
                             var returnValue = {attachmentId: attachmentId, objectId: objectId, success: success};
                             if (success) {
                                 self.emit(self.events.ATTACHMENT_ENQUEUED, returnValue);
@@ -1906,8 +1913,6 @@ define([
                  */
                 _makeEditRequest: function(url,adds, updates, deletes, callback, errback) {
 
-                    //var dfd = new Deferred();
-
                     var data = new FormData();
                     data.append("f", "json");
                     if(adds.length > 0) {
@@ -1927,12 +1932,7 @@ define([
                         if( req.status === 200 && req.responseText !== "")
                         {
                             var obj = JSON.parse(this.response);
-                            //dfd.resolve(obj);
                             callback(obj.addResults, obj.updateResults, obj.deleteResults);
-                            //callback(this.response);
-                            //Object.keys(this.response).forEach(function(key) {
-                            //    console.log(key, this.response[key]);
-                            //});
                         }
                     };
                     req.onerror = function(e)
@@ -3076,12 +3076,12 @@ O.esri.Edit.AttachmentsStore = function () {
                             callback(false, event.target.error.message);
                         };
 
-                        var objectStore = transaction.objectStore(this.objectStoreName);
-                        var request = objectStore.put(newAttachment);
-                        request.onsuccess = function (event) {
-                            //console.log("item added to db " + event.target.result);
-                        };
-
+                        try {
+                            transaction.objectStore(this.objectStoreName).put(newAttachment);
+                        }
+                        catch(err) {
+                            callback(false, err);
+                        }
                     }
                     else {
                         callback(false, fileContent);
