@@ -1,5 +1,12 @@
 # offline-editor-js - Changelog
 
+## Version 2.8.2 - May 19, 2015
+
+No breaking changes. Recommended update.
+
+**Enhancements**
+* Fixes sync error when returning online after updating a new edit offline.
+
 ## Version 2.8.1 - May 11, 2015
 
 No breaking changes.
