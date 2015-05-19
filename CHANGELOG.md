@@ -1,5 +1,20 @@
 # offline-editor-js - Changelog
 
+## Version 2.8.2 - May 19, 2015
+
+No breaking changes. Recommended update.
+
+**Enhancements**
+* Fixes sync error when returning online after updating a new edit offline.
+
+## Version 2.8.1 - May 11, 2015
+
+No breaking changes.
+
+**Enhancements**
+* Closes #339 - offline update of a new attachment needs to be handled as an ADD.
+* Updated offlineAttachmentsSpec.js to test for #339 condition.
+
 ## Version 2.8 - May 4, 2015
 
 This release focused on updating full offline editing capabilities. Recommended update. No breaking changes. 
