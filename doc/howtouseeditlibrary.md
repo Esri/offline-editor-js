@@ -177,6 +177,28 @@ You can then retrieve this data after an offline restart by using the following 
 
 ```
 
+If you don't want to deal with creating and managing your own data store when working with offline browser restarts, then here's the pattern for using the built-in `featureLayerCollections`. This pattern is ideal if you are using Esri's pre-built widgets such as `AttributeInspector` and you don't have access to the necessary events for creating and updating the `dataStore`.
+
+```js
+
+     offlinefeaturesManager.getFeatureCollections(function(success, collection) {
+         if(success) { 
+         	myFeatureLayer = new 
+			    FeatureLayer(collection.featureCollections[0].featureLayerCollection),{
+            	mode: FeatureLayer.MODE_SNAPSHOT,
+               	outFields: ["GlobalID","BSID","ROUTES","STOPNAME"]
+           	});
+           	
+           	offlineFeaturesManager.extend(myFeatureLayer,function(result, error) {
+           		if(result) {
+           			console.log("Layer has been successfully rebuilt while offline!");
+           		}
+           	}
+         }
+     });
+
+```
+
 **Step 5** Once a layer has been extended the offline library will enable it with new methods. Here are a few examples that include code snippets of how to take advantage of some of the library's methods. You can also use a combination of methods from `editsStore` and `offlineFeaturesManager`.
 
 ####offlineFeaturesManager.proxyPath
