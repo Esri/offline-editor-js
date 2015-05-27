@@ -461,7 +461,7 @@ describe("Offline Editing", function()
             g_offlineFeaturesManager.getFeatureCollections(function(success, result) {
                 expect(success).toBe(true);
                 expect(result.featureCollections.length).toBe(1);
-                expect(result.featureCollections[0].featureLayerCollection).toEqual(JSON.stringify(g_featureLayers[0].toJson()));
+                expect(result.featureCollections[0].featureLayerCollection).toEqual(g_featureLayers[0].toJson());
                 expect(result.featureCollections[0].featureLayerUrl).toEqual("http://services1.arcgis.com/M8KJPUwAXP8jhtnM/arcgis/rest/services/Simple_Point_Service/FeatureServer/0");
                 done();
             });
@@ -674,7 +674,7 @@ describe("Offline Editing", function()
 
         async.it("check db size", function(done){
             g_featureLayers[0].getUsage(function(usage,error){
-                expect(usage.sizeBytes).toBe(20414);
+                expect(usage.sizeBytes).toBe(9203);
                 expect(usage.editCount).toBe(5);
                 expect(error).toBe(null);
                 done();
@@ -685,7 +685,7 @@ describe("Offline Editing", function()
             g_offlineFeaturesManager.getFeatureCollections(function(success, result) {
                 expect(success).toBe(true);
                 expect(result.featureCollections.length).toBe(1);
-                expect(result.featureCollections[0].featureLayerCollection).toEqual(JSON.stringify(g_featureLayers[0].toJson()));
+                expect(result.featureCollections[0].featureLayerCollection).toEqual(g_featureLayers[0].toJson());
                 expect(result.featureCollections[0].featureLayerUrl).toEqual("http://services1.arcgis.com/M8KJPUwAXP8jhtnM/arcgis/rest/services/Simple_Point_Service/FeatureServer/0");
                 done();
             });
@@ -1120,6 +1120,16 @@ describe("Offline Editing", function()
             g_featureLayers[0].getAllEditsArray(function(success,array){
                 expect(success).toBe(true); console.log("ARRAY " + JSON.stringify(array))
                 expect(array.length).toBe(5);
+                done();
+            });
+        });
+
+        async.it("Validate featureCollections Object", function(done) {
+            g_offlineFeaturesManager.getFeatureCollections(function(success, result) {
+                expect(success).toBe(true);
+                expect(result.featureCollections.length).toBe(1);
+                expect(result.featureCollections[0].featureLayerCollection).toEqual(g_featureLayers[0].toJson());
+                expect(result.featureCollections[0].featureLayerUrl).toEqual("http://services1.arcgis.com/M8KJPUwAXP8jhtnM/arcgis/rest/services/Simple_Point_Service/FeatureServer/0");
                 done();
             });
         });
