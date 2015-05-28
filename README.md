@@ -5,7 +5,7 @@ Offline-editor-js is an open source family of libraries for building offline cap
 
 Online samples and getting started tutorials are available here: **[http://esri.github.io/offline-editor-js/demo/](http://esri.github.io/offline-editor-js/demo/)**
 
-*IMPORTANT:* This is an R&D project. If you need a fully integrated, robust offline solution then you should be using our ArcGIS Runtime SDKs for .NET, WPF, Java, iOS, Android and Qt.
+*IMPORTANT:* If you need a fully integrated, robust offline solution then you should be using our ArcGIS Runtime SDKs for .NET, WPF, Java, iOS, Android and Qt.
 
 This repo contains the following libraries:
 
