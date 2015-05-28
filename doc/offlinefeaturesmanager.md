@@ -16,8 +16,8 @@ Property | Value | Description
 `DB_NAME` | "features_store" | Sets the database name. You can instantiate multiple databases within the same application by creating seperate instances of OfflineFeaturesManager.
 `DB_OBJECTSTORE_NAME` | "features" | Represents an object store that allows access to a set of data in the database.
 `DB_UID` | "objectid" | IMPORTANT!** This tells the database what id to use as a unique identifier. This depends on how your feature service was created. ArcGIS Online services may use something different such as `GlobalID`.
-`ATTACHMENTS_DB_NAME` | "attachments_store" | **New @ v2.7** Sets the attachments database name.
-`ATTACHMENTS_DB_OBJECTSTORE_NAME` | "attachments" | **New @ v2.7** Sets the attachments database object store name.
+`ATTACHMENTS_DB_NAME` | "attachments_store" | (Added @ v2.7) Sets the attachments database name.
+`ATTACHMENTS_DB_OBJECTSTORE_NAME` | "attachments" | (Added @ v2.7) Sets the attachments database object store name.
 `proxyPath` | null | Default is `null`. If you are using a Feature Service that is not CORS-enabled then you will need to set this path.
 `attachmentsStore` | null | Default is `null`. If you are using attachments, this property gives you access to the associated database.
 
@@ -42,7 +42,8 @@ Methods | Returns | Description
 `goOffline()` | nothing | Forces library into an offline state. Any edits applied to extended FeatureLayers during this condition will be stored locally.
 `goOnline(callback)` | No attachments: `callback( {success: boolean, responses: Object } )`<br><br> With attachments: `callback( {success: boolean, responses: uploadedResponses, dbResponses: dbResponses })` | Forces library to return to an online state. If there are pending edits, an attempt will be made to sync them with the remote feature server. Callback function will be called when resync process is done. <br><br>Refer to the [How to use the edit library doc](howtouseeditlibrary.md) for addition information on the `results` object.
 `getOnlineStatus()` | `ONLINE`, `OFFLINE` or `RECONNECTING`| Determines the current state of the manager. Please, note that this library doesn't detect actual browser offline/online condition. You need to use the `offline.min.js` library included in `vendor\offline` directory to detect connection status and connect events to goOffline() and goOnline() methods. See `military-offline.html` sample.
-`getFeatureLayerJSONDataStore( callback )` | `callback( boolean, Object)` | **New @ v2.7.1** Returns the feature layer's dataStore Object.
+`getFeatureCollections( callback )` | `callback( boolean, Object)` | (Added @ v2.9) Returns and Object that contains the latest `featureLayerCollection` snapshot for each feature layer that is using the library. Each collection is updated automatically by the library when there is an associated `ADD`, `UPDATE` or `DELETE` operation.<br><br>This method should be used when working with pre-built Esri widgets such as the `AttributeInspector.`
+`getFeatureLayerJSONDataStore( callback )` | `callback( boolean, Object)` | (Added @ v2.7.1) Returns the feature layer's dataStore Object that was created using the `offlineFeaturesManager()` constructor. Offers more control what is provided by `getFeatureCollections()`.
 `getReadableEdit()` | String | **DEPRECATED** @ v2.5. A string value representing human readable information on pending edits. Use `featureLayer.getAllEditsArray()`.
 
 
@@ -90,12 +91,12 @@ Methods | Returns | Description
 --- | --- | ---
 `applyEdits(`  `adds, updates, deletes,`  `callback, errback)` | `deferred` | applyEdits() method is replaced by this library. It's behaviour depends upon online state of the manager. You need to pass the same arguments as to the original applyEdits() method and it returns a deferred object, that will be resolved in the same way as the original, as well as the callbacks will be called under the same conditions. This method looks the same as the original to calling code, the only difference is internal. Listen for `EDITS_ENQUEUED` or `EDITS_ENQUEUED_ERROR`.
 `addAttachment( objectId, formNode,` `callback,errback)` | `deferred` | Adds a single attachment.
-`updateAttachment( objectId, attachmentId,` `formNode, callback, errback)` | `deferred` | **New @ v2.7** Updates an existing attachment.
+`updateAttachment( objectId, attachmentId,` `formNode, callback, errback)` | `deferred` | (Added @ v2.7) Updates an existing attachment.
 `deleteAttachments( objectId, attachmentsIds,` `callback, errback)`| `deferred` | Deletes existing attachments as well as attachments that were created while offline.
-`getAttachmentsUsage(callback)` | `callback(usageObject,error)` | **New @ v2.7** Returns the approximate size of the attachments database. The usage Object is {sizeBytes: number, attachmentCount: number}.
-`resetAttachmentsDatabase( callback)` | `callback(boolean, error)` | **New @ v2.7** Resets the entire attachments database  -- use with **caution**.
-`convertGraphicLayerToJSON(` `features, updateEndEvent, callback)` | `callback( featureJSON, layerDefJSON)` | Not really needed @ v2.5 when you can store the entire feature layer's JSON using the `dataStore` property in the `OfflineFeatureManager` contructor. Used with offline browser restarts. In order to reconstitute the feature layer and map you'll need to store the featureJSON and layerDefJSON in local storage and then it read back upon an offline restart. The `updateEndEvent` is the Feature Layer's `update-end` event object. The appcache-features.html sample demonstrates this pattern.
-`getFeatureDefinition(` `featureLayer, featuresArr` `geometryType, callback)` | `Object` | Used with offline browser restarts. Not really needed @ v2.5 when you can store the entire feature layer's JSON using the `dataStore` property in the `OfflineFeatureManager` contructor. Pass it a FeatureLayer instance, an array of features and specify the Esri geometry type. It will return a FeatureLayer Definition object that can be used to reconstitute a Feature Layer from scratch. The appcache-features.html sample demonstrates this pattern. Go here for more info on the ArcGIS REST API [layerDefinition](http://resources.arcgis.com/en/help/arcgis-rest-api/index.html#//02r30000004v000000), and [Layer](http://resources.arcgis.com/en/help/arcgis-rest-api/index.html#/Layer/02r30000004q000000/).
+`getAttachmentsUsage(callback)` | `callback(usageObject,error)` | (Added @ v2.7) Returns the approximate size of the attachments database. The usage Object is {sizeBytes: number, attachmentCount: number}.
+`resetAttachmentsDatabase( callback)` | `callback(boolean, error)` | (Added @ v2.7) Resets the entire attachments database  -- use with **caution**.
+`convertGraphicLayerToJSON(` `features, updateEndEvent, callback)` | `callback( featureJSON, layerDefJSON)` | You can also store the entire feature layer's JSON using the `dataStore` property in the `OfflineFeatureManager` contructor. Used with offline browser restarts. In order to reconstitute the feature layer and map you'll need to store the featureJSON and layerDefJSON in local storage and then it read back upon an offline restart. The `updateEndEvent` is the Feature Layer's `update-end` event object. The appcache-features.html sample demonstrates this pattern.
+`getFeatureDefinition(` `featureLayer, featuresArr` `geometryType, callback)` | `Object` | Used with offline browser restarts. You can also store the entire feature layer's JSON using the `dataStore` property in the `OfflineFeatureManager` contructor. Pass it a FeatureLayer instance, an array of features and specify the Esri geometry type. It will return a FeatureLayer Definition object that can be used to reconstitute a Feature Layer from scratch. The appcache-features.html sample demonstrates this pattern. Go here for more info on the ArcGIS REST API [layerDefinition](http://resources.arcgis.com/en/help/arcgis-rest-api/index.html#//02r30000004v000000), and [Layer](http://resources.arcgis.com/en/help/arcgis-rest-api/index.html#/Layer/02r30000004q000000/).
 `setPhantomLayerGraphics( graphicsArray) ` | nothing | Used with offline browser restarts. Adds the graphics in the `graphicsArray` to the internal phantom graphics layer. This layer is designed to indicate to the user any graphic that has been modified while offline. The appcache-features.html sample demonstrates this pattern.
 `getPhantomLayerGraphics( callback) ` | `callback( graphicsLayerJSON)` | Used with offline browser restarts. Returns a JSON representation of the internal phantom graphics layer. This layer is designed to indicate to the user any graphic that has been modified while offline. The appcache-features.html sample demonstrates this pattern.
 `resetDatabase(callback)` | `callback( boolean, error)` | Full edits database reset -- use with **caution**. If some edits weren't successfully sent, then the record will still exist in the database. If you use this function then those pending records will also be deleted.
@@ -164,9 +165,9 @@ Constructor | Description
 
 Property | Value | Description
 --- | --- | ---
-`dbName` | "attachments_store" | **Updated @ v2.7** Represents a FeatureLayer.add() operation.
-`objectStoreName` | "attachments" | **Updated @ v2.7** Represents a FeatureLayer.update() operation.
-`TYPE` | "ADD", "UPDATE" or "DELETE" | **New @ v2.7** Specifies the type of operation against an attachment. 
+`dbName` | "attachments_store" | Represents a FeatureLayer.add() operation.
+`objectStoreName` | "attachments" | Represents a FeatureLayer.update() operation.
+`TYPE` | "ADD", "UPDATE" or "DELETE" | (Added @ v2.7) Specifies the type of operation against an attachment. 
 
 ###Public Methods
 Methods | Returns | Description

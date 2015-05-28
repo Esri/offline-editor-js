@@ -75,7 +75,24 @@ NOTE: You can also monitor standard ArcGIS API for JavaScript layer events using
 	
 ```
 
-**Step 4** After the `layers-add-result` event fires extend the feature layer using the `extend()` method. Optionally, if you are building a fully offline app then you will also need to set the `dataStore` property in the constructor. 
+**Step 4** After the `layers-add-result` event fires extend the feature layer using the `extend()` method. 
+
+Optionally, if you are building a fully offline app then you will also need to set the `dataStore` property in the constructor if you want full control of what is stored. You can also access an automatically created data store via the `getFeatureCollections()` method. If you use the `getFeatureCollections()` pattern you can simply ignore the `dataStore` property in the constructor. Here is an example of the Object returned in the `getFeatureCollections()` callback:
+
+```js
+    {
+        id: "feature-collection-object-1001",
+        featureLayerCollections: [
+            { 
+                featureLayerUrl: "http://...", 
+                featureLayerCollection: { . . . }
+            }
+        ]
+    }
+
+```
+
+The `featureLayerCollection` is equivalent to `featureLayer.toJson()`.
 
 Note: the `layer.extend()` callback only indicates that the edits database has been successfully initialized.
 
@@ -157,6 +174,28 @@ You can then retrieve this data after an offline restart by using the following 
 		}
 	});
 
+
+```
+
+If you don't want to deal with creating and managing your own data store when working with offline browser restarts, then here's the pattern for using the built-in `featureLayerCollections`. This pattern is ideal if you are using Esri's pre-built widgets such as `AttributeInspector` and you don't have access to the necessary events for creating and updating the `dataStore`.
+
+```js
+
+     offlinefeaturesManager.getFeatureCollections(function(success, collection) {
+         if(success) { 
+         	myFeatureLayer = new 
+			    FeatureLayer(collection.featureCollections[0].featureLayerCollection),{
+            	mode: FeatureLayer.MODE_SNAPSHOT,
+               	outFields: ["GlobalID","BSID","ROUTES","STOPNAME"]
+           	});
+           	
+           	offlineFeaturesManager.extend(myFeatureLayer,function(result, error) {
+           		if(result) {
+           			console.log("Layer has been successfully rebuilt while offline!");
+           		}
+           	}
+         }
+     });
 
 ```
 

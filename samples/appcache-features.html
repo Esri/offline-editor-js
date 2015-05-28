@@ -9,16 +9,20 @@
 
     <!--
 
-    This sample demonstrates using an application manifest to store features and tiles locally.
+    This sample demonstrates using an application manifest to store features and tiles locally with a custom-built
+    editor widget. If you are planning on using one of Esri's pre-built widgets such as the AttributeInspector
+    then you'll need to use a different pattern for reconstituting the feature layer. See the How-To for more details:
+    https://github.com/Esri/offline-editor-js/blob/master/doc/howtouseeditlibrary.md
 
     The use cases for using this sample are to ensure you can reload and restart you application
-    one it is offline.
+    while it is offline and then continue working.
 
     It is strongly recommended that you use your own optimized build of the ArcGIS API for JavaScript
     using the Web Optimizer: http://jso.arcgis.com/. You can reference the CDN or host it on your
     own web server.
 
-    Here is the node list for the optimized file used in this sample app: https://github.com/Esri/offline-editor-js/issues/284
+    Here is the list of contents for the optimized ArcGIS JS API file used in this sample app:
+    https://github.com/Esri/offline-editor-js/issues/284
 
     Use the Grunt task in the /samples directory to help generate the manifest file. There is manual
     work involved in determining which files need to go into the manifest. The included manifest
@@ -445,7 +449,7 @@
 
                     // IMPORTANT!!!
                     // This tells the database which graphic.attribute property to use as a unique identifier
-                    // You can lok this information up in your feature service directory under the "Fields" category.
+                    // You can look this information up in your feature service directory under the "Fields" category.
                     // Example: http://services1.arcgis.com/M8KJPUwAXP8jhtnM/arcgis/rest/services/Denver_Bus_Stops/FeatureServer/0
                     offlineFeaturesManager.DB_UID = "FID";
 
