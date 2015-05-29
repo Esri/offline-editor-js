@@ -89,7 +89,7 @@ Here is an example of initializing the library for partial offline use. Note tha
 		
 		function initEditor(evt)
 		{
-			offlineFeaturesManager.extend(layer,function(success, error){
+			offlineFeaturesManager.extend(layer1,function(success, error){
 				if(success){
 					console.log("Layer has been extended for offline use.");
 				}
@@ -106,10 +106,10 @@ For full offline use, the pattern would look like this where we are creating a `
 		{
 			// OPTIONAL - for fully offline use you can store a data object
 			var dataStore = {};
-            dataStore.featureLayerJSON = layer.toJson();
+            dataStore.featureLayerJSON = layer1.toJson();
             dataStore.zoom = map.getZoom();      
             
-            offlineFeaturesManager.extend(layer,function(success, error){
+            offlineFeaturesManager.extend(layer1,function(success, error){
 				if(success){
 					console.log("Layer has been extended for offline use.");
 				}
@@ -125,7 +125,7 @@ The workflow for this coding pattern is you start out online > offline > browser
 
 ```js
 
-    offlineFeaturesManager.extend(layer, function(success, error) {
+    offlineFeaturesManager.extend(layer1, function(success, error) {
         if(success) {
             // If the app is online then force offlineFeaturesManager to its online state
             // This will force the library to check for pending edits and attempt to
