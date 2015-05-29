@@ -89,16 +89,11 @@ Here is an example of initializing the library for partial offline use. Note tha
 		
 		function initEditor(evt)
 		{
-			// OPTIONAL - for fully offline use you can store a data object
-			// var options = {};
-            // options.graphics = JSON.stringify(layer1.toJson());
-            // options.zoom = map.getZoom();
-            
-			offlineFeaturesManager.extend(layer1,function(success, error){
+			offlineFeaturesManager.extend(layer,function(success, error){
 				if(success){
-					console.log("layer1 has been extended for offline use.");
+					console.log("Layer has been extended for offline use.");
 				}
-			}/*, dataStore */);
+			});
 		}			
 		
 ```
@@ -110,13 +105,13 @@ For full offline use, the pattern would look like this where we are creating a `
 		function initEditor(evt)
 		{
 			// OPTIONAL - for fully offline use you can store a data object
-			// var options = {};
-            // options.graphics = JSON.stringify(layer1.toJson());
-            // options.zoom = map.getZoom();      
+			var dataStore = {};
+            dataStore.featureLayerJSON = layer.toJson();
+            dataStore.zoom = map.getZoom();      
             
-            offlineFeaturesManager.extend(layer1,function(success, error){
+            offlineFeaturesManager.extend(layer,function(success, error){
 				if(success){
-					console.log("layer1 has been extended for offline use.");
+					console.log("Layer has been extended for offline use.");
 				}
 			}, dataStore);
 		}			
@@ -128,7 +123,7 @@ When working with fully offline browser restarts you should wait until the layer
 
 ```js
 
-    offlineFeaturesManager.extend(layer1, function(success, error) {
+    offlineFeaturesManager.extend(layer, function(success, error) {
         if(success) {
             // If the app is online then force offlineFeaturesManager to its online state
             // This will force the library to check for pending edits and attempt to
