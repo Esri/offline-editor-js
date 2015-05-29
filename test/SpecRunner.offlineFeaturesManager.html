@@ -103,6 +103,8 @@
                         options.graphics = JSON.stringify(layer.toJson());
                         options.zoom = g_map.getZoom();
 
+                        // WE will use both the featureLayerCollection and dataStore objects for testing purposes
+						g_offlineFeaturesManager.ENABLE_FEATURECOLLECTION = true;
                         g_offlineFeaturesManager.extend(layer,function(result){
                             if(result == false) console.error("WARNING: Unable to initialize database");
                         },options);
