@@ -20,6 +20,7 @@ Property | Value | Description
 `ATTACHMENTS_DB_OBJECTSTORE_NAME` | "attachments" | (Added @ v2.7) Sets the attachments database object store name.
 `proxyPath` | null | Default is `null`. If you are using a Feature Service that is not CORS-enabled then you will need to set this path.
 `attachmentsStore` | null | Default is `null`. If you are using attachments, this property gives you access to the associated database.
+`ENABLE_FEATURECOLLECTION` | `false` | Enabling this property will allow the library to create a snapshot of the feature layer and make it available via `getFeatureCollections()`. When you extend a layer and you want to use a custom `dataStore` then leave this property set to `false` so that you don't end up with two copies of the feature layer in the database.
 
 ###ENUMs
 The manager can be in one of these three states (see `getOnlineStatus()` method):

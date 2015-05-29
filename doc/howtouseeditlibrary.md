@@ -77,24 +77,13 @@ NOTE: You can also monitor standard ArcGIS API for JavaScript layer events using
 
 **Step 4** After the `layers-add-result` event fires extend the feature layer using the `extend()` method. 
 
-Optionally, if you are building a fully offline app then you will also need to set the `dataStore` property in the constructor if you want full control of what is stored. You can also access an automatically created data store via the `getFeatureCollections()` method. If you use the `getFeatureCollections()` pattern you can simply ignore the `dataStore` property in the constructor. Here is an example of the Object returned in the `getFeatureCollections()` callback:
+Optionally, if you are building a fully offline app then you will also need to set the `dataStore` property in the constructor if you want full control of what is stored. Alternatively, you can access an automatically created data store via the `getFeatureCollections()` method. If you use the `getFeatureCollections()` pattern you can simply ignore the `dataStore` property in the constructor. 
 
-```js
-    {
-        id: "feature-collection-object-1001",
-        featureLayerCollections: [
-            { 
-                featureLayerUrl: "http://...", 
-                featureLayerCollection: { . . . }
-            }
-        ]
-    }
-
-```
-
-The `featureLayerCollection` is equivalent to `featureLayer.toJson()`.
+The library's internal `featureLayerCollection` is equivalent to `featureLayer.toJson()`.
 
 Note: the `layer.extend()` callback only indicates that the edits database has been successfully initialized.
+
+Here is an example of initializing the library for partial offline use. Note that the `dataStore` property is not set because it's only needed if you need to restart the browser while offline.
 
 ```js
 		
@@ -113,6 +102,27 @@ Note: the `layer.extend()` callback only indicates that the edits database has b
 		}			
 		
 ```
+
+For full offline use, the pattern would look like this where we are creating a `dataStore`. 
+
+```js
+		
+		function initEditor(evt)
+		{
+			// OPTIONAL - for fully offline use you can store a data object
+			// var options = {};
+            // options.graphics = JSON.stringify(layer1.toJson());
+            // options.zoom = map.getZoom();      
+            
+            offlineFeaturesManager.extend(layer1,function(success, error){
+				if(success){
+					console.log("layer1 has been extended for offline use.");
+				}
+			}, dataStore);
+		}			
+		
+```
+
 
 When working with fully offline browser restarts you should wait until the layer has been successfully extended before forcing the library to go back online. The workflow for this coding pattern is you start out online > offline > browser restart > then back online.
 
@@ -177,7 +187,26 @@ You can then retrieve this data after an offline restart by using the following 
 
 ```
 
-If you don't want to deal with creating and managing your own data store when working with offline browser restarts, then here's the pattern for using the built-in `featureLayerCollections`. This pattern is ideal if you are using Esri's pre-built widgets such as `AttributeInspector` and you don't have access to the necessary events for creating and updating the `dataStore`.
+If you don't want to deal with creating and managing your own data store when working with offline browser restarts, then here's the pattern for using the built-in `featureLayerCollections`. This pattern is ideal if you are using Esri's pre-built widgets such as `AttributeInspector` and you don't have access to the necessary events for creating and updating the `dataStore`. 
+
+Once you set `ENABLED_FEATURECOLLECTION` to `true` the library will automatically update its internal snapshot of the feature layer every time an ADD, UPDATE or DELETE is executed while offline.
+
+
+```js
+
+			// Tell the library to automatically create and store a snapshot of the
+			// of the feature layer.
+			offlineFeaturesManager.ENABLE_FEATURECOLLECTION = true
+			
+			offlineFeaturesManager.extend(layer1,function(success, error){
+				if(success){
+					console.log("layer1 has been extended for offline use.");
+				}
+			});
+
+```
+
+Now you can use this pattern to reconstitute the layer after an offline browser restart:
 
 ```js
 
@@ -198,6 +227,22 @@ If you don't want to deal with creating and managing your own data store when wo
      });
 
 ```
+
+Here is an example of the Object returned in the `getFeatureCollections()` callback:
+
+```js
+    {
+        id: "feature-collection-object-1001",
+        featureLayerCollections: [
+            { 
+                featureLayerUrl: "http://...", 
+                featureLayerCollection: { . . . }
+            }
+        ]
+    }
+
+```
+
 
 **Step 5** Once a layer has been extended the offline library will enable it with new methods. Here are a few examples that include code snippets of how to take advantage of some of the library's methods. You can also use a combination of methods from `editsStore` and `offlineFeaturesManager`.
 
