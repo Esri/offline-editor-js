@@ -119,7 +119,9 @@ For full offline use, the pattern would look like this where we are creating a `
 ```
 
 
-When working with fully offline browser restarts you should wait until the layer has been successfully extended before forcing the library to go back online. The workflow for this coding pattern is you start out online > offline > browser restart > then back online.
+When working with fully offline browser restarts you should wait until the layer has been successfully extended before forcing the library to go back online. When you force the library to `goOnline()` it will attempt to sync any edits that occurred while offline.
+
+The workflow for this coding pattern is you start out online > offline > browser restart > then back online. 
 
 ```js
 
@@ -166,7 +168,7 @@ You can then retrieve this data after an offline restart by using the following 
 	offlineFeaturesManager.getFeatureLayerJSONDataStore(function(success, dataStore){
 		if(success){
 			myFeatureLayer = new 
-				FeatureLayer(JSON.parse(dataStore.featureLayerCollection),{
+				FeatureLayer(dataStore.featureLayerJSON,{
             	mode: FeatureLayer.MODE_SNAPSHOT,
                	outFields: ["GlobalID","BSID","ROUTES","STOPNAME"]
            	});
