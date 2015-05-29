@@ -1,12 +1,21 @@
 # offline-editor-js - Changelog
 
+## Version 2.9.1 - May 28, 2015
+
+No breaking changes.
+
+**Enhancements**
+* Initializes internal featureCollectionObject when a layer is extended.
+* Added property `OfflineFeaturesManager.ENABLE_FEATURECOLLECTION`. Default value is `false`. When enabled this will
+allow the library to automatically create a snapshot of the feature layer.
+
 ## Version 2.9 - May 27, 2015
 
 No breaking changes.
 
 **Enhancements**
-* Closes #341 - Improved use of keys and indexes in editsStore.js. Minor tweaks at this time.
-* Closes #342 - Automates featureCollection management. New method `offlineFeaturesManager.getFeatureCollections()`.
+* Closes #327 - Improved use of keys and indexes in editsStore.js. Minor tweaks at this time.
+* Closes #342 - Automates featureCollection management. New method `OfflineFeaturesManager.getFeatureCollections()`.
 
 
 ## Version 2.8.2 - May 19, 2015

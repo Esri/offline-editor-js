@@ -1,4 +1,4 @@
-/*! offline-editor-js - v2.9.0 - 2015-05-27
+/*! offline-editor-js - v2.9.1 - 2015-05-29
 *   Copyright (c) 2015 Environmental Systems Research Institute, Inc.
 *   Apache License*/
 /*jshint -W030 */
@@ -34,6 +34,9 @@ define([
                 RECONNECTING: "reconnecting",   // sending stored edits to the server
                 attachmentsStore: null,         // indexedDB for storing attachments
                 proxyPath: null,                // by default we use CORS and therefore proxyPath is null
+
+                ENABLE_FEATURECOLLECTION: false,    // Set this to true for full offline use if you want to use the
+                                                    // getFeatureCollections() pattern of reconstituting a feature layer.
 
                 // Database properties
                 DB_NAME: "features_store",      // Sets the database name.
@@ -1134,7 +1137,13 @@ define([
 
                     // We are currently only passing in a single deferred.
                     all(extendPromises).then(function (r) {
-                        if(r.length === 0){
+
+                        // DB already initialized
+                        if(r.length === 0 && url){
+                            // Initialize the internal featureLayerCollectionObject
+                            if(this.ENABLE_FEATURECOLLECTION) {
+                                layer._pushFeatureCollections();
+                            }
                             callback(true, null);
                         }
                         else if(r[0].success && !url){
@@ -1146,15 +1155,27 @@ define([
                                 if(success) {
                                     this._featureLayers[message.__featureLayerURL] = layer;
                                     layer.url = message.__featureLayerURL;
+
+                                    // Initialize the internal featureLayerCollectionObject
+                                    if(this.ENABLE_FEATURECOLLECTION) {
+                                        layer._pushFeatureCollections();
+                                    }
                                     callback(true, null);
                                 }
                                 else {
-                                    console.error("getFeatureLayerJSON() failed.");
+                                    // NOTE: We have to have a valid feature layer URL in order to initialize the featureLayerCollectionObject
+                                    console.error("getFeatureLayerJSON() failed and unable to create featureLayerCollectionObject.");
                                     callback(false, message);
                                 }
                             }.bind(this));
                         }
                         else if(r[0].success){
+
+                            // Initialize the internal featureLayerCollectionObject
+                            if(this.ENABLE_FEATURECOLLECTION) {
+                                layer._pushFeatureCollections();
+                            }
+
                             callback(true, null);
                         }
                     }.bind(this));
