@@ -1,4 +1,4 @@
-/*! offline-editor-js - v2.9.1 - 2015-05-29
+/*! offline-editor-js - v2.9.2 - 2015-06-15
 *   Copyright (c) 2015 Environmental Systems Research Institute, Inc.
 *   Apache License*/
 /*jshint -W030 */
@@ -28,6 +28,7 @@ define([
                 _featureLayers: {},
                 _featureCollectionUsageFlag: false, // if a feature collection was used to create the feature layer.
                 _editStore: new O.esri.Edit.EditStore(),
+                __hasAttachments: false,
 
                 ONLINE: "online",				// all edits will directly go to the server
                 OFFLINE: "offline",             // edits will be enqueued
@@ -752,6 +753,16 @@ define([
                         });
                     };
 
+                    /**
+                     * Overrides hasAttachments() method.
+                     * For some reason when you reconstitute a featureLayer via a featureCollection this property
+                     * does not get reset. So, this is a hack to make that work.
+                     * @returns {boolean}
+                     */
+                    layer.hasAttachments = function(){
+                        return self.__hasAttachments;
+                    };
+
                     /* internal methods */
 
                     /**
@@ -787,6 +798,10 @@ define([
                                 featureCollections: featureCollectionsArray
                             };
 
+                            if(featureCollection.featureLayerCollection.layerDefinition.hasOwnProperty("hasAttachments")) {
+                                self.__hasAttachments = featureCollection.featureLayerCollection.layerDefinition.hasAttachments;
+                            }
+
                             // If the featureCollectionsObject already exists
                             if(success){
                                 var count = 0;
@@ -801,7 +816,7 @@ define([
 
                                 // If we have a new feature layer then add it to the featureCollections array
                                 if(count === 0) {
-                                    result.featureCollections.push(featureCollectionsArray);
+                                    result.featureCollections.push(featureCollection);
                                 }
                             }
                             // If it does not exist then we need to add a featureCollectionsObject
