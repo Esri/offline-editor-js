@@ -1,5 +1,19 @@
 # offline-editor-js - Changelog
 
+## Version 2.9.2 - June 17, 2015
+
+No breaking changes.
+
+**Enhancements**
+* OfflineFeaturesManager now overrides layer.hasAttachments property. The override is available after a feature layer 
+has been extended. This fixes an existing bug in the ArcGIS JS API when you create a feature layer from a featureCollectionObject
+the hasAttachmens property does not get correctly repopulated.
+
+**Bug fix**
+* Fixes issue in offlineFeaturesManager's featureCollection data store when using it with multiple feature layers. 
+Subsequent featureLayerCollections were being stored as arrays instead of objects.
+* Minor tweak to appcache-tiles.appcache. It was broken.
+
 ## Version 2.9.1 - May 28, 2015
 
 No breaking changes.

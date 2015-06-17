@@ -20,8 +20,8 @@ http://js.arcgis.com/3.11/esri/dijit/images/attribute_inspector_sprite.png
 http://js.arcgis.com/3.11/esri/dijit/images/ajax-loader.gif
 http://js.arcgis.com/3.11/esri/images/map/logo-sm.png
 http://js.arcgis.com/3.11/esri/images/map/logo-med.png
-http://js.arcgis.com/3.11/esri/css/esri.css
 http://js.arcgis.com/3.11/dijit/themes/claro/claro.css
+http://js.arcgis.com/3.12/esri/css/esri.css
 http://js.arcgis.com/3.11/esri/nls/jsapi_en-us.js
 #
 //services.arcgisonline.com/ArcGIS/rest/info?f=json
@@ -35,6 +35,7 @@ http://js.arcgis.com/3.11/esri/nls/jsapi_en-us.js
 //maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js
 //esri.github.io/bootstrap-map-js/src/js/bootstrapmap.js
 https://code.jquery.com/jquery-2.1.1.min.js
+https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.j
 
 # Custom feature service
 http://services.arcgis.com/IZtlGBUe4KTzLOl4/arcgis/rest/services/BPX_RTD_BusStops2/FeatureServer/0?f=json
