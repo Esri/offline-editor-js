@@ -1,4 +1,4 @@
-/*! offline-editor-js - v2.9.2 - 2015-06-15
+/*! offline-editor-js - v2.9.2 - 2015-06-17
 *   Copyright (c) 2015 Environmental Systems Research Institute, Inc.
 *   Apache License*/
 /*jshint -W030 */
@@ -28,7 +28,6 @@ define([
                 _featureLayers: {},
                 _featureCollectionUsageFlag: false, // if a feature collection was used to create the feature layer.
                 _editStore: new O.esri.Edit.EditStore(),
-                __hasAttachments: false,
 
                 ONLINE: "online",				// all edits will directly go to the server
                 OFFLINE: "offline",             // edits will be enqueued
@@ -753,16 +752,6 @@ define([
                         });
                     };
 
-                    /**
-                     * Overrides hasAttachments() method.
-                     * For some reason when you reconstitute a featureLayer via a featureCollection this property
-                     * does not get reset. So, this is a hack to make that work.
-                     * @returns {boolean}
-                     */
-                    layer.hasAttachments = function(){
-                        return self.__hasAttachments;
-                    };
-
                     /* internal methods */
 
                     /**
@@ -798,9 +787,10 @@ define([
                                 featureCollections: featureCollectionsArray
                             };
 
-                            if(featureCollection.featureLayerCollection.layerDefinition.hasOwnProperty("hasAttachments")) {
-                                self.__hasAttachments = featureCollection.featureLayerCollection.layerDefinition.hasAttachments;
-                            }
+                            // THIS IS A HACK.
+                            // There is a bug in JS API 3.11+ when you create a feature layer from a featureCollectionObject
+                            // the hasAttachments property does not get properly repopulated.
+                            layer.hasAttachments = featureCollection.featureLayerCollection.layerDefinition.hasAttachments;
 
                             // If the featureCollectionsObject already exists
                             if(success){
