@@ -1,4 +1,4 @@
-/*! offline-editor-js - v2.9.1 - 2015-05-29
+/*! offline-editor-js - v2.9.2 - 2015-06-17
 *   Copyright (c) 2015 Environmental Systems Research Institute, Inc.
 *   Apache License*/
 /*jshint -W030 */
@@ -787,6 +787,11 @@ define([
                                 featureCollections: featureCollectionsArray
                             };
 
+                            // THIS IS A HACK.
+                            // There is a bug in JS API 3.11+ when you create a feature layer from a featureCollectionObject
+                            // the hasAttachments property does not get properly repopulated.
+                            layer.hasAttachments = featureCollection.featureLayerCollection.layerDefinition.hasAttachments;
+
                             // If the featureCollectionsObject already exists
                             if(success){
                                 var count = 0;
@@ -801,7 +806,7 @@ define([
 
                                 // If we have a new feature layer then add it to the featureCollections array
                                 if(count === 0) {
-                                    result.featureCollections.push(featureCollectionsArray);
+                                    result.featureCollections.push(featureCollection);
                                 }
                             }
                             // If it does not exist then we need to add a featureCollectionsObject

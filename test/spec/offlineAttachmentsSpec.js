@@ -307,6 +307,11 @@ describe("Attachments", function()
             });
         });
 
+		async.it("Verify hasAttachments", function(done) {
+			expect(g_featureLayer.hasAttachments).toBe(true);
+			done();
+		});
+
 		async.it("add attachment to (offline) feature g2_offline", function(done)
 		{
 			expect(g_featureLayer.graphics.length).toBe(4);
