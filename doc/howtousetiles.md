@@ -146,7 +146,7 @@ This approach is best if you have requirements for restarting or reloading your 
 	});
 ```
 
-**Step 2** Create a new instance of `OfflineTilesEnablerLayer`. Note, when you instantiate the `Map` leave off the `basemap` property because we are adding a customer tile layer as our basemap. `OfflineTilesEnablerLayer` has three properties in the constructor. The first is the REST endpoint of the basemap you want to use, the second is the callback and the last is an optional parameter to preset the layer as online or offline. This will help with with drawing tiles correctly during offline restarts or reloads.
+**Step 2** Create a new instance of `OfflineTileEnablerLayer`. Note, when you instantiate the `Map` leave off the `basemap` property because we are adding a customer tile layer as our basemap. `OfflineTileEnablerLayer` has three properties in the constructor. The first is the REST endpoint of the basemap you want to use, the second is the callback and the last is an optional parameter to preset the layer as online or offline. This will help with with drawing tiles correctly during offline restarts or reloads.
 
 IMPORTANT: If you are trying to use a non-CORS-enabled Feature Service you will need to explicity declare your `proxyPath`. We've set `proxyPath` to `null` here just as an illustration. You don't need to do that since its default is `null`.
 
@@ -171,7 +171,7 @@ IMPORTANT: If you are trying to use a non-CORS-enabled Feature Service you will 
 
 ```
 
-All map events will continue to work normally. Although some methods that are typically available will now have to be accessed through OfflineTilesEnablerLayer such as `getLevel()`, `getMaxZoom()`, and `getMinZoom()`.
+All map events will continue to work normally. Although some methods that are typically available will now have to be accessed through `OfflineTileEnablerLayer` such as `getLevel()`, `getMaxZoom()`, and `getMinZoom()`.
 
 To get the current extent you will need to monitor the `zoom-end` and `pan-end` events like this:
 
