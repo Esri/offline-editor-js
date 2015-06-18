@@ -9,12 +9,14 @@ There are two primary approaches to using this set of libraries. The first appro
 
 The second approach is if you need to be able to restart or reload your application offline and only works with `ArcGISTiledMapServiceLayer`.
 
+For detecting whether the browser is online, offline or listen for connection changes we recommend the [Offline.js](http://github.hubspot.com/offline/docs/welcome/) library.
+
 You should also be aware that there are storage limitations imposed by the browser and the device operating system. There is a brief discussion on this at the bottom of the document.
 
 
 ## Approach 1 - ArcGIS.com or tiled Map
 
-Approach #1 is for intermittent offline use cases and it uses the `offline-tiles-basic-min.js` library. This approach will not allow you to reload or restart the application while offline. The `tiles-indexed-db.html` sample is a working example of how to implement offline patterns and practices with an ArcGIS.com basemap.
+Approach #1 is for intermittent offline use cases and it uses the `offline-tiles-basic-min.js` library. This approach will not allow you to reload or restart the application while offline. The `tiles-indexed-db.html` sample is a working example of how to implement offline patterns and practices with an ArcGIS.com Web map.
 
 **Step 1** Include the `offline-tiles-basic-min.js` library in your app.
 
@@ -27,7 +29,7 @@ Approach #1 is for intermittent offline use cases and it uses the `offline-tiles
 		...
 	});
 ```
-**Step 2** Once your map is created using either _new Map()_ or using _esriUtils.createMap(webmapid,...)_, then extend the basemap layer with the offline functionality
+**Step 2** Create the map using either _new Map()_ or using _esriUtils.createMap(webmapid,...)_. Once it has loaded then extend the basemap layer with the offline functionality. If you are using the `Map()` method you need to wait until the `load` event has fired. If you are using a Web map and the `createMap()` method to load an ArcGIS.com Web map it passes a `deferred` and you can run the following code in the `then` method:  
 
 ```js
 	var basemapLayer = map.getLayer( map.layerIds[0] );
@@ -82,7 +84,7 @@ basemapLayer.prepareForOffline(minLevel, maxLevel, newExtent,
 This method puts the layer in online mode. When in online mode, the layer will behave as regular layers, fetching all tiles from the remote server. If there is no internet connectivity the tiles may appear thanks to the browsers cache, but no attempt will be made to look up tiles in the local database.
 
 ####basemap.goOffline()
-This method puts the layer in offline mode. When in offline mode, the layer will not fetch any tile from the remote server. It will look up the tiles in the IndexedDB database and display them in the layer. If the tile can't be found in the local database it will show up blank (even if there is actual connectivity). The pair of methods `goOffline()` and `goOnline()` allows the developer to manually control the behaviour of the layer. Used in conjunction with the offline dectection library, you can put the layer in the appropriate mode when the offline condition changes.
+This method puts the layer in offline mode. When in offline mode, the layer will not fetch any tile from the remote server. It will look up the tiles in the IndexedDB database and display them in the layer. If the tile can't be found in the local database it will show up blank (even if there is actual connectivity). The pair of methods `goOffline()` and `goOnline()` allows the developer to manually control the behaviour of the layer. Used in conjunction with the offline dectection library, you can put the layer in the appropriate mode when the internet condition changes.
 
 ####basemap.deleteAllTiles(callback)
 Deletes all tiles stored in the indexed db database.
