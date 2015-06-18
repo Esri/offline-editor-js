@@ -1,5 +1,9 @@
 # offline-editor-js - Changelog
 
+## Version 2.9.2.1 - June 18, 2015
+
+Minor doc update. Clarifications on how to use the tile libraries and fixed some typos.
+
 ## Version 2.9.2 - June 17, 2015
 
 No breaking changes.

@@ -1,17 +1,17 @@
-API Doc for OfflineTilesEnablerLayer
+API Doc for OfflineTileEnablerLayer
 ====================================
 
 There are two different libraries for taking tiles offline: `offline-tiles-basic-min.js` and `offline-tiles-advanced-min.js`. The basic library is for use with ArcGIS.com web maps and partial/intermittently offline use cases. You won't be able to restart or reload your app when using this library offline.
 
 If you have a requirement for restarting or reloading the app while offline then you should use the advanced library. The `offline-tiles-advanced-min.js` library lets you create a custom basemap layer that extends TiledMapServiceLayer. 
 
-##O.esri.Tiles.OfflineTilesEnablerLayer
+##O.esri.Tiles.OfflineTileEnablerLayer
 The `offline-tiles-advanced-min.js` library provides the following tools for working with tiled map services. This library is designed for both partial and full offline use cases, and it will work if you have a requirement for browser reloads or restarts while offline.
 
 ###Constructor
 Constructor | Description
 --- | ---
-`O.esri.Tiles.OfflineTilesEnablerLayer(url,callback,state)` | Creates an instance of the offlineTilesEnabler class. This library allows you to extend an ArcGISTiledMapServiceLayer with offline capability as well as manage the online/offline resynchronization process. Any Esri basemap REST endpoint should work. The state property is a boolean for specifying if the application is intializing the layer online (true) or offline (false). When you first load the map you should set this property to `true`.
+`O.esri.Tiles.OfflineTileEnablerLayer(url,callback,state)` | Creates an instance of the offlineTileEnabler class. This library allows you to extend an ArcGISTiledMapServiceLayer with offline capability as well as manage the online/offline resynchronization process. Any Esri basemap REST endpoint should work. The state property is a boolean for specifying if the application is intializing the layer online (true) or offline (false). When you first load the map you should set this property to `true`.
 
 ###Properties
 Property  | Description
