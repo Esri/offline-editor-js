@@ -152,7 +152,7 @@ IMPORTANT: If you are trying to use a non-CORS-enabled Feature Service you will 
 
 ```js
 
-    tileLayer = new O.esri.Tiles.OfflineTilesEnablerLayer("http://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer",function(evt){
+    tileLayer = new O.esri.Tiles.OfflineTileEnablerLayer("http://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer",function(evt){
         console.log("Tile Layer Loaded.");
         // All non-CORS-enabled Feature Services require a proxy.
         // You can set the property here if needed.
