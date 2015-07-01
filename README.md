@@ -28,7 +28,9 @@ The following workflow is currently supported for both both features and tiles:
 
 4) Return online when you want to resync edits.
 
-Using an [application manifest](https://developer.mozilla.org/en-US/docs/HTML/Using_the_application_cache) allows you to reload and restart the application while offline. The application manifest lets you store .html, .js, .css and image files locally.
+This workflow is supported for intermittent (or partial) offline and full offline. There are samples in the `/samples` directory for both use cases. For more information on the differences between check out this [blog post](http://www.andygup.net/going-offline-with-html5-and-javascript-part-1/).
+
+Full offline requires the use of an [application manifest](https://developer.mozilla.org/en-US/docs/HTML/Using_the_application_cache) to allow for browser reloads and restarts while offline. The application manifest lets you store .html, .js, .css and image files locally.
 
 __Attachment Support__: Attachments are supported with some limitations. See documentation [here](./doc/attachments.md)
 
@@ -57,26 +59,30 @@ Go __[here](https://github.com/Esri/offline-editor-js/wiki/FAQ)__ for answers to
 1. From the root directory run `npm install`
 2. Run `Grunt build`. If there are no errors, the minimized _(min)_ and source _(src)_ versions of the libraries will be output to `\dist`
 
+##Limitations
+
+* Currently does not support related tables, domains or subtypes. The ArcGIS Runtime SDKs fully support these.
+* Attachments are supported with some limitations listed [here](./doc/attachments.md).
+
 ##Dependencies
 
 * ArcGIS API for JavaScript (v3.8+)
 * Node.js required for building the source
 * NOTE: browser limitations and technical dependencies. The offline capabilities in this toolkit depend on certain HTML5 capabilities being present in the browser. Go [here](doc/dependencies.md) for a detailed breakdown of the information.
-* We offer browser support for Chrome, Firefox and Safari only, at this time. Some of the capabilities in the repository will not work on Internet Explorer. 	
+* We offer browser support for the latest versions of Chrome, Firefox and Safari only.  	
 
 * Sub-modules (see `/vendor` directory)
 
    * [offline.js](https://github.com/hubspot/offline) - it allows detection of the online/offline condition and provides events to hook callbacks on when this condition changes
    * [IndexedDBShim](https://github.com/axemclion/IndexedDBShim) - polyfill to simulate indexedDB functionality in browsers/platforms where it is not supported (notably desktop Safari and iOS Safari)
    		- IMPORTANT: There are known [issues](https://github.com/axemclion/IndexedDBShim/issues/115) with IndexedDBShim on Safari. For Safari, the storage error workaround is to switch from using /dist/IndexedDBShim.min.js to just using IndexedDBShim.js and then search for and modify the line that defines the value for `DEFAULT_DB_SIZE`. Set this to more appropriate size that will meet all your storage needs, for example: ```var DEFAULT_DB_SIZE = 24 * 1024 * 1024```
-   		- IMPORTANT: Coming in Safari 8 is built-in supported for IndexedDB. 
    * [jasmine.async](https://github.com/derickbailey/jasmine.async.git) - library to help implementing tests of async functionality (used in tests)
 
 * Non sub-module based libraries
 	* [FileSaver.js](https://github.com/Esri/offline-editor-js/blob/master/lib/tiles/README.md) - library to assist with uploading and downloading of files containing tile information.
 	* [grunt-manifest](https://github.com/gunta/grunt-manifest) node.js library to assist with the creation of manifest files.
 	* [zip](http://gildas-lormeau.github.io/zip.js/) A library for zipping and unzipping files. 
-	* [xml2json](https://code.google.com/p/x2js/) A library for converting XML to JSON. Seems to handle complex XML. 
+	* [xml2json](https://code.google.com/p/x2js/) A library for converting XML to JSON. Handles complex XML. 
 
 ## Resources
 

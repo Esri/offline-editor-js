@@ -1,4 +1,4 @@
-/*! offline-editor-js - v2.9.2 - 2015-06-17
+/*! offline-editor-js - v2.9.3 - 2015-07-01
 *   Copyright (c) 2015 Environmental Systems Research Institute, Inc.
 *   Apache License*/
 /**
@@ -374,17 +374,17 @@ define([
                             console.error("_unzipTileFiles Error: " + event.target.error.message);
                             that.emit(that.PARSING_ERROR, {msg: "Error parsing file: ", err: event.target.error});
                         }
-                        reader.addEventListener("loadend", function (evt) {
-                            if(this.token != undefined){
+                        reader.onloadend = function(evt)  {
+                            if(reader.token != undefined){
                                 that._inMemTilesIndex.push("blank");
-                                var name = files[this.token].filename.toLocaleUpperCase();
-                                that._inMemTilesObject[name]= this.result;
+                                var name = files[reader.token].filename.toLocaleUpperCase();
+                                that._inMemTilesObject[name]= reader.result;
                                 var size = that.ObjectSize(that._inMemTilesObject);
                                 if(size > 0){
                                     callback(deferred,data.token);
                                 }
                             }
-                        });
+                        };
                         reader.readAsArrayBuffer(data); //open bundleX
                     }
                 });
