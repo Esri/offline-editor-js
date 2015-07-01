@@ -1,5 +1,12 @@
 # offline-editor-js - Changelog
 
+## Version 2.9.3 - July 1, 2015
+
+No breaking changes.
+
+**Enhancements**
+* Closes #319. Make TPK support more universal between Chrome and WebView on Android.
+
 ## Version 2.9.2.2 - June 24, 2015
 
 Minor doc update. Updates to README.
