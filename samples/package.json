@@ -9,7 +9,7 @@
   "appHomePage": "appcache-features.html",
   "optimizedApiURL": "../samples/jsolib",
   "arcGISBaseURL": "http://js.arcgis.com/3.11",
-  "version": "2.4",
+  "version": "2.9.3",
   "private": true,
   "description": "manifest generator project",
   "repository": {
@@ -23,7 +23,7 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "grunt": "~0.4.4",
+    "grunt": "~0.4.5",
     "grunt-manifest": "^0.4.0"
   }
 }

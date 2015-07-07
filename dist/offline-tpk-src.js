@@ -1,5 +1,5 @@
-/*! offline-editor-js - v2.4 - 2014-11-26
-*   Copyright (c) 2014 Environmental Systems Research Institute, Inc.
+/*! offline-editor-js - v2.9.3 - 2015-07-01
+*   Copyright (c) 2015 Environmental Systems Research Institute, Inc.
 *   Apache License*/
 /**
  * Library for reading an ArcGIS Tile Package (.tpk) file and displaying the tiles
@@ -303,13 +303,11 @@ define([
                     if(indexCDI != -1 || indexXML != -1){
                         this._unzipConfFiles(files,i,deferred,function(/* deferred */ d, /* token */ t){ console.log("CONF FILE")
                             d.resolve(t);
-                            return d.promise;
                         });
                     }
                     else if(indexBUNDLE != -1 || indexBUNDLX != -1){
                         this._unzipTileFiles(files,i,deferred,function(/* deferred */ d, /* token */ t){
                             d.resolve(t);
-                            return d.promise;
                         });
                     }
                     else{
@@ -322,8 +320,6 @@ define([
                 {
                     callback && callback(results);
                 });
-
-                return promises;
             },
 
             /**
@@ -378,17 +374,17 @@ define([
                             console.error("_unzipTileFiles Error: " + event.target.error.message);
                             that.emit(that.PARSING_ERROR, {msg: "Error parsing file: ", err: event.target.error});
                         }
-                        reader.addEventListener("loadend", function (evt) {
-                            if(this.token != undefined){
+                        reader.onloadend = function(evt)  {
+                            if(reader.token != undefined){
                                 that._inMemTilesIndex.push("blank");
-                                var name = files[this.token].filename.toLocaleUpperCase();
-                                that._inMemTilesObject[name]= this.result;
+                                var name = files[reader.token].filename.toLocaleUpperCase();
+                                that._inMemTilesObject[name]= reader.result;
                                 var size = that.ObjectSize(that._inMemTilesObject);
                                 if(size > 0){
                                     callback(deferred,data.token);
                                 }
                             }
-                        });
+                        };
                         reader.readAsArrayBuffer(data); //open bundleX
                     }
                 });

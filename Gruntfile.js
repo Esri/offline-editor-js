@@ -13,7 +13,7 @@ module.exports = function(grunt) {
                     'lib/tpk/*.js'
                 ],
 
-                tasks: ['concat', 'uglify'],
+                tasks: ['jshint','concat', 'uglify'],
                 options: {
                     spawn: false
                 }
@@ -23,13 +23,12 @@ module.exports = function(grunt) {
             options: {
                 jshintrc: '.jshintrc'
             },
-            all: {
+            files: {
                 src: [
                     'Gruntfile.js',
-                    'lib/*js',
-                    'lib/edit/*.js',
-                    'lib/tiles/*.js',
-                    'lib/tpk/*.js'
+                    'lib/edit/*.js'
+                    //'lib/tiles/*.js',
+                    //'lib/tpk/*.js'
                 ]
             }
         },
@@ -97,6 +96,7 @@ module.exports = function(grunt) {
                 compress: {
                     drop_console: true //remove console.log statements :)
                 },
+                preserveComments: 'some',
                 wrap: false
 //                mangle: {
 //                    except: ['O']
@@ -120,7 +120,8 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-watch');
     grunt.loadNpmTasks('grunt-contrib-jshint');
 
-    grunt.registerTask('build',['concat','uglify']);
-    // JSHint not currently working. Needs alot of cleanup.
-//    grunt.registerTask('buildAll',['jshint','concat','uglify']);
-}
+    grunt.registerTask('build',['jshint','concat','uglify']);
+    grunt.registerTask('test',['jshint']);
+
+    //grunt.registerTask('buildAll',['jshint','concat','uglify']);
+};

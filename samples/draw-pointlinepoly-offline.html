@@ -2,11 +2,11 @@
 <html>
 <head>
 	<meta charset="UTF-8">
-	<title>Military Offline Editor</title>
+	<title>Offline Editing - COP</title>
 
 	<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" >
-    <link rel="stylesheet" href="http://js.arcgis.com/3.10/js/dojo/dijit/themes/claro/claro.css">
-    <link rel="stylesheet" href="http://js.arcgis.com/3.10/js/esri/css/esri.css" />
+    <link rel="stylesheet" href="http://js.arcgis.com/3.12/dijit/themes/claro/claro.css">
+    <link rel="stylesheet" href="http://js.arcgis.com/3.13/esri/css/esri.css" />
 
 	<style>
 		html,body{height:100%;width:100%;margin:0;overflow:hidden;font-family: sans-serif;}
@@ -64,7 +64,7 @@
 		.dj_ie .simpleInfoWindow .content {position: relative;}	
 	</style>
 
-	<script src="http://js.arcgis.com/3.10"></script>
+	<script src="http://js.arcgis.com/3.13/"></script>
 	<script src="../vendor/offline/offline.min.js"></script>
     <script>
         Offline.options = {
@@ -78,307 +78,6 @@
             }
         }
     </script>
-
-	<script>
-	// based on https://developers.arcgis.com/javascript/jssamples/ed_simpletoolbar.html
-	var map;
-
-	require([
-	    "esri/map", 
-	    "esri/tasks/GeometryService",
-	    "esri/toolbars/edit",
-
-	    "esri/layers/ArcGISTiledMapServiceLayer",
-	    "esri/layers/FeatureLayer",
-
-
-	    "esri/symbols/SimpleMarkerSymbol",
-	    "esri/symbols/SimpleLineSymbol",
-
-	    "esri/dijit/editing/Editor",
-	    "esri/dijit/editing/TemplatePicker",
-
-	    "esri/config",
-	    "dojo/i18n!esri/nls/jsapi",
-
-	    "dojo/_base/array", "dojo/parser", "dojo/keys", 
-		"dojo/dom", "dojo/on", "dojo/dom-construct", "dojo/dom-class", "esri/domUtils",
-
-        "esri/graphic",
-
-	    "dijit/layout/BorderContainer", "dijit/layout/ContentPane",
-        "../dist/offline-tiles-basic-min.js",
-        "../dist/offline-edit-src.js",
-	    "dojo/domReady!"
-	], function(
-	    Map, GeometryService, Edit, 
-	    ArcGISTiledMapServiceLayer, FeatureLayer,
-	    SimpleMarkerSymbol, SimpleLineSymbol, 
-	    Editor, TemplatePicker,
-	    esriConfig, jsapiBundle,
-	    arrayUtils, parser, keys, 
-		dom, on, domConstruct, domClass, domUtils,Graphic
-	) {
-		var editor;
-		var basemapLayer;
-        var editStore = new O.esri.Edit.EditStore(Graphic); // include esri/graphic reference for serialization/deserialization
-
-		parser.parse();
-		dojo.fadeOut({node:'loader-cloak', onEnd: function(n){n.style.display="none"}}).play();
-
-		// user interface
-		on(dom.byId('storageInfo'), 'click', updateStorageInfo);
-		on(dom.byId('clear-pending-edits-btn'),'click', clearPendingEdits);
-		on(dom.byId('go-offline-btn'),'click', goOffline);
-		on(dom.byId('go-online-btn'),'click', goOnline);
-		on(dom.byId('refresh-feature-layers-btn'),'click', refreshFeatureLayers);
-		var offlineFeaturesManager = new O.esri.Edit.OfflineFeaturesManager();
-
-        // IMPORTANT!!!
-        // A proxy page may be required to upload attachments.
-        // If you are using a CORS enabled server you may be ablew to set the proxyPath to null.
-        // Refer to "Using the Proxy Page" for more information:  https://developers.arcgis.com/en/javascript/jshelp/ags_proxy.html
-        offlineFeaturesManager.proxyPath = null;
-
-		offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_ENQUEUED, updateStatus);
-		offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_SENT, updateStatus);
-		offlineFeaturesManager.on(offlineFeaturesManager.events.ALL_EDITS_SENT, updateStatus);
-		updateConnectivityIndicator();
-		updateStorageInfo();
-
-        Offline.check();
-		Offline.on('up', goOnline );
-		Offline.on('down', goOffline );
-
-		map = new Map("map", {
-			basemap: "satellite",
-			center: [-0.958, 41.846],
-			zoom: 13,
-			slider: true
-		});
-
-		map.on('layers-add-result', initEditor);
-
-		var fsUrl = "http://services2.arcgis.com/CQWCKwrSm5dkM28A/arcgis/rest/services/Military/FeatureServer/";
-		// var layersIds = [0,1,2,3,4,5,6];
-		var layersIds = [1,2,3];
-		var featureLayers = [];
-
-		layersIds.forEach(function(layerId)
-		{
-			var layer = new FeatureLayer(fsUrl + layerId, {
-				mode: FeatureLayer.MODE_SNAPSHOT,
-				outFields: ['*']
-			});
-			featureLayers.push(layer);			
-		})
-
-		map.addLayers(featureLayers);
-
-		//////////////////////////////////////
-
-		function initEditor(evt)
-		{
-			try {
-				var offlineTilesEnabler = new O.esri.Tiles.OfflineTilesEnabler();
-				basemapLayer = map.getLayer( map.layerIds[0] );
-				offlineTilesEnabler.extend(basemapLayer);
-
-				/* extend layer with offline detection functionality */
-				evt.layers.forEach(function(result)
-				{
-					var layer = result.layer;
-					offlineFeaturesManager.extend(layer);
-					layer.on('update-end', logCurrentObjectIds);
-				});
-
-				/* handle errors that happen while storing offline edits */
-				offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_ENQUEUED, function(results)
-				{
-					var errors = Array.prototype.concat(
-						results.addResults.filter(function(r){ return !r.success }),
-						results.updateResults.filter(function(r){ return !r.success }),
-						results.deleteResults.filter(function(r){ return !r.success }) 
-					);
-
-					if( errors.length )
-					{
-						var messages = errors.map(function(e){ return e.error.message });
-						alert("Error editing features: " + messages.join('\n'));
-					}
-				});
-
-				updatePendingEditsList();
-			}
-			catch(err)
-			{
-				console.log(err);
-			}
-
-			try {
-				/* template picker */
-				var templateLayers = evt.layers.map(function(result){return result.layer;});
-				var templatePicker = new TemplatePicker({
-					featureLayers: templateLayers,
-					grouping: true,
-					rows: "auto",
-					columns: 3,
-				}, "templateDiv");
-				templatePicker.startup();
-
-				/* editor */
-				var layers = evt.layers.map(function(result){return {featureLayer: result.layer};});
-				var settings = {
-					map: map,
-					templatePicker: templatePicker,
-					layerInfos: layers,
-					toolbarVisible: true,
-					enableUndoRedo: true,
-					maxUndoRedoOperations: 15,
-					createOptions: {
-						polylineDrawTools: [ 
-							Editor.CREATE_TOOL_FREEHAND_POLYLINE,
-							Editor.CREATE_TOOL_POLYLINE ],
-						polygonDrawTools: [
-							Editor.CREATE_TOOL_FREEHAND_POLYGON,
-							Editor.CREATE_TOOL_POLYGON,
-							Editor.CREATE_TOOL_RECTANGLE ]
-					},
-					toolbarOptions: {
-						reshapeVisible: false
-					}
-				};
-
-				editor = new Editor({ settings: settings }, 'editorDiv');
-				editor.startup();
-
-				console.log("ok!");
-			}
-			catch(err)
-			{
-				console.log(err);
-			}
-
-			try {
-				if( Offline.state === 'up' )
-				{
-					// if we have pending edits from previous executions and we are online, then try to replay them
-					goOnline();
-				}
-			} 
-			catch(err)
-			{
-				console.log(err);
-			}
-		}
-
-		function updateStatus()
-		{
-			console.log("updatingStatus");
-			updateStorageInfo();
-			updatePendingEditsList();
-			logCurrentObjectIds();
-		}
-
-		function updateStorageInfo()
-		{
-			var formatMb = function(bytes)
-			{
-				return Math.floor(bytes / 1024 / 1024 * 100)/100 + " MBs";
-			}
-			var localStorageSizeBytes = editStore.getLocalStorageSizeBytes();
-			var editStoreSizeBytes = editStore.getEditsStoreSizeBytes();
-
-			var info = "Used " + formatMb(localStorageSizeBytes) + " (" + formatMb(editStoreSizeBytes) + ")";
-			dom.byId('storageInfo').innerHTML = info;
-		}
-
-		function logCurrentObjectIds(evt)
-		{
-			var layers = ( evt && evt.target )? [evt.target] : featureLayers;
-			layers.forEach(function(layer)
-			{				
-				var objectIds = layer.graphics.map( function(g) { return g.attributes[ layer.objectIdField ];});
-				console.log(layer.name, objectIds);
-			});
-		}
-
-		function updatePendingEditsList()
-		{
-			var li;
-			domConstruct.empty('pendingEdits');
-			if( editStore.hasPendingEdits())
-			{
-				var edits = editStore.retrieveEditsQueue();
-				edits.forEach(function(edit)
-				{
-					var readableEdit = offlineFeaturesManager.getReadableEdit(edit);
-					li = "<li>" + readableEdit + "</li>";
-					domConstruct.place(li, 'pendingEdits','last');
-				},this);
-			}
-			else
-			{
-				li = "<li>No edits pending</li>";
-				domConstruct.place(li, 'pendingEdits','last');
-			}
-		}
-
-		function clearPendingEdits()
-		{
-			editStore.resetEditsQueue();
-			updateStatus();
-		}
-
-		function goOnline()
-		{
-			basemapLayer.goOnline();			
-			domUtils.show(editor.progressBar.domNode);
-			offlineFeaturesManager.goOnline(function()
-			{
-				domUtils.hide(editor.progressBar.domNode);
-				updateConnectivityIndicator();
-			});
-			updateConnectivityIndicator();
-		}
-
-		function goOffline()
-		{
-			offlineFeaturesManager.goOffline();
-			basemapLayer.goOffline();
-			updateConnectivityIndicator();
-		}
-
-		function updateConnectivityIndicator()
-		{
-			var node = dom.byId('connectivityIndicator');
-			domClass.remove(node, "online offline reconnecting");
-			switch( offlineFeaturesManager.getOnlineStatus() )
-			{
-				case offlineFeaturesManager.OFFLINE:
-					node.innerHTML = "<i class='fa fa-chain-broken'></i> offline";
-					domClass.add(node, "offline");
-					break;
-				case offlineFeaturesManager.ONLINE:
-					node.innerHTML = "<i class='fa fa-link'></i> online";
-					domClass.add(node, "online");
-					break;
-				case offlineFeaturesManager.RECONNECTING:
-					node.innerHTML = "<i class='fa fa-cog fa-spin'></i> reconnecting";
-					domClass.add(node, "reconnecting");
-					break;
-			}
-		}
-
-		function refreshFeatureLayers()
-		{
-			featureLayers.forEach(function(featureLayer)
-			{
-				featureLayer.refresh();
-			})
-		}
-	});
-	</script>
 </head>
 <body class="claro">
 <div id="loader-cloak"></div>
@@ -407,5 +106,386 @@
 		<div id="templateDiv"></div>
 	</div>
 </div>
+
+<script>
+    // based on https://developers.arcgis.com/javascript/jssamples/ed_simpletoolbar.html
+    var map;
+
+    require([
+        "esri/map",
+        "esri/tasks/GeometryService",
+        "esri/toolbars/edit",
+
+        "esri/layers/ArcGISTiledMapServiceLayer",
+        "esri/layers/FeatureLayer",
+
+
+        "esri/symbols/SimpleMarkerSymbol",
+        "esri/symbols/SimpleLineSymbol",
+
+        "esri/dijit/editing/Editor",
+        "esri/dijit/editing/TemplatePicker",
+
+        "esri/config",
+        "dojo/i18n!esri/nls/jsapi",
+
+        "dojo/_base/Deferred",
+        "dojo/promise/all",
+
+        "dojo/_base/array", "dojo/parser", "dojo/keys",
+        "dojo/dom", "dojo/on", "dojo/dom-construct", "dojo/dom-class", "esri/domUtils",
+
+        "esri/graphic",
+
+        "dijit/layout/BorderContainer", "dijit/layout/ContentPane",
+        "../dist/offline-edit-src.js",
+        "dojo/domReady!"
+    ], function(
+            Map, GeometryService, Edit,
+            ArcGISTiledMapServiceLayer, FeatureLayer,
+            SimpleMarkerSymbol, SimpleLineSymbol,
+            Editor, TemplatePicker,
+            esriConfig, jsapiBundle,
+            Deferred, all,
+            arrayUtils, parser, keys,
+            dom, on, domConstruct, domClass, domUtils,Graphic
+    ) {
+        var editor;
+
+        parser.parse();
+        dojo.fadeOut({node:'loader-cloak', onEnd: function(n){n.style.display="none"}}).play();
+
+        // user interface
+        on(dom.byId('storageInfo'), 'click', updateStorageInfo);
+        on(dom.byId('clear-pending-edits-btn'),'click', clearPendingEdits);
+        on(dom.byId('go-offline-btn'),'click', goOffline);
+        on(dom.byId('go-online-btn'),'click', goOnline);
+        on(dom.byId('refresh-feature-layers-btn'),'click', refreshFeatureLayers);
+        var offlineFeaturesManager = new O.esri.Edit.OfflineFeaturesManager();
+
+        // IMPORTANT!!!
+        // A proxy page may be required to upload attachments.
+        // If you are using a CORS enabled server you may be ablew to set the proxyPath to null.
+        // Refer to "Using the Proxy Page" for more information:  https://developers.arcgis.com/en/javascript/jshelp/ags_proxy.html
+        offlineFeaturesManager.proxyPath = null;
+
+        map = new Map("map", {
+            basemap: "satellite",
+            center: [-0.958, 41.846],
+            zoom: 13,
+            slider: true
+        });
+
+        map.on('layers-add-result', initEditor);
+
+        var fsUrl = "http://services2.arcgis.com/CQWCKwrSm5dkM28A/arcgis/rest/services/Military/FeatureServer/";
+        // var layersIds = [0,1,2,3,4,5,6];
+        var layersIds = [1,2,3];
+        var featureLayers = [];
+        var offlineInitializedLayers = [];
+
+        layersIds.forEach(function(layerId)
+        {
+            var layer = new FeatureLayer(fsUrl + layerId, {
+                mode: FeatureLayer.MODE_SNAPSHOT,
+                outFields: ['*']
+            });
+            featureLayers.push(layer);
+        })
+
+        map.addLayers(featureLayers);
+
+        //////////////////////////////////////
+
+        function initEditor(evt)
+        {
+
+            initFeatureLayersForOffline(evt);
+
+            try {
+                /* template picker */
+                var templateLayers = evt.layers.map(function(result){return result.layer;});
+                var templatePicker = new TemplatePicker({
+                    featureLayers: templateLayers,
+                    grouping: true,
+                    rows: "auto",
+                    columns: 3,
+                }, "templateDiv");
+                templatePicker.startup();
+
+                /* editor */
+                var layers = evt.layers.map(function(result){return {featureLayer: result.layer};});
+                var settings = {
+                    map: map,
+                    templatePicker: templatePicker,
+                    layerInfos: layers,
+                    toolbarVisible: true,
+                    enableUndoRedo: true,
+                    maxUndoRedoOperations: 15,
+                    createOptions: {
+                        polylineDrawTools: [
+                            Editor.CREATE_TOOL_FREEHAND_POLYLINE,
+                            Editor.CREATE_TOOL_POLYLINE ],
+                        polygonDrawTools: [
+                            Editor.CREATE_TOOL_FREEHAND_POLYGON,
+                            Editor.CREATE_TOOL_POLYGON,
+                            Editor.CREATE_TOOL_RECTANGLE ]
+                    },
+                    toolbarOptions: {
+                        reshapeVisible: false
+                    }
+                };
+
+                editor = new Editor({ settings: settings }, 'editorDiv');
+                editor.startup();
+
+                console.log("ok!");
+            }
+            catch(err)
+            {
+                console.log(err);
+            }
+        }
+
+        function initFeatureLayersForOffline(evt){
+            try {
+
+                var promises = [];
+
+                // extend layer with offline detection functionality
+                evt.layers.forEach(function(result)
+                {
+                    var deferred = new Deferred();
+
+                    var layer = result.layer;
+                    offlineInitializedLayers.push(layer);
+
+                    offlineFeaturesManager.extend(layer,function(success,error){
+                        if(success){
+                            deferred.resolve(true);
+                        }
+                        else{
+                            deferred.reject(false);
+                            alert("Unable to open database: " + error);
+                        }
+                    });
+                    promises.push(deferred);
+                });
+
+                var allPromises = all(promises);
+                allPromises.then(function(results){
+                    if(results[0] && results[1] && results[2]){
+                        resolveOfflinePromises();
+                    }
+                    else{
+                        alert("There was a problem initializing the layers for offline.");
+                    }
+                });
+            }
+            catch(err)
+            {
+                console.log(err);
+            }
+        }
+
+        // Things to do when all the promises complete
+        function resolveOfflinePromises(){
+            offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_ENQUEUED, updateStatus);
+            offlineFeaturesManager.on(offlineFeaturesManager.events.ALL_EDITS_SENT, updateStatusAllEditsSent);
+            offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_SENT_ERROR, handleEditsSentError);
+
+            offlineInitializedLayers[0].on("edits-complete", handleEditsComplete);
+            offlineInitializedLayers[1].on("edits-complete", handleEditsComplete);
+            offlineInitializedLayers[2].on("edits-complete", handleEditsComplete);
+
+            // handle errors that happen while storing offline edits
+            offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_ENQUEUED_ERROR, function(errors)
+            {
+                if( errors.length )
+                {
+                    var messages = errors.map(function(e){ return e });
+                    alert("Error editing features: " + messages.join('\n'));
+                }
+            });
+
+            updateConnectivityIndicator();
+            updateStatus();
+
+            Offline.check();
+            Offline.on('up', goOnline );
+            Offline.on('down', goOffline );
+
+            if( Offline.state === 'up' )
+            {
+                // if we have pending edits from previous executions and we are online, then try to replay them
+                goOnline();
+            }
+        }
+
+        function updateStatus()
+        {
+            console.log("updatingStatus");
+            updateStorageInfo();
+            updatePendingEditsList();
+        }
+
+        function updateStatusAllEditsSent(responses){
+
+            updateStorageInfo();
+
+            if(Object.keys(responses).length !== 0){
+
+                var addResults = [], updateResults = [], deleteResults = [];
+
+                for (var key in responses) {
+                    if (responses.hasOwnProperty(key)) {
+                        var result = responses[key]; console.log("KEY KEY KEY " + JSON.stringify(result))
+                        if(result.addResults.length > 0) addResults.push( result.addResults.map(function(e){ return "<l1>" + JSON.stringify(e) + "</li>"}));
+                        if(result.updateResults.length > 0) updateResults.push( result.updateResults.map(function(e){ return "<l1>" + JSON.stringify(e) + "</li>";}));
+                        if(result.deleteResults.length > 0) deleteResults.push( result.deleteResults.map(function(e){ return "<l1>" + JSON.stringify(e) + "</li>";}));
+                    }
+                }
+
+                var allResults = addResults.join("<br>") + updateResults.join("<br>") + deleteResults.join("<br>");
+
+                domConstruct.place(allResults, 'pendingEdits','last');
+            }
+        }
+
+        function handleEditsSentError(error){
+            var errorMessage = parseErrors(error.msg);
+            alert("There was a problem syncing edits over the internet: " + errorMessage);
+        }
+
+        function handleEditsComplete(results){
+
+            // Check for errors after online edits complete
+            var errors = Array.prototype.concat(
+                    results.adds.filter(function(r){ return !r.success }),
+                    results.updates.filter(function(r){ return !r.success }),
+                    results.deletes.filter(function(r){ return !r.success })
+            );
+            if( errors.length )
+            {
+                var messages = errors.map(function(e){ return e.error.message });
+                alert("Error editing features: " + messages.join('\n'));
+            }
+        }
+
+        function parseErrors(responses){
+            if(Object.keys(responses).length !== 0){
+
+                var addResults = [], updateResults = [], deleteResults = [];
+
+                for (var key in responses) {
+                    if (responses.hasOwnProperty(key)) {
+                        var result = responses[key];
+                        addResults.push( result.addResults.map(function(e){ return JSON.stringify(e)}));
+                        updateResults.push( result.updateResults.map(function(e){ return JSON.stringify(e);}));
+                        deleteResults.push( result.deleteResults.map(function(e){ return JSON.stringify(e);}));
+                    }
+                }
+
+                return addResults.join("/n") + updateResults.join("/n") + deleteResults.join("/n");
+            }
+        }
+
+        function updateStorageInfo()
+        {
+            function bytesToSize(bytes) {
+                if(bytes == 0) return '0 Byte';
+                var k = 1000;
+                var sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+                var i = Math.floor(Math.log(bytes) / Math.log(k));
+                return (bytes / Math.pow(k, i)).toPrecision(3) + ' ' + sizes[i];
+            }
+
+            offlineInitializedLayers[0].getUsage(function(usage,error){
+                if(error == null){
+                    var info = "Used " + bytesToSize(usage.sizeBytes);
+                    dom.byId('storageInfo').innerHTML = info;
+                }
+            });
+        }
+
+        function updatePendingEditsList()
+        {
+            var li;
+            domConstruct.empty('pendingEdits');
+
+            // We can use Array[0] because all feature layers are sharing the same offline database
+            offlineInitializedLayers[0].getAllEditsArray(function(success,array){
+                if(success && array.length > 0){
+                    array.forEach(function(edit)
+                    {
+                        var readableEdit = edit.operation + ": " + ", ID: " + edit.graphic.attributes.objectid + ", Type: " + edit.type;
+                        li = "<li>" + readableEdit + "</li>";
+                        domConstruct.place(li, 'pendingEdits','last');
+                    },this);
+                }
+                else{
+                    li = "<li>No edits pending</li>";
+                    domConstruct.place(li, 'pendingEdits','last');
+                }
+            });
+        }
+
+        function clearPendingEdits()
+        {
+            // We can use Array[0] because all feature layers are sharing the same offline database
+            offlineInitializedLayers[0].resetDatabase(function(success,error){
+                if(!success) alert("There was a problem resetting the database: " + error);
+            });
+            updateStatus();
+        }
+
+        function goOnline()
+        {
+            domUtils.show(editor.progressBar.domNode);
+            offlineFeaturesManager.goOnline(function()
+            {
+                domUtils.hide(editor.progressBar.domNode);
+                updateConnectivityIndicator();
+            });
+            updateConnectivityIndicator();
+        }
+
+        function goOffline()
+        {
+            offlineFeaturesManager.goOffline();
+            updateConnectivityIndicator();
+        }
+
+        function updateConnectivityIndicator()
+        {
+            var node = dom.byId('connectivityIndicator');
+            domClass.remove(node, "online offline reconnecting");
+            switch( offlineFeaturesManager.getOnlineStatus() )
+            {
+                case offlineFeaturesManager.OFFLINE:
+                    node.innerHTML = "<i class='fa fa-chain-broken'></i> offline";
+                    domClass.add(node, "offline");
+                    break;
+                case offlineFeaturesManager.ONLINE:
+                    node.innerHTML = "<i class='fa fa-link'></i> online";
+                    domClass.add(node, "online");
+                    break;
+                case offlineFeaturesManager.RECONNECTING:
+                    node.innerHTML = "<i class='fa fa-cog fa-spin'></i> reconnecting";
+                    domClass.add(node, "reconnecting");
+                    break;
+            }
+        }
+
+        function refreshFeatureLayers()
+        {
+            offlineInitializedLayers.forEach(function(featureLayer)
+            {
+                featureLayer.refresh();
+            })
+        }
+    });
+</script>
+
 </body>
 </html>

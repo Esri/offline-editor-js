@@ -72,6 +72,8 @@
     ],
     "globals"       : {
         "define": false,
-        "require": false
+        "require": false,
+        "O":false,
+        "module": false
     }
 }

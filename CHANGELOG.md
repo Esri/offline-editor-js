@@ -1,5 +1,194 @@
 # offline-editor-js - Changelog
 
+## Version 2.9.3 - July 1, 2015
+
+No breaking changes.
+
+**Enhancements**
+* Closes #319. Make TPK support more universal between Chrome and WebView on Android.
+
+## Version 2.9.2.2 - June 24, 2015
+
+Minor doc update. Updates to README.
+
+## Version 2.9.2.1 - June 18, 2015
+
+Minor doc update. Clarifications on how to use the tile libraries and fixed some typos.
+
+## Version 2.9.2 - June 17, 2015
+
+No breaking changes.
+
+**Enhancements**
+* OfflineFeaturesManager now overrides layer.hasAttachments property. The override is available after a feature layer 
+has been extended. This fixes an existing bug in the ArcGIS JS API when you create a feature layer from a featureCollectionObject
+the hasAttachmens property does not get correctly repopulated.
+
+**Bug fix**
+* Fixes issue in offlineFeaturesManager's featureCollection data store when using it with multiple feature layers. 
+Subsequent featureLayerCollections were being stored as arrays instead of objects.
+* Minor tweak to appcache-tiles.appcache. It was broken.
+
+## Version 2.9.1 - May 28, 2015
+
+No breaking changes.
+
+**Enhancements**
+* Initializes internal featureCollectionObject when a layer is extended.
+* Added property `OfflineFeaturesManager.ENABLE_FEATURECOLLECTION`. Default value is `false`. When enabled this will
+allow the library to automatically create a snapshot of the feature layer.
+
+## Version 2.9 - May 27, 2015
+
+No breaking changes.
+
+**Enhancements**
+* Closes #327 - Improved use of keys and indexes in editsStore.js. Minor tweaks at this time.
+* Closes #342 - Automates featureCollection management. New method `OfflineFeaturesManager.getFeatureCollections()`.
+
+
+## Version 2.8.2 - May 19, 2015
+
+No breaking changes. Recommended update.
+
+**Enhancements**
+* Fixes sync error when returning online after updating a new edit offline.
+
+## Version 2.8.1 - May 11, 2015
+
+No breaking changes.
+
+**Enhancements**
+* Closes #339 - offline update of a new attachment needs to be handled as an ADD.
+* Updated offlineAttachmentsSpec.js to test for #339 condition.
+
+## Version 2.8 - May 4, 2015
+
+This release focused on updating full offline editing capabilities. Recommended update. No breaking changes. 
+
+**Enhancements**
+* Added functionality to `offlineFeaturesManager.js` to detect and handle when a feature layer is created using a feature collection.
+* Addresses browser changes in Chrome 42.x and Firefox 37.x with respect to how they handle HTML/JS apps when going offline and 
+then transitioning back online.
+* Updated `appcache-features.html` sample. 
+
+**Bug Fix**
+* Closes #336 - problem with appcache-features sample. The application now correctly syncs when going back online after 
+a full offline restart. It also contains improvements in how the app life-cycle is handled. 
+
+## Version 2.7.1 - April 29, 2015
+
+This release has enhancements and has no breaking changes.
+
+**Enhancements**
+* Added `OfflineFeaturesManager.getFeatureLayerJSONDataStore()` for use in full offline browser restarts.
+
+## Version 2.7.0.1 - April 28, 2015
+
+Closes #323 - Add an FAQ doc.
+
+## Version 2.7 - April 27, 2015
+
+This release focused on improving the handling of attachments. Has breaking changes.
+
+**Enhancements**
+* Added a new sample attachments-editor-secure.html to demonstrate the pattern for working with secure feature services and attachments.
+* Closes #286 - support for secure services (HTTPS) when working with attachments
+* Closes #305 - Support both ADD and UPDATE attachment. 
+* Closes #306 - removes createObjectURL functionality from attachmentsStore. This allows for attachments to be used in full offline scenarios.
+* Closes #318 - added OfflineFeaturesManager.ATTACHMENTS_DB_NAME and ATTACHMENTS_DB_OBJECSTORE_NAME.
+* Closes #321 - switch offlineFeaturesManager unit test to a different feature service that's attachments enabled.
+* Closes #322 - rewrite offlineAttachmentsSpec.
+* Closes #324 - attachmentsStore._readFile() can indicate false positives.
+* Closes #325 - support DELETE an existing attachment.
+* Closes #328 - add layer.resestAttachmentsDatabase().
+* Closes #329 - add layer.getAttachmentsUsage().
+
+**Breaking Changes**
+* attachmentsStore.DB_NAME has been renamed to attachmentsStore.dbName to be consistent with editStore.
+* attachmentsStore.OBJECTSTORE_NAME has been renamed to attachmentsStore.objectStoreName to be consistent with editStore.
+* Added use of the browser's [FormData() API](https://developer.mozilla.org/en-US/docs/Web/API/FormData) along with `FormData.append`. This may cause 
+attachment support to break in certain older browsers. This is a courtesy heads-up because as a rule this library only
+supports the latest version of Chrome, Firefox and Safari. 
+
+## Version 2.6.1 - April 13, 2015
+
+Patch release. Recommended update. No breaking changes.
+
+**Bug Fixes**
+
+* Closes #315 - editsStore.pushEdit() - failed to insert undefined objectId into database. 
+
+## Version 2.6 - April 9, 2015
+
+Recommended update. No breaking changes. 
+
+**Bug Fixes**
+
+* Closes #308 - resetLimitedPhantomGraphicsQueue failing. Could cause fatal errors.
+
+**Updates**
+
+* Closes #304 - preserve version number in minified builds
+* Closes #307 - package.json updated devDependencies
+* Updated editsStoreSpec2 to accommodate the fix for #308
+* jshint updates:
+    * jshint now working for /edit directory. Initial step towards piping all files thru jshint!
+    * jshint fix to attachmentsStore.js - moved "use strict" into function
+    * jshint fix to OfflineEditNS.js - removed "use strict" & added jshint exception
+    * Many jshint fixes in offlineFeaturesManager.js
+    * jshint fix to .jshintrc
+* Deleted editsStore_old.js
+
+## Version 2.5.1 - April 7, 2015 
+
+Closes #301 - OfflineFeaturesManager failed on _validateFeature during an attachment ADD operation.
+
+## Version 2.5.0.2 - April 2, 2015
+
+Minor doc update. Clarification in OfflineFeaturesManager on requiring `mode` be set to `FeatureLayer.MODE_SNAPSHOT`.
+
+## Version 2.5.0.1 - April 1, 2015
+
+Minor doc update. Added references to attachments documentation. Misc. clarifications.
+
+## Version 2.5 - March 27, 2015
+
+v2.5 focused on updating OfflineFeaturesManager from using localStorage to IndexedDB. Additional information is available in the [API Doc](https://github.com/Esri/offline-editor-js/blob/master/doc/offlinefeaturesmanager.md). Feature edit storage capabilities have been increased from 5 MBs to approximately 50 - 100 MBs or more, and the changes made allow for additional functionality and capabilities to be implemented that weren't possible under the previous architecture.**
+
+Closes #292, #289, #285, #281, #280, #275, #261
+
+**BREAKING CHANGES:** In order to accomplish the v2.5 update the following **breaking** changes were made. All common `EditStore` functionality was migrated to the FeatureLayer so that under most circumstances there is no need to use or access the `EditStore` library directly anymore. In fact, as of v2.5 accessing it directly is discouraged. 
+
+* `OfflineFeatureManager.getReadableEdit()` deprecated. Use `featureLayer.getAllEditsArray()`.
+* `editsStore.hasPendingEdits()` deprecated. Use `featureLayer.pendingEdits()`.
+* `editsStore.retrieveEditsQueue()` deprecated. Use `featureLayer.getAllEditsArray()`.
+* `editsStore.getEditsStoreSizeBytes()` deprecated. Use `featureLayer.getUsage()`.
+* `editsStore.getLocalStorageSizeBytes()` deprecated. Use `featureLayer.getUsage()`.
+
+**New Functionality in OfflineFeatureManager**
+
+* `OfflineFeaturesManager.DB_NAME`. Allows you to set the database name of the edits library.
+* `OfflineFeaturesManager.DB_OBJECTSTORE_NAME`. Set an internal object store within the database that allows access to a set of data. 
+* `OfflineFeaturesManager.DB_UID`. **IMPORTANT**. This tells the database which `id` to use as a unique identifier for each feature service. 
+* `OfflineFeaturesManager.events.EDITS_SENT`. **Updated**. Now this event is only triggered when an edit is synced with the server while online.
+* `OfflineFeaturesManager.events.EDITS_SENT_ERROR`. Indicates there was an error when syncing with the server. If there was an error, the edit will remain in the database.
+* `OfflineFeaturesManager.events.EDITS_ENQUEUED_ERROR`. Indicates an error occurred while trying to store an edit in offline mode. 
+
+**New Functionality in FeatureLayer** When you use `OfflineFeatureManager.extend()` to extend a feature layer it will be enabled with the following new functionality:
+
+* `featureLayer.resetDatabase()`. Full database reset.
+* `featureLayer.pendingEditsCount()`. Returns the number of pending edits.
+* `featureLayer.getUsage()`. Returns the approximate size of the database and number of edits.
+* `featureLayer.getPhantomGraphicsArray()`. Used with offline browser restarts. Returns an array of phantom graphics. Complimentary to `featureLayer.getPhantomLayerGraphics()`.
+* `featureLayer.getAllEditsArray()`. Returns an array of all edits stored in the database.
+* `featureLayer.getFeatureLayerJSON()`. A helper function for retrieving a feature layers JSON using the REST `f=json` parameter. Note you can also retrieve feature layer JSON using the ArcGIS API for JavaScript's `featureLayer.toJson()` method.
+* `featureLayer.setFeatureLayerJSONDataStore()`. Sets or updates the optional feature layer storage object. You can also set the dataStore using the `OfflineFeatureManager` constructor's `dataStore` property.
+* `featureLayer.getFeatureLayerJSONDataStore()`. Retrieves the optional feature layer storage object.
+* `featureLayer.convertFeatureGraphicsToJSON()`. Helper function that converts an array of graphics to a JSON string.
+
+** Footnote on browser storage capabilities. The amount of storage varies from device to device. It depends on multiple factors related to the browser including how much memory space the browser has consumed, how large the browser cache has grown, how many other tabs may be open, and how much memory other applications are already consuming.
+
 ## Version 2.4 - Nov 26, 2014
 - Closes #274 phantom symbols not working correctly
 	- Updated offlineFeaturesManager.js
