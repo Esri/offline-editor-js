@@ -26,9 +26,17 @@ module.exports = function(grunt) {
             files: {
                 src: [
                     'Gruntfile.js',
-                    'lib/edit/*.js'
-                    //'lib/tiles/*.js',
-                    //'lib/tpk/*.js'
+                    'lib/edit/*.js',
+                    'lib/tiles/base64utils.js',
+                    'lib/tiles/OfflineTilesEnabler.js',
+                    'lib/tiles/OfflineTilesEnablerLayer.js',
+                    'lib/tiles/OfflineTilesNS.js',
+                    'lib/tiles/TilesCore.js',
+                    'lib/tiles/TilesStore.js',
+                    'lib/tiles/tilingScheme.js',
+                    'lib/tpk/autoCenterMap.js',
+                    'lib/tpk/OfflineTpkNS.js',
+                    'lib/tpk/TPKLayer.js'
                 ]
             }
         },
