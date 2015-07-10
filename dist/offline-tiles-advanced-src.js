@@ -1,4 +1,4 @@
-/*! offline-editor-js - v2.9.3 - 2015-07-01
+/*! offline-editor-js - v2.9.4 - 2015-07-10
 *   Copyright (c) 2015 Environmental Systems Research Institute, Inc.
 *   Apache License*/
 define([
@@ -34,7 +34,7 @@ define([
             this._tilesCore = new O.esri.Tiles.TilesCore();
 
             //For calculating minZoom and maxZoom
-            Array.prototype.sortNumber = function(){return this.sort(function(a,b){return a - b})};
+            Array.prototype.sortNumber = function(){return this.sort(function(a,b){return a - b;});};
 
             this._self = this;
             this._lastTileUrl = "";
@@ -48,7 +48,7 @@ define([
 
             var isOnline = true;
             if(typeof state != "undefined" || state != null){
-                isOnline = state; console.log("STATE IS: " + state)
+                isOnline = state; console.log("STATE IS: " + state);
             }
 
             /**
@@ -71,15 +71,15 @@ define([
 
                             // Store the layerInfo locally so we have it when browser restarts or is reloaded.
                             // We need this info in order to properly rebuild the layer.
-                            if(localStorage.__offlineTileInfo == undefined && result != false){
+                            if(localStorage.__offlineTileInfo === undefined && result !== false){
                                 localStorage.__offlineTileInfo = result;
                             }
 
                             // If library is offline then attempt to get layerInfo from localStorage.
-                            if(this.offline.online == false && result == false && localStorage.__offlineTileInfo != undefined){
+                            if(this.offline.online === false && result === false && localStorage.__offlineTileInfo !== undefined){
                                 result = localStorage.__offlineTileInfo;
                             }
-                            else if(this.offline.online == false && result == false && localStorage.__offlineTileInfo == undefined){
+                            else if(this.offline.online === false && result === false && localStorage.__offlineTileInfo === undefined){
                                 alert("There was a problem retrieving tiled map info in OfflineTilesEnablerLayer.");
                             }
 
@@ -96,7 +96,7 @@ define([
                                 this.onLoad(this);
                                 callback(true);
                             }.bind(this._self));
-                        }.bind(this._self))
+                        }.bind(this._self));
                     }
                 }.bind(this._self));
             }
@@ -125,7 +125,7 @@ define([
             this._level = level;
 
             var url = this.url + "/tile/" + level + "/" + row + "/" + col;
-            console.log("LIBRARY ONLINE " + this.offline.online)
+            console.log("LIBRARY ONLINE " + this.offline.online);
             if( this.offline.online )
             {
                 console.log("fetching url online: ", url);
@@ -418,7 +418,7 @@ define([
          * @private
          */
         _isLocalStorage: function(){
-            var test = 'test';
+            var test = "test";
             try {
                 localStorage.setItem(test, test);
                 localStorage.removeItem(test);
@@ -435,8 +435,8 @@ define([
          */
         _getTileInfoPrivate: function(url, callback){
             var req = new XMLHttpRequest();
-            var url = this.offline.proxyPath != null? this.offline.proxyPath + "?" + url + "?f=pjson" : url + "?f=pjson";
-            req.open("GET", url, true);
+            var finalUrl = this.offline.proxyPath != null? this.offline.proxyPath + "?" + url + "?f=pjson" : url + "?f=pjson";
+            req.open("GET", finalUrl, true);
             req.onload = function()
             {
                 if( req.status === 200 && req.responseText !== "")
@@ -463,16 +463,17 @@ define([
  */
 
 if(typeof O != "undefined"){
-    O.esri.Tiles = {}
+    O.esri.Tiles = {};
 }
 else{
-    O = {};
+    O = {};  // jshint ignore:line
     O.esri = {
         Tiles: {}
-    }
+    };
 }
 
-"use strict";
+//"use strict";
+/*jslint bitwise: true */
 
 O.esri.Tiles.Base64Utils={};
 O.esri.Tiles.Base64Utils.outputTypes={
@@ -553,7 +554,7 @@ O.esri.Tiles.Base64Utils.wordToBase64=function(/* word[] */wa){
     return s.join("");	//	string
 };
 
-
+/*jslint bitwise: false */
 /* FileSaver.js
  * A saveAs() FileSaver implementation.
  * 2013-10-21
@@ -809,7 +810,7 @@ O.esri.Tiles.TilesCore = function(){
      */
     this._getTiles = function(image,imageType,url,tileid,store,query){
         store.retrieve(url, function(success, offlineTile)
-        { console.log("TILE RETURN " + success + ", " + offlineTile.url)
+        { console.log("TILE RETURN " + success + ", " + offlineTile.url);
             /* when the .getTileUrl() callback is triggered we replace the temporary URL originally returned by the data:image url */
             // search for the img with src="void:"+level+"-"+row+"-"+col and replace with actual url
             image = query("img[src="+tileid+"]")[0];
@@ -908,7 +909,7 @@ O.esri.Tiles.TilesCore = function(){
             }
         }
         callback(cells);
-    }
+    };
 
     /**
      * Saves locally stored tiles to a csv
@@ -1059,7 +1060,7 @@ O.esri.Tiles.TilesCore = function(){
         var tilingScheme = new O.esri.Tiles.TilingScheme(context);
         store.getAllTiles(function(url,img,err)
         {
-            if(url && url.indexOf(layerUrl) == 0)
+            if(url && url.indexOf(layerUrl) === 0)
             {
                 if(url.indexOf("_alllayers") != -1)
                 {
@@ -1112,14 +1113,16 @@ O.esri.Tiles.TilesCore = function(){
 
                 var lods = [];
 
-                var lodsObj = JSON.parse(data,function(key,value){
-                    if(((typeof key == 'number') || (key % 1 == 0)) &&  (typeof value === "object")){
+                JSON.parse(data,function(key,value){
+                    if(((typeof key == "number") || (key % 1 === 0)) &&  (typeof value === "object")){
                         var l = new LOD();
                         l.level = value.level;
                         l.resolution = value.resolution;
                         l.scale = value.scale;
 
-                        if(value.hasOwnProperty("level")) lods.push(l);
+                        if(value.hasOwnProperty("level")) {
+                            lods.push(l);
+                        }
                         return value;
                     }
                     else{
@@ -1144,13 +1147,13 @@ O.esri.Tiles.TilesCore = function(){
                 );
 
                 var tileInfo = new TileInfo(resultObj.tileInfo);
-                var origin = new Point(tileInfo.origin.x,tileInfo.origin.y,spatialRef)
+                var origin = new Point(tileInfo.origin.x,tileInfo.origin.y,spatialRef);
                 tileInfo.origin = origin;
                 tileInfo.lods = lods;
 
                 callback({initExtent:initialExtent,fullExtent:fullExtent,tileInfo:tileInfo,resultObj:resultObj});
-        })
-    }
+        });
+    };
 };
 
 
@@ -1236,7 +1239,7 @@ O.esri.Tiles.TilesStore = function(){
             request.onsuccess = function(event)
             {
                 var result = event.target.result;
-                if(result == undefined)
+                if(result === undefined)
                 {
                     callback(false,"not found");
                 }
@@ -1443,7 +1446,7 @@ O.esri.Tiles.TilingScheme.prototype = {
 
         require(["esri/geometry/Polygon"],function(Polygon){
             polygon = new Polygon(spatialReference);
-        })
+        });
 
         polygon.addRing([
             [x1, y1], // clockwise

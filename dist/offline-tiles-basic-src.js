@@ -1,4 +1,4 @@
-/*! offline-editor-js - v2.9.3 - 2015-07-01
+/*! offline-editor-js - v2.9.4 - 2015-07-10
 *   Copyright (c) 2015 Environmental Systems Research Institute, Inc.
 *   Apache License*/
 define([
@@ -48,7 +48,7 @@ define([
 
                 var isOnline = true;
                 if(typeof state != "undefined"){
-                    isOnline = state; console.log("STATE IS: " + state)
+                    isOnline = state; console.log("STATE IS: " + state);
                 }
 
                 /**
@@ -88,10 +88,12 @@ define([
 
                                 console.log("looking for tile",level,row,col);
                                 var url = this._getTileUrl(level,row,col);
-                                console.log("LIBRARY ONLINE " + this.offline.online)
+                                console.log("LIBRARY ONLINE " + this.offline.online);
                                 if( this.offline.online )
                                 {
-                                    if(layer._imageType == "")layer._imageType = this.tileInfo.format.toLowerCase();
+                                    if(layer._imageType === "") {
+                                        layer._imageType = this.tileInfo.format.toLowerCase();
+                                    }
                                     console.log("fetching url online: ", url);
                                     layer._lastTileUrl = url;
                                     return url;
@@ -109,7 +111,7 @@ define([
                                 return tileid;
                             };
 
-                            callback && callback(true);
+                            callback && callback(true); // jshint ignore:line
                         }
                     }.bind(this));
                 }
@@ -254,7 +256,7 @@ define([
                         this._maxZoom = layer.tileInfo.lods[layer.tileInfo.lods.length-1].level;
                     }
                     callback(this._maxZoom);
-                },
+                };
 
                 /**
                  * Returns the minimum zoom level for this layer
@@ -377,16 +379,17 @@ define([
  */
 
 if(typeof O != "undefined"){
-    O.esri.Tiles = {}
+    O.esri.Tiles = {};
 }
 else{
-    O = {};
+    O = {};  // jshint ignore:line
     O.esri = {
         Tiles: {}
-    }
+    };
 }
 
-"use strict";
+//"use strict";
+/*jslint bitwise: true */
 
 O.esri.Tiles.Base64Utils={};
 O.esri.Tiles.Base64Utils.outputTypes={
@@ -467,7 +470,7 @@ O.esri.Tiles.Base64Utils.wordToBase64=function(/* word[] */wa){
     return s.join("");	//	string
 };
 
-
+/*jslint bitwise: false */
 /* FileSaver.js
  * A saveAs() FileSaver implementation.
  * 2013-10-21
@@ -723,7 +726,7 @@ O.esri.Tiles.TilesCore = function(){
      */
     this._getTiles = function(image,imageType,url,tileid,store,query){
         store.retrieve(url, function(success, offlineTile)
-        { console.log("TILE RETURN " + success + ", " + offlineTile.url)
+        { console.log("TILE RETURN " + success + ", " + offlineTile.url);
             /* when the .getTileUrl() callback is triggered we replace the temporary URL originally returned by the data:image url */
             // search for the img with src="void:"+level+"-"+row+"-"+col and replace with actual url
             image = query("img[src="+tileid+"]")[0];
@@ -822,7 +825,7 @@ O.esri.Tiles.TilesCore = function(){
             }
         }
         callback(cells);
-    }
+    };
 
     /**
      * Saves locally stored tiles to a csv
@@ -973,7 +976,7 @@ O.esri.Tiles.TilesCore = function(){
         var tilingScheme = new O.esri.Tiles.TilingScheme(context);
         store.getAllTiles(function(url,img,err)
         {
-            if(url && url.indexOf(layerUrl) == 0)
+            if(url && url.indexOf(layerUrl) === 0)
             {
                 if(url.indexOf("_alllayers") != -1)
                 {
@@ -1026,14 +1029,16 @@ O.esri.Tiles.TilesCore = function(){
 
                 var lods = [];
 
-                var lodsObj = JSON.parse(data,function(key,value){
-                    if(((typeof key == 'number') || (key % 1 == 0)) &&  (typeof value === "object")){
+                JSON.parse(data,function(key,value){
+                    if(((typeof key == "number") || (key % 1 === 0)) &&  (typeof value === "object")){
                         var l = new LOD();
                         l.level = value.level;
                         l.resolution = value.resolution;
                         l.scale = value.scale;
 
-                        if(value.hasOwnProperty("level")) lods.push(l);
+                        if(value.hasOwnProperty("level")) {
+                            lods.push(l);
+                        }
                         return value;
                     }
                     else{
@@ -1058,13 +1063,13 @@ O.esri.Tiles.TilesCore = function(){
                 );
 
                 var tileInfo = new TileInfo(resultObj.tileInfo);
-                var origin = new Point(tileInfo.origin.x,tileInfo.origin.y,spatialRef)
+                var origin = new Point(tileInfo.origin.x,tileInfo.origin.y,spatialRef);
                 tileInfo.origin = origin;
                 tileInfo.lods = lods;
 
                 callback({initExtent:initialExtent,fullExtent:fullExtent,tileInfo:tileInfo,resultObj:resultObj});
-        })
-    }
+        });
+    };
 };
 
 
@@ -1150,7 +1155,7 @@ O.esri.Tiles.TilesStore = function(){
             request.onsuccess = function(event)
             {
                 var result = event.target.result;
-                if(result == undefined)
+                if(result === undefined)
                 {
                     callback(false,"not found");
                 }
@@ -1357,7 +1362,7 @@ O.esri.Tiles.TilingScheme.prototype = {
 
         require(["esri/geometry/Polygon"],function(Polygon){
             polygon = new Polygon(spatialReference);
-        })
+        });
 
         polygon.addRing([
             [x1, y1], // clockwise
