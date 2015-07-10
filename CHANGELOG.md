@@ -1,6 +1,10 @@
 # offline-editor-js - Changelog
 
-## Version 2.9.4
+## Version 2.9.4.1 - July 10, 2015
+
+Minor doc update. Fixed broken link in README.
+
+## Version 2.9.4 - July 10, 2015
 
 No breaking changes.
 
