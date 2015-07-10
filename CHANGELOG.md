@@ -1,5 +1,12 @@
 # offline-editor-js - Changelog
 
+## Version 2.9.4
+
+No breaking changes.
+
+**Enhancements**
+* Adds jshint checking to tile libraries and tpk libraries.
+
 ## Version 2.9.3 - July 1, 2015
 
 No breaking changes.

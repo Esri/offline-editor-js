@@ -1,4 +1,4 @@
-/*! offline-editor-js - v2.9.3 - 2015-07-01
+/*! offline-editor-js - v2.9.4 - 2015-07-10
 *   Copyright (c) 2015 Environmental Systems Research Institute, Inc.
 *   Apache License*/
 /**
@@ -27,7 +27,7 @@ define([
             MAX_DB_SIZE: 75,                        // Recommended maximum size in MBs
             TILE_PATH:"",                           // The absolute path to the root of bundle/bundleX files e.g. V101/YOSEMITE_MAP/
             RECENTER_DELAY: 350,                    // Millisecond delay before attempting to recent map after an orientation change
-            PARSING_ERROR: 'parsingError',          // An error was encountered while parsing a TPK file.
+            PARSING_ERROR: "parsingError",          // An error was encountered while parsing a TPK file.
             DB_INIT_ERROR: "dbInitError",           // An error occurred while initializing the database.
             DB_FULL_ERROR: "dbFullError",           // No space left in the database.
             NO_SUPPORT_ERROR: "libNotSupportedError",   // Error indicating this library is not supported in a particular browser.
@@ -98,7 +98,9 @@ define([
                     /* temporary URL returned immediately, as we haven't retrieved the image from the indexeddb yet */
                     var tileid = "void:/" + level + "/" + row + "/" + col;
 
-                    if(this.map == null) this.map = this.getMap();
+                    if(this.map == null) {
+                        this.map = this.getMap();
+                    }
                     if(this._autoCenter == null) {
                         this._autoCenter = new O.esri.TPK.autoCenterMap(this.map,this.RECENTER_DELAY);
                         this._autoCenter.init();
@@ -106,7 +108,9 @@ define([
 
                     this._getInMemTiles(url,layersDir, level, row, col,tileid,function (result,tileid,url) {
                         var img = query("img[src=" + tileid + "]")[0];
-                        if (typeof img == "undefined")img = new Image(); //create a blank place holder for undefined images
+                        if (typeof img == "undefined") {
+                            img = new Image();
+                        } //create a blank place holder for undefined images
                         var imgURL;
 
                         if (result) {
@@ -147,7 +151,7 @@ define([
                         this.emit(this.PROGRESS_EVENT,this.PROGRESS_END);
                         return "";
                         /* this result goes nowhere, seriously */
-                    }.bind(this._self))
+                    }.bind(this._self));
 
                     return tileid;
                 }
@@ -177,7 +181,7 @@ define([
             getDBSize: function(callback){
                 this.store.usedSpace(function(size,err){
                     callback(size,err);
-                }.bind(this))
+                }.bind(this));
             },
 
             /**
@@ -245,7 +249,7 @@ define([
                 if( /*false &&*/ this.store.isSupported() )
                 {
                     this.store.init(function(result){
-                        if(result == false){
+                        if(result === false){
                             console.log("There was an error initializing the TPKLayer database");
                             this.emit(this.DATABASE_ERROR_EVENT,{msg:this.DB_INIT_ERROR, err: null});
                         }
@@ -256,10 +260,10 @@ define([
                                     console.log("Database is full!");
                                     this.emit(this.DATABASE_ERROR_EVENT,{msg:this.DB_FULL_ERROR,err : err});
                                 }
-                                this.emit(this.VALIDATION_EVENT,{msg:this.DB_VALIDATED,err : null})
+                                this.emit(this.VALIDATION_EVENT,{msg:this.DB_VALIDATED,err : null});
                                 console.log("DB size: " + mb + " MBs, Tile count: " + size.tileCount +  ", Error: " + err);
                                 this._isDBValid = true;
-                            }.bind(this))
+                            }.bind(this));
                         }
                     }.bind(this));
                 }
@@ -293,7 +297,9 @@ define([
                         this.TILE_PATH = name.slice(0,index);
                     }
 
-                    if(files[i].compressedSize == 0) this._zeroLengthFileCounter++;
+                    if(files[i].compressedSize === 0) {
+                        this._zeroLengthFileCounter++;
+                    }
 
                     var indexCDI = name.indexOf("CONF.CDI",0);
                     var indexXML = name.indexOf("CONF.XML",0);
@@ -301,7 +307,7 @@ define([
                     var indexBUNDLX = name.indexOf("BUNDLX",0);
 
                     if(indexCDI != -1 || indexXML != -1){
-                        this._unzipConfFiles(files,i,deferred,function(/* deferred */ d, /* token */ t){ console.log("CONF FILE")
+                        this._unzipConfFiles(files,i,deferred,function(/* deferred */ d, /* token */ t){ console.log("CONF FILE");
                             d.resolve(t);
                         });
                     }
@@ -318,7 +324,7 @@ define([
 
                 all(promises).then( function(results)
                 {
-                    callback && callback(results);
+                    callback && callback(results); // jshint ignore:line
                 });
             },
 
@@ -333,7 +339,9 @@ define([
             ObjectSize: function(obj) {
                 var size = 0, key;
                 for (key in obj) {
-                    if (obj.hasOwnProperty(key)) size++;
+                    if (obj.hasOwnProperty(key)) {
+                        size++;
+                    }
                 }
                 return size;
             },
@@ -367,15 +375,15 @@ define([
             _unzipTileFiles: function(files,token,deferred,callback){
                 var that = this;
                 files[token].getData(new O.esri.zip.BlobWriter(token),function(data){
-                    if(data.size != 0){
+                    if(data.size !== 0){
                         var reader = new FileReader();
                         reader.token = data.token;
                         reader.onerror = function (event) {
                             console.error("_unzipTileFiles Error: " + event.target.error.message);
                             that.emit(that.PARSING_ERROR, {msg: "Error parsing file: ", err: event.target.error});
-                        }
+                        };
                         reader.onloadend = function(evt)  {
-                            if(reader.token != undefined){
+                            if(reader.token !== undefined){
                                 that._inMemTilesIndex.push("blank");
                                 var name = files[reader.token].filename.toLocaleUpperCase();
                                 that._inMemTilesObject[name]= reader.result;
@@ -436,10 +444,10 @@ define([
                 tileInfo.origin = {
                     x: parseInt(cacheInfo.TileCacheInfo.TileOrigin.X),
                     y: parseInt(cacheInfo.TileCacheInfo.TileOrigin.Y)
-                }
+                };
                 tileInfo.spatialReference = {
                     "wkid": parseInt(cacheInfo.TileCacheInfo.SpatialReference.WKID)
-                }
+                };
 
                 var lods = cacheInfo.TileCacheInfo.LODInfos.LODInfo;
                 var finalLods = [];
@@ -447,7 +455,7 @@ define([
                     finalLods.push({
                         "level": parseFloat(lods[i].LevelID),
                         "resolution": parseFloat(lods[i].Resolution),
-                        "scale": parseFloat(lods[i].Scale)})
+                        "scale": parseFloat(lods[i].Scale)});
                 }
 
                 tileInfo.lods = finalLods;
@@ -475,11 +483,11 @@ define([
                 this.store.retrieve(url, function(success, offlineTile){
                     if( success )
                     {
-                        console.log("Tile found in storage: " + url)
+                        console.log("Tile found in storage: " + url);
                         callback(offlineTile.img,tileId,url);
                     }
                     else {
-                        console.log("Tile is not in storage: " + url)
+                        console.log("Tile is not in storage: " + url);
                         var snappedRow = Math.floor(row / 128) * 128;
                         var snappedCol = Math.floor(col / 128) * 128;
 
@@ -490,17 +498,19 @@ define([
                         var bufferI = this._inMemTilesObject[bundleIndex];
                         var bufferX = this._inMemTilesObject[path + ".BUNDLX"];
 
-                        if(bufferI != undefined || bufferX != undefined) {
+                        if(bufferI !== undefined || bufferX !== undefined) {
                             offset = this._getOffset(level, row, col, snappedRow, snappedCol);
                             var pointer = that._getPointer(bufferX, offset);
 
                             that._buffer2Base64(bufferI,pointer,function(result){
-                                if (that._isDBWriteable)that._storeTile(url, result, db,function(success,err){
-                                    if(err){
-                                        console.log("TPKLayer - Error writing to database." + err.message);
-                                        that.emit(that.DATABASE_ERROR_EVENT,{msg:"Error writing to database. ", err : err});
-                                    }
-                                });
+                                if (that._isDBWriteable) {
+                                    that._storeTile(url, result, db,function(success,err){
+                                        if(err){
+                                            console.log("TPKLayer - Error writing to database." + err.message);
+                                            that.emit(that.DATABASE_ERROR_EVENT,{msg:"Error writing to database. ", err : err});
+                                        }
+                                    });
+                                }
                                 callback(result,tileId, url);
                             }.bind(that));
                         }
@@ -509,7 +519,7 @@ define([
                             callback(null,tileId,url);
                         }
                     }
-                }.bind(that))
+                }.bind(that));
             },
 
             /**
@@ -567,55 +577,59 @@ define([
              * @private
              */
             _base64ArrayBuffer: function(arrayBuffer) {
-                var base64    = ''
-                var encodings = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
+                var base64    = "";
+                var encodings = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
-                var bytes         = new Uint8Array(arrayBuffer)
-                var byteLength    = bytes.byteLength
-                var byteRemainder = byteLength % 3
-                var mainLength    = byteLength - byteRemainder
+                var bytes         = new Uint8Array(arrayBuffer);
+                var byteLength    = bytes.byteLength;
+                var byteRemainder = byteLength % 3;
+                var mainLength    = byteLength - byteRemainder;
 
-                var a, b, c, d
-                var chunk
+                var a, b, c, d;
+                var chunk;
+
+                /*jslint bitwise: true */
 
                 // Main loop deals with bytes in chunks of 3
                 for (var i = 0; i < mainLength; i = i + 3) {
                     // Combine the three bytes into a single integer
-                    chunk = (bytes[i] << 16) | (bytes[i + 1] << 8) | bytes[i + 2]
+                    chunk = (bytes[i] << 16) | (bytes[i + 1] << 8) | bytes[i + 2];
 
                     // Use bitmasks to extract 6-bit segments from the triplet
-                    a = (chunk & 16515072) >> 18 // 16515072 = (2^6 - 1) << 18
-                    b = (chunk & 258048)   >> 12 // 258048   = (2^6 - 1) << 12
-                    c = (chunk & 4032)     >>  6 // 4032     = (2^6 - 1) << 6
-                    d = chunk & 63               // 63       = 2^6 - 1
+                    a = (chunk & 16515072) >> 18; // 16515072 = (2^6 - 1) << 18
+                    b = (chunk & 258048)   >> 12; // 258048   = (2^6 - 1) << 12
+                    c = (chunk & 4032)     >>  6; // 4032     = (2^6 - 1) << 6
+                    d = chunk & 63;               // 63       = 2^6 - 1
 
                     // Convert the raw binary segments to the appropriate ASCII encoding
-                    base64 += encodings[a] + encodings[b] + encodings[c] + encodings[d]
+                    base64 += encodings[a] + encodings[b] + encodings[c] + encodings[d];
                 }
 
                 // Deal with the remaining bytes and padding
                 if (byteRemainder == 1) {
-                    chunk = bytes[mainLength]
+                    chunk = bytes[mainLength];
 
-                    a = (chunk & 252) >> 2 // 252 = (2^6 - 1) << 2
+                    a = (chunk & 252) >> 2; // 252 = (2^6 - 1) << 2
 
                     // Set the 4 least significant bits to zero
-                    b = (chunk & 3)   << 4 // 3   = 2^2 - 1
+                    b = (chunk & 3)   << 4; // 3   = 2^2 - 1
 
-                    base64 += encodings[a] + encodings[b] + '=='
+                    base64 += encodings[a] + encodings[b] + "==";
                 } else if (byteRemainder == 2) {
-                    chunk = (bytes[mainLength] << 8) | bytes[mainLength + 1]
+                    chunk = (bytes[mainLength] << 8) | bytes[mainLength + 1];
 
-                    a = (chunk & 64512) >> 10 // 64512 = (2^6 - 1) << 10
-                    b = (chunk & 1008)  >>  4 // 1008  = (2^6 - 1) << 4
+                    a = (chunk & 64512) >> 10; // 64512 = (2^6 - 1) << 10
+                    b = (chunk & 1008)  >>  4; // 1008  = (2^6 - 1) << 4
 
                     // Set the 2 least significant bits to zero
-                    c = (chunk & 15)    <<  2 // 15    = 2^4 - 1
+                    c = (chunk & 15)    <<  2; // 15    = 2^4 - 1
 
-                    base64 += encodings[a] + encodings[b] + encodings[c] + '='
+                    base64 += encodings[a] + encodings[b] + encodings[c] + "=";
                 }
 
-                return base64
+                /*jslint bitwise: false */
+
+                return base64;
             },
 
             /**
@@ -702,28 +716,28 @@ define([
              * @private
              */
             _bytes2MBs: function(bytes){
-                return (bytes >>> 20 ) + '.' + ( bytes & (2*0x3FF ) )
+                return (bytes >>> 20 ) + '.' + ( bytes & (2*0x3FF ) ); // jshint ignore:line
             }
-        })
+        });
     }
-)
+);
 /**
  * Creates a namespace for the non-AMD libraries in this directory
  */
 
 
 if(typeof O != "undefined"){
-    O.esri.TPK = {}
+    O.esri.TPK = {};
 }
 else{
-    O = {};
+    O = {}; // jshint ignore:line
     O.esri = {
         TPK: {},
         Tiles: {}
-    }
+    };
 }
 
-"use strict";
+//"use strict";
 
 
 /*global indexedDB */
@@ -806,7 +820,7 @@ O.esri.Tiles.TilesStore = function(){
             request.onsuccess = function(event)
             {
                 var result = event.target.result;
-                if(result == undefined)
+                if(result === undefined)
                 {
                     callback(false,"not found");
                 }
@@ -1814,7 +1828,7 @@ O.esri.TPK.autoCenterMap = function(/* Map */ map,/* int */ delay){
 
         window.addEventListener(orientationEvent, _debounceMap(function(){
             _centerMap();
-        },delay))
+        },delay));
     }
 
     /**
@@ -1824,17 +1838,20 @@ O.esri.TPK.autoCenterMap = function(/* Map */ map,/* int */ delay){
      * @private
      */
     function _centerMap(){
-        var locationStr = _getCenterPt().split(",");
-        var wkid = map.spatialReference.wkid;
-        var mapPt = null;
 
-        if(wkid == 4326){
-            mapPt = new esri.geometry.Point(locationStr[1],locationStr[0]);
-        }
-        else if(wkid = 102100){
-            mapPt = new esri.geometry.Point(locationStr[0],locationStr[1], new esri.SpatialReference({ wkid: wkid }));
-        }
-        map.centerAt(mapPt);
+        require(["esri/geometry/Point","esri/SpatialReference"], function (Point,SpatialReference) {
+            var locationStr = _getCenterPt().split(",");
+            var wkid = map.spatialReference.wkid;
+            var mapPt = null;
+
+            if(wkid == 4326){
+                mapPt = new Point(locationStr[1],locationStr[0]);
+            }
+            else if(wkid == 102100){
+                mapPt = new Point(locationStr[0],locationStr[1], new SpatialReference({ wkid: wkid }));
+            }
+            map.centerAt(mapPt);
+        });
     }
 
     /**
@@ -1852,9 +1869,13 @@ O.esri.TPK.autoCenterMap = function(/* Map */ map,/* int */ delay){
             clearTimeout(timeout);
             timeout = setTimeout(function() {
                 timeout = null;
-                if (!immediate) func.apply(context, args);
+                if (!immediate) {
+                    func.apply(context, args);
+                }
             }, wait);
-            if (immediate && !timeout) func.apply(context, args);
+            if (immediate && !timeout) {
+                func.apply(context, args);
+            }
         };
     }
 
@@ -1865,7 +1886,7 @@ O.esri.TPK.autoCenterMap = function(/* Map */ map,/* int */ delay){
         map.on("pan-end",function(){
             var center = map.extent.getCenter();
             _setCenterPt(center.x,center.y,map.spatialReference.wkid);
-        })
+        });
     }
 
     /**
@@ -1877,7 +1898,7 @@ O.esri.TPK.autoCenterMap = function(/* Map */ map,/* int */ delay){
             var center = map.extent.getCenter();
             _setCenterPt(center.x,center.y,map.spatialReference.wkid);
             map.setZoom(map.getZoom());
-        }.bind(self))
+        });
     }
 
     /**
@@ -1918,8 +1939,8 @@ O.esri.TPK.autoCenterMap = function(/* Map */ map,/* int */ delay){
         _setOrientationListener(delay);
         var centerPt = map.extent.getCenter();
         _setCenterPt(centerPt.x,centerPt.y,map.spatialReference.wkid);
-    }
-}
+    };
+};
 /*
  Copyright (c) 2013 Gildas Lormeau. All rights reserved.
 
