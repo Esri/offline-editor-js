@@ -178,6 +178,7 @@ require([
                     console.log("Offline tile lib is enabled. Application state is: " + Offline.state);
                 },_isOnline);
 
+                tileLayer.showBlankTiles = true; // if you don't want to see blank tile indicator images
                 tileLayer.offline.proxyPath = null;
 
                 map.on("load",function(evt){
