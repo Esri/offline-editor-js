@@ -14,9 +14,10 @@ Constructor | Description
 `O.esri.Tiles.OfflineTilesEnabler()` | Creates an instance of the offlineTilesEnabler class. This library allows you to extend an ArcGISTiledMapServiceLayer with partial offline capability as well as manage the online/offline resynchronization process.
 
 ###Properties
-Property  | Description
---- | ---
-`layer.offline.proxyPath`| The default is `null`. If you have a CORS-enabled service then use the default. Don't forget to check your proxy configuration to allow connections for all possible services that you might be using. More information on using proxies with ArcGIS can be found here: [https://developers.arcgis.com/javascript/jshelp/ags_proxy.html](https://developers.arcgis.com/javascript/jshelp/ags_proxy.html).
+Property  | Value | Description
+--- | --- | ---
+`layer.showBlankTiles`| `true` | By default the library will show a 256x256 grey PNG image that says "NO TILE". To override this behavior, especially if you are using multiple tile layers and you don't want the grey "NO TILE" image to interfere then set this property to `false`.
+`layer.offline.proxyPath`| `null` | The default is `null`. If you have a CORS-enabled service then use the default. Don't forget to check your proxy configuration to allow connections for all possible services that you might be using. More information on using proxies with ArcGIS can be found here: [https://developers.arcgis.com/javascript/jshelp/ags_proxy.html](https://developers.arcgis.com/javascript/jshelp/ags_proxy.html).
 
 ###Methods
 Methods | Returns | Description

@@ -1,5 +1,13 @@
 # offline-editor-js - Changelog
 
+## Version 2.9.5 - July 14, 2015
+
+No breaking changes.
+
+**Enhancements**
+* In reference to #288, added tileLayer.showBlankTiles boolean property to both offlineTilesEnabler 
+and OfflineTilesEnablerLayer.
+
 ## Version 2.9.4.1 - July 10, 2015
 
 Minor doc update. Fixed broken link in README.

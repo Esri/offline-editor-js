@@ -14,9 +14,10 @@ Constructor | Description
 `O.esri.Tiles.OfflineTileEnablerLayer(url,callback,state)` | Creates an instance of the offlineTileEnabler class. This library allows you to extend an ArcGISTiledMapServiceLayer with offline capability as well as manage the online/offline resynchronization process. Any Esri basemap REST endpoint should work. The state property is a boolean for specifying if the application is intializing the layer online (true) or offline (false). When you first load the map you should set this property to `true`.
 
 ###Properties
-Property  | Description
---- | ---
-`layer.offline.proxyPath`| For CORS enabled servers this can be set to `null`. The default is null. All ArcGIS Online-based services uses CORS. If you are using a non-CORS enabled server you'll need a proxy. Don't forget to check your proxy configuration to allow connections for all possible services that you might be using. More information on using proxies with ArcGIS can be found here: [https://developers.arcgis.com/javascript/jshelp/ags_proxy.html](https://developers.arcgis.com/javascript/jshelp/ags_proxy.html).
+Property  | Value | Description
+--- | --- | ---
+`layer.showBlankTiles`| `true` | By default the library will show a 256x256 grey PNG image that says "NO TILE". To override this behavior, especially if you are using multiple tile layers and you don't want the grey "NO TILE" image to interfere then set this property to `false`.
+`layer.offline.proxyPath`| `null` | The default is `null`. If you have a CORS-enabled service then use the default. Don't forget to check your proxy configuration to allow connections for all possible services that you might be using. More information on using proxies with ArcGIS can be found here: [https://developers.arcgis.com/javascript/jshelp/ags_proxy.html](https://developers.arcgis.com/javascript/jshelp/ags_proxy.html).
 
 ###Methods
 Methods | Returns | Description
