@@ -37,7 +37,7 @@ __Attachment Support__: Attachments are supported with some limitations. See doc
 
 #API and How To Use Docs
 
-Go __[here](demo/api-doc.html)__ to get links to the API docs and How to use docs.
+Go __[here](http://esri.github.io/offline-editor-js/demo/)__ to get links to the API docs and How to use docs.
 
 ## FAQ
 
