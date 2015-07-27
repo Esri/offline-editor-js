@@ -21,6 +21,12 @@ describe("offline enabler library", function()
 	async.it("extends the tiled layer object", function(done)
 	{
 		expect(g_basemapLayer.goOffline).toBeUndefined();
+
+		var dbConfig = {
+			dbName: "TILES_TEST2",
+			objectStoreName: "TILES"
+		}
+
 		g_offlineTilesEnabler.extend(g_basemapLayer,function(success)
 		{
             g_basemapLayer.offline.proxyPath = null;
@@ -38,7 +44,7 @@ describe("offline enabler library", function()
 
 //			g_basemapLayer.offline.proxyPath = "../lib/resource-proxy/proxy.php";
 	        done();
-		});
+		},true, dbConfig);
 	});
 
 	async.it("can go offline", function(done)
