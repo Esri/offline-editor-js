@@ -1,4 +1,4 @@
-/*! offline-editor-js - v2.9.5 - 2015-07-14
+/*! offline-editor-js - v2.10.0 - 2015-07-27
 *   Copyright (c) 2015 Environmental Systems Research Institute, Inc.
 *   Apache License*/
 define([
@@ -28,9 +28,11 @@ define([
              * @param callback
              * @param state Optional Recommended. Pre-sets whether or not the application is online or offline.
              * Specifically used for applications that need to protect against browser reload/restart while offline.
+             * @param dbConfig is an optional object that can be used to customize the database name (`dbName`) and
+             * the object store (`objectStoreName`) name. Example: `{dbName: "TILES_TEST", objectStoreName: "TILES"}`.
              * @returns {callback} callback(boolean, string)
              */
-            extend: function(layer,callback,/* boolean */ state)
+            extend: function(layer,callback,/* boolean */ state,/* Object */ dbConfig)
             {
                 console.log("extending layer", layer.url);
 
@@ -39,6 +41,16 @@ define([
                 layer._imageType = "";
                 layer._minZoom = null;
                 layer._maxZoom = null;
+
+                if( dbConfig === "undefined" || dbConfig === null){
+                    // Database properties
+                    layer.DB_NAME = "offline_tile_store";       // Sets the database name.
+                    layer.DB_OBJECTSTORE_NAME = "tilepath"; // Represents an object store that allows access to a set of data in the IndexedDB database
+                }
+                else {
+                    layer.DB_NAME = dbConfig.dbName;
+                    layer.DB_OBJECTSTORE_NAME = dbConfig.objectStoreName;
+                }
 
                 /* we add some methods to the layer object */
                 /* we don't want to extend the tiled layer class, as it is a capability that we want to add only to one instance */
@@ -72,6 +84,8 @@ define([
 
                 if( /*false &&*/ layer.offline.store.isSupported() )
                 {
+                    layer.offline.store.dbName = layer.DB_NAME;
+                    layer.offline.store.objectStoreName = layer.DB_OBJECTSTORE_NAME;
                     // Important: wait to load tiles until after database has initialized!
                     layer.offline.store.init(function(success){
                         if(success){
@@ -1104,7 +1118,8 @@ O.esri.Tiles.TilesStore = function(){
      */
     this._db = null;
 
-    var DB_NAME = "offline_tile_store";
+    this.dbName = "offline_tile_store";
+    this.objectStoreName = "tilepath";
 
     /**
      * Determines if indexedDB is supported
@@ -1128,7 +1143,7 @@ O.esri.Tiles.TilesStore = function(){
     {
         try
         {
-            var transaction = this._db.transaction(["tilepath"],"readwrite");
+            var transaction = this._db.transaction([this.objectStoreName],"readwrite");
 
             transaction.oncomplete = function()
             {
@@ -1140,7 +1155,7 @@ O.esri.Tiles.TilesStore = function(){
                 callback(false,event.target.error.message);
             };
 
-            var objectStore = transaction.objectStore("tilepath");
+            var objectStore = transaction.objectStore(this.objectStoreName);
             var request = objectStore.put(urlDataPair);
             request.onsuccess = function()
             {
@@ -1163,7 +1178,7 @@ O.esri.Tiles.TilesStore = function(){
     {
         if(this._db !== null)
         {
-            var objectStore = this._db.transaction(["tilepath"]).objectStore("tilepath");
+            var objectStore = this._db.transaction([this.objectStoreName]).objectStore(this.objectStoreName);
             var request = objectStore.get(url);
             request.onsuccess = function(event)
             {
@@ -1193,8 +1208,8 @@ O.esri.Tiles.TilesStore = function(){
     {
         if(this._db !== null)
         {
-            var request = this._db.transaction(["tilepath"],"readwrite")
-                .objectStore("tilepath")
+            var request = this._db.transaction([this.objectStoreName],"readwrite")
+                .objectStore(this.objectStoreName)
                 .clear();
             request.onsuccess = function()
             {
@@ -1220,8 +1235,8 @@ O.esri.Tiles.TilesStore = function(){
     {
         if(this._db !== null)
         {
-            var request = this._db.transaction(["tilepath"],"readwrite")
-                .objectStore("tilepath")
+            var request = this._db.transaction([this.objectStoreName],"readwrite")
+                .objectStore(this.objectStoreName)
                 .delete(url);
             request.onsuccess = function()
             {
@@ -1245,8 +1260,8 @@ O.esri.Tiles.TilesStore = function(){
     this.getAllTiles = function(callback)
     {
         if(this._db !== null){
-            var transaction = this._db.transaction(["tilepath"])
-                .objectStore("tilepath")
+            var transaction = this._db.transaction([this.objectStoreName])
+                .objectStore(this.objectStoreName)
                 .openCursor();
 
             transaction.onsuccess = function(event)
@@ -1282,8 +1297,8 @@ O.esri.Tiles.TilesStore = function(){
         if(this._db !== null){
             var usage = { sizeBytes: 0, tileCount: 0 };
 
-            var transaction = this._db.transaction(["tilepath"])
-                .objectStore("tilepath")
+            var transaction = this._db.transaction([this.objectStoreName])
+                .objectStore(this.objectStoreName)
                 .openCursor();
 
             transaction.onsuccess = function(event){
@@ -1317,7 +1332,7 @@ O.esri.Tiles.TilesStore = function(){
 
     this.init = function(callback)
     {
-        var request = indexedDB.open(DB_NAME, 4);
+        var request = indexedDB.open(this.dbName, 4);
         callback = callback || function(success) { console.log("TilesStore::init() success:", success); }.bind(this);
 
         request.onerror = function(event)
@@ -1330,12 +1345,12 @@ O.esri.Tiles.TilesStore = function(){
         {
             var db = event.target.result;
 
-            if( db.objectStoreNames.contains("tilepath"))
+            if( db.objectStoreNames.contains(this.objectStoreName))
             {
-                db.deleteObjectStore("tilepath");
+                db.deleteObjectStore(this.objectStoreName);
             }
 
-            db.createObjectStore("tilepath", { keyPath: "url" });
+            db.createObjectStore(this.objectStoreName, { keyPath: "url" });
         }.bind(this);
 
         request.onsuccess = function(event)

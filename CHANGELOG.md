@@ -1,5 +1,13 @@
 # offline-editor-js - Changelog
 
+## Version 2.10 - July 27, 2015
+
+No breaking changes.
+
+**Enhancements**
+* Closes #288. Adds the ability to modify `offlineTilesEnabler` and `offlineTilesEnablerLayer` database name and data store name.
+* Updates to API and How-to Docs
+
 ## Version 2.9.5 - July 14, 2015
 
 No breaking changes.

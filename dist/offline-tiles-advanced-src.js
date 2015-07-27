@@ -1,4 +1,4 @@
-/*! offline-editor-js - v2.9.5 - 2015-07-14
+/*! offline-editor-js - v2.10.0 - 2015-07-27
 *   Copyright (c) 2015 Environmental Systems Research Institute, Inc.
 *   Apache License*/
 define([
@@ -24,11 +24,21 @@ define([
         _maxZoom: null,
         _tilesCore:null,
 
-        constructor:function(url,callback,state){
+        constructor:function(url,callback,/* boolean */ state,/* Object */ dbConfig){
 
             if(this._isLocalStorage() === false){
                 alert("OfflineTiles Library not supported on this browser.");
                 callback(false);
+            }
+
+            if( dbConfig === "undefined" || dbConfig === null){
+                // Database properties
+                this.DB_NAME = "offline_tile_store";       // Sets the database name.
+                this.DB_OBJECTSTORE_NAME = "tilepath"; // Represents an object store that allows access to a set of data in the IndexedDB database
+            }
+            else {
+                this.DB_NAME = dbConfig.dbName;
+                this.DB_OBJECTSTORE_NAME = dbConfig.objectStoreName;
             }
 
             this._tilesCore = new O.esri.Tiles.TilesCore();
@@ -72,6 +82,8 @@ define([
 
             if( /*false &&*/ this.offline.store.isSupported() )
             {
+                this.offline.store.dbName = this.DB_NAME;
+                this.offline.store.objectStoreName = this.DB_OBJECTSTORE_NAME;
                 this.offline.store.init(function(success){
                     if(success){
                         this._getTileInfoPrivate(url,function(result){
@@ -1188,7 +1200,8 @@ O.esri.Tiles.TilesStore = function(){
      */
     this._db = null;
 
-    var DB_NAME = "offline_tile_store";
+    this.dbName = "offline_tile_store";
+    this.objectStoreName = "tilepath";
 
     /**
      * Determines if indexedDB is supported
@@ -1212,7 +1225,7 @@ O.esri.Tiles.TilesStore = function(){
     {
         try
         {
-            var transaction = this._db.transaction(["tilepath"],"readwrite");
+            var transaction = this._db.transaction([this.objectStoreName],"readwrite");
 
             transaction.oncomplete = function()
             {
@@ -1224,7 +1237,7 @@ O.esri.Tiles.TilesStore = function(){
                 callback(false,event.target.error.message);
             };
 
-            var objectStore = transaction.objectStore("tilepath");
+            var objectStore = transaction.objectStore(this.objectStoreName);
             var request = objectStore.put(urlDataPair);
             request.onsuccess = function()
             {
@@ -1247,7 +1260,7 @@ O.esri.Tiles.TilesStore = function(){
     {
         if(this._db !== null)
         {
-            var objectStore = this._db.transaction(["tilepath"]).objectStore("tilepath");
+            var objectStore = this._db.transaction([this.objectStoreName]).objectStore(this.objectStoreName);
             var request = objectStore.get(url);
             request.onsuccess = function(event)
             {
@@ -1277,8 +1290,8 @@ O.esri.Tiles.TilesStore = function(){
     {
         if(this._db !== null)
         {
-            var request = this._db.transaction(["tilepath"],"readwrite")
-                .objectStore("tilepath")
+            var request = this._db.transaction([this.objectStoreName],"readwrite")
+                .objectStore(this.objectStoreName)
                 .clear();
             request.onsuccess = function()
             {
@@ -1304,8 +1317,8 @@ O.esri.Tiles.TilesStore = function(){
     {
         if(this._db !== null)
         {
-            var request = this._db.transaction(["tilepath"],"readwrite")
-                .objectStore("tilepath")
+            var request = this._db.transaction([this.objectStoreName],"readwrite")
+                .objectStore(this.objectStoreName)
                 .delete(url);
             request.onsuccess = function()
             {
@@ -1329,8 +1342,8 @@ O.esri.Tiles.TilesStore = function(){
     this.getAllTiles = function(callback)
     {
         if(this._db !== null){
-            var transaction = this._db.transaction(["tilepath"])
-                .objectStore("tilepath")
+            var transaction = this._db.transaction([this.objectStoreName])
+                .objectStore(this.objectStoreName)
                 .openCursor();
 
             transaction.onsuccess = function(event)
@@ -1366,8 +1379,8 @@ O.esri.Tiles.TilesStore = function(){
         if(this._db !== null){
             var usage = { sizeBytes: 0, tileCount: 0 };
 
-            var transaction = this._db.transaction(["tilepath"])
-                .objectStore("tilepath")
+            var transaction = this._db.transaction([this.objectStoreName])
+                .objectStore(this.objectStoreName)
                 .openCursor();
 
             transaction.onsuccess = function(event){
@@ -1401,7 +1414,7 @@ O.esri.Tiles.TilesStore = function(){
 
     this.init = function(callback)
     {
-        var request = indexedDB.open(DB_NAME, 4);
+        var request = indexedDB.open(this.dbName, 4);
         callback = callback || function(success) { console.log("TilesStore::init() success:", success); }.bind(this);
 
         request.onerror = function(event)
@@ -1414,12 +1427,12 @@ O.esri.Tiles.TilesStore = function(){
         {
             var db = event.target.result;
 
-            if( db.objectStoreNames.contains("tilepath"))
+            if( db.objectStoreNames.contains(this.objectStoreName))
             {
-                db.deleteObjectStore("tilepath");
+                db.deleteObjectStore(this.objectStoreName);
             }
 
-            db.createObjectStore("tilepath", { keyPath: "url" });
+            db.createObjectStore(this.objectStoreName, { keyPath: "url" });
         }.bind(this);
 
         request.onsuccess = function(event)
