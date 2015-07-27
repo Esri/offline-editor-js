@@ -188,6 +188,50 @@ To get the current extent you will need to monitor the `zoom-end` and `pan-end` 
 
 ```
 
+## Specifying a custom database and dataStore name
+
+Both `offlineTilesEnablerLayer` and `offlineTilesEnabler` have an optional property that allows you to specify your own database name and dataStore name.
+
+For offlineTilesEnabler you can use the following pattern within the `extend()` method:
+
+```js
+
+    var dbConfig = {
+        dbName : "TILES_TEST",
+        objectStoreName : "TILES"
+    }
+    
+	offlineTilesEnabler.extend(basemapLayer, function(success)
+	{
+		if(success)	{
+			// Now we can use offline functionality on this layer 
+		} else {
+			alert('indexed db is not supported in this browser');
+		}
+	}, true /* online */, dbConfig );
+
+```
+
+For offlineTilesEnablerLayer use this pattern in the constructor:
+
+```js
+
+    var dbConfig = {
+        dbName : "TILES_TEST",
+        objectStoreName : "TILES"
+    }
+
+    tileLayer = new O.esri.Tiles.OfflineTileEnablerLayer("http://xyz",function(evt){
+		. . .
+		. . .
+    }, true /* online */, dbConfig);
+
+```
+
+## Setting the online state property
+
+In the constructor for `offlineTilesEnablerLayer` and in the `extend()` method for `offlineTilesEnabler` is a `state` property. This always defaults to `true`. It's important because it allows you to tell the library at runtime whether the application is online (true) or offline (false) so that the library initializes correctly. 
+
 ## Browser storage limitations
 
 Our general guideline for the amount of total storage you can use on a device is be between 50MBs and 100MBs. If you need greater storage than that you'll need to either switch to a hybrid model (e.g. PhoneGap) or use one of our native ArcGIS Runtime SDKs. The Runtime SDKs have fully supported and robust offline capabilities that go beyond what JavaScript is currently capable of.

@@ -11,7 +11,7 @@ The `offline-tiles-advanced-min.js` library provides the following tools for wor
 ###Constructor
 Constructor | Description
 --- | ---
-`O.esri.Tiles.OfflineTileEnablerLayer(url,callback,state)` | Creates an instance of the offlineTileEnabler class. This library allows you to extend an ArcGISTiledMapServiceLayer with offline capability as well as manage the online/offline resynchronization process. Any Esri basemap REST endpoint should work. The state property is a boolean for specifying if the application is intializing the layer online (true) or offline (false). When you first load the map you should set this property to `true`.
+`O.esri.Tiles.OfflineTileEnablerLayer(` `url,callback,state,dbConfig)` | Creates an instance of the offlineTileEnabler class. This library allows you to extend an ArcGISTiledMapServiceLayer with offline capability as well as manage the online/offline resynchronization process. Any Esri basemap REST endpoint should work. <br><br>The `state` property is a boolean for specifying if the application is intializing the layer online (true) or offline (false). It defaults to `true`. When you first load the map it is a best practice to set this property to `true`. <br><br>`dbConfig` is an optional object that can be used to customize the database name (`dbName`) and the object store (`objectStoreName`) name. Example: `{dbName: "TILES_TEST", objectStoreName: "TILES"}`. 
 
 ###Properties
 Property  | Value | Description
