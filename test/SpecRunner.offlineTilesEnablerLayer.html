@@ -46,10 +46,15 @@
                          domConstruct)
                 {
 
+                    var dbConfig = {
+                        dbName: "TILES_TEST",
+                        objectStoreName: "TILES"
+                    }
+
                     g_basemapLayer = new O.esri.Tiles.OfflineTileEnablerLayer("http://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer",function(evt){
                         console.log("Tile Layer Loaded.");
                         g_basemapLayer.offline.proxyPath = null;
-                    },true);
+                    },true,dbConfig);
 
                     g_map = new Map("map", {
                         center: [-3.695, 40.412],	 // Madrid center
