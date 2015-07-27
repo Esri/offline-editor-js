@@ -149,7 +149,15 @@ The workflow for this coding pattern is you start out online > offline > browser
 ```
 
 
-The `dataStore` property is an object that is used to store any data related to your app that will assist in restoring it and any feature layers after a full offline browser restart. The `dataStore` object has one reserved key and that is `id`. If you overwrite the `id` key the application will fail to update the `dataStore` object correctly. Here is an example of one possible `dataStore` object:
+The `dataStore` property is an object that is used to store any data related to your app that will assist in restoring it and any feature layers after a full offline browser restart. There are two approaches to using the dataStore.
+
+Approach 1 involves you manually creating the dataStore for greater control over what goes into the Data Store Object and then inserting that Object into the offlineFeatureManager's constructor.
+
+Approach 2, you can let the library manage it automatically upon an ADD, UPDATE or DELETE. This is accomplished by not inserting a manual Data Store Object into offlineFeatureManager constructor and instead setting offlineFeaturesManager.ENABLE_FEATURECOLLECTION = true.
+
+#### Approach 1 - manually create dataStore
+
+The `dataStore` object has one reserved key and that is `id`. If you overwrite the `id` key the application will fail to update the `dataStore` object correctly. Here is an example of one possible `dataStore` object:
 
 ```js
 
@@ -160,6 +168,8 @@ The `dataStore` property is an object that is used to store any data related to 
 	}
 
 ```
+
+**NOTE:** The `dataStore` is a single JavaScript Object. When manually submitting a `dataStore` the last Object wins (LIFO). Any new `dataStore` will overwrite the previous values. 
 
 You can then retrieve this data after an offline restart by using the following pattern:
 
@@ -183,6 +193,8 @@ You can then retrieve this data after an offline restart by using the following 
 
 
 ```
+
+#### Approach 2 - automatic management of dataStore
 
 If you don't want to deal with creating and managing your own data store when working with offline browser restarts, then here's the pattern for using the built-in `featureLayerCollections`. This pattern is ideal if you are using Esri's pre-built widgets such as `AttributeInspector` and you don't have access to the necessary events for creating and updating the `dataStore`. 
 
@@ -239,6 +251,11 @@ Here is an example of the Object returned in the `getFeatureCollections()` callb
     }
 
 ```
+
+There are two ways to get the dataStore. You can get it from the instance of Offline Features Manager or from the feature layer, itself:
+
+* `offlineFeaturesManager.getFeatureLayerJSONDataStore( callback )`
+* `featureLayer.getFeatureLayerJSONDataStore(callback)`
 
 
 **Step 5** Once a layer has been extended the offline library will enable it with new methods. Here are a few examples that include code snippets of how to take advantage of some of the library's methods. You can also use a combination of methods from `editsStore` and `offlineFeaturesManager`.
