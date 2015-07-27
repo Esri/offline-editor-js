@@ -77,7 +77,9 @@ NOTE: You can also monitor standard ArcGIS API for JavaScript layer events using
 
 **Step 4** After the `layers-add-result` event fires extend the feature layer using the `extend()` method. 
 
-Optionally, if you are building a fully offline app then you will also need to set the `dataStore` property in the constructor if you want full control of what is stored. Alternatively, you can access an automatically created data store via the `getFeatureCollections()` method. If you use the `getFeatureCollections()` pattern you can simply ignore the `dataStore` property in the constructor. 
+Optionally, if you are building a fully offline app then you will also need to set the `dataStore` property in the constructor if you want full control of what is stored. Or, you can access an automatically created data store via the `getFeatureCollections()` method. If you use the `getFeatureCollections()` pattern you can simply ignore the `dataStore` property in the constructor. 
+
+The `dataStore` property is an object that is used to store any data related to your app that will assist in restoring it and any feature layers after a full offline browser restart. 
 
 The library's internal `featureLayerCollection` is equivalent to `featureLayer.toJson()`.
 
@@ -149,13 +151,13 @@ The workflow for this coding pattern is you start out online > offline > browser
 ```
 
 
-The `dataStore` property is an object that is used to store any data related to your app that will assist in restoring it and any feature layers after a full offline browser restart. There are two approaches to using the dataStore.
+There are two approaches to using the dataStore.
 
 Approach 1 involves you manually creating the dataStore for greater control over what goes into the Data Store Object and then inserting that Object into the offlineFeatureManager's constructor.
 
 Approach 2, you can let the library manage it automatically upon an ADD, UPDATE or DELETE. This is accomplished by not inserting a manual Data Store Object into offlineFeatureManager constructor and instead setting offlineFeaturesManager.ENABLE_FEATURECOLLECTION = true.
 
-#### Approach 1 - manually create dataStore
+Approach 1 - manually create dataStore
 
 The `dataStore` object has one reserved key and that is `id`. If you overwrite the `id` key the application will fail to update the `dataStore` object correctly. Here is an example of one possible `dataStore` object:
 
@@ -194,7 +196,7 @@ You can then retrieve this data after an offline restart by using the following 
 
 ```
 
-#### Approach 2 - automatic management of dataStore
+Approach 2 - automatic management of dataStore
 
 If you don't want to deal with creating and managing your own data store when working with offline browser restarts, then here's the pattern for using the built-in `featureLayerCollections`. This pattern is ideal if you are using Esri's pre-built widgets such as `AttributeInspector` and you don't have access to the necessary events for creating and updating the `dataStore`. 
 
