@@ -38,7 +38,7 @@ function countFeatures(featureLayer, cb)
 
 function getObjectIds(graphics)
 {
-	return graphics.map( function(g) { return g.attributes.objectid; });
+	return graphics.map( function(g) { return g.attributes[g_offlineFeaturesManager.DB_UID]; });
 }
 
 /*
@@ -77,7 +77,7 @@ describe("Normal online editing - Exercise the feature services", function()
 		async.it("add test features", function(done)
 		{
 			expect(g_featureLayers[0].graphics.length).toBe(0);
-            
+
             g1 = new g_modules.Graphic({"geometry":{"x":-105400,"y":5137000,"spatialReference":{"wkid":102100}},"attributes":{"OBJECTID":1,"lat":0.0,"lng":0.0,"description":"g1"}});
             g2 = new g_modules.Graphic({"geometry":{"x":-105600,"y":5137000,"spatialReference":{"wkid":102100}},"attributes":{"OBJECTID":2,"lat":0.0,"lng":0.0,"description":"g2"}});
             g3 = new g_modules.Graphic({"geometry":{"x":-105800,"y":5137000,"spatialReference":{"wkid":102100}},"attributes":{"OBJECTID":3,"lat":0.0,"lng":0.0,"description":"g3"}});
@@ -630,7 +630,8 @@ describe("Offline Editing", function()
 
         // This private function deletes a temporary graphic and it's associated phantom graphic
         async.it("delete an existing feature using extended feature layer", function(done){
-
+            var id = getObjectIds([g5]).toString();
+            expect(id).toEqual("-2");
             g_featureLayers[0]._deleteTemporaryFeature(g5,function(results){
                 expect(results[0]).toBe(true);
                 expect(results[1]).toBe(true);
@@ -1060,9 +1061,15 @@ describe("Offline Editing", function()
             done();
         });
 
+        // Here's a list of what we should have for pending edits:
+        // -1 = add
+        // -3 = add
+        // update
+        // update
+        // delete
         async.it("Retrieve edits array from the layer", function(done){
             g_featureLayers[0].getAllEditsArray(function(success,array){
-                expect(success).toBe(true); console.log("ARRAY " + JSON.stringify(array))
+                expect(success).toBe(true); console.log("Pending edits prior to going back online: " + JSON.stringify(array))
                 expect(array.length).toBe(5);
                 done();
             });
@@ -1074,6 +1081,23 @@ describe("Offline Editing", function()
                 expect(result.featureCollections.length).toBe(1);
                 expect(result.featureCollections[0].featureLayerCollection).toEqual(g_featureLayers[0].toJson());
                 expect(result.featureCollections[0].featureLayerUrl).toEqual("http://services1.arcgis.com/M8KJPUwAXP8jhtnM/arcgis/rest/services/Simple_Point_Service/FeatureServer/0");
+                done();
+            });
+        });
+
+        async.it("Verify feature layer graphic counts",function(done){
+            // all of them are positive
+            console.log("OBJECT IDs Before Online: " + JSON.stringify(getObjectIds(g_featureLayers[0].graphics)));
+            expect(getObjectIds(g_featureLayers[0].graphics).filter(function(id){ return id<0; })).toEqual([-1,-2,-3]);
+            expect(g_featureLayers[0].graphics.length).toBe(5);
+            done();
+        });
+
+        async.it("Verify feature count from the feature layer's REST endpoint",function(done){
+            countFeatures(g_featureLayers[0], function(success,result)
+            {
+                expect(success).toBeTruthy();
+                expect(result.count).toBe(3);
                 done();
             });
         });
@@ -1134,9 +1158,13 @@ describe("Offline Editing", function()
     describe("After online", function(){
         async.it("After online - verify feature layer graphic counts",function(done){
             // all of them are positive
-            expect(getObjectIds(g_featureLayers[0].graphics).filter(function(id){ return id<0; })).toEqual([-2,-3]);
+            console.log("OBJECT IDs After Online: " + JSON.stringify(getObjectIds(g_featureLayers[0].graphics)));
+            expect(getObjectIds(g_featureLayers[0].graphics).filter(function(id){ return id<0; })).toEqual([-2]);
             expect(g_featureLayers[0].graphics.length).toBe(5);
+            done();
+        });
 
+        async.it("Verify feature count from the feature layer's REST endpoint",function(done) {
             countFeatures(g_featureLayers[0], function(success,result)
             {
                 expect(success).toBeTruthy();
@@ -1147,7 +1175,7 @@ describe("Offline Editing", function()
 
         async.it("Retrieve edits array from the layer", function(done){
             g_featureLayers[0].getAllEditsArray(function(success,array){
-                expect(success).toBe(true); console.log("ARRAY " + JSON.stringify(array))
+                expect(success).toBe(true); console.log("ARRAY should be empty " + JSON.stringify(array))
                 expect(array.length).toBe(0);
                 done();
             });
