@@ -1,5 +1,27 @@
 # offline-editor-js - Changelog
 
+## Version 2.11
+
+Minor breaking changes to the public editing API. This is a recommended update. This version is focused on improving the sync logic between the library and the feature service. Many internal-only breaking changes.
+
+**Enhancements**
+* Closes #361 - Deletes each database record after a successful sync rather than a batch database delete.
+* Added additional properties to the `goOnline()` sync process callback object to better capture any errors.
+* Improved error handling when submitting edits during sync.
+
+**Breaking Changes Public APIs**
+* `editStore.editExists()` - if an edit does not exist then the old error message "layer id is not a match" has been replaced with "objectId is not a match".
+* `editStore.deleteFeatureLayerJSON()` - if the deletion was unsuccessful instead of returning `null` the method now returns a message string "object was not deleted".
+
+**Breaking Changes Internal - Private**
+
+* INTERNAL: `editsStore.resetLimitedPhantomGraphicsQueue()` - Deprecated.
+* INTERNAL: `offlineFeaturesManager._cleanSuccessfulEditsDatabaseRecords()` - Deprecated and replaced by `_cleanDatabase()`.
+* INTERNAL: `offlineFeaturesManager._fieldSegment` - Deprecated.
+* INTERNAL: `offlineFeaturesManager._fileSegment` - Deprecated.
+* INTERNAL: `offlineFeaturesManager._internalApplyEdits()` - Deprecated.
+* INTERNAL: `offlineFeaturewsManager._internalApplyEditsFeaturecollection()` - renamed to `_internalApplyEditsAll()`.
+
 ## Version 2.10 - July 27, 2015
 
 No breaking changes.

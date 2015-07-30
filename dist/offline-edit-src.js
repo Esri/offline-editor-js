@@ -1,4 +1,4 @@
-/*! offline-editor-js - v2.10.0 - 2015-07-27
+/*! offline-editor-js - v2.11.0 - 2015-07-30
 *   Copyright (c) 2015 Environmental Systems Research Institute, Inc.
 *   Apache License*/
 /*jshint -W030 */
@@ -28,6 +28,7 @@ define([
                 _featureLayers: {},
                 _featureCollectionUsageFlag: false, // if a feature collection was used to create the feature layer.
                 _editStore: new O.esri.Edit.EditStore(),
+                _defaultXhrTimeout: 15000, // ms
 
                 ONLINE: "online",				// all edits will directly go to the server
                 OFFLINE: "offline",             // edits will be enqueued
@@ -1071,12 +1072,14 @@ define([
                         function _deletePhantomGraphic(){
                             var deferred = new Deferred();
                             self._editStore.deletePhantomGraphic(phantomGraphicId,function(success){
-                                if(success){
+                                if(success) {
                                     deferred.resolve(true);
                                 }
-                                else{
+                                else {
                                     deferred.resolve(false);
                                 }
+                            }, function(error) {
+                                deferred.resolve(false);
                             });
                             return deferred.promise;
                         }
@@ -1209,13 +1212,13 @@ define([
                         if (this.attachmentsStore != null) {
                             console.log("sending attachments");
                             this._sendStoredAttachments(function (success, uploadedResponses, dbResponses) {
-                                this._onlineStatus = this.ONLINE;
+                                //this._onlineStatus = this.ONLINE;
                                 result.attachments = {success: success, responses: uploadedResponses, dbResponses: dbResponses};
                                 callback && callback(result);
                             }.bind(this));
                         }
                         else {
-                            this._onlineStatus = this.ONLINE;
+                            //this._onlineStatus = this.ONLINE;
                             callback && callback(result);
                         }
                     }.bind(this));
@@ -1479,17 +1482,6 @@ define([
                 // methods to handle attachment uploads
                 //
 
-                _fieldSegment: function (name, value) {
-                    return "Content-Disposition: form-data; name=\"" + name + "\"\r\n\r\n" + value + "\r\n";
-                },
-
-                _fileSegment: function (fieldName, fileName, fileType, fileContent) {
-                    return "Content-Disposition: form-data; name=\"" + fieldName +
-                        "\"; filename=\"" + fileName +
-                        "\"\r\nContent-Type: " + fileType + "\r\n\r\n" +
-                        fileContent + "\r\n";
-                },
-
                 _uploadAttachment: function (attachment) {
                     var dfd = new Deferred();
 
@@ -1713,13 +1705,10 @@ define([
                                         break;
                                 }
 
-                                if(that._featureCollectionUsageFlag){
-                                    // Note: when the feature layer is created with a feature collection we have to handle applyEdits() differently
-                                    promises[n] = that._internalApplyEditsFeatureCollection(layer, tempArray[n].id, tempObjectIds, adds, updates, deletes);
-                                }
-                                else {
-                                    promises[n] = that._internalApplyEdits(layer, tempArray[n].id, tempObjectIds, adds, updates, deletes);
-                                }
+                                //if(that._featureCollectionUsageFlag){
+                                // Note: when the feature layer is created with a feature collection we have to handle applyEdits() differently
+                                // TO-DO rename this method.
+                                promises[n] = that._internalApplyEditsAll(layer, tempArray[n].id, tempObjectIds, adds, updates, deletes);
                             }
 
                             // wait for all requests to finish
@@ -1727,38 +1716,17 @@ define([
                             var allPromises = all(promises);
                             allPromises.then(
                                 function (responses) {
-                                    console.log("OfflineFeaturesManager - all responses are back");
-                                    this._cleanSuccessfulEditsDatabaseRecords(responses, function (success, error) {
-                                        // If successful then we delete all phantom graphics in the DB.
-                                        if (success) {
-                                            console.log("_replayStoredEdits: CLEANED EDITS DATABASE");
-                                            this._editStore.resetPhantomGraphicsQueue(function (success) {
+                                    console.log("OfflineFeaturesManager sync - all responses are back");
 
-                                                if (!success) {
-                                                    console.log("There was a problem deleting phantom graphics in the database.");
-                                                    this.emit(this.events.EDITS_SENT_ERROR, {msg: "Problem deleting phantom graphic(s)"});
-                                                }
-                                                else {
-                                                    console.log("CLEANED PHANTOM GRAPHICS DATABASE");
-                                                    this.emit(this.events.ALL_EDITS_SENT,responses);
-                                                }
-                                                callback && callback(true, responses);
-                                            }.bind(this));
+                                    this._parseResponsesArray(responses).then(function(result) {
+                                        if(result) {
+                                            this.emit(this.events.ALL_EDITS_SENT,responses);
                                         }
-                                        // If not successful then we only delete the phantom graphics that are related to
-                                        // edits that were successfully synced
                                         else {
-                                            console.error("_replayStoredEdits: There was a problem and not all edits were cleaned.");
-                                            this._editStore.resetLimitedPhantomGraphicsQueue(responses, function (success) {
-                                                if(!success) {
-                                                    console.error("_replayStoredEdits.resetLimitedPhantomGraphicsQueue: There was a problem clearing the queue " + JSON.stringify(error));
-                                                }
-                                            });
-
-                                            this.emit(this.events.EDITS_SENT_ERROR, {msg: responses}); // There was a problem, some edits were not successfully sent!
-                                            callback && callback(false, responses);
+                                            this.emit(this.events.EDITS_SENT_ERROR, {msg: "Not all edits synced", respones: responses});
                                         }
-                                    }.bind(that));
+                                        callback && callback(true, responses);
+                                    }.bind(this));
                                 }.bind(that),
                                 function (errors) {
                                     console.log("OfflineFeaturesManager._replayStoredEdits - ERROR!!");
@@ -1776,6 +1744,8 @@ define([
                 },
 
                 /**
+                 * DEPRECATED as of v2.11 -
+                 * TO-DO remove in next release
                  * Only delete items from database that were verified as successfully updated on the server.
                  * @param responses Object
                  * @param callback callback(true, responses) or callback(false, responses)
@@ -1904,6 +1874,7 @@ define([
                 },
 
                 /**
+                 * DEPRECATED at v2.11
                  * Executes the _applyEdits() method when a feature layer is created using a REST endpoint
                  * @param layer
                  * @param id the unique id that identifies the Graphic in the database
@@ -1915,39 +1886,49 @@ define([
                  * @private
                  */
                 _internalApplyEdits: function (layer, id, tempObjectIds, adds, updates, deletes) {
+                    var that = this;
                     var dfd = new Deferred();
 
                     layer._applyEdits(adds, updates, deletes,
                         function (addResults, updateResults, deleteResults) {
                             layer._phantomLayer.clear();
 
-                            var newObjectIds = addResults.map(function (r) {
-                                return r.objectId;
-                            });
-
                             // We use a different pattern if the attachmentsStore is valid and the layer has attachments
                             if (layer._attachmentsStore != null && layer.hasAttachments && tempObjectIds.length > 0) {
+
+                                var newObjectIds = addResults.map(function (r) {
+                                    return r.objectId;
+                                });
+
                                 layer._replaceFeatureIds(tempObjectIds, newObjectIds, function (success) {
-                                    dfd.resolve({
-                                        id: id,
-                                        layer: layer.url,
-                                        tempId: tempObjectIds, // let's us internally match an ADD to it's new ObjectId
-                                        addResults: addResults,
-                                        updateResults: updateResults,
-                                        deleteResults: deleteResults
-                                    }); // wrap three arguments in a single object
+                                    console.log("done replacing feature ids");
                                 });
                             }
-                            else {
+
+                            that._cleanDatabase(layer, tempObjectIds, addResults, updateResults, deleteResults).then(function(results){
                                 dfd.resolve({
                                     id: id,
                                     layer: layer.url,
                                     tempId: tempObjectIds, // let's us internally match an ADD to it's new ObjectId
                                     addResults: addResults,
                                     updateResults: updateResults,
-                                    deleteResults: deleteResults
+                                    deleteResults: deleteResults,
+                                    databaseResults: results,
+                                    databaseErrors: null
                                 }); // wrap three arguments in a single object
-                            }
+                            }, function(error) {
+                                dfd.resolve({
+                                    id: id,
+                                    layer: layer.url,
+                                    tempId: tempObjectIds, // let's us internally match an ADD to it's new ObjectId
+                                    addResults: addResults,
+                                    updateResults: updateResults,
+                                    deleteResults: deleteResults,
+                                    databaseResults: null,
+                                    databaseErrors: error
+                                }); // wrap three arguments in a single object
+                            });
+
                         },
                         function (error) {
                             layer.onEditsComplete = layer.__onEditsComplete;
@@ -1960,7 +1941,9 @@ define([
                 },
 
                 /**
-                 * Executes the _applyEdits() method when a feature layer is created using a feature collection.
+                 * Applies edits. This works with both standard feature layers and when a feature layer is created
+                 * using a feature collection.
+                 *
                  * This works around specific behaviors in esri.layers.FeatureLayer when using the pattern
                  * new FeatureLayer(featureCollectionObject).
                  *
@@ -1976,40 +1959,66 @@ define([
                  * @returns {*|r}
                  * @private
                  */
-                _internalApplyEditsFeatureCollection: function (layer, id, tempObjectIds, adds, updates, deletes) {
+                _internalApplyEditsAll: function (layer, id, tempObjectIds, adds, updates, deletes) {
+                    var that = this;
                     var dfd = new Deferred();
 
                     this._makeEditRequest(layer.url, adds, updates, deletes,
                         function (addResults, updateResults, deleteResults) {
                             layer._phantomLayer.clear();
 
-                            var newObjectIds = addResults.map(function (r) {
-                                return r.objectId;
-                            });
-
                             // We use a different pattern if the attachmentsStore is valid and the layer has attachments
                             if (layer._attachmentsStore != null && layer.hasAttachments && tempObjectIds.length > 0) {
+
+                                var newObjectIds = addResults.map(function (r) {
+                                    return r.objectId;
+                                });
+
                                 layer._replaceFeatureIds(tempObjectIds, newObjectIds, function (success) {
+
                                     dfd.resolve({
                                         id: id,
                                         layer: layer.url,
                                         tempId: tempObjectIds, // let's us internally match an ADD to it's new ObjectId
                                         addResults: addResults,
                                         updateResults: updateResults,
-                                        deleteResults: deleteResults
-                                    }); // wrap three arguments in a single object
+                                        deleteResults: deleteResults,
+                                        syncError: null
+                                    });
                                 });
                             }
-                            else {
+
+                            if(addResults.length > 0) {
+                                var graphic = new Graphic(adds[0].geometry,null,adds[0].attributes);
+                                layer.add(graphic);
+                            }
+
+                            that._cleanDatabase(layer, tempObjectIds, addResults, updateResults, deleteResults).then(function(results){
                                 dfd.resolve({
                                     id: id,
                                     layer: layer.url,
                                     tempId: tempObjectIds, // let's us internally match an ADD to it's new ObjectId
                                     addResults: addResults,
                                     updateResults: updateResults,
-                                    deleteResults: deleteResults
-                                }); // wrap three arguments in a single object
-                            }
+                                    deleteResults: deleteResults,
+                                    databaseResults: results,
+                                    databaseErrors: null,
+                                    syncError: null
+                                });
+                            }, function(error) {
+                                dfd.resolve({
+                                    id: id,
+                                    layer: layer.url,
+                                    tempId: tempObjectIds, // let's us internally match an ADD to it's new ObjectId
+                                    addResults: addResults,
+                                    updateResults: updateResults,
+                                    deleteResults: deleteResults,
+                                    databaseResults: null,
+                                    databaseErrors: error,
+                                    syncError: error
+                                });
+                            });
+
                         },
                         function (error) {
                             layer.onEditsComplete = layer.__onEditsComplete;
@@ -2018,6 +2027,59 @@ define([
                             dfd.reject(error);
                         }
                     );
+                    return dfd.promise;
+                },
+
+                _cleanDatabase: function(layer, tempId, addResults, updateResults, deleteResults) {
+
+                    var dfd = new Deferred();
+                    var id = null;
+
+                    if (updateResults.length > 0) {
+                        if (updateResults[0].success) {
+                            id = updateResults[0].objectId;
+                        }
+                    }
+                    if (deleteResults.length > 0) {
+                        if (deleteResults[0].success) {
+                            id = deleteResults[0].objectId;
+                        }
+                    }
+                    if (addResults.length > 0) {
+                        if (addResults[0].success) {
+                            id = tempId;
+                        }
+                    }
+
+                    var fakeGraphic = {};
+                    fakeGraphic.attributes = {};
+
+                    // Use the correct attributes key!
+                    fakeGraphic.attributes[this.DB_UID] = id;
+
+                    // Delete the edit from the database
+                    this._editStore.delete(layer.url, fakeGraphic, function (success, error) {
+                        if (success) {
+
+                            var id = this._editStore.PHANTOM_GRAPHIC_PREFIX + this._editStore._PHANTOM_PREFIX_TOKEN + fakeGraphic.attributes[this.DB_UID];
+
+                            // Delete the phantom graphic associated with the dit
+                            this._editStore.deletePhantomGraphic(id, function(success,error){
+                                if(!success) {
+                                    console.log("_cleanDatabase delete phantom graphic error: " + error);
+                                    dfd.reject({success: false, error: error, id: id});
+                                }
+                                else {
+                                    console.log("_cleanDatabase success: " + id);
+                                    dfd.resolve({success: true, error: null, id: id});
+                                }
+                            });
+                        }
+                        else {
+                            dfd.reject({success: false, error: error, id: id});
+                        }
+                    }.bind(this));
+
                     return dfd.promise;
                 },
 
@@ -2039,37 +2101,91 @@ define([
                  */
                 _makeEditRequest: function(url,adds, updates, deletes, callback, errback) {
 
-                    var data = new FormData();
-                    data.append("f", "json");
+                    var f = "f=json", a = "", u = "", d = "";
+
                     if(adds.length > 0) {
-                        data.append("adds", JSON.stringify(adds));
+                        a = "&adds=" + JSON.stringify((adds));
                     }
                     if(updates.length > 0) {
-                        data.append("updates", JSON.stringify(updates));
+                        u = "&updates=" + JSON.stringify(updates);
                     }
                     if(deletes.length > 0) {
-                        data.append("deletes", JSON.stringify(deletes));
+                        var id = deletes[0].attributes[this.DB_UID];
+                        d = "&deletes=" + id;
                     }
+
+                    var params = f + a + u + d;
 
                     var req = new XMLHttpRequest();
                     req.open("POST", url + "/applyEdits", true);
+                    req.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
                     req.onload = function()
                     {
                         if( req.status === 200 && req.responseText !== "")
                         {
-                            var obj = JSON.parse(this.response);
-                            callback(obj.addResults, obj.updateResults, obj.deleteResults);
+                            try {
+                                var obj = JSON.parse(this.response);
+                                callback(obj.addResults, obj.updateResults, obj.deleteResults);
+                            }
+                            catch(err) {
+                                errback("Unable to parse xhr response");
+                            }
                         }
+
                     };
                     req.onerror = function(e)
                     {
-                        console.log("_getTileInfoPrivate failed: " + e);
+                        console.log("_makeEditRequest failed: " + e);
                         errback(e);
-                        //dfd.error(e);
                     };
-                    req.send(data);
+                    req.ontimeout = function() {
+                        errback("xhr timeout error");
+                    };
+                    req.timeout = this._defaultXhrTimeout;
+                    req.send(params);
+                },
 
-                    //return dfd.promise;
+                /**
+                 * Parses the respones related to going back online and cleaning up the database.
+                 * @param responses
+                 * @returns {promise} True means all was successful. False indicates there was a problem.
+                 * @private
+                 */
+                _parseResponsesArray: function(responses) {
+
+                    var dfd = new Deferred();
+                    var err = 0;
+
+                    for (var key in responses) {
+                        if (responses.hasOwnProperty(key)) {
+                            responses[key].addResults.map(function(result){
+                                if(!result.success) {
+                                    err++;
+                                }
+                            });
+
+                            responses[key].updateResults.map(function(result){
+                                if(!result.success) {
+                                    err++;
+                                }
+                            });
+
+                            responses[key].deleteResults.map(function(result){
+                                if(!result.success) {
+                                    err++;
+                                }
+                            });
+                        }
+                    }
+
+                    if(err > 0){
+                        dfd.resolve(false);
+                    }
+                    else {
+                        dfd.resolve(true);
+                    }
+
+                    return dfd.promise;
                 }
             }); // declare
     }); // define
@@ -2301,9 +2417,8 @@ O.esri.Edit.EditStore = function () {
                     // IF the delete was successful, then the record should return an error because it doesn't exist.
                     // We aren't 100% sure how all platforms will perform so we also trap the promise for return results.
                     self.editExists(id).then(function (results) {
-                            // If the result is false then in theory the id no longer exists
-                            // and we should return 'true' to indicate a successful delete operation.
-                            results.success === false ? callback(true, {message: "id does not exist"}) : callback(false, {message: null});
+                            // If edit does exist then we have not been successful in deleting the object.
+                            callback(false, {message: "object was not deleted."});
                         },
                         function (err) {
                             // If the result is false then in theory the id no longer exists
@@ -2320,26 +2435,22 @@ O.esri.Edit.EditStore = function () {
             // Step 1 - lets see if record exits. If it does not then return callback. Otherwise,
             // continue on with the deferred.
             self.editExists(id).then(function (result) {
-                if (result && result.success) {
 
-                    var objectStore = db.transaction([self.objectStoreName], "readwrite").objectStore(self.objectStoreName);
+                var objectStore = db.transaction([self.objectStoreName], "readwrite").objectStore(self.objectStoreName);
 
-                    // Step 2 - go ahead and delete graphic
-                    var objectStoreDeleteRequest = objectStore.delete(id);
+                // Step 2 - go ahead and delete graphic
+                var objectStoreDeleteRequest = objectStore.delete(id);
 
-                    // Step 3 - We know that the onsuccess will always fire unless something serious goes wrong.
-                    // So we go ahead and resolve the deferred here.
-                    objectStoreDeleteRequest.onsuccess = function () {
-                        deferred.resolve(true);
-                    };
+                // Step 3 - We know that the onsuccess will always fire unless something serious goes wrong.
+                // So we go ahead and resolve the deferred here.
+                objectStoreDeleteRequest.onsuccess = function () {
+                    deferred.resolve(true);
+                };
 
-                    objectStoreDeleteRequest.onerror = function (msg) {
-                        deferred.reject({success: false, error: msg});
-                    };
-                }
-                else {
-                    deferred.reject({success: false, message: "id does not exist"});
-                }
+                objectStoreDeleteRequest.onerror = function (msg) {
+                    deferred.reject({success: false, error: msg});
+                };
+
             },
             // If there is an error in editExists()
             function (err) {
@@ -2485,47 +2596,49 @@ O.esri.Edit.EditStore = function () {
 
             // Step 1 - lets see if record exits. If it does then return callback.
             self.editExists(id).then(function (result) {
-                    if (result.success) {
-                        // Step 4 - Then we check to see if the record actually exists or not.
-                        deferred.then(function (result) {
 
-                                // IF the delete was successful, then the record should return 'false' because it doesn't exist.
-                                self.editExists(id).then(function (results) {
-                                        results.success === false ? callback(true) : callback(false);
-                                    },
-                                    function (err) {
-                                        callback(true); //because we want this test to throw an error. That means item deleted.
-                                    });
+                // Step 4 - Then we check to see if the record actually exists or not.
+                deferred.then(function (result) {
+
+                        // IF the delete was successful, then the record should return 'false' because it doesn't exist.
+                        self.editExists(id).then(function (results) {
+                                callback(false, "item was not deleted"); // item is still in the database!!
                             },
-                            // There was a problem with the delete operation on the database
                             function (err) {
-                                callback(false, err);
+                                callback(true, "item successfully deleted"); //because we want this test to throw an error. That means item deleted.
                             });
+                    },
+                    // There was a problem with the delete operation on the database
+                    function (err) {
+                        callback(false, err);
+                    });
 
-                        var objectStore = db.transaction([self.objectStoreName], "readwrite").objectStore(self.objectStoreName);
+                var objectStore = db.transaction([self.objectStoreName], "readwrite").objectStore(self.objectStoreName);
 
-                        // Step 2 - go ahead and delete graphic
-                        var objectStoreDeleteRequest = objectStore.delete(id);
+                // Step 2 - go ahead and delete graphic
+                var objectStoreDeleteRequest = objectStore.delete(id);
 
-                        // Step 3 - We know that the onsuccess will always fire unless something serious goes wrong.
-                        // So we go ahead and resolve the deferred here.
-                        objectStoreDeleteRequest.onsuccess = function () {
-                            deferred.resolve(true);
-                        };
+                // Step 3 - We know that the onsuccess will always fire unless something serious goes wrong.
+                // So we go ahead and resolve the deferred here.
+                objectStoreDeleteRequest.onsuccess = function () {
+                    deferred.resolve(true);
+                };
 
-                        objectStoreDeleteRequest.onerror = function (msg) {
-                            deferred.reject({success: false, error: msg});
-                        };
-                    }
-                },
-                // If there is an error in editExists()
-                function (err) {
-                    callback(false);
-                });
+                objectStoreDeleteRequest.onerror = function (msg) {
+                    deferred.reject({success: false, error: msg});
+                };
+            },
+            // If there is an error in editExists()
+            function (err) {
+                callback(false, "item doesn't exist in db");
+            });
         });
     };
 
     /**
+     * DEPRECATED at v2.11
+     * TO-DO remove in the next release
+     *
      * Removes some phantom graphics from database.
      * The responseObject contains {id,layer,tempId,addResults,updateResults,deleteResults}.
      * IF there are no results.success then nothing will be deleted.
@@ -2817,38 +2930,38 @@ O.esri.Edit.EditStore = function () {
 
             // Step 1 - lets see if record exits. If it does then return callback.
             self.editExists(id).then(function (result) {
-                if (result.success) {
-                    // Step 4 - Then we check to see if the record actually exists or not.
-                    deferred.then(function (result) {
 
-                            // IF the delete was successful, then the record should return 'false' because it doesn't exist.
-                            self.editExists(id).then(function (results) {
-                                    results.success === false ? callback(true) : callback(false);
-                                },
-                                function (err) {
-                                    callback(true); //because we want this test to throw an error. That means item deleted.
-                                });
-                        },
-                        // There was a problem with the delete operation on the database
-                        function (err) {
-                            callback(false, err);
-                        });
+                // Step 4 - Then we check to see if the record actually exists or not.
+                deferred.then(function (result) {
 
-                    var objectStore = db.transaction([self.objectStoreName], "readwrite").objectStore(self.objectStoreName);
+                        // IF the delete was successful, then the record should return 'false' because it doesn't exist.
+                        self.editExists(id).then(function (results) {
+                                callback(false);
+                            },
+                            function (err) {
+                                callback(true); //because we want this test to throw an error. That means item deleted.
+                            });
+                    },
+                    // There was a problem with the delete operation on the database
+                    function (err) {
+                        callback(false, err);
+                    });
 
-                    // Step 2 - go ahead and delete graphic
-                    var objectStoreDeleteRequest = objectStore.delete(id);
+                var objectStore = db.transaction([self.objectStoreName], "readwrite").objectStore(self.objectStoreName);
 
-                    // Step 3 - We know that the onsuccess will always fire unless something serious goes wrong.
-                    // So we go ahead and resolve the deferred here.
-                    objectStoreDeleteRequest.onsuccess = function () {
-                        deferred.resolve(true);
-                    };
+                // Step 2 - go ahead and delete graphic
+                var objectStoreDeleteRequest = objectStore.delete(id);
 
-                    objectStoreDeleteRequest.onerror = function (msg) {
-                        deferred.reject({success: false, error: msg});
-                    };
-                }
+                // Step 3 - We know that the onsuccess will always fire unless something serious goes wrong.
+                // So we go ahead and resolve the deferred here.
+                objectStoreDeleteRequest.onsuccess = function () {
+                    deferred.resolve(true);
+                };
+
+                objectStoreDeleteRequest.onerror = function (msg) {
+                    deferred.reject({success: false, error: msg});
+                };
+
             },
             // If there is an error in editExists()
             function (err) {
@@ -2908,7 +3021,7 @@ O.esri.Edit.EditStore = function () {
     };
 
     /**
-     * Verify is an edit already exists in the database. Checks the objectId and layerId.
+     * Verify is an edit already exists in the database. Checks the objectId.
      * @param id
      * @returns {deferred} {success: boolean, error: message}
      * @private
@@ -2933,7 +3046,7 @@ O.esri.Edit.EditStore = function () {
                     deferred.resolve({success: true, error: null});
                 }
                 else {
-                    deferred.reject({success: false, error: "Layer id is not a match."});
+                    deferred.reject({success: false, error: "objectId is not a match."});
                 }
             };
 
