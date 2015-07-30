@@ -361,3 +361,23 @@ You can check if there are any edits pending. If there are edits then you can it
 	})
 			
 ```
+
+### How to empty the edits database during testing?
+
+Some browsers, like Firefox, make it difficult or impossible to delete data that's in an IndexedDB database. And, there may be times during testing were you are stuck with bad or old data in the database and you need to delete it. Fortunately there is a pattern using `editsStore.resetEditsQueue()` for helping you out with this situation. 
+
+You can run the reset code seperately or you can run the app with this pattern. If you do use the pattern below be sure to comment out the reset code and then re-run the app. You should be good to go again with a completely empty database.
+
+```js
+
+offlineFeaturesManager.extend(myFeatureLayer,function(result, error) {
+    if(result) {
+        console.log("offlineFeaturesManager initialized.");
+        offlineFeaturesManager._editStore.resetEditsQueue(function(success){
+            console.log("DATABASE DELETED");
+        });
+    . . .
+    . . .
+});    
+
+```
