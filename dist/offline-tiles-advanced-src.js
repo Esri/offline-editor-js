@@ -1,4 +1,4 @@
-/*! offline-editor-js - v2.10.0 - 2015-07-27
+/*! offline-editor-js - v2.11.0 - 2015-07-30
 *   Copyright (c) 2015 Environmental Systems Research Institute, Inc.
 *   Apache License*/
 define([
@@ -31,7 +31,7 @@ define([
                 callback(false);
             }
 
-            if( dbConfig === "undefined" || dbConfig === null){
+            if( dbConfig === undefined || dbConfig === null){
                 // Database properties
                 this.DB_NAME = "offline_tile_store";       // Sets the database name.
                 this.DB_OBJECTSTORE_NAME = "tilepath"; // Represents an object store that allows access to a set of data in the IndexedDB database

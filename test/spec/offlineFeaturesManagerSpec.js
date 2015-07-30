@@ -38,7 +38,7 @@ function countFeatures(featureLayer, cb)
 
 function getObjectIds(graphics)
 {
-	return graphics.map( function(g) { return g.attributes.objectid; });
+	return graphics.map( function(g) { return g.attributes[g_offlineFeaturesManager.DB_UID]; });
 }
 
 /*
@@ -72,28 +72,11 @@ describe("Normal online editing - Exercise the feature services", function()
 
                 });
             });
-
-			//clearFeatureLayer( g_featureLayers[1], function(success,response)
-			//{
-			//	expect(success).toBeTruthy();
-			//	var listener = g_featureLayers[1].on('update-end', function(){ listener.remove(); completedOne();})
-			//	g_featureLayers[1].refresh();
-			//});
-			//clearFeatureLayer( g_featureLayers[2], function(success,response)
-			//{
-			//	expect(success).toBeTruthy();
-			//	var listener = g_featureLayers[2].on('update-end', function(){ listener.remove(); completedOne();})
-			//	g_featureLayers[2].refresh();
-			//});
 		});
 
 		async.it("add test features", function(done)
 		{
 			expect(g_featureLayers[0].graphics.length).toBe(0);
-
-			//g1 = new g_modules.Graphic({"geometry":{"x":-105400,"y":5137000,"spatialReference":{"wkid":102100}},"attributes":{"symbolname":"Ground Zero","z":null,"additionalinformation":null,"eny":null,"datetimevalid":null,"datetimeexpired":null,"distance":null,"azimuth":null,"uniquedesignation":null,"x":null,"y":null}});
-			//g2 = new g_modules.Graphic({"geometry":{"x":-105600,"y":5137000,"spatialReference":{"wkid":102100}},"attributes":{"symbolname":"Ground Zero","z":null,"additionalinformation":null,"eny":null,"datetimevalid":null,"datetimeexpired":null,"distance":null,"azimuth":null,"uniquedesignation":null,"x":null,"y":null}});
-			//g3 = new g_modules.Graphic({"geometry":{"x":-105800,"y":5137000,"spatialReference":{"wkid":102100}},"attributes":{"symbolname":"Ground Zero","z":null,"additionalinformation":null,"eny":null,"datetimevalid":null,"datetimeexpired":null,"distance":null,"azimuth":null,"uniquedesignation":null,"x":null,"y":null}});
 
             g1 = new g_modules.Graphic({"geometry":{"x":-105400,"y":5137000,"spatialReference":{"wkid":102100}},"attributes":{"OBJECTID":1,"lat":0.0,"lng":0.0,"description":"g1"}});
             g2 = new g_modules.Graphic({"geometry":{"x":-105600,"y":5137000,"spatialReference":{"wkid":102100}},"attributes":{"OBJECTID":2,"lat":0.0,"lng":0.0,"description":"g2"}});
@@ -319,28 +302,11 @@ describe("Offline Editing", function()
                 g_featureLayers[0].refresh();
 
             });
-            //clearFeatureLayer( g_featureLayers[1], function(success,response)
-            //{
-            //    expect(success).toBeTruthy();
-            //    var listener = g_featureLayers[1].on('update-end', function(){ listener.remove(); completedOne();})
-            //    g_featureLayers[1].refresh();
-            //});
-            //clearFeatureLayer( g_featureLayers[2], function(success,response)
-            //{
-            //    expect(success).toBeTruthy();
-            //    var listener = g_featureLayers[2].on('update-end', function(){ listener.remove(); completedOne();})
-            //    g_featureLayers[2].refresh();
-            //});
         });
 
         async.it("Prepare feature service. Add some features online - points", function(done)
         {
             expect(g_offlineFeaturesManager.getOnlineStatus()).toBe(g_offlineFeaturesManager.ONLINE);
-
-            //g1 = new g_modules.Graphic({"geometry":{"x":-105400,"y":5137000,"spatialReference":{"wkid":102100}},"attributes":{"symbolname":"Ground Zero","z":null,"additionalinformation":null,"eny":null,"datetimevalid":null,"datetimeexpired":null,"distance":null,"azimuth":null,"uniquedesignation":null,"x":null,"y":null}});
-            //g2 = new g_modules.Graphic({"geometry":{"x":-105600,"y":5137000,"spatialReference":{"wkid":102100}},"attributes":{"symbolname":"Ground Zero","z":null,"additionalinformation":null,"eny":null,"datetimevalid":null,"datetimeexpired":null,"distance":null,"azimuth":null,"uniquedesignation":null,"x":null,"y":null}});
-            //g3 = new g_modules.Graphic({"geometry":{"x":-105800,"y":5137000,"spatialReference":{"wkid":102100}},"attributes":{"symbolname":"Ground Zero","z":null,"additionalinformation":null,"eny":null,"datetimevalid":null,"datetimeexpired":null,"distance":null,"azimuth":null,"uniquedesignation":null,"x":null,"y":null}});
-
 
             g1 = new g_modules.Graphic({"geometry":{"x":-105400,"y":5137000,"spatialReference":{"wkid":102100}},"attributes":{"OBJECTID":1,"lat":0.0,"lng":0.0,"description":"g1"}});
             g2 = new g_modules.Graphic({"geometry":{"x":-105600,"y":5137000,"spatialReference":{"wkid":102100}},"attributes":{"OBJECTID":2,"lat":0.0,"lng":0.0,"description":"g2"}});
@@ -664,7 +630,8 @@ describe("Offline Editing", function()
 
         // This private function deletes a temporary graphic and it's associated phantom graphic
         async.it("delete an existing feature using extended feature layer", function(done){
-
+            var id = getObjectIds([g5]).toString();
+            expect(id).toEqual("-2");
             g_featureLayers[0]._deleteTemporaryFeature(g5,function(results){
                 expect(results[0]).toBe(true);
                 expect(results[1]).toBe(true);
@@ -843,14 +810,10 @@ describe("Offline Editing", function()
                 // Should be the same size as the number of edits!!
                 expect(results.length).toBe(5);
                 expect(results[0].id).toBe("phantom-layer|@|-1");
-                //expect(results[1].id).toBe("phantom-layer|@|-2");
                 expect(results[1].id).toBe("phantom-layer|@|-3");
                 expect((results[2].id).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
                 expect((results[3].id).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
                 expect((results[4].id).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
-                //expect((results[5].id).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
-                //expect((results[6].id).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
-                //expect((results[8].id).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
                 expect(errors).toBe("end");
                 done();
             })
@@ -863,14 +826,11 @@ describe("Offline Editing", function()
                 expect(typeof array).toBe("object");
                 expect(array.length).toBe(5);
                 expect(array[0].id).toBe("phantom-layer|@|-1");
-                //expect(results[1].id).toBe("phantom-layer|@|-2");
                 expect(array[1].id).toBe("phantom-layer|@|-3");
                 expect((array[2].id).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
                 expect((array[3].id).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
                 expect((array[4].id).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
-                //expect((array[5].id).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
-                //expect((array[6].id).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
-                //expect((results[8].id).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
+
                 done();
             });
         });
@@ -894,9 +854,6 @@ describe("Offline Editing", function()
                expect((results[2]).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
                expect((results[3]).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
                expect((results[4]).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
-               //expect((results[5]).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
-               //expect((results[6]).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
-               //expect((results[7]).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
                expect(results[5]).toBe("phantom-layer|@|test001");
                expect(errors).toBe("end");
                done();
@@ -926,14 +883,10 @@ describe("Offline Editing", function()
                 // We added two phantom graphics to previous result
                 expect(results.length).toBe(8);
                 expect(results[0]).toBe("phantom-layer|@|-1");
-                //expect(results[1]).toBe("phantom-layer|@|-2");
                 expect(results[1]).toBe("phantom-layer|@|-3");
                 expect((results[2]).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
                 expect((results[3]).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
                 expect((results[4]).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
-                //expect((results[5]).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
-                //expect((results[6]).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
-                //expect((results[7]).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
                 expect(results[5]).toBe("phantom-layer|@|test001");
                 expect(results[6]).toBe("phantom-layer|@|test002");
                 expect(results[7]).toBe("phantom-layer|@|test003");
@@ -951,14 +904,10 @@ describe("Offline Editing", function()
                    // We remove one graphic from the previous result of 12
                    expect(results.length).toBe(7);
                    expect(results[0]).toBe("phantom-layer|@|-1");
-                   //expect(results[1]).toBe("phantom-layer|@|-2");
                    expect(results[1]).toBe("phantom-layer|@|-3");
                    expect((results[2]).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
                    expect((results[3]).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
                    expect((results[4]).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
-                   //expect((results[5]).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
-                   //expect((results[6]).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
-                   //expect((results[7]).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
                    expect(results[5]).toBe("phantom-layer|@|test002");
                    expect(results[6]).toBe("phantom-layer|@|test003");
                    expect(errors).toBe("end");
@@ -1008,14 +957,10 @@ describe("Offline Editing", function()
 
                 // We remove one graphic from the previous result and should now be @ 9
                 expect(results.length).toBe(6);
-                //expect(results[0]).toBe("phantom-layer|@|-1");
                 expect(results[0]).toBe("phantom-layer|@|-3");
                 expect((results[1]).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
                 expect((results[2]).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
                 expect((results[3]).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
-                //expect((results[4]).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
-                //expect((results[5]).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
-                //expect((results[6]).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
                 expect(results[4]).toBe("phantom-layer|@|test002");
                 expect(results[5]).toBe("phantom-layer|@|test003");
                 expect(errors).toBe("end");
@@ -1116,9 +1061,15 @@ describe("Offline Editing", function()
             done();
         });
 
+        // Here's a list of what we should have for pending edits:
+        // -1 = add
+        // -3 = add
+        // update
+        // update
+        // delete
         async.it("Retrieve edits array from the layer", function(done){
             g_featureLayers[0].getAllEditsArray(function(success,array){
-                expect(success).toBe(true); console.log("ARRAY " + JSON.stringify(array))
+                expect(success).toBe(true); console.log("Pending edits prior to going back online: " + JSON.stringify(array))
                 expect(array.length).toBe(5);
                 done();
             });
@@ -1130,6 +1081,23 @@ describe("Offline Editing", function()
                 expect(result.featureCollections.length).toBe(1);
                 expect(result.featureCollections[0].featureLayerCollection).toEqual(g_featureLayers[0].toJson());
                 expect(result.featureCollections[0].featureLayerUrl).toEqual("http://services1.arcgis.com/M8KJPUwAXP8jhtnM/arcgis/rest/services/Simple_Point_Service/FeatureServer/0");
+                done();
+            });
+        });
+
+        async.it("Verify feature layer graphic counts",function(done){
+            // all of them are positive
+            console.log("OBJECT IDs Before Online: " + JSON.stringify(getObjectIds(g_featureLayers[0].graphics)));
+            expect(getObjectIds(g_featureLayers[0].graphics).filter(function(id){ return id<0; })).toEqual([-1,-2,-3]);
+            expect(g_featureLayers[0].graphics.length).toBe(5);
+            done();
+        });
+
+        async.it("Verify feature count from the feature layer's REST endpoint",function(done){
+            countFeatures(g_featureLayers[0], function(success,result)
+            {
+                expect(success).toBeTruthy();
+                expect(result.count).toBe(3);
                 done();
             });
         });
@@ -1190,10 +1158,13 @@ describe("Offline Editing", function()
     describe("After online", function(){
         async.it("After online - verify feature layer graphic counts",function(done){
             // all of them are positive
-            expect(getObjectIds(g_featureLayers[0].graphics).filter(function(id){ return id<0; })).toEqual([-2,-3]);
-            //expect(getObjectIds(g_featureLayers[1].graphics).filter(function(id){ return id<0; })).toEqual([]);
+            console.log("OBJECT IDs After Online: " + JSON.stringify(getObjectIds(g_featureLayers[0].graphics)));
+            expect(getObjectIds(g_featureLayers[0].graphics).filter(function(id){ return id<0; })).toEqual([-2]);
             expect(g_featureLayers[0].graphics.length).toBe(5);
-            //expect(g_featureLayers[1].graphics.length).toBe(3);
+            done();
+        });
+
+        async.it("Verify feature count from the feature layer's REST endpoint",function(done) {
             countFeatures(g_featureLayers[0], function(success,result)
             {
                 expect(success).toBeTruthy();
@@ -1204,7 +1175,7 @@ describe("Offline Editing", function()
 
         async.it("Retrieve edits array from the layer", function(done){
             g_featureLayers[0].getAllEditsArray(function(success,array){
-                expect(success).toBe(true); console.log("ARRAY " + JSON.stringify(array))
+                expect(success).toBe(true); console.log("ARRAY should be empty " + JSON.stringify(array))
                 expect(array.length).toBe(0);
                 done();
             });
