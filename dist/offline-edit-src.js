@@ -12,6 +12,7 @@ define([
         "dojo/dom-style",
         "dojo/query",
         "esri/config",
+        "esri/kernel",
         "esri/layers/GraphicsLayer",
         "esri/graphic",
         "esri/request",
@@ -20,7 +21,7 @@ define([
         "esri/symbols/SimpleFillSymbol",
         "esri/urlUtils"],
     function (Evented, Deferred, all, declare, array, domAttr, domStyle, query,
-              esriConfig, GraphicsLayer, Graphic, esriRequest, SimpleMarkerSymbol, SimpleLineSymbol, SimpleFillSymbol, urlUtils) {
+              esriConfig, kernel, GraphicsLayer, Graphic, esriRequest, SimpleMarkerSymbol, SimpleLineSymbol, SimpleFillSymbol, urlUtils) {
         "use strict";
         return declare("O.esri.Edit.OfflineFeaturesManager", [Evented],
             {
@@ -30,7 +31,7 @@ define([
                 _editStore: new O.esri.Edit.EditStore(),
                 _defaultXhrTimeout: 15000, // ms
 
-                ONLINE: "online",				// all edits will directly go to the server
+                ONLINE: "online",               // all edits will directly go to the server
                 OFFLINE: "offline",             // edits will be enqueued
                 RECONNECTING: "reconnecting",   // sending stored edits to the server
                 attachmentsStore: null,         // indexedDB for storing attachments
@@ -2107,6 +2108,11 @@ define([
                         a = "&adds=" + JSON.stringify((adds));
                     }
                     if(updates.length > 0) {
+                        array.forEach(updates, function(update){
+                            if(update.hasOwnProperty("infoTemplate")){ // if the update has an infoTemplate attached,
+                                delete update.infoTemplate; // delete it to reduce the size of the request so it doesn't exceed 2048 characters.
+                            }
+                        }, this);
                         u = "&updates=" + JSON.stringify(updates);
                     }
                     if(deletes.length > 0) {
@@ -2116,6 +2122,16 @@ define([
 
                     var params = f + a + u + d;
 
+                    if(kernel.hasOwnProperty("id")){ // if there are credentials stored
+                        if(kernel.id.hasOwnProperty("credentials")){ // within the kernel object,
+                            array.forEach(kernel.id.credentials, function(credential){ // go thru all of them,
+                                if(credential.server === url.split("/", 4).join("/")){ // find the credential that lines up with the server our feature is on,
+                                    params = params + "&token=" + credential.token; // and then append the token to the params.
+                                }
+                            }, this);
+                        }
+                    }
+                    
                     var req = new XMLHttpRequest();
                     req.open("POST", url + "/applyEdits", true);
                     req.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
@@ -2128,7 +2144,8 @@ define([
                                 callback(obj.addResults, obj.updateResults, obj.deleteResults);
                             }
                             catch(err) {
-                                errback("Unable to parse xhr response");
+                                console.error("EDIT REQUEST REPONSE WAS NOT SUCCESSFUL:", req);
+                                errback("Unable to parse xhr response", req);
                             }
                         }
 
