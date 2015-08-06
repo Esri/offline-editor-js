@@ -1,6 +1,15 @@
 # offline-editor-js - Changelog
 
-## Version 2.11
+## Version 2.11.0.1 - Aug. 6, 2015
+
+No breaking changes. Documentation and samples update, only. 
+
+**Enhancements**
+* Updated appcache-tiles.html and appcache-features.html to use ArcGIS JS API v3.14 and more recent versions of jQuery and Bootstrap.
+* Removed and replaced old application cache event detection code in appcache-tiles.html so that it's configured similar to appcache-features.html.
+* Updated the How to Use App Cache doc to clarify coding patterns for working with Safari 8.
+
+## Version 2.11 - July 30, 2015
 
 No breaking changes to the public API. This is a recommended update. This version is focused on improving the sync logic between the library and the feature service. Many internal-only breaking changes.
 
