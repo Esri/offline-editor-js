@@ -1,5 +1,13 @@
 # offline-editor-js - Changelog
 
+## Version 2.12
+
+No breaking changes.
+
+**Enhancements**
+* Adds support for token-based authentication when syncing feature edits.
+* Reduces POST request payload size when syncing edits by removing the InfoTemplate from request parameters.
+
 ## Version 2.11.0.1 - Aug. 6, 2015
 
 No breaking changes. Documentation and samples update, only. 

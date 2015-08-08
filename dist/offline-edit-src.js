@@ -1,4 +1,4 @@
-/*! offline-editor-js - v2.11.0 - 2015-07-30
+/*! offline-editor-js - v2.12.0 - 2015-08-07
 *   Copyright (c) 2015 Environmental Systems Research Institute, Inc.
 *   Apache License*/
 /*jshint -W030 */
@@ -12,6 +12,7 @@ define([
         "dojo/dom-style",
         "dojo/query",
         "esri/config",
+        "esri/kernel",
         "esri/layers/GraphicsLayer",
         "esri/graphic",
         "esri/request",
@@ -20,7 +21,7 @@ define([
         "esri/symbols/SimpleFillSymbol",
         "esri/urlUtils"],
     function (Evented, Deferred, all, declare, array, domAttr, domStyle, query,
-              esriConfig, GraphicsLayer, Graphic, esriRequest, SimpleMarkerSymbol, SimpleLineSymbol, SimpleFillSymbol, urlUtils) {
+              esriConfig, kernel, GraphicsLayer, Graphic, esriRequest, SimpleMarkerSymbol, SimpleLineSymbol, SimpleFillSymbol, urlUtils) {
         "use strict";
         return declare("O.esri.Edit.OfflineFeaturesManager", [Evented],
             {
@@ -2107,6 +2108,11 @@ define([
                         a = "&adds=" + JSON.stringify((adds));
                     }
                     if(updates.length > 0) {
+                        array.forEach(updates, function(update){
+                            if(update.hasOwnProperty("infoTemplate")){ // if the update has an infoTemplate attached,
+                                delete update.infoTemplate; // delete it to reduce payload size.
+                            }
+                        }, this);
                         u = "&updates=" + JSON.stringify(updates);
                     }
                     if(deletes.length > 0) {
@@ -2115,6 +2121,16 @@ define([
                     }
 
                     var params = f + a + u + d;
+
+                    if(kernel.hasOwnProperty("id")){ // if there are credentials stored
+                        if(kernel.id.hasOwnProperty("credentials")){ // within the kernel object,
+                            array.forEach(kernel.id.credentials, function(credential){ // go thru all of them,
+                                if(credential.server === url.split("/", 3).join("/")){ // find the credential that lines up with the server our feature is on,
+                                    params = params + "&token=" + credential.token; // and then append the token to the params.
+                                }
+                            }, this);
+                        }
+                    }
 
                     var req = new XMLHttpRequest();
                     req.open("POST", url + "/applyEdits", true);
@@ -2128,14 +2144,15 @@ define([
                                 callback(obj.addResults, obj.updateResults, obj.deleteResults);
                             }
                             catch(err) {
-                                errback("Unable to parse xhr response");
+                                console.error("EDIT REQUEST REPONSE WAS NOT SUCCESSFUL:", req);
+                                errback("Unable to parse xhr response", req);
                             }
                         }
 
                     };
                     req.onerror = function(e)
                     {
-                        console.log("_makeEditRequest failed: " + e);
+                        console.error("_makeEditRequest failed: " + e);
                         errback(e);
                     };
                     req.ontimeout = function() {
