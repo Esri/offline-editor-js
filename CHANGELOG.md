@@ -1,5 +1,10 @@
 # offline-editor-js - Changelog
 
+## Version 2.12.1 - Aug. 10, 2015
+
+##Enhancements**
+* Closes #388 - remove infoTemplate object from applyEdits request.  Now also removed from adds as well as updates.
+
 ## Version 2.12
 
 No breaking changes.
