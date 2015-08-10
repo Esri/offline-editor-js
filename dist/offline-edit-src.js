@@ -2097,7 +2097,7 @@ define([
                  * The use case for using this is: clean start app > go offline and make edits > offline restart browser >
                  * go online.
                  *
-                 * @param url
+                 * @param layer
                  * @param adds
                  * @param updates
                  * @param deletes
