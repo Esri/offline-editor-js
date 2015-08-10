@@ -1,4 +1,4 @@
-/*! offline-editor-js - v2.12.1 - 2015-08-10
+/*! offline-editor-js - v2.13.0 - 2015-08-10
 *   Copyright (c) 2015 Environmental Systems Research Institute, Inc.
 *   Apache License*/
 /*jshint -W030 */
@@ -12,7 +12,6 @@ define([
         "dojo/dom-style",
         "dojo/query",
         "esri/config",
-        "esri/kernel",
         "esri/layers/GraphicsLayer",
         "esri/graphic",
         "esri/request",
@@ -21,7 +20,7 @@ define([
         "esri/symbols/SimpleFillSymbol",
         "esri/urlUtils"],
     function (Evented, Deferred, all, declare, array, domAttr, domStyle, query,
-              esriConfig, kernel, GraphicsLayer, Graphic, esriRequest, SimpleMarkerSymbol, SimpleLineSymbol, SimpleFillSymbol, urlUtils) {
+              esriConfig, GraphicsLayer, Graphic, esriRequest, SimpleMarkerSymbol, SimpleLineSymbol, SimpleFillSymbol, urlUtils) {
         "use strict";
         return declare("O.esri.Edit.OfflineFeaturesManager", [Evented],
             {
@@ -862,11 +861,12 @@ define([
                                     if (!result) {
                                         console.log("There was a problem adding phantom graphic id: " + objectId);
                                     }
-                                    console.log("Phantom graphic " + objectId + " added to database as a deletion.");
+                                    else{
+                                        console.log("Phantom graphic " + objectId + " added to database as a deletion.");
+                                        domAttr.set(phantomDelete.getNode(), "stroke-dasharray", "4,4");
+                                        domStyle.set(phantomDelete.getNode(), "pointer-events", "none");
+                                    }
                                 });
-
-                                domAttr.set(phantomDelete.getNode(), "stroke-dasharray", "4,4");
-                                domStyle.set(phantomDelete.getNode(), "pointer-events", "none");
 
                                 if (self.attachmentsStore) {
                                     // delete local attachments of this feature, if any... we just launch the delete and don't wait for it to complete
@@ -917,11 +917,13 @@ define([
                                     if (!result) {
                                         console.log("There was a problem adding phantom graphic id: " + objectId);
                                     }
-                                    console.log("Phantom graphic " + objectId + " added to database as an update.");
+                                    else{
+                                        console.log("Phantom graphic " + objectId + " added to database as an update.");
+                                        domAttr.set(phantomUpdate.getNode(), "stroke-dasharray", "5,2");
+                                        domStyle.set(phantomUpdate.getNode(), "pointer-events", "none");
+                                    }
                                 });
 
-                                domAttr.set(phantomUpdate.getNode(), "stroke-dasharray", "5,2");
-                                domStyle.set(phantomUpdate.getNode(), "pointer-events", "none");
                             }
                             else{
                                 // If we can't push edit to database then we don't create a phantom graphic
@@ -965,11 +967,13 @@ define([
                                     if (!result) {
                                         console.log("There was a problem adding phantom graphic id: " + objectId);
                                     }
-                                    console.log("Phantom graphic " + objectId + " added to database as an add.");
-                                });
+                                    else{
+                                        console.log("Phantom graphic " + objectId + " added to database as an add.");
+                                        domAttr.set(phantomAdd.getNode(), "stroke-dasharray", "10,4");
+                                        domStyle.set(phantomAdd.getNode(), "pointer-events", "none");
+                                    }
 
-                                domAttr.set(phantomAdd.getNode(), "stroke-dasharray", "10,4");
-                                domStyle.set(phantomAdd.getNode(), "pointer-events", "none");
+                                });
                             }
                             else{
                                 // If we can't push edit to database then we don't create a phantom graphic
@@ -1964,7 +1968,7 @@ define([
                     var that = this;
                     var dfd = new Deferred();
 
-                    this._makeEditRequest(layer.url, adds, updates, deletes,
+                    this._makeEditRequest(layer, adds, updates, deletes,
                         function (addResults, updateResults, deleteResults) {
                             layer._phantomLayer.clear();
 
@@ -2093,14 +2097,14 @@ define([
                  * The use case for using this is: clean start app > go offline and make edits > offline restart browser >
                  * go online.
                  *
-                 * @param url
+                 * @param layer
                  * @param adds
                  * @param updates
                  * @param deletes
                  * @returns {*|r}
                  * @private
                  */
-                _makeEditRequest: function(url,adds, updates, deletes, callback, errback) {
+                _makeEditRequest: function(layer,adds, updates, deletes, callback, errback) {
 
                     var f = "f=json", a = "", u = "", d = "";
 
@@ -2127,18 +2131,14 @@ define([
 
                     var params = f + a + u + d;
 
-                    if(kernel.hasOwnProperty("id")){ // if there are credentials stored
-                        if(kernel.id.hasOwnProperty("credentials")){ // within the kernel object,
-                            array.forEach(kernel.id.credentials, function(credential){ // go thru all of them,
-                                if(credential.server === url.split("/", 3).join("/")){ // find the credential that lines up with the server our feature is on,
-                                    params = params + "&token=" + credential.token; // and then append the token to the params.
-                                }
-                            }, this);
+                    if(layer.hasOwnProperty("credential") && layer.credential){
+                        if(layer.credential.hasOwnProperty("token") && layer.credential.token){
+                            params = params + "&token=" + layer.credential.token;
                         }
                     }
 
                     var req = new XMLHttpRequest();
-                    req.open("POST", url + "/applyEdits", true);
+                    req.open("POST", layer.url + "/applyEdits", true);
                     req.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
                     req.onload = function()
                     {
