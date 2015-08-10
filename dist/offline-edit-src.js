@@ -1,4 +1,4 @@
-/*! offline-editor-js - v2.12.0 - 2015-08-07
+/*! offline-editor-js - v2.12.1 - 2015-08-10
 *   Copyright (c) 2015 Environmental Systems Research Institute, Inc.
 *   Apache License*/
 /*jshint -W030 */
@@ -2105,6 +2105,11 @@ define([
                     var f = "f=json", a = "", u = "", d = "";
 
                     if(adds.length > 0) {
+                        array.forEach(adds, function(add){
+                            if(add.hasOwnProperty("infoTemplate")){ // if the add has an infoTemplate attached,
+                                delete add.infoTemplate; // delete it to reduce payload size.
+                            }
+                        }, this);
                         a = "&adds=" + JSON.stringify((adds));
                     }
                     if(updates.length > 0) {
