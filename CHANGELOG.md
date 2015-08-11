@@ -1,12 +1,5 @@
 # offline-editor-js - Changelog
 
-## Version 2.13.0 - Aug. 10, 2015
-
-##Bug Fixes**
-* Closes #386 - getMinMaxLOD calculation
-* Closes #390 - In offlineFeatureManager, wait for pushPhantomGraphic callback before setting attributes and styles of phantom graphics.
-* For token based security, when syncing feature edits, provide direct access to the featureLayer.credentials.token instead of looping thru the kernel object (as introduced in v2.12.0)
-
 ## Version 2.12.1 - Aug. 10, 2015
 
 ##Enhancements**

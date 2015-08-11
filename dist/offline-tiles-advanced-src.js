@@ -1,4 +1,4 @@
-/*! offline-editor-js - v2.13.0 - 2015-08-10
+/*! offline-editor-js - v2.12.1 - 2015-08-10
 *   Copyright (c) 2015 Environmental Systems Research Institute, Inc.
 *   Apache License*/
 define([
@@ -238,7 +238,7 @@ define([
         getMinMaxLOD: function(minZoomAdjust,maxZoomAdjust){
             var zoom = {};
             var map = this.getMap();
-            var min = map.getLevel() - Math.abs(minZoomAdjust);
+            var min = map.getLevel() + minZoomAdjust;
             var max = map.getLevel() + maxZoomAdjust;
             if(this._maxZoom != null && this._minZoom != null){
                 zoom.max = Math.min(this._maxZoom, max);  //prevent errors by setting the tile layer floor
