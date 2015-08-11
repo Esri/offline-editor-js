@@ -1,0 +1,197 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+	"https://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+	<title>Jasmine Spec Runner - offlineFeaturesManager</title>
+
+		<link rel="shortcut icon" type="image/png" href="../vendor/jasmine-1.3.1/jasmine_favicon.png">
+		<link rel="stylesheet" type="text/css" href="../vendor/jasmine-1.3.1/jasmine.css">
+		<script type="text/javascript" src="../vendor/jasmine-1.3.1/jasmine.js"></script>
+		<script type="text/javascript" src="../vendor/jasmine-1.3.1/jasmine-html.js"></script>
+		<script type="text/javascript" src="../vendor/jasmine.async/lib/jasmine.async.js"></script>
+
+	<script>
+		var dojoConfig = {
+			paths: { 
+				edit: location.pathname.replace(/\/[^/]+$/, "") + "../../lib/edit",
+				vendor: location.pathname.replace(/\/[^/]+$/, "") + "../../vendor" 
+			}
+		}
+	</script>
+	
+    <link rel="stylesheet" href="https://js.arcgis.com/3.14/dijit/themes/claro/claro.css">
+    <link rel="stylesheet" href="https://js.arcgis.com/3.13/esri/css/esri.css">
+    <script src="https://js.arcgis.com/3.13/"></script>
+
+	<!-- include spec files here... -->
+	<script type="text/javascript" src="spec/offlineFeaturesManagerSpec.js"></script>
+
+	<script type="text/javascript">
+
+	var g_map;
+	var g_featureLayers = [];
+	var g_offlineFeaturesManager;
+    var g_offlineFeaturesManagerAttach;
+	var g_modules = {};
+	var g_editsStore;
+    var g_layersIds = [];
+
+	require(["esri/map", "esri/arcgis/OAuthInfo", "esri/IdentityManager",
+		"esri/layers/GraphicsLayer", "esri/graphic",
+		"esri/layers/FeatureLayer", "esri/geometry", "esri/request",
+		"dojo/dom", "dojo/dom-style", "dojo/on", "dojo/query",
+		"dojo/dom-construct",
+        "../dist/offline-edit-src.js",
+        "dojo/domReady!"],
+		function(Map, OAuthInfo, esriId,
+			GraphicsLayer, Graphic, 
+			FeatureLayer, geometry, esriRequest,
+			dom, domStyle, on, query,
+			OfflineFeaturesManager,editsStore,
+			domConstruct) 
+		{
+            // TODO: UPDATE THE BELOW appId WITH YOUR OWN REGISTERED APP.
+            // TODO: You will be prompted to log into the platform when this test loads so you can access your app.
+            info = new OAuthInfo({
+                appId: "",
+                // Uncomment the next line and update if using your own portal
+                //portalUrl: "https://<host>:<port>/arcgis"
+                // Uncomment the next line to prevent the user's signed in state from being shared
+                // with other apps on the same domain with the same authNamespace value.
+                //authNamespace: "portal_oauth_inline",
+                popup: false
+              });
+            esriId.registerOAuthInfos([info]);
+            esriId.checkSignInStatus(info.portalUrl + "/sharing").then(
+                function (){
+                    displayItems();
+                }
+              ).otherwise(
+                function (){
+                    // Anonymous view
+                    domStyle.set("anonymousPanel", "display", "block");
+                }
+              );
+            on(dom.byId("sign-out"), "click", function (){
+                esriId.destroyCredentials();
+                window.location.reload();
+            });
+
+
+
+			g_modules.esriRequest = esriRequest;
+			g_modules.Graphic = Graphic;
+			g_offlineFeaturesManager = new O.esri.Edit.OfflineFeaturesManager();
+            g_offlineFeaturesManager.DB_NAME = "FEATURES_TEST";
+            g_offlineFeaturesManager.DB_UID = "OBJECTID"; //VERY IMPORTANT! We get this from the Service Directory "Fields" section.
+
+            // For testing attachments
+            g_offlineFeaturesManagerAttach = new O.esri.Edit.OfflineFeaturesManager();
+            g_offlineFeaturesManagerAttach.DB_NAME = "ATTACH_TEST";
+
+			// We are also validating the OfflineFeatureManager directly against the database
+			g_editsStore = new O.esri.Edit.EditStore();
+            g_editsStore.dbName = "FEATURES_TEST";
+
+			g_map = new Map("map", {
+				basemap: "satellite",
+				center: [-0.958, 41.846],
+				zoom: 10,
+				sliderStyle: "small"
+			});
+
+            // TODO: UPDATE THE BELOW URL with your own secured Simple_Point_Service that is added to your secured AGOL app.
+            // TODO: This feature should use the same schema as found at: "http://services1.arcgis.com/M8KJPUwAXP8jhtnM/arcgis/rest/services/Simple_Point_Service/FeatureServer/"
+            // TODO: Also replace the URL found in the spec/offlineFeaturesManagerSpec.js with your own URL.
+            var fsUrlAttachmentsEnabled = "";
+			// Layer 1 = points
+            // Layer 2 = lines
+            // Layer 3 = polygons
+			g_layersIds = [0];
+
+			g_layersIds.forEach(function(layerId)
+			{
+				var layer = new FeatureLayer(fsUrlAttachmentsEnabled + layerId, {
+					mode: FeatureLayer.MODE_SNAPSHOT,
+					outFields: ['*']
+				});
+				g_featureLayers.push(layer);			
+			});
+
+			g_map.addLayers(g_featureLayers);
+
+			g_map.on('layers-add-result', test);
+
+			function test(evt)
+			{
+				try
+				{
+					g_featureLayers.forEach(function(layer)
+					{
+
+                        var options = {};
+                        // Uncomment the line below to test if extend() throws an error!
+                        // options.graphics = evt.target.graphics.graphics;
+                        options.graphics = JSON.stringify(layer.toJson());
+                        options.zoom = g_map.getZoom();
+
+                        // WE will use both the featureLayerCollection and dataStore objects for testing purposes
+						g_offlineFeaturesManager.ENABLE_FEATURECOLLECTION = true;
+                        g_offlineFeaturesManager.extend(layer,function(result){
+                            if(result == false) console.error("WARNING: Unable to initialize database");
+                        },options);
+					});
+				}
+				catch(err)
+				{
+					console.log(err);
+				}
+
+				try
+				{					
+					var jasmineEnv = jasmine.getEnv();
+					jasmineEnv.updateInterval = 1000;
+					jasmineEnv.defaultTimeoutInterval = 10000; // 10 sec
+					var htmlReporter = new jasmine.HtmlReporter();
+
+					jasmineEnv.addReporter(htmlReporter);
+
+					jasmineEnv.specFilter = function(spec) {
+						return htmlReporter.specFilter(spec);
+					};
+
+					/*
+					var currentWindowOnload = window.onload;
+
+					window.onload = function() {
+						if (currentWindowOnload) {
+							currentWindowOnload();
+						}
+						execJasmine();
+					};
+					*/
+					function execJasmine() {
+						jasmineEnv.execute();
+					}
+
+					execJasmine();
+				}
+				catch(err)
+				{
+					console.log(err);
+				}
+			}; // test()
+
+		}); // require()
+	</script>
+</head>
+
+<body class="claro">
+	<div id="map" style="position: absolute; bottom: 0; right: 0; height:200px; width: 200px;">
+    <button id="sign-out" style="position: absolute; top: 5px; right: 5px; z-index: 1000">Sign Out</button>
+  </div>
+	<img src="" alt="" id="fakeTile" style="display:none;">
+  <div id="anonymousPanel" style="display: none; padding: 5px; text-align: center;">
+  </div>
+</body>
+</html>

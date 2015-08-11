@@ -31,9 +31,57 @@ ask if you want to reload the application.
 <title>Cache Tiles</title>
 
 <!-- Bootstrap core CSS -->
-<link href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" rel="stylesheet">
-<link rel="stylesheet" href="http://js.arcgis.com/3.12/esri/css/esri.css">
+<link href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="http://js.arcgis.com/3.14/esri/css/esri.css">
 <link rel="stylesheet" type="text/css" href="http://esri.github.io/bootstrap-map-js/src/css/bootstrapmap.css">
+
+<script>
+    // DO NOT DELETE!
+    // Listen for application cache update events
+    // We want to place this as early in the application life-cycle as possible!
+    window.addEventListener('load', function(evt) {
+
+        window.applicationCache.addEventListener('updateready', function(evt) {
+            if (window.applicationCache.status == window.applicationCache.UPDATEREADY) {
+                // Browser downloaded a new app cache.
+                if (confirm('A new version of this cache is available.')) {
+                    window.location.reload();
+                    console.log("App cache reloaded");
+                }
+            } else {
+                // Manifest didn't changed. Nothing new to server.
+                console.log("App cache no change");
+            }
+        }, false);
+
+    }, false);
+
+    // Reserved for debugging on Safari desktop and mobile
+    // Uncomment when doing any debugging on Safari 8 (or previous versions that support App Cache).
+    // To delete the application cache file on Safari refer to the following url then close/restart browser:
+    // http://stackoverflow.com/questions/5615266/how-do-you-clear-the-offline-cache-for-web-apps-in-safari
+
+//    function logEvent(event) {
+//        console.log("Checking for Application Cache Event: " + event.type);
+//    }
+//
+//    window.applicationCache.addEventListener('checking',logEvent,false);
+//    window.applicationCache.addEventListener('noupdate',logEvent,false);
+//    window.applicationCache.addEventListener('downloading',logEvent,false);
+//    window.applicationCache.addEventListener('cached',logEvent,false);
+//    window.applicationCache.addEventListener('updateready',logEvent,false);
+//    window.applicationCache.addEventListener('obsolete',logEvent,false);
+//
+//    // If you need to catch AppCache errors as early as possible to troubleshoot errors.
+//    // You should delete this for production use.
+//    window.applicationCache.addEventListener("error",function(err){
+//        console.log("ApplicationCache listener: " + err.toString() + ", " + JSON.stringify(err));
+//        if (confirm('There was a problem setting this app up for offline. Reload?')) {
+//            window.location.reload();
+//            console.log("App cache reloaded");
+//        }
+//    },false);
+</script>
 
 <style>
     #mapDiv {
@@ -115,12 +163,11 @@ ask if you want to reload the application.
 
 require([
     "esri/map",
-    "utils/appCacheManager",
     "dojo/on",
     "//esri.github.io/bootstrap-map-js/src/js/bootstrapmap.js",
     "../dist/offline-tiles-advanced-src.js",
     "dojo/domReady!"],
-        function(Map,AppCacheManager,on,BootstrapMap) {
+        function(Map,on,BootstrapMap) {
 
             var map;
             var tileLayer = null;
@@ -131,7 +178,7 @@ require([
             var _isOnline = true;
             var minZoomAdjust = -1, maxZoomAdjust = 1;
 
-            var tiles,appCacheManager;
+            var tiles;
             var EXTENT_BUFFER = 0; //buffers the map extent in meters
             var dbsize = document.getElementById("span-dbsize-value");
 
@@ -144,8 +191,6 @@ require([
             Offline.check();
             Offline.on('up down', updateState );
 
-            initAppCacheManager();
-
             /**
              * There have been a few bugs in the offline detection library (offline.min.js)
              * This is a utility check to 100% validate if the application is online or
@@ -156,13 +201,6 @@ require([
                 startMap();
 
             });
-
-            function initAppCacheManager(){
-                appCacheManager = new AppCacheManager(true,true);
-                appCacheManager.on(appCacheManager.CACHE_EVENT,cacheEventHandler);
-                appCacheManager.on(appCacheManager.CACHE_ERROR,cacheErrorHandler);
-                appCacheManager.on(appCacheManager.CACHE_LOADED,cacheLoaderHandler);
-            }
 
             function startMap(){
                 //Make sure map shows up after a browser refresh
@@ -364,18 +402,6 @@ require([
                 req.send(null);
             }
 
-            function cacheLoaderHandler(evt){
-                if(evt == appCacheManager.CACHE_LOADED) console.log("Application cache successfully loaded!")
-            }
-
-            function cacheEventHandler(evt){
-                console.log("CACHE EVENT: " + JSON.stringify(evt));
-            }
-
-            function cacheErrorHandler(evt){
-                console.log("CACHE ERROR: " + JSON.stringify(evt));
-            }
-
             function panLeft(){
                 map.panLeft();
             }
@@ -387,7 +413,7 @@ require([
 <!-- Bootstrap core JavaScript
 ================================================== -->
 <!-- Placed at the end of the document so the pages load faster -->
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
-<script src="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+<script src="//code.jquery.com/jquery-2.1.3.min.js"></script>
+<script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
 </body>
 </html>
