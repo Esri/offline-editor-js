@@ -1,9 +1,11 @@
 Tips on using application cache
 ===============================
 
+[UPDATED: Aug. 6, 2015]
+
 If you have a requirement to reload your application or restart the browser while offline then you will need to use the [application cache](http://appcachefacts.info/). Some developers also use application caches to speed up page reload performance. For example, Google uses an application cache when load their main web page.
 
-The application cache, also sometimes referred to as the 'manifest file', will allow you to store any file that is required for offline use. The list of acceptable files that you can store includes html, JavaScript libraries, CSS and images. Any file that your application requires to run normally will have to be referenced in the application cache. This is not to be confused with the Local Storage API. 
+The application cache, also sometimes referred to as the 'manifest file' or 'cache manifest', will allow you to store any file that is required for offline use. The list of acceptable files that you can store includes html, JavaScript libraries, CSS and images. Any file that your application requires to run normally will have to be referenced in the application cache. This is not to be confused with the Local Storage API. 
 
 Once an application and its associated files are stored in the application cache it will be available from the cache the next time an application restarts.
 
@@ -22,22 +24,66 @@ NOTE: You cannot use the regular CDN for the ArcGIS API for JavaScript because t
 
 ```
 
-**Step 4** Be sure to include and use the `/utils/appCacheManager.js` library as a module in your application. This will enable you to monitor what's going on in the application cache and capture specific events. For example if you want to know when the cache file has completely finalized its loading process then you can listen for the CACHE_LOADED event. Here is a psuedo code example of how to instantiate it:
+**Step 4** 
+
+For debugging purposes make sure the following script is included as close to the top of the <head> section as possible:
 
 ```js
 
-    appCacheManager = new AppCacheManager(true,true);
-    appCacheManager.on(appCacheManager.CACHE_EVENT,cacheEventHandler);
-    appCacheManager.on(appCacheManager.CACHE_ERROR,cacheErrorHandler);
-    appCacheManager.on(appCacheManager.CACHE_LOADED,cacheLoadedHandler);
+    <script>
+        // DO NOT DELETE!
+        // Listen for application cache update events
+        // We want to place this as early in the application life-cycle as possible!
+        window.addEventListener('load', function(evt) {
+
+            window.applicationCache.addEventListener('updateready', function(evt) {
+                if (window.applicationCache.status == window.applicationCache.UPDATEREADY) {
+                    // Browser downloaded a new app cache.
+                    if (confirm('A new version of this cache is available.')) {
+                        window.location.reload();
+                        console.log("App cache reloaded");
+                    }
+                } else {
+                    // Manifest didn't changed. Nothing new to server.
+                    console.log("App cache no change");
+                }
+            }, false);
+
+        }, false);
+
+        // Reserved for debugging on Safari desktop and mobile
+        // Uncomment when doing remote debugging on an iOS mobile device.
+        // To delete the application cache file on Safari refer to the following url then close/restart browser:
+        // http://stackoverflow.com/questions/5615266/how-do-you-clear-the-offline-cache-for-web-apps-in-safari
+//        function logEvent(event) {
+//            console.log("Checking for Application Cache Event: " + event.type);
+//        }
+//
+//        window.applicationCache.addEventListener('checking',logEvent,false);
+//        window.applicationCache.addEventListener('noupdate',logEvent,false);
+//        window.applicationCache.addEventListener('downloading',logEvent,false);
+//        window.applicationCache.addEventListener('cached',logEvent,false);
+//        window.applicationCache.addEventListener('updateready',logEvent,false);
+//        window.applicationCache.addEventListener('obsolete',logEvent,false);
+//
+//        // If you need to catch AppCache errors as early as possible to troubleshoot errors.
+//        // You should delete this for production use.
+//        window.applicationCache.addEventListener("error",function(err){
+//            console.log("ApplicationCache listener: " + err.toString());
+//            if (confirm('There was a problem setting this app up for offline. Reload?')) {
+//                window.location.reload();
+//                console.log("App cache reloaded");
+//            }
+//        },false)
+    </script>
 
 ```
 
-In the `/samples` directory there are two examples, `appcache-features.html` and `appcache-tiles.html` that demonstrate how to use tiles, features and the appCacheManager with the application cache. 
-
 ### IMPORTANT Usage Tips
 
-The application cache isn't ready until the `CACHE_LOADED` event fires. After that event a user can safely take the application offline. Sometimes files can load very slowwwwwly, and sometimes they can timeout. Be sure to take this into account.
+You'll need to pay attention to the various events associated with the application Cache. The `noupdate` event means the cache doesn't need to be updated. The `cached` event means that a new update has finished loading. After these events a user can safely take the application offline. 
+
+NOTE: Sometimes files can load very slowwwwwly, and sometimes they can timeout. Be sure to take this into account.
 
 If ANY file specified in the application cache fails to load for any reason, then the entire load will be rejected by the browser. The entire application cache will fail to load and no files will from the loading process will be cached.
 
@@ -53,7 +99,7 @@ Too large of an application can cause a mobile browser to run slugglishly or cra
 	* Note, you can also increase the amount of storage here by checking 'Override automatic cache manage' and enter a new limit value. Or, type about:config in address bar > modify the value field for `browser.cache.disk.capacity`.
 	* Note: firefox has a theoretical upper bound of [1GB](http://mxr.mozilla.org/mozilla-central/source/netwerk/cache/nsCacheService.cpp#607) and apparently a tested/verified(?) upper bound of [500MB](http://www.html5rocks.com/en/tutorials/offline/quota-research/) on Android.
 
-* Safari - Developer Tools > Show Web Inspector > Application Cache (click on the cookie crumbs at the top left of the console window). this won't give you the total size, but you can at least see what is in the cache and each objects size. 
+* Safari - Developer Tools > Show Page Resources > Application Cache (click on the cookie crumbs at the top left of the console window). 
 
 
 ###Configuring your web server
@@ -71,7 +117,7 @@ In Chrome you can navigate to chrome://appcache-internals/ then select the appro
 
 In Safari iPhone and iPad go to settings and select "Clear Cookies and Data."
 
-Safari on desktop can be alot more tricky. Simply attempting Develop > Empty Caches may not work. On a Mac you will have to: close your browser, manually delete the .db file by going to /<username>/library/Caches/com.Apple.Safari and move any item ending in .db to the trash, then restart browser. If this doesn't work then try restarting your machine. Yep, it's an awful workflow and it's been a known bug in Safari dating back to atleast version 6. 
+Safari on desktop can be alot more tricky. Try following the suggestions here on [stackoverflow](http://stackoverflow.com/questions/5615266/how-do-you-clear-the-offline-cache-for-web-apps-in-safari).
 
 If you want to test on Firefox then try Tools > Options > Advanced > Network > Offline data > Clear Now. More info is available [here](https://developer.mozilla.org/en-US/docs/Web/HTML/Using_the_application_cache#Storage_location_and_clearing_the_offline_cache).
 
@@ -82,7 +128,7 @@ As for IE, this library doesn't currently support any versions.
 The application cache file can live anywhere in your web directory. It's common to see it to be placed in the root.
 
 ###Support
-Most modern browsers support application cache including IE v10 and v11, Firefox v28+, Chrome v33+, Safari v7+, iOS Safari v3.2+, and Android browser 2.1+. For more detailed info refer to [caniuse.com](http://caniuse.com/#search=appcache).
+Most modern browsers support application cache. For more detailed info refer to [caniuse.com](http://caniuse.com/#search=appcache).
 
 ### References
 
