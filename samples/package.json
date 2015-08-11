@@ -5,11 +5,11 @@
     "https://www.npmjs.org/doc/cli/npm-init.html"
   ],
   "name": "manifest-generator",
-  "manifestName": "appcache-features.appcache",
-  "appHomePage": "appcache-features.html",
+  "manifestName": "appcache-tiles.appcache",
+  "appHomePage": "appcache-tiles.html",
   "optimizedApiURL": "../samples/jsolib",
-  "arcGISBaseURL": "http://js.arcgis.com/3.11",
-  "version": "2.11.0",
+  "arcGISBaseURL": "http://js.arcgis.com/3.14",
+  "version": "2.13.0",
   "private": true,
   "description": "manifest generator project",
   "repository": {

@@ -1,6 +1,37 @@
 # offline-editor-js - Changelog
 
-## Version 2.11
+## Version 2.13.0 - Aug. 10, 2015
+
+No breaking changes.  
+
+##Bug Fixes**
+* Closes #386 - getMinMaxLOD calculation
+* Closes #390 - In offlineFeatureManager, wait for pushPhantomGraphic callback before setting attributes and styles of phantom graphics.
+* For token based security, when syncing feature edits, provide direct access to the featureLayer.credentials.token instead of looping thru the kernel object (as introduced in v2.12.0)
+
+## Version 2.12.1 - Aug. 10, 2015
+
+##Enhancements**
+* Closes #388 - remove infoTemplate object from applyEdits request.  Now also removed from adds as well as updates.
+
+## Version 2.12
+
+No breaking changes.
+
+**Enhancements**
+* Adds support for token-based authentication when syncing feature edits.
+* Reduces POST request payload size when syncing edits by removing the InfoTemplate from request parameters.
+
+## Version 2.11.0.1 - Aug. 6, 2015
+
+No breaking changes. Documentation and samples update, only. 
+
+**Enhancements**
+* Updated appcache-tiles.html and appcache-features.html to use ArcGIS JS API v3.14 and more recent versions of jQuery and Bootstrap.
+* Removed and replaced old application cache event detection code in appcache-tiles.html so that it's configured similar to appcache-features.html.
+* Updated the How to Use App Cache doc to clarify coding patterns for working with Safari 8.
+
+## Version 2.11 - July 30, 2015
 
 No breaking changes to the public API. This is a recommended update. This version is focused on improving the sync logic between the library and the feature service. Many internal-only breaking changes.
 
