@@ -1,15 +1,15 @@
 offline-editor-js
 =================
 
-Offline-editor-js is an open source family of libraries for building offline capabilities into web mapping applications. It's specifically designed to work with the ArcGIS API for JavaScript and ArcGIS Online. It enables you to store features, attachments, map tiles and TPKs (Tile Packages). 
+Offline-editor-js is a family of libraries for building offline capabilities into web mapping applications. It's specifically designed to work with the ArcGIS API for JavaScript and ArcGIS Online. It enables you to store feature edits, attachments, map tiles and TPKs (Tile Packages). 
 
 Online samples and getting started tutorials are available here: **[http://esri.github.io/offline-editor-js/demo/](http://esri.github.io/offline-editor-js/demo/)**
 
-*IMPORTANT:* If you need a fully integrated, robust offline solution then you should be using our ArcGIS Runtime SDKs for .NET, WPF, Java, iOS, Android and Qt.
+*IMPORTANT:* If you need a fully integrated, robust offline solution then you should be using our native ArcGIS Runtime SDKs for .NET, WPF, Java, iOS, Android and Qt.
 
 This repo contains the following libraries:
 
-- `/dist`: 
+- `/dist` - contains src and min versions of each library: 
    * `offline-edit-min.js` - stores adds, updates and deletes of features as well as limited attachment support while offline. Resync's edits with server once connection is reestablished.
    * `offline-tiles-basic-min.js` - caches map tiles for partial offline use cases. Use this library with ArcGIS Online Web maps as well as with tiled map services. This repo will not work with browser restarts or reloads while offline. 
    * `offline-tiles-advanced-min.js` - Extends any ArcGIS Tiled Map Service that has a requirement for offline browser reload and/or restart. This library should be used in conjunction with an HTML5 application cache coding pattern.
@@ -28,9 +28,9 @@ The following workflow is currently supported for both both features and tiles:
 
 4) Return online when you want to resync edits.
 
-This workflow is supported for intermittent (or partial) offline and full offline. There are samples in the `/samples` directory for both use cases. For more information on the differences between check out this [blog post](http://www.andygup.net/going-offline-with-html5-and-javascript-part-1/).
+This workflow is supported for intermittent offline and full offline. There are samples in the `/samples` directory for both use cases. For more information on the differences between intermittent and full offline check out this [blog post](http://www.andygup.net/going-offline-with-html5-and-javascript-part-1/).
 
-Full offline requires the use of an [application manifest](https://developer.mozilla.org/en-US/docs/HTML/Using_the_application_cache) to allow for browser reloads and restarts while offline. The application manifest lets you store .html, .js, .css and image files locally.
+Full offline requires the use of an [application manifest](https://developer.mozilla.org/en-US/docs/HTML/Using_the_application_cache) to allow for browser reloads and restarts while offline. The application manifest lets you store .html, .js, .css and image files locally. There is also a [wiki doc](https://github.com/Esri/offline-editor-js/wiki/Working-with-Application-Cache) to help you learn more about using the cache with this library.
 
 __Attachment Support__: Attachments are supported with some limitations. See documentation [here](./doc/attachments.md)
 
@@ -52,24 +52,26 @@ Go __[here](https://github.com/Esri/offline-editor-js/wiki/FAQ)__ for answers to
 1. [Fork and clone the repo.](https://help.github.com/articles/fork-a-repo)
 2. After cloning from github, `cd` into the `offline-editor-js` folder
 3. Run `git submodule init` and `git submodule update`
-4. Try out the apps in the `/samples` folder.
+4. Try out the apps in the `/samples` folder. If they run, then everything is set up correctly.
 
 ##Build Instructions
 
 1. From the root directory run `npm install`
-2. Run `Grunt build`. If there are no errors, the minimized _(min)_ and source _(src)_ versions of the libraries will be output to `\dist`
+2. Run `Grunt build`. If there are no errors, the minimized _(min)_ and source _(src)_ versions of the libraries will be output to `/dist`
+3. For production automation see the npm scripts listed in [package.json](https://github.com/Esri/offline-editor-js/blob/master/package.json).
 
 ##Limitations
 
-* Currently does not support related tables, domains or subtypes. The ArcGIS Runtime SDKs fully support these.
+* Currently does not support related tables, domains or subtypes. The ArcGIS Runtime SDKs fully support these and more.
 * Attachments are supported with some limitations listed [here](./doc/attachments.md).
+* Browser storage space on mobile devices is a known limitation. This applies to stand-alone web applications and hybrid applications.
 
 ##Dependencies
 
-* ArcGIS API for JavaScript (v3.8+)
+* ArcGIS API for JavaScript (v3.12+)
 * Node.js required for building the source
 * NOTE: browser limitations and technical dependencies. The offline capabilities in this toolkit depend on certain HTML5 capabilities being present in the browser. Go [here](doc/dependencies.md) for a detailed breakdown of the information.
-* We offer browser support for the latest versions of Chrome, Firefox and Safari only.  	
+* We only offer browser support for the latest versions of Chrome, Firefox and Safari only.  	
 
 * Sub-modules (see `/vendor` directory)
 
@@ -86,7 +88,7 @@ Go __[here](https://github.com/Esri/offline-editor-js/wiki/FAQ)__ for answers to
 
 ## Resources
 
-* [ArcGIS Developers](http://developers.arcgis.com)
+* [ArcGIS API for JavaScript](https://developers.arcgis.com/javascript/)
 * [ArcGIS REST Services](http://resources.arcgis.com/en/help/arcgis-rest-api/)
 * [twitter@esri](http://twitter.com/esri)
 
