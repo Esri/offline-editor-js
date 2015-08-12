@@ -18,7 +18,7 @@ git checkout master
 echo "pull upstream master"
 git pull upstream master
 
-echo "push origin master"
+read -p "Press [Enter] to push origin master..."
 git push origin master
 
 # Delete the version branch
@@ -29,10 +29,11 @@ git branch -D $VERSION
 echo "checkout gh-pages"
 git checkout gh-pages
 
-echo "merge master"
+read -p "Press [Enter] to merge gh-pages with master..."
 git merge master
 
 echo "push origin gh-pages"
+read -p "Press [Enter] to push gh-pages to origin..."
 git push origin gh-pages
 
 echo "Now create a pull request for gh-pages manually on github."
