@@ -2,8 +2,10 @@
 
 ##########################################################
 # ONLY use this script after using the push script.
-# This script helps sync up your local git, with master
+# This script helps sync up your local git with master
 # and origin.
+#
+# To use: npm run pull
 ##########################################################
 
 # SET VARS
