@@ -6,7 +6,7 @@
   "license": "Apache 2.0",
   "main": "dist/offline-edit-min.js",
   "contributors": [
-    "Javier Abadia <javier.abadia@esri.es>",
+    "Javier Abadia",
     "Rob Speer"
   ],
   "keywords": [
