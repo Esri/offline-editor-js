@@ -36,6 +36,10 @@ echo "push origin gh-pages"
 read -p "Press [Enter] to push gh-pages to origin..."
 git push origin gh-pages
 
+# publish release on NPM
+read -p "Press [Enter] to npm publish..."
+npm publish
+
 echo "Now create a pull request for gh-pages manually on github."
 echo "This gives you a final chance to review your changes."
 echo "Once pull request has been merged, don't forget to run 'git pull upstream gh-pages' and 'git push origin gh-pages'"

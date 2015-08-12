@@ -57,9 +57,5 @@ git push origin v$VERSION
 echo "zip file deleted"
 echo "push script: done"
 
-# publish release on NPM
-read -p "Press [Enter] to npm publish..."
-npm publish
-
 echo "Go to your github branch $VERSION, review changes then create pull request to esri/master"
 echo "Once the PR is accepted and merged then run the pull script"
