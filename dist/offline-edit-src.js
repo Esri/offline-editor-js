@@ -1,4 +1,4 @@
-/*! offline-editor-js - v2.13.0 - 2015-08-10
+/*! esri-offline-maps - v2.14.0 - 2015-08-14
 *   Copyright (c) 2015 Environmental Systems Research Institute, Inc.
 *   Apache License*/
 /*jshint -W030 */
@@ -113,6 +113,10 @@ define([
 
                     var self = this;
                     layer.offlineExtended = true; // to identify layer has been extended
+
+                    if(!layer.loaded || layer._url === null) {
+                        console.error("Make sure to initialize OfflineFeaturesManager after layer loaded and feature layer update-end event.");
+                    }
 
                     // NOTE: At v2.6.1 we've discovered that not all feature layers support objectIdField.
                     // However, to try to be consistent here with how the library is managing Ids
@@ -1142,7 +1146,7 @@ define([
                             layer._map.addLayer(layer._phantomLayer);
                         }
                         catch (err) {
-                            console.log("Unable to init PhantomLayer");
+                            console.log("Unable to init PhantomLayer: " + err.message);
                         }
                     }
 
@@ -1905,8 +1909,8 @@ define([
                                     return r.objectId;
                                 });
 
-                                layer._replaceFeatureIds(tempObjectIds, newObjectIds, function (success) {
-                                    console.log("done replacing feature ids");
+                                layer._replaceFeatureIds(tempObjectIds, newObjectIds, function (count) {
+                                    console.log("Done replacing feature ids. Total count = " + count);
                                 });
                             }
 
@@ -1979,17 +1983,8 @@ define([
                                     return r.objectId;
                                 });
 
-                                layer._replaceFeatureIds(tempObjectIds, newObjectIds, function (success) {
-
-                                    dfd.resolve({
-                                        id: id,
-                                        layer: layer.url,
-                                        tempId: tempObjectIds, // let's us internally match an ADD to it's new ObjectId
-                                        addResults: addResults,
-                                        updateResults: updateResults,
-                                        deleteResults: deleteResults,
-                                        syncError: null
-                                    });
+                                layer._replaceFeatureIds(tempObjectIds, newObjectIds, function (count) {
+                                    console.log("Done replacing feature ids. Total count = " + count);
                                 });
                             }
 
@@ -3505,6 +3500,7 @@ O.esri.Edit.AttachmentsStore = function () {
                 cursor.continue();
             }
             else {
+                // If no records match then evt.target.result = null
                 // allow time for all changes to persist...
                 setTimeout(function () {
                     callback(replacedCount);
