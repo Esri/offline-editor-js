@@ -1,5 +1,15 @@
 # offline-editor-js - Changelog
 
+## Version 2.14 - Aug. 14, 2015
+
+No breaking changes. 
+
+**Enhancements**
+* Closes #399 - OfflineFeaturesManager now throws an error if you try to extend a layer before the map or layer has finished initializing.
+
+**Bug Fix**
+* Closes #400 - deferred already resolved error when going online.
+
 ## Version 2.13.1 - Aug. 12, 2015
 
 No breaking changes. 
