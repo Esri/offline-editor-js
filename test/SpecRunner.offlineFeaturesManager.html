@@ -88,7 +88,12 @@
 
 			g_map.addLayers(g_featureLayers);
 
+			/////////////////////////////////////////////////////////////////////////
+			/////////////////////////////////////////////////////////////////////////
+			// To test what happens when you extend library before layers-add-result
+			// comment this out below and just run test()
 			g_map.on('layers-add-result', test);
+			//test()
 
 			function test(evt)
 			{

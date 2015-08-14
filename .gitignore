@@ -2,9 +2,15 @@
 .DS_Store
 Icon
 
+# Filesystem
+*.zip
 
 # Node
 node_modules
 
 # Grunt
 .grunt/
+
+# npm
+
+*.log

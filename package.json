@@ -1,20 +1,44 @@
 {
-  "name": "offline-editor-js",
-  "version": "2.13.0",
-  "description": "Lightweight set of libraries for working offline with map tiles and ArcGIS feature services",
+  "name": "esri-offline-maps",
+  "version": "2.14.0",
+  "description": "Lightweight set of libraries for working offline with map tiles and editing with ArcGIS feature services",
   "author": "Andy Gup <agup@esri.com> (http://blog.andygup.net)",
-  "license": "Apache 2",
+  "license": "Apache 2.0",
+  "main": "dist/offline-edit-min.js",
   "contributors": [
-    "Javier Abadia <javier.abadia@esri.es>"
+    "Javier Abadia",
+    "Rob Speer"
   ],
+  "keywords": [
+    "arcgis",
+    "esri",
+    "offline",
+    "gis",
+    "maps",
+    "mapping"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Esri/offline-editor-js.git"
+  },
   "readmeFilename": "README.md",
+  "homepage": "http://esri.github.io/offline-editor-js/demo/",
   "dependencies": {},
   "devDependencies": {
     "grunt": "^0.4.5",
+    "gh-release": "^2.0.0",
     "grunt-contrib-compress": "^0.13.0",
     "grunt-contrib-concat": "^0.5.1",
     "grunt-contrib-jshint": "^0.11.1",
     "grunt-contrib-uglify": "^0.9.1",
     "grunt-contrib-watch": "^0.6.1"
+  },
+  "scripts": {
+    "lint": "grunt jshint",
+    "concat": "grunt concat",
+    "uglify": "grunt uglify",
+    "prepush": "./scripts/preprocessor.sh",
+    "push": "./scripts/push.sh",
+    "pull": "./scripts/pull.sh"
   }
 }

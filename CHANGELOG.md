@@ -1,20 +1,43 @@
 # offline-editor-js - Changelog
 
+## Version 2.14 - Aug. 14, 2015
+
+No breaking changes. 
+
+**Enhancements**
+* Closes #399 - OfflineFeaturesManager now throws an error if you try to extend a layer before the map or layer has finished initializing.
+
+**Bug Fix**
+* Closes #400 - deferred already resolved error when going online.
+
+## Version 2.13.1 - Aug. 12, 2015
+
+No breaking changes. 
+
+**Enhancements**
+* Closes #372 - adds an NPM package repository. New name is 'esri-offline-maps.'
+* Adds build automation, github syncing and npm update via npm scripts. 
+* Added a scripts directory for bash scripts.
+* Added gh-release as an npm package. 
+* Updated package.json
+
 ## Version 2.13.0 - Aug. 10, 2015
 
 No breaking changes.  
 
-##Bug Fixes**
+**Bug Fixes**
 * Closes #386 - getMinMaxLOD calculation
 * Closes #390 - In offlineFeatureManager, wait for pushPhantomGraphic callback before setting attributes and styles of phantom graphics.
 * For token based security, when syncing feature edits, provide direct access to the featureLayer.credentials.token instead of looping thru the kernel object (as introduced in v2.12.0)
 
 ## Version 2.12.1 - Aug. 10, 2015
 
-##Enhancements**
+No breaking changes.
+
+**Enhancements**
 * Closes #388 - remove infoTemplate object from applyEdits request.  Now also removed from adds as well as updates.
 
-## Version 2.12
+## Version 2.12 - Aug. 7, 2015
 
 No breaking changes.
 
