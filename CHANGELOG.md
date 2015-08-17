@@ -1,5 +1,14 @@
 # offline-editor-js - Changelog
 
+## Version 2.14.0.1 - Aug. 17, 2015
+
+No breaking changes. Doc updates only.
+
+**Enhancements**
+* Created separate section in README for Supported Browsers 
+* Updated Supported Browsers section in /demo/index.html
+* Removed references to local storage in /doc/dependencies.md
+
 ## Version 2.14 - Aug. 14, 2015
 
 No breaking changes. 

@@ -66,13 +66,15 @@ Go __[here](https://github.com/Esri/offline-editor-js/wiki/FAQ)__ for answers to
 * Attachments are supported with some limitations listed [here](./doc/attachments.md).
 * Browser storage space on mobile devices is a known limitation. This applies to stand-alone web applications and hybrid applications.
 
+## Supported browsers
+* Only the latest versions of Chrome, Firefox and Safari are supported.  
+* The most up to date information on this library's browser support can be found [here](http://esri.github.io/offline-editor-js/demo/index.html#support).
+
 ##Dependencies
 
 * ArcGIS API for JavaScript (v3.12+)
 * Node.js required for building the source
 * NOTE: browser limitations and technical dependencies. The offline capabilities in this toolkit depend on certain HTML5 capabilities being present in the browser. Go [here](doc/dependencies.md) for a detailed breakdown of the information.
-* We only offer browser support for the latest versions of Chrome, Firefox and Safari only.  	
-
 * Sub-modules (see `/vendor` directory)
 
    * [offline.js](https://github.com/hubspot/offline) - it allows detection of the online/offline condition and provides events to hook callbacks on when this condition changes
