@@ -121,7 +121,7 @@
         </div>
     </div>
 
-    <div class="bs-docs-section">
+    <div class="bs-docs-section" id="support">
         <h1 id="examples" class="page-header">Supported Browsers</h1>
         <p class="lead">The offline libraries are supported on the <strong>latest versions</strong> of the following browsers and operating systems.<br>
         </p>
@@ -132,6 +132,7 @@
                 <th>Chrome</th>
                 <th>Firefox</th>
                 <th>Internet Explorer</th>
+                <th>Edge</th>
                 <th>Opera</th>
                 <th>Safari</th>
             </tr>
@@ -139,9 +140,10 @@
             <tbody>
             <tr>
                 <th>Android</th>
-                <td class="text-success"><span class="glyphicon glyphicon-ok">+</span> <span class="sr-only">Supported</span></td>
+                <td class="text-success"><span class="glyphicon glyphicon-ok"></span> <span class="sr-only">Supported</span></td>
                 <td class="text-success"><span class="glyphicon glyphicon-ok"></span> <span class="sr-only">Supported</span></td>
                 <td class="text-muted" rowspan="3" style="vertical-align: middle;">N/A</td>
+                <td class="text-danger"><span class="glyphicon glyphicon-remove"></span> <span class="sr-only">Not Supported</span></td>
                 <td class="text-danger"><span class="glyphicon glyphicon-remove"></span> <span class="sr-only">Not Supported</span></td>
                 <td class="text-muted">N/A</td>
             </tr>
@@ -150,12 +152,14 @@
                 <td class="text-success"><span class="glyphicon glyphicon-ok"></span> <span class="sr-only">Supported</span></td>
                 <td class="text-muted">N/A</td>
                 <td class="text-danger"><span class="glyphicon glyphicon-remove"></span> <span class="sr-only">Not Supported</span></td>
+                <td class="text-danger"><span class="glyphicon glyphicon-remove"></span> <span class="sr-only">Not Supported</span></td>
                 <td class="text-success"><span class="glyphicon glyphicon-ok">*</span> <span class="sr-only">Supported</span></td>
             </tr>
             <tr>
                 <th>Mac OS X</th>
                 <td class="text-success"><span class="glyphicon glyphicon-ok"></span> <span class="sr-only">Supported</span></td>
                 <td class="text-success"><span class="glyphicon glyphicon-ok"></span> <span class="sr-only">Supported</span></td>
+                <td class="text-danger"><span class="glyphicon glyphicon-remove"></span> <span class="sr-only">Not Supported</span></td>
                 <td class="text-danger"><span class="glyphicon glyphicon-remove"></span> <span class="sr-only">Not Supported</span></td>
                 <td class="text-success"><span class="glyphicon glyphicon-ok">*</span> <span class="sr-only">Supported</span></td>
             </tr>
@@ -166,16 +170,22 @@
                 <td class="text-danger"><span class="glyphicon glyphicon-remove"></span> <span class="sr-only">Not Supported</span></td>
                 <td class="text-danger"><span class="glyphicon glyphicon-remove"></span> <span class="sr-only">Not Supported</span></td>
                 <td class="text-danger"><span class="glyphicon glyphicon-remove"></span> <span class="sr-only">Not Supported</span></td>
+                <td class="text-danger"><span class="glyphicon glyphicon-remove"></span> <span class="sr-only">Not Supported</span></td>
             </tr>
             </tbody>
          </table>
-        <p class="lead">Hybrid app developers (e.g. PhoneGap\Cordova) targeting Android: we currently only support the Chrome browser.
+        <p class="lead"><strong>Important note for Hybrid app developers (e.g. PhoneGap\Cordova):</strong> this library is <strong>not supported</strong> for hybrid deployments.
+            There are too many different variations of iOS and Android to make this feasible.
             We've only done very limited proof-of-concept testing using WebView.
             Make sure you do thorough testing on as many different phones and tablets as possible.
             One suggestion is to build a test app and run the Unit Test suite which is in this project under /test.
         </p>
-        <span class="text-success"><span class="glyphicon glyphicon-ok">+</span></span> - Currently only the Chrome browser is supported on Android. <br>
+        <p class="lead">
+            <strong>Windows developers:</strong> Edge is under consideration for developement support-only. However, at this time I don't have
+            a machine that runs it.
+        </p>
         <span class="text-success"><span class="glyphicon glyphicon-ok">*</span></span> - means that <a href="https://github.com/axemclion/IndexedDBShim"> IndexedDBShim.js</a> may be required on this browser/platform. More info available in the <a href="https://github.com/Esri/offline-editor-js"> README </a> under Dependencies.
+        <p></p><p></p>
     </div>
 
 </div>
