@@ -68,7 +68,7 @@ Go __[here](https://github.com/Esri/offline-editor-js/wiki/FAQ)__ for answers to
 
 ## Supported browsers
 * Only the latest versions of Chrome, Firefox and Safari are supported.  
-* The most up to date information on this library's browser support can be found [here](./demo/index.html#support).
+* The most up to date information on this library's browser support can be found [here](http://esri.github.io/offline-editor-js/demo/index.html#support).
 
 ##Dependencies
 
