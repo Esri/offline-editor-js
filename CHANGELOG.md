@@ -5,7 +5,7 @@
 No breaking changes. Doc updates only. 
 
 **Enhancements**
-* Closes $406. Provided additional clarification on using offlineFeaturesManager.goOnline() in the 'How to use the edit library' doc.
+* Closes #406. Provided additional clarification on using offlineFeaturesManager.goOnline() in the 'How to use the edit library' doc.
 * Updated supported browsers table.
 
 ## Version 2.14.0.1 - Aug. 17, 2015
