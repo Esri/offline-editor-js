@@ -5,6 +5,8 @@ How to use the edit library
 
 The `edit` library allows a developer to extend a feature layer with offline editing support. You can combine this functionality with offline tiles. For a complete list of features consult the [OfflineFeaturesManager API doc](offlinefeaturesmanager.md).
 
+**IMPORTANT:** Only use a single instance of OfflineFeaturesManager per application. With this single instance you can extend offline capabilities to multiple feature layers. This single instance contains all edits for all feature layers initialized via `offlineFeaturesManager.extend().` Multiple feature layers share a single database. The database maintains the relationship between each edit and its' respective feature layer via a UUID.
+
 **Step 1** Include `offline.min.js`, `offline-tiles-basic-min.js` and `offline-edit-min.js` in your app's require contstructor. Be sure to include `ofline.mins.js` which is a 3rd party library for detecting if the browser is online or offline. 
 
 The pattern for how we include the tiles and edit library within the `require` statement is called generic script injection. Note that we do assign any of the editing or tile libraries an alias name. For example, we specified the mobile path "esri/map" and we gave it an alias called "Map." But, we did not do the equivalent for `offline-tiles-based-min.js` or `offline-edit-min.js`.
@@ -121,7 +123,7 @@ For full offline use, the pattern would look like this where we are creating a `
 ```
 
 
-When working with fully offline browser restarts you should wait until the layer has been successfully extended before forcing the library to go back online. When you force the library to `goOnline()` it will attempt to sync any edits that occurred while offline.
+When working with fully offline browser restarts you should wait until the layer has been successfully extended before forcing the library to go back online. When you force the library to `goOnline()` it will attempt to sync any edits that occurred while offline. Only call `goOnline()` once. If there are errors or it doesn't work then the best practice is to recheck the contens of the edits database.
 
 The workflow for this coding pattern is you start out online > offline > browser restart > then back online. 
 
@@ -317,6 +319,9 @@ resultsObject = {
 
 ```
 
+Typically you should only need to call this method once for each online/offline cycle. However, resync attempts won't always happen perfectliy. In your code, if there are errors or the library fails to sync for some reason then the best practice is to evaluate any error messages, recheck the online/offline status and recheck the contents of the edits database. 
+
+If there was a an failure and/or errors, it's a good idea to reevaluate the edits that remain in the database because some edits may have been synced and others may still be pending. Only then, and depending on the error message, should the app try to `goOnline()` again. 
 
 ####offlineFeaturesManager.getOnlineStatus()
 Within your application you can manually check online status and then update your user interface. By using a switch/case statement you can check against three enums that indicate if the library thinks it is offline, online or in the process of reconnecting.
