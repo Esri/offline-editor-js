@@ -1,5 +1,13 @@
 # offline-editor-js - Changelog
 
+## Version 2.14.0.2 - Sep. 8, 2015
+
+No breaking changes. Doc updates only. 
+
+**Enhancements**
+* Closes #406. Provided additional clarification on using offlineFeaturesManager.goOnline() in the 'How to use the edit library' doc.
+* Updated supported browsers table.
+
 ## Version 2.14.0.1 - Aug. 17, 2015
 
 No breaking changes. Doc updates only.
