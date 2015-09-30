@@ -232,6 +232,14 @@ For offlineTilesEnablerLayer use this pattern in the constructor:
 
 In the constructor for `offlineTilesEnablerLayer` and in the `extend()` method for `offlineTilesEnabler` is a `state` property. This always defaults to `true`. It's important because it allows you to tell the library at runtime whether the application is online (true) or offline (false) so that the library initializes correctly. 
 
+## Working with secure tile services
+
+If you are using a secure tiled map service then you'll need to use the `offlineTilesEnablerLayer` library. There isn't anything special you need to do, the library should automatically recognize you are using a secure service and it will trigger `esri/IdentityManager` if it cannot find valid credentials.
+
+The library manually stores credential information using the following localStorage pattern: `window.localStorage.offline_id_manager`.
+
+If you are using an optimized version of the ArcGIS API for JavaScript make sure you include the `esri/IdentityManager` module.
+
 ## Browser storage limitations
 
 Our general guideline for the amount of total storage you can use on a device is be between 50MBs and 100MBs. If you need greater storage than that you'll need to either switch to a hybrid model (e.g. PhoneGap) or use one of our native ArcGIS Runtime SDKs. The Runtime SDKs have fully supported and robust offline capabilities that go beyond what JavaScript is currently capable of.
