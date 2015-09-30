@@ -1,4 +1,4 @@
-/*! esri-offline-maps - v2.14.0 - 2015-08-14
+/*! esri-offline-maps - v2.15.0 - 2015-09-29
 *   Copyright (c) 2015 Environmental Systems Research Institute, Inc.
 *   Apache License*/
 define([
@@ -23,12 +23,16 @@ define([
         _minZoom: null,
         _maxZoom: null,
         _tilesCore:null,
+        _secure:false, //is this a secured service
 
         constructor:function(url,callback,/* boolean */ state,/* Object */ dbConfig){
 
             if(this._isLocalStorage() === false){
                 alert("OfflineTiles Library not supported on this browser.");
                 callback(false);
+            }
+            else {
+                window.localStorage.offline_id_manager = ""; //this is where we will store secure service info
             }
 
             if( dbConfig === undefined || dbConfig === null){
@@ -86,36 +90,11 @@ define([
                 this.offline.store.objectStoreName = this.DB_OBJECTSTORE_NAME;
                 this.offline.store.init(function(success){
                     if(success){
+
+                        // Configure the layer
                         this._getTileInfoPrivate(url,function(result){
-
-                            // Store the layerInfo locally so we have it when browser restarts or is reloaded.
-                            // We need this info in order to properly rebuild the layer.
-                            if(localStorage.__offlineTileInfo === undefined && result !== false){
-                                localStorage.__offlineTileInfo = result;
-                            }
-
-                            // If library is offline then attempt to get layerInfo from localStorage.
-                            if(this.offline.online === false && result === false && localStorage.__offlineTileInfo !== undefined){
-                                result = localStorage.__offlineTileInfo;
-                            }
-                            else if(this.offline.online === false && result === false && localStorage.__offlineTileInfo === undefined){
-                                alert("There was a problem retrieving tiled map info in OfflineTilesEnablerLayer.");
-                            }
-
-                            this._tilesCore._parseGetTileInfo(result,function(tileResult){
-                                this.layerInfos = tileResult.resultObj.layers;
-                                this.minScale = tileResult.resultObj.minScale;
-                                this.maxScale = tileResult.resultObj.maxScale;
-                                this.tileInfo = tileResult.tileInfo;
-                                this._imageType = this.tileInfo.format.toLowerCase();
-                                this.fullExtent = tileResult.fullExtent;
-                                this.spatialReference = this.tileInfo.spatialReference;
-                                this.initialExtent = tileResult.initExtent;
-                                this.loaded = true;
-                                this.onLoad(this);
-                                callback(true);
-                            }.bind(this._self));
-                        }.bind(this._self));
+                            callback(result);
+                        });
                     }
                 }.bind(this._self));
             }
@@ -143,8 +122,30 @@ define([
 
             this._level = level;
 
-            var url = this.url + "/tile/" + level + "/" + row + "/" + col;
+            var self = this;
+
+            // Verify if user has logged in. If they haven't and we've gotten this far in the
+            // code then there will be a problem because the library won't be able to retrieve
+            // secure tiles without appending the token to the URL
+            var token;
+            var secureInfo = window.localStorage.offline_id_manager;
+
+            if(secureInfo === undefined || secureInfo === ""){
+                token = "";
+            }
+            else {
+                var parsed = JSON.parse(secureInfo);
+
+                parsed.credentials.forEach(function(result) {
+                    if(self.url.indexOf(result.server) !== -1) {
+                        token = "?token=" + result.token;
+                    }
+                });
+            }
+
+            var url = this.url + "/tile/" + level + "/" + row + "/" + col + token;
             console.log("LIBRARY ONLINE " + this.offline.online);
+
             if( this.offline.online )
             {
                 console.log("fetching url online: ", url);
@@ -448,19 +449,105 @@ define([
         },
 
         /**
+         * Assign various properties to the layer
+         * @param result
+         * @param context
+         * @param callback
+         * @private
+         */
+        _parseTileInfo: function(result, context, callback) {
+            // If library is offline then attempt to get layerInfo from localStorage.
+            if(context.offline.online === false && result === false && localStorage.__offlineTileInfo !== undefined){
+                result = localStorage.__offlineTileInfo;
+            }
+            else if(context.offline.online === false && result === false && localStorage.__offlineTileInfo === undefined){
+                alert("There was a problem retrieving tiled map info in OfflineTilesEnablerLayer.");
+            }
+
+            context._tilesCore._parseGetTileInfo(result,function(tileResult){
+                context.layerInfos = tileResult.resultObj.layers;
+                context.minScale = tileResult.resultObj.minScale;
+                context.maxScale = tileResult.resultObj.maxScale;
+                context.tileInfo = tileResult.tileInfo;
+                context._imageType = context.tileInfo.format.toLowerCase();
+                context.fullExtent = tileResult.fullExtent;
+                context.spatialReference = context.tileInfo.spatialReference;
+                context.initialExtent = tileResult.initExtent;
+                context.loaded = true;
+                context.onLoad(context);
+                callback(true);
+            });
+        },
+
+        /**
          * Attempts an http request to verify if app is online or offline.
          * Use this in conjunction with the offline checker library: offline.min.js
+         *
+         * More info on accessing ArcGIS Online services: https://developers.arcgis.com/authentication/accessing-arcgis-online-services/
          * @param callback
          */
         _getTileInfoPrivate: function(url, callback){
+            var self = this;
             var req = new XMLHttpRequest();
-            var finalUrl = this.offline.proxyPath != null? this.offline.proxyPath + "?" + url + "?f=pjson" : url + "?f=pjson";
+            var token;
+            var secureInfo = window.localStorage.offline_id_manager;
+
+            if(secureInfo === undefined || secureInfo === ""){
+                token = "";
+            }
+            else {
+                var parsed = JSON.parse(secureInfo);
+
+                parsed.credentials.forEach(function(result) {
+                    if(url.indexOf(result.server) !== -1) {
+                        token = "&token=" + result.token;
+                    }
+                });
+            }
+
+            var finalUrl = self.offline.proxyPath != null? self.offline.proxyPath + "?" + url + "?f=pjson" + token : url + "?f=pjson" + token;
+
             req.open("GET", finalUrl, true);
             req.onload = function()
             {
                 if( req.status === 200 && req.responseText !== "")
                 {
-                    callback(this.response);
+                    var staticResponse = this.response;
+                    var fixedResponse = this.response.replace(/\\'/g, "'");
+                    var resultObj = JSON.parse(fixedResponse);
+
+                    if("error" in resultObj) {
+                        if("code" in resultObj.error) {
+                            if(resultObj.error.code == 499 || resultObj.error.code == 498) {
+                                console.log("Unable to log-in to tiled map service");
+
+                                require([
+                                    "esri/IdentityManager"
+                                ],function(esriId) {
+
+                                    var cred = esriId.findCredential(url);
+
+                                    if (cred === undefined) {
+                                        //https://developers.arcgis.com/javascript/jssamples/widget_identitymanager_client_side.html
+                                        esriId.getCredential(url).then(function () {
+                                            self._secure = true;
+                                            window.localStorage.offline_id_manager = JSON.stringify(esriId.toJson());
+                                            self._getTileInfoPrivate(url, callback);
+                                        });
+                                    }
+                                    else {
+                                        // Run it again to see if the credentials are successful.
+                                        self._getTileInfoPrivate(url, callback);
+                                    }
+                                });
+                            }
+                        }
+                    }
+                    else {
+                        self._parseTileInfo(staticResponse, self, callback);
+                    }
+
+                    //callback(this.response);
                 }
                 else
                 {
@@ -991,7 +1078,27 @@ O.esri.Tiles.TilesCore = function(){
     {
         if(lastTileUrl)
         {
-            var url = proxyPath? proxyPath + "?" +  lastTileUrl : lastTileUrl;
+
+            // Verify if user has logged in. If they haven't and we've gotten this far in the
+            // code then there will be a problem because the library won't be able to retrieve
+            // secure tiles without appending the token to the URL
+            var token;
+            var secureInfo = window.localStorage.offline_id_manager;
+
+            if(secureInfo === undefined || secureInfo === ""){
+                token = "";
+            }
+            else {
+                var parsed = JSON.parse(secureInfo);
+
+                parsed.credentials.forEach(function(result) {
+                    if(lastTileUrl.indexOf(result.server) !== -1) {
+                        token = "?token=" + result.token;
+                    }
+                });
+            }
+
+            var url = proxyPath? proxyPath + "?" +  lastTileUrl + token : lastTileUrl + token;
             request.get(url,{
                 handleAs: "text/plain; charset=x-user-defined",
                 headers: {
@@ -1132,7 +1239,8 @@ O.esri.Tiles.TilesCore = function(){
             "esri/layers/LOD",
             "esri/geometry/Extent",
             "esri/layers/TileInfo",
-            "esri/geometry/Point"],function(SpatialReference,LOD,Extent,TileInfo,Point){
+            "esri/geometry/Point"
+        ],function(SpatialReference,LOD,Extent,TileInfo,Point){
 
                 var spatialRef = new SpatialReference({wkid:resultObj.spatialReference.wkid});
 

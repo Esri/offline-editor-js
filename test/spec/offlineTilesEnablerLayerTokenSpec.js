@@ -96,17 +96,18 @@ describe("offline enabler custom layer library", function()
     {
         require(["esri/geometry/Extent"],function(Extent)
         {
-            var extent = new Extent({"xmin":-822542.2830377579,"ymin":4580841.761960262,"xmax":94702.05638410954,"ymax":5131188.365613382,"spatialReference":{"wkid":102100}});
+            //var extent = new Extent({"xmin":-822542.2830377579,"ymin":4580841.761960262,"xmax":94702.05638410954,"ymax":5131188.365613382,"spatialReference":{"wkid":102100}});
+            var extent = new Extent({"xmin":-1.1685589834915098E7,"ymin":4818609.0417558225,"xmax":-1.1682630288726103E7,"ymax":4819741.265237327,"spatialReference":{"wkid":102100}});
             g_basemapLayer.estimateTileSize(function(tileSize){
-                var estimation = g_basemapLayer.getLevelEstimation(extent,10,tileSize);
-                expect(estimation.tileCount).toEqual(375);
+                var estimation = g_basemapLayer.getLevelEstimation(extent,17,tileSize);
+                expect(estimation.tileCount).toEqual(44);
                 expect(estimation.sizeBytes).toEqual(estimation.tileCount * tileSize);
 
                 var estimation = g_basemapLayer.getLevelEstimation(extent,8,tileSize);
-                expect(estimation.tileCount).toEqual(28);
+                expect(estimation.tileCount).toEqual(1);
                 expect(estimation.sizeBytes).toEqual(estimation.tileCount * tileSize);
                 var estimation = g_basemapLayer.getLevelEstimation(extent,2,tileSize);
-                expect(estimation.tileCount).toEqual(2);
+                expect(estimation.tileCount).toEqual(1);
                 expect(estimation.sizeBytes).toEqual(estimation.tileCount * tileSize);
                 done();
             }.bind(this));
@@ -120,7 +121,7 @@ describe("offline enabler custom layer library", function()
             g_basemapLayer.deleteAllTiles(function(success)
             {
                 expect(success).toEqual(true);
-                var extent = new Extent({"xmin":-822542.2830377579,"ymin":4580841.761960262,"xmax":94702.05638410954,"ymax":5131188.365613382,"spatialReference":{"wkid":102100}});
+                var extent = new Extent({"xmin":-1.1685589834915098E7,"ymin":4818609.0417558225,"xmax":-1.1682630288726103E7,"ymax":4819741.265237327,"spatialReference":{"wkid":102100}});
                 var callCount = 0;
                 var reportProgress = function(progress)
                 {
@@ -131,8 +132,8 @@ describe("offline enabler custom layer library", function()
                     {
                         g_basemapLayer.getOfflineUsage(function(usage)
                         {
-                            expect(usage.tileCount).toEqual(28);
-                            expect(callCount).toEqual(29);
+                            expect(usage.tileCount).toEqual(1);
+                            expect(callCount).toEqual(2);
                             done();
                         });
                     }
@@ -148,7 +149,7 @@ describe("offline enabler custom layer library", function()
     async.it("get tile urls",function(done)
     {
         require(["esri/geometry/Extent"],function(Extent){
-            var extent = new Extent({"xmin":-822542.2830377579,"ymin":4580841.761960262,"xmax":94702.05638410954,"ymax":5131188.365613382,"spatialReference":{"wkid":102100}});
+            var extent = new Extent({"xmin":-1.1685589834915098E7,"ymin":4818609.0417558225,"xmax":-1.1682630288726103E7,"ymax":4819741.265237327,"spatialReference":{"wkid":102100}});
             var cells = g_basemapLayer.getTileUrlsByExtent(extent,3);
             var regexp = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/;
             for(var i = 0; i < cells.length; i++){
@@ -182,7 +183,7 @@ describe("offline enabler custom layer library", function()
             //NOTE: We are getting new attributes at ArcGIS JS API v3.8 : blankTile=false&_ts=1393031666639 <last part is a random number>
             // http://services.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/14/6178/8023?blankTile=false&_ts=1393031666639"
             var tempUrl = onlineUrl.slice( 0, onlineUrl.indexOf('?'))
-            expect(tempUrl).toEqual('http://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/14/6178/802');
+            expect(tempUrl).toEqual('http://tiles.arcgis.com/tiles/M8KJPUwAXP8jhtnM/arcgis/rest/services/DenverUniv/MapServer/tile/14/6178/8023');
 
             g_basemapLayer.goOffline();
             var offlineUrl = fakeTile.src = g_basemapLayer.getTileUrl(14,6178,8023);
@@ -192,10 +193,10 @@ describe("offline enabler custom layer library", function()
     });
 
     async.it("getMaxZoom", function(done){
-       g_basemapLayer.getMaxZoom(function(result){
-           expect(result).toBe(19);
-           done();
-       })
+        g_basemapLayer.getMaxZoom(function(result){
+            expect(result).toBe(19);
+            done();
+        })
     });
 
     async.it("getMinZoom", function(done){
@@ -211,32 +212,7 @@ describe("offline enabler custom layer library", function()
         expect(object.min).toBe(13);
         expect(object.max).toBe(15);
         done();
-    })
-
-    // Temporarily removed at v2.15 - something in the context is causing these to error out.
-    // It could be deep down in the code somewhere. The application loads fine when these are run
-    // within the application load cycle.
-
-    //async.it("verifies ability to retrieve layer info",function(done){
-    //   g_basemapLayer._getTileInfoPrivate("http://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer",function(result){
-    //       var fixedResponse = result.replace(/\\'/g, "'");
-    //       var resultObj = JSON.parse(fixedResponse);
-    //       expect(resultObj).toEqual(jasmine.any(Object));
-    //       done();
-    //   })
-    //});
-    //
-    //async.it("verifies ability to parse layer info",function(done){
-    //    g_basemapLayer._getTileInfoPrivate("http://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer",function(result){
-    //        tilesCore._parseGetTileInfo(result,function(result){
-    //            expect(result.resultObj).toEqual(jasmine.any(Object));
-    //            expect(result.initExtent.type).toEqual("extent");
-    //            expect(result.fullExtent.type).toEqual("extent");
-    //            expect(result.tileInfo.format).toEqual("JPEG");
-    //            done();
-    //        })
-    //    })
-    //});
+    });
 
     async.it("get all tile polygons within extent",function(done){
         require(["dojo/Deferred","dojo/promise/all",],function(Deferred,all){
