@@ -1,5 +1,14 @@
 # offline-editor-js - Changelog
 
+## Version 2.15 - Sep. 29, 2015
+
+No breaking changes. 
+
+**Enhancements**
+* Closes #291 - OfflineTilesEnablerLayer now supports token-based authentication. Going forward, if you are using a secure tiled map service you will need to make sure that the `esri\IdentityManager` module is included in your ArcGIS API for JavaScript optimized build.
+* Refactored OfflineTilesEnablerLayer to break out offline and secure service detection into more logicially seperate functions. 
+* Added a new spec to test token-based tile layer.
+
 ## Version 2.14.0.2 - Sep. 8, 2015
 
 No breaking changes. Doc updates only. 

@@ -1,4 +1,4 @@
-/*! esri-offline-maps - v2.14.0 - 2015-08-14
+/*! esri-offline-maps - v2.15.0 - 2015-09-29
 *   Copyright (c) 2015 Environmental Systems Research Institute, Inc.
 *   Apache License*/
 define([
@@ -909,7 +909,27 @@ O.esri.Tiles.TilesCore = function(){
     {
         if(lastTileUrl)
         {
-            var url = proxyPath? proxyPath + "?" +  lastTileUrl : lastTileUrl;
+
+            // Verify if user has logged in. If they haven't and we've gotten this far in the
+            // code then there will be a problem because the library won't be able to retrieve
+            // secure tiles without appending the token to the URL
+            var token;
+            var secureInfo = window.localStorage.offline_id_manager;
+
+            if(secureInfo === undefined || secureInfo === ""){
+                token = "";
+            }
+            else {
+                var parsed = JSON.parse(secureInfo);
+
+                parsed.credentials.forEach(function(result) {
+                    if(lastTileUrl.indexOf(result.server) !== -1) {
+                        token = "?token=" + result.token;
+                    }
+                });
+            }
+
+            var url = proxyPath? proxyPath + "?" +  lastTileUrl + token : lastTileUrl + token;
             request.get(url,{
                 handleAs: "text/plain; charset=x-user-defined",
                 headers: {
@@ -1050,7 +1070,8 @@ O.esri.Tiles.TilesCore = function(){
             "esri/layers/LOD",
             "esri/geometry/Extent",
             "esri/layers/TileInfo",
-            "esri/geometry/Point"],function(SpatialReference,LOD,Extent,TileInfo,Point){
+            "esri/geometry/Point"
+        ],function(SpatialReference,LOD,Extent,TileInfo,Point){
 
                 var spatialRef = new SpatialReference({wkid:resultObj.spatialReference.wkid});
 

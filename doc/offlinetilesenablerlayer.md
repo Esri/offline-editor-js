@@ -5,6 +5,8 @@ There are two different libraries for taking tiles offline: `offline-tiles-basic
 
 If you have a requirement for restarting or reloading the app while offline then you should use the advanced library. The `offline-tiles-advanced-min.js` library lets you create a custom basemap layer that extends TiledMapServiceLayer. 
 
+If you have a requirement for using token-based security on your tiled map service then you'll need to use this library.
+
 ##O.esri.Tiles.OfflineTileEnablerLayer
 The `offline-tiles-advanced-min.js` library provides the following tools for working with tiled map services. This library is designed for both partial and full offline use cases, and it will work if you have a requirement for browser reloads or restarts while offline.
 
