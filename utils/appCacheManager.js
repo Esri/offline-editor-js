@@ -27,19 +27,19 @@ define([
 
             constructor: function(/* boolean */autoUpdate, /* boolean */ setListeners)
             {
-                if(autoUpdate)this.setUpdateCache();
-                if(setListeners)this.setCacheListeners();
+                if(autoUpdate) {this.setUpdateCache();}
+                if(setListeners){this.setCacheListeners();}
                 console.log("appCacheManager.js enabled");
             },
 
             setUpdateCache:function(){
                 // Check if a new cache is available on page load.
-                window.addEventListener('load', function(evt) {
+                window.addEventListener("load", function(evt) {
 
-                    window.applicationCache.addEventListener('updateready', function(evt) {
+                    window.applicationCache.addEventListener("updateready", function(evt) {
                         if (window.applicationCache.status == window.applicationCache.UPDATEREADY) {
                             // Browser downloaded a new app cache.
-                            if (confirm('A new version of this cache is available.')) {
+                            if (confirm("A new version of this cache is available.")) {
                                 window.location.reload();
                                 console.log("App cache reloaded");
                                 this.emit(this.UPDATE_READY,null);
@@ -55,63 +55,56 @@ define([
             },
 
             setCacheListeners:function(){
-                this.appCache.addEventListener('cached', this._handleCacheEvents.bind(this), false);
+                this.appCache.addEventListener("cached", this._handleCacheEvents.bind(this), false);
 
                 // Checking for an update. Always the first event fired in the sequence.
-                this.appCache.addEventListener('checking', this._handleCacheEvents.bind(this), false);
+                this.appCache.addEventListener("checking", this._handleCacheEvents.bind(this), false);
 
                 // An update was found. The browser is fetching resources.
-                this.appCache.addEventListener('downloading', this._handleCacheEvents.bind(this), false);
+                this.appCache.addEventListener("downloading", this._handleCacheEvents.bind(this), false);
 
                 // The manifest returns 404 or 410, the download failed,
                 // or the manifest changed while the download was in progress.
-                this.appCache.addEventListener('error', this._handleCacheErrors.bind(this), false);
+                this.appCache.addEventListener("error", this._handleCacheErrors.bind(this), false);
 
                 // Fired after the first download of the manifest.
-                this.appCache.addEventListener('noupdate', this._handleCacheEvents.bind(this), false);
+                this.appCache.addEventListener("noupdate", this._handleCacheEvents.bind(this), false);
 
                 // Fired if the manifest file returns a 404 or 410.
                 // This results in the application cache being deleted.
-                this.appCache.addEventListener('obsolete', this._handleCacheEvents.bind(this), false);
+                this.appCache.addEventListener("obsolete", this._handleCacheEvents.bind(this), false);
 
                 // Fired for each resource listed in the manifest as it is being fetched.
-                this.appCache.addEventListener('progress', this._handleCacheEvents.bind(this), false);
+                this.appCache.addEventListener("progress", this._handleCacheEvents.bind(this), false);
 
                 // Fired when the manifest resources have been newly redownloaded.
-                this.appCache.addEventListener('updateready', this._handleCacheEvents.bind(this), false);
+                this.appCache.addEventListener("updateready", this._handleCacheEvents.bind(this), false);
             },
 
             getCacheStatus:function(){
 
                 switch (this.appCache.status) {
                     case this.appCache.UNCACHED: // UNCACHED == 0
-                        return 'UNCACHED';
-                        break;
+                        return "UNCACHED";
                     case this.appCache.IDLE: // IDLE == 1
-                        return 'IDLE';
-                        break;
+                        return "IDLE";
                     case this.appCache.CHECKING: // CHECKING == 2
-                        return 'CHECKING';
-                        break;
+                        return "CHECKING";
                     case this.appCache.DOWNLOADING: // DOWNLOADING == 3
-                        return 'DOWNLOADING';
-                        break;
+                        return "DOWNLOADING";
                     case this.appCache.UPDATEREADY:  // UPDATEREADY == 4
-                        return 'UPDATEREADY';
-                        break;
+                        return "UPDATEREADY";
                     case this.appCache.OBSOLETE: // OBSOLETE == 5
-                        return 'OBSOLETE';
-                        break;
+                        return "OBSOLETE";
                     default:
-                        return 'UKNOWN CACHE STATUS';
-                        break;
-                };
+                        return "UKNOWN CACHE STATUS";
+                }
             },
 
             _handleCacheEvents:function(evt){
                 if(evt.hasOwnProperty("total") && evt.hasOwnProperty("loaded")){
                     if(evt.total == evt.loaded){
-                        console.log("appCacheManager: cache has finished loading.")
+                        console.log("appCacheManager: cache has finished loading.");
                         this.emit(this.CACHE_LOADED,"cache-loaded");
                     }
                 }
@@ -121,7 +114,6 @@ define([
             _handleCacheErrors:function(evt){
                 this.emit(this.CACHE_ERROR,evt);
             }
-        })
+        });
     }
-)
-
+);
