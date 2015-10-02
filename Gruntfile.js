@@ -36,7 +36,9 @@ module.exports = function(grunt) {
                     'lib/tiles/tilingScheme.js',
                     'lib/tpk/autoCenterMap.js',
                     'lib/tpk/OfflineTpkNS.js',
-                    'lib/tpk/TPKLayer.js'
+                    'lib/tpk/TPKLayer.js',
+                    'utils/appCacheManager.js',
+                    'utils/debouncer.js'
                 ]
             }
         },
