@@ -439,7 +439,7 @@ describe("Public Interface", function()
             });
 
             async.it("Set featureCollection", function(done) {
-                var featureCollectionObject = {
+                var featureCollectionObject1 = {
                     // The id is required because the editsStore keypath
                     // uses it as a UID for all entries in the database
                     id: g_editsStore.FEATURE_COLLECTION_ID,
@@ -451,10 +451,58 @@ describe("Public Interface", function()
                     ]
                 };
 
-                g_editsStore._pushFeatureCollections(featureCollectionObject, function(success) {
+                var featureCollectionObject2 = {
+                    // The id is required because the editsStore keypath
+                    // uses it as a UID for all entries in the database
+                    id: g_editsStore.FEATURE_COLLECTION_ID,
+                    featureCollections: [
+                        {
+                            featureLayerUrl: "TEST_URL1",
+                            featureLayerCollection: "featureCollectionFeature"
+                        },
+                        {
+                            featureLayerUrl: "TEST_URL2",
+                            featureLayerCollection: "featureCollectionFeature"
+                        }
+
+                    ]
+                };
+
+                var featureCollectionObject3 = {
+                    // The id is required because the editsStore keypath
+                    // uses it as a UID for all entries in the database
+                    id: g_editsStore.FEATURE_COLLECTION_ID,
+                    featureCollections: [
+                        {
+                            featureLayerUrl: "TEST_URL1",
+                            featureLayerCollection: "featureCollectionFeature"
+                        },
+                        {
+                            featureLayerUrl: "TEST_URL2",
+                            featureLayerCollection: "featureCollectionFeature"
+                        },
+                        {
+                            featureLayerUrl: "TEST_URL3",
+                            featureLayerCollection: "featureCollectionFeature"
+                        }
+                    ]
+                };
+
+                g_editsStore._pushFeatureCollections(featureCollectionObject1, function(success) {
                     console.log("SUCCESS IS " + success);
                     expect(success).toBe(true);
-                    done();
+
+                    g_editsStore._pushFeatureCollections(featureCollectionObject2, function(success) {
+                        console.log("SUCCESS IS " + success);
+                        expect(success).toBe(true);
+                        //done();
+
+                        g_editsStore._pushFeatureCollections(featureCollectionObject3, function(success) {
+                            console.log("SUCCESS IS " + success);
+                            expect(success).toBe(true);
+                            done();
+                        });
+                    });
                 });
             });
 
@@ -462,6 +510,8 @@ describe("Public Interface", function()
                 g_editsStore._getFeatureCollections(function(success, result){
                     expect(success).toBe(true);
                     expect(result.featureCollections[0].featureLayerUrl).toBe("TEST_URL1");
+                    expect(result.featureCollections[1].featureLayerUrl).toBe("TEST_URL2");
+                    expect(result.featureCollections[2].featureLayerUrl).toBe("TEST_URL3");
                     done();
                 });
             });
@@ -469,8 +519,8 @@ describe("Public Interface", function()
             async.it("get size", function(done){
                 g_editsStore.getUsage(function(success){
                     expect(success).toEqual(jasmine.any(Object));
-                    expect(success.sizeBytes).toEqual(1695);
-                    expect(success.editCount).toEqual(3);
+                    expect(success.sizeBytes).toBe(1863);
+                    expect(success.editCount).toBe(3);
                     done();
                 })
             });

@@ -153,13 +153,13 @@ The workflow for this coding pattern is you start out online > offline > browser
 ```
 
 
-There are two approaches to using the dataStore.
+There are two approaches to using the dataStore:
 
-Approach 1 involves you manually creating the dataStore for greater control over what goes into the Data Store Object and then inserting that Object into the offlineFeatureManager's constructor.
+* **Approach 1** involves you manually creating the dataStore for greater control over what goes into the Data Store Object and then inserting that Object into the offlineFeatureManager's constructor.
 
-Approach 2, you can let the library manage it automatically upon an ADD, UPDATE or DELETE. This is accomplished by not inserting a manual Data Store Object into offlineFeatureManager constructor and instead setting offlineFeaturesManager.ENABLE_FEATURECOLLECTION = true.
+* **Approach 2**, you can let the library manage it automatically upon an ADD, UPDATE or DELETE. This is accomplished by not inserting a manual Data Store Object into offlineFeatureManager constructor and instead setting offlineFeaturesManager.ENABLE_FEATURECOLLECTION = true.
 
-Approach 1 - manually create dataStore
+#### Approach 1 - manually create dataStore
 
 The `dataStore` object has one reserved key and that is `id`. If you overwrite the `id` key the application will fail to update the `dataStore` object correctly. Here is an example of one possible `dataStore` object:
 
@@ -174,6 +174,35 @@ The `dataStore` object has one reserved key and that is `id`. If you overwrite t
 ```
 
 **NOTE:** The `dataStore` is a single JavaScript Object. When manually submitting a `dataStore` the last Object wins (LIFO). Any new `dataStore` will overwrite the previous values. 
+
+Here's one approach for using a recursive function for loading the feature layers:
+
+```js
+
+    var featureLayerArray = [featureLayer0, featureLayer1, featureLayer2, . . . ];
+    
+    var count = 0;
+    function extendFeatureLayers(){
+        if(count <= featureLayerArray.length){
+            offlineFeaturesManager.extend(featureLayerArray[count],
+                function(success, error){
+                    if(success){
+                        count++;
+                        extendFeatureLayers();
+                    }
+                    else {
+                        console.log(“Error when extending layer: “ + count);
+                    }
+                });
+        }
+        else {
+            //You are now done! Put post-completion code here.
+        }
+    }
+
+
+```
+
 
 You can then retrieve this data after an offline restart by using the following pattern:
 
@@ -198,7 +227,7 @@ You can then retrieve this data after an offline restart by using the following 
 
 ```
 
-Approach 2 - automatic management of dataStore
+#### Approach 2 - automatic management of dataStore
 
 If you don't want to deal with creating and managing your own data store when working with offline browser restarts, then here's the pattern for using the built-in `featureLayerCollections`. This pattern is ideal if you are using Esri's pre-built widgets such as `AttributeInspector` and you don't have access to the necessary events for creating and updating the `dataStore`. 
 

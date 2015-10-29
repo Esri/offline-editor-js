@@ -1,5 +1,15 @@
 # offline-editor-js - Changelog
 
+## Version 2.16 - Oct. 29, 2015
+
+No breaking changes. Recommended update.
+
+**Enhancements**
+* Closes #418 - Updated How To Use Edit Library doc to show a recursive coding pattern for loading multiple feature layers.
+
+**Bug Fix**
+* Closes #419 - OfflineFeaturesManager now works correctly when extending multiple feature layers.
+
 ## Version 2.15 - Sep. 29, 2015
 
 No breaking changes. 

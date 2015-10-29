@@ -1,4 +1,4 @@
-/*! esri-offline-maps - v2.15.0 - 2015-09-29
+/*! esri-offline-maps - v2.16.0 - 2015-10-29
 *   Copyright (c) 2015 Environmental Systems Research Institute, Inc.
 *   Apache License*/
 define([
@@ -449,7 +449,7 @@ define([
         },
 
         /**
-         * Assign various properties to the layer
+         * Assign various properties to the layer and then load tiles
          * @param result
          * @param context
          * @param callback
@@ -544,10 +544,9 @@ define([
                         }
                     }
                     else {
+                        // Now it's okay to parse the response
                         self._parseTileInfo(staticResponse, self, callback);
                     }
-
-                    //callback(this.response);
                 }
                 else
                 {
