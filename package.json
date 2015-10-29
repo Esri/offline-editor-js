@@ -1,6 +1,6 @@
 {
   "name": "esri-offline-maps",
-  "version": "2.15.0",
+  "version": "2.16.0",
   "description": "Lightweight set of libraries for working offline with map tiles and editing with ArcGIS feature services",
   "author": "Andy Gup <agup@esri.com> (http://blog.andygup.net)",
   "license": "Apache 2.0",
