@@ -1,4 +1,4 @@
-/*! esri-offline-maps - v2.15.0 - 2015-09-29
+/*! esri-offline-maps - v2.16.0 - 2015-10-29
 *   Copyright (c) 2015 Environmental Systems Research Institute, Inc.
 *   Apache License*/
 /*jshint -W030 */
@@ -388,7 +388,6 @@ define([
                     layer.applyEdits = function (adds, updates, deletes, callback, errback) {
                         // inside this method, 'this' will be the FeatureLayer
                         // and 'self' will be the offlineFeatureLayer object
-
                         var promises = [];
 
                         if (self.getOnlineStatus() === self.ONLINE) {
@@ -405,8 +404,8 @@ define([
                         var results = {addResults: [], updateResults: [], deleteResults: []};
                         var updatesMap = {};
 
-                        adds = adds || [];
-                        adds.forEach(function (addEdit) {
+                        var _adds = adds || [];
+                        _adds.forEach(function (addEdit) {
                             var deferred = new Deferred();
 
                             var objectId = this._getNextTempId();
@@ -503,19 +502,35 @@ define([
 
                         all(promises).then(function (r) {
                             // Make sure all edits were successful. If not throw an error.
-                            var success = true;
+                            var promisesSuccess = true;
                             for (var v = 0; v < r.length; v++) {
                                 if (r[v] === false) {
-                                    success = false;
+                                    promisesSuccess = false;
                                 }
                             }
 
-                            layer._pushFeatureCollections();
+                            layer._pushFeatureCollections(function(success){
+                                console.log("All edits done");
 
-                            // we already pushed the edits into the database, now we let the FeatureLayer to do the local updating of the layer graphics
+                                if(success && promisesSuccess){
+                                    self.emit(self.events.EDITS_ENQUEUED, results);
+                                }
+                                else {
+                                    if(!success){
+                                        console.log("applyEdits() there was a problem with _pushFeatureCollections.");
+                                    }
+                                    self.emit(self.events.EDITS_ENQUEUED_ERROR, results);
+                                }
+
+                                //promisesSuccess === true ? self.emit(self.events.EDITS_ENQUEUED, results) : self.emit(self.events.EDITS_ENQUEUED_ERROR, results);
+
+                                // we already pushed the edits into the database, now we let the FeatureLayer to do the local updating of the layer graphics
+                                this._editHandler(results, _adds, updatesMap, callback, errback, deferred1);
+                            }.bind(this));
+
+                            //success === true ? self.emit(self.events.EDITS_ENQUEUED, results) : self.emit(self.events.EDITS_ENQUEUED_ERROR, results);
                             // EDITS_ENQUEUED = callback(true, edit), and EDITS_ENQUEUED_ERROR = callback(false, /*String */ error)
-                            this._editHandler(results, adds, updatesMap, callback, errback, deferred1);
-                            success === true ? self.emit(self.events.EDITS_ENQUEUED, results) : self.emit(self.events.EDITS_ENQUEUED_ERROR, results);
+                            //this._editHandler(results, _adds, updatesMap, callback, errback, deferred1);
                         }.bind(this));
 
                         return deferred1;
@@ -765,10 +780,10 @@ define([
                      * to reconstitute a featureLayer and then redisplay all the associated features.
                      *
                      * To retrieve use OfflineFeaturesManager.getFeatureCollections().
-                     *
+                     * @param callback (boolean)
                      * @private
                      */
-                    layer._pushFeatureCollections = function(){
+                    layer._pushFeatureCollections = function(callback){
 
                         // First let's see if any collections exists
                         self._editStore._getFeatureCollections(function(success, result) {
@@ -827,8 +842,12 @@ define([
                             self._editStore._pushFeatureCollections(result, function(success, error) {
                                 if(!success){
                                     console.error("There was a problem creating the featureCollectionObject: " + error);
+                                    callback(false);
                                 }
-                            });
+                                else {
+                                    callback(true);
+                                }
+                            }.bind(this));
                         });
                     };
 
@@ -1159,9 +1178,18 @@ define([
                         if(r.length === 0 && url){
                             // Initialize the internal featureLayerCollectionObject
                             if(this.ENABLE_FEATURECOLLECTION) {
-                                layer._pushFeatureCollections();
+                                layer._pushFeatureCollections(function(success){
+                                    if(success){
+                                        callback(true, null);
+                                    }
+                                    else {
+                                        callback(false, null);
+                                    }
+                                });
                             }
-                            callback(true, null);
+                            else {
+                                callback(true, null);
+                            }
                         }
                         else if(r[0].success && !url){
 
@@ -1175,9 +1203,18 @@ define([
 
                                     // Initialize the internal featureLayerCollectionObject
                                     if(this.ENABLE_FEATURECOLLECTION) {
-                                        layer._pushFeatureCollections();
+                                        layer._pushFeatureCollections(function(success){
+                                            if(success){
+                                                callback(true, null);
+                                            }
+                                            else {
+                                                callback(false, null);
+                                            }
+                                        });
                                     }
-                                    callback(true, null);
+                                    else {
+                                        callback(true, null);
+                                    }
                                 }
                                 else {
                                     // NOTE: We have to have a valid feature layer URL in order to initialize the featureLayerCollectionObject
@@ -1188,12 +1225,19 @@ define([
                         }
                         else if(r[0].success){
 
-                            // Initialize the internal featureLayerCollectionObject
                             if(this.ENABLE_FEATURECOLLECTION) {
-                                layer._pushFeatureCollections();
+                                layer._pushFeatureCollections(function(success){
+                                    if(success){
+                                        callback(true, null);
+                                    }
+                                    else {
+                                        callback(false, null);
+                                    }
+                                });
                             }
-
-                            callback(true, null);
+                            else {
+                                callback(true, null);
+                            }
                         }
                     }.bind(this));
 

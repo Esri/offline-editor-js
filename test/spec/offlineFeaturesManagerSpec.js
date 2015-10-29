@@ -395,6 +395,12 @@ describe("Offline Editing", function()
 
         async.it("update existing features - points", function(done)
         {
+
+            var listener = jasmine.createSpy('event listener edits enqueued');
+
+            g_offlineFeaturesManager.on(g_offlineFeaturesManager.events.EDITS_ENQUEUED,listener);
+
+
             expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2,g3]));
             expect(g_featureLayers[0].graphics.length).toBe(3);
             expect(g_offlineFeaturesManager.getOnlineStatus()).toBe(g_offlineFeaturesManager.OFFLINE);
@@ -411,6 +417,7 @@ describe("Offline Editing", function()
                     expect(updateResults[2].success).toBeTruthy();
                     expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2,g3]));
                     expect(g_featureLayers[0].graphics.length).toBe(3);
+                    expect(listener).toHaveBeenCalled();
                     g_editsStore.pendingEditsCount(function(result){
                         expect(result).toBe(3);
                         done();
