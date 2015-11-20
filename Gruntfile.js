@@ -58,6 +58,15 @@ module.exports = function(grunt) {
                 ],
                 dest: 'dist/offline-edit-src.js'
             },
+            editLight: {
+                src: [
+                    'lib/edit/offlineJSOptions.js',
+                    'lib/edit/OfflineFeatureLayer.js',
+                    'lib/edit/OfflineEditNS.js',
+                    'lib/edit/editStorePOLS.js'
+                ],
+                dest: 'dist/offline-editlight-src.js'
+            },
             /* Tiles basic is for use with WebMaps. Cannot be reloaded or restarted while offline */
             tilesBasic: {
                 src: [
@@ -113,6 +122,7 @@ module.exports = function(grunt) {
             dist: {
                 files: {
                     'dist/offline-edit-min.js': ['dist/offline-edit-src.js'],
+                    'dist/offline-editlight-min.js': ['dist/offline-editlight-src.js'],
                     'dist/offline-tiles-basic-min.js': ['dist/offline-tiles-basic-src.js'],
                     'dist/offline-tiles-advanced-min.js': ['dist/offline-tiles-advanced-src.js'],
                     'dist/offline-tpk-min.js': ['dist/offline-tpk-src.js']
