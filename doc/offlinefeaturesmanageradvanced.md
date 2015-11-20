@@ -1,19 +1,19 @@
-API OfflineFeaturesManager
-==========================
+API OfflineFeaturesManagerAdvanced
+==================================
 
-##O.esri.Edit.OfflineFeaturesManager
-The `offline-edit-min.js` library provides the following tools for working with esri.layers.FeatureLayer objects while partially or fully offline. 
+##O.esri.Edit.OfflineFeaturesManagerAdvanced
+The `offline-edit-advanced-min.js` library provides the following tools for working with esri.layers.FeatureLayer objects while intermittently and fully offline. 
 
 
 ###Constructor
 Constructor | Description
 --- | ---
-`O.esri.Edit.OfflineFeaturesManager()` | Creates an instance of the OfflineFeaturesManager class. This library allows you to extend FeatureLayer objects with offline editing capabilities and manage the online/offline resynchronization process.
+`O.esri.Edit.OfflineFeaturesManagerAdvanced()` | Creates an instance of the OfflineFeaturesManagerAdvanced class. This library allows you to extend FeatureLayer objects with offline editing capabilities and manage the online/offline resynchronization process.
 
 ###Properties
 Property | Value | Description
 --- | --- | ---
-`DB_NAME` | "features_store" | Sets the database name. You can instantiate multiple databases within the same application by creating seperate instances of OfflineFeaturesManager.
+`DB_NAME` | "features_store" | Sets the database name. You can instantiate multiple databases within the same application by creating seperate instances of OfflineFeaturesManagerAdvanced.
 `DB_OBJECTSTORE_NAME` | "features" | Represents an object store that allows access to a set of data in the database.
 `DB_UID` | "objectid" | IMPORTANT!** This tells the database what id to use as a unique identifier. This depends on how your feature service was created. ArcGIS Online services may use something different such as `GlobalID`.
 `ATTACHMENTS_DB_NAME` | "attachments_store" | (Added @ v2.7) Sets the attachments database name.
@@ -33,7 +33,7 @@ Property | Value | Description
 
 ###Methods
 
-OfflineFeaturesManager provides the following functionality.
+OfflineFeaturesManagerAdvanced provides the following functionality.
 
 **IMPORTANT:** The library currently only works offline when the feature layer's `mode` is set to `FeatureLayer.MODE_SNAPSHOT`.
 
@@ -44,17 +44,17 @@ Methods | Returns | Description
 `goOnline(callback)` | No attachments: `callback( {success: boolean, responses: Object } )`<br><br> With attachments: `callback( {success: boolean, responses: uploadedResponses, dbResponses: dbResponses })` | Forces library to return to an online state. If there are pending edits, an attempt will be made to sync them with the remote feature server. Callback function will be called when resync process is done. <br><br>Refer to the [How to use the edit library doc](howtouseeditlibrary.md) for addition information on the `results` object.
 `getOnlineStatus()` | `ONLINE`, `OFFLINE` or `RECONNECTING`| Determines the current state of the manager. Please, note that this library doesn't detect actual browser offline/online condition. You need to use the `offline.min.js` library included in `vendor\offline` directory to detect connection status and connect events to goOffline() and goOnline() methods. See `military-offline.html` sample.
 `getFeatureCollections( callback )` | `callback( boolean, Object)` | (Added @ v2.9) Returns and Object that contains the latest `featureLayerCollection` snapshot for each feature layer that is using the library. Each collection is updated automatically by the library when there is an associated `ADD`, `UPDATE` or `DELETE` operation.<br><br>This method should be used when working with pre-built Esri widgets such as the `AttributeInspector.`
-`getFeatureLayerJSONDataStore( callback )` | `callback( boolean, Object)` | (Added @ v2.7.1) Returns the feature layer's dataStore Object that was created using the `offlineFeaturesManager()` constructor. Offers more control what is provided by `getFeatureCollections()`.
+`getFeatureLayerJSONDataStore( callback )` | `callback( boolean, Object)` | (Added @ v2.7.1) Returns the feature layer's dataStore Object that was created using the `offlineFeaturesManagerAdvanced()` constructor. Offers more control what is provided by `getFeatureCollections()`.
 `getReadableEdit()` | String | **DEPRECATED** @ v2.5. A string value representing human readable information on pending edits. Use `featureLayer.getAllEditsArray()`.
 
 
 ###Events
-Application code can subscribe to offlineFeaturesManager events to be notified of different conditions. 
+Application code can subscribe to offlineFeaturesManagerAdvanced events to be notified of different conditions. 
 
 ```js
 
-	offlineFeaturesManager.on(
-		offlineFeaturesManager.events.ALL_EDITS_SENT, 
+	offlineFeaturesManagerAdvanced.on(
+		offlineFeaturesManagerAdvanced.events.ALL_EDITS_SENT, 
 		function(edits) 
 		{
 			...
@@ -73,7 +73,7 @@ Event | Value | Returns |  Description
 
 ###FeatureLayer 
 
-A FeatureLayer that has been extended using OfflineFeaturesManager.extend() will gain access to the following additional functionality. Example usage:
+A FeatureLayer that has been extended using OfflineFeaturesManagerAdvanced.extend() will gain access to the following additional functionality. Example usage:
 
 
 ```js
@@ -109,76 +109,3 @@ Methods | Returns | Description
 `setFeatureLayerJSONDataStore( jsonObject, callback)` | `callback( boolean, error)` | Sets the optional feature layer storage object. Can be used instead of the `OfflineFeatureManager` constructor's `dataStore` property or to update it. `jsonObject` can be any Object. However, they key name `id` is reserved. This data store object is used for full offline browser restarts.
 `getFeatureLayerJSONDataStore(callback)` | `callback( true, object )` or `callback( false, errorString)` | Retrieves the optional feature layer storage object. This data store object is used for full offline browser restarts.
 `convertFeatureGraphicsToJSON(` `[features],callback)` | `callback( jsonString )` | Helper function that converts an array of feature layer graphics to a JSON string.
-
-##O.esri.Edit.EditStore
-
-Provides a number of public methods that are used by `OfflineFeaturesManager` library for storing edits in the browser. Instiantiate this library using a `new` statement. 
-
-__NOTE:__ Use with caution as most of the methods are RESERVED for internal library use-only. All common use functions should be accessed directly through the feature layer after it has been extended by the offlineFeaturesManager.
-
-###Constructor
-Constructor | Description
---- | ---
-`O.esri.Edit.EditStore()` | Creates an instance of the EditStore class. This library is responsible for managing the storage, reading, writing, serialization, deserialization of geometric features. 
-
-###ENUMs
-
-Property | Value | Description
---- | --- | ---
-`ADD` | "add" | Represents a FeatureLayer.add() operation.
-`UPDATE` | "update" | Represents a FeatureLayer.update() operation.
-`DELETE` | "delete" | Represents a FeatureLayer.delete() operation.
-
-###Public Properties
-
-Property | Value | Description
---- | --- | ---
-`dbName` | "features_store" | Defines the database name. You can have multiple databases within the same application.
-`objectStoreName` | "features" | Represents an object store that allows access to a set of data in the IndexedDB database, looked up via primary key. 
-
-###Public Methods
-Methods | Returns | Description
---- | --- | ---
-`isSupported()` | boolean | Determines if local storage is available. If it is not available then the storage cache will not work. It's a best practice to verify this before attempting to write to the local cache.
-`pushEdit(` `operation, layer, graphic, callback)` | `callback(` `true, edit)` or  `callback(` `false, message)`| Pushes an edit into storage. Operation is the corresponding enum. Layer is a reference to the feature layer, and the graphic is the graphic object associated with the edit.
-`resetEditsQueue(callback)` | `callback( boolean, error)` | Use with **caution**, initiates a complete database reset. If some edits weren't sent when your app goes online, then you will delete those records as well.
-`pendingEditsCount( callback )` | `callback( int )` | The total number of edits that are queued in the database.
-`getAllEditsArray( callback)` | `callback()` | Returns all edits in an iterable array.
-`getFeatureLayerJSON( callback)` | `callback( boolean, Object)` | Returns the feature layer JSON object.
-`deleteFeatureLayerJSON( callback)` | `callback( boolean, {message:String)` | Delete the feature layer JSON object from the database.
-`pushFeatureLayerJSON( dataObject, callback)` | `callback( boolean, error)` | Use this to store any static FeatureLayer or related JSON data related to your app that will assist in restoring the layer after an offline restart. Supports adds and updates, will not overwrite entire object.
-`getUsage( callback)` | `callback( int, errorString)` | Returns the approximate size of the database in bytes.
-`hasPendingEdits()` | boolean | Determines if there are any queued edits in the local cache. Use `pendingEditsCount()` instead.
-`retrieveEditsQueue()` | Array | Returns an array of all pending edits.
-`getEditsStoreSizeBytes()` | Number | Returns the total size of all pending edits in bytes. Use `getUsage()` instead.
-`getLocalStorageSizeBytes()` | Number | Returns the total size in bytes of all items for local storage cached using the current domain name. Use `getUsage()` instead.
-
-##O.esri.Edit.AttachmentsStore
-
-Provides a number of public methods that are used by `OfflineFeaturesManager` library for storing attachments in the browser. Instiantiate this library using a `new` statement. Instiantiate this library using a `new` statement. In general, you shouldn't be adding, updating or deleting data directly. You should be using functionality extended thru the feature layer.
-
-###Constructor
-Constructor | Description
---- | ---
-`O.esri.Edit.AttachmentsStore()` | Creates an instance of the AttachmentsStore class. This library is responsible for managing the storage of attachments. 
-
-###Properties
-
-Property | Value | Description
---- | --- | ---
-`dbName` | "attachments_store" | Represents a FeatureLayer.add() operation.
-`objectStoreName` | "attachments" | Represents a FeatureLayer.update() operation.
-`TYPE` | "ADD", "UPDATE" or "DELETE" | (Added @ v2.7) Specifies the type of operation against an attachment. 
-
-###Public Methods
-Methods | Returns | Description
---- | --- | ---
-`store(` `featureLayerUrl, attachmentId,` `objectId, attachmentFile, callback)` |  `callback(` `true, edit)` or  `callback(` `false, message)` | Stores attachment. AttachmentId is temporary. For more information on `objectId` see the [FeatureLayer.addAttachments()](https://developers.arcgis.com/javascript/jsapi/featurelayer-amd.html#addattachment) doc.
-`retrieve(attachmentId, callback)` | `callback(` `true, result)` or  `callback(` `false, message)` | Retrieves an attachment by its unique `attachmentId`. 
-`getAttachmentsByFeatureId(featureLayerUrl,`  `objectId, callback)` | `callback([attachments])` | Retrieves all attachments having the unique `objectId`. For more information on `objectId` see the [FeatureLayer.addAttachments()](https://developers.arcgis.com/javascript/jsapi/featurelayer-amd.html#addattachment) doc 
-`getAttachmentsByFeatureLayer(featureLayerUrl, callback)` | `callback([attachments])` | Retrieves all attachments in the specified feature layer. 
-`getAllAttachments(callback)` | `callback([attachments])` | Retrieves all attachments in the database. 
-`deleteAttachmentsByFeatureId(featureLayerUrl,` `objectId, callback)` | `callback(int)` | Deletes all attachments having the unique `objectId`. Callback provides the number of attachments deleted. 
-`deleteAll(callback)` | `callback(` `true)` or  `callback(` `false, message)`  | Deletes all attachments in the database. 
-`replaceFeatureId(featureLayerUrl,` `oldId, newId, callback)` | `callback(int)`  | Gives an attachment a new objectId. Returns the number of attachments that were updated. 
-`getUsage(callback)` | `callback({sizeBytes: int,` `attachmentCount: int})`  | Returns an approximation of how much data is stored in the database. 
