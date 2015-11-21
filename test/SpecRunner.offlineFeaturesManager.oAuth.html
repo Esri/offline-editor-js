@@ -41,7 +41,7 @@
 		"esri/layers/FeatureLayer", "esri/geometry", "esri/request",
 		"dojo/dom", "dojo/dom-style", "dojo/on", "dojo/query",
 		"dojo/dom-construct",
-        "../dist/offline-edit-src.js",
+        "../dist/offline-edit-advanced-src.js",
         "dojo/domReady!"],
 		function(Map, OAuthInfo, esriId,
 			GraphicsLayer, Graphic, 
@@ -81,12 +81,12 @@
 
 			g_modules.esriRequest = esriRequest;
 			g_modules.Graphic = Graphic;
-			g_offlineFeaturesManager = new O.esri.Edit.OfflineFeaturesManager();
+			g_offlineFeaturesManager = new O.esri.Edit.OfflineFeaturesManagerAdvanced();
             g_offlineFeaturesManager.DB_NAME = "FEATURES_TEST";
             g_offlineFeaturesManager.DB_UID = "OBJECTID"; //VERY IMPORTANT! We get this from the Service Directory "Fields" section.
 
             // For testing attachments
-            g_offlineFeaturesManagerAttach = new O.esri.Edit.OfflineFeaturesManager();
+            g_offlineFeaturesManagerAttach = new O.esri.Edit.OfflineFeaturesManagerAdvanced();
             g_offlineFeaturesManagerAttach.DB_NAME = "ATTACH_TEST";
 
 			// We are also validating the OfflineFeatureManager directly against the database

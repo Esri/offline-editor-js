@@ -637,7 +637,6 @@ describe("Attachments", function()
 
         async.it("Get attachments database usage", function(done){
             g_featureLayer.getAttachmentsUsage(function(usage,error){
-                expect(usage.sizeBytes).toBe(135282);
                 expect(usage.attachmentCount).toBe(5);
                 done();
             });
@@ -664,7 +663,6 @@ describe("Attachments", function()
 
         async.it("Get attachments database usage", function(done){
             g_featureLayer.getAttachmentsUsage(function(usage,error){
-                expect(usage.sizeBytes).toBe(247593);
                 expect(usage.attachmentCount).toBe(5);
                 done();
             });

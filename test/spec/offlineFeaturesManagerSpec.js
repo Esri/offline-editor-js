@@ -89,9 +89,9 @@ describe("Normal online editing - Exercise the feature services", function()
 				expect(addResults[0].success).toBeTruthy();
 				expect(addResults[1].success).toBeTruthy();
 				expect(addResults[2].success).toBeTruthy();
-				g1.attributes.objectid = addResults[0].objectId;
-				g2.attributes.objectid = addResults[1].objectId;
-				g3.attributes.objectid = addResults[2].objectId;
+				//g1.attributes.objectid = addResults[0].objectId;
+				//g2.attributes.objectid = addResults[1].objectId;
+				//g3.attributes.objectid = addResults[2].objectId;
 				expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2,g3]));
 				expect(g_featureLayers[0].graphics.length).toBe(3);
 				countFeatures(g_featureLayers[0], function(success,result)
@@ -527,12 +527,12 @@ describe("Offline Editing", function()
 
                     expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2,g4,g5,g6]));
                     expect(g_featureLayers[0].graphics.length).toBe(5);
-                    g4.attributes.objectid = addResults[0].objectId;
-                    g5.attributes.objectid = addResults[1].objectId;
-                    g6.attributes.objectid = addResults[2].objectId;
-                    expect(g4.attributes.objectid).toBeLessThan(0);
-                    expect(g5.attributes.objectid).toBeLessThan(g4.attributes.objectid);
-                    expect(g6.attributes.objectid).toBeLessThan(g5.attributes.objectid);
+                    //g4.attributes.objectid = addResults[0].objectId;
+                    //g5.attributes.objectid = addResults[1].objectId;
+                    //g6.attributes.objectid = addResults[2].objectId;
+                    expect(g4.attributes.OBJECTID).toEqual(-1);
+                    expect(g5.attributes.OBJECTID).toEqual(-2);
+                    expect(g6.attributes.OBJECTID).toEqual(-3);
                 },
                 function(error)
                 {
@@ -648,7 +648,7 @@ describe("Offline Editing", function()
 
         async.it("check db size", function(done){
             g_featureLayers[0].getUsage(function(usage,error){
-                expect(usage.sizeBytes).toBe(9203);
+                expect(usage.sizeBytes).toBe(9311);
                 expect(usage.editCount).toBe(5);
                 expect(error).toBe(null);
                 done();
@@ -1116,7 +1116,6 @@ describe("Offline Editing", function()
         {
 
             var listener = jasmine.createSpy('event listener all edits sent');
-            var listener_editsSent = jasmine.createSpy('event listener edits sent');
 
             g_offlineFeaturesManager.on(g_offlineFeaturesManager.events.ALL_EDITS_SENT,listener);
 

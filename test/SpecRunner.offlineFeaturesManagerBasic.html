@@ -42,7 +42,7 @@
                     "esri/layers/FeatureLayer", "esri/geometry", "esri/request",
                     "dojo/dom", "dojo/on", "dojo/query",
                     "dojo/dom-construct",
-                    "../dist/offline-editlight-src.js",
+                    "../dist/offline-edit-basic-src.js",
                     "dojo/domReady!"],
                 function(Map,
                          GraphicsLayer, Graphic,
@@ -62,7 +62,7 @@
 
                     g_modules.esriRequest = esriRequest;
                     g_modules.Graphic = Graphic;
-                    g_offlineFeaturesManager = new O.esri.Edit.OfflineFeatureLayer();
+                    g_offlineFeaturesManager = new O.esri.Edit.OfflineFeaturesManagerBasic();
                     g_offlineFeaturesManager.DB_NAME = "FEATURES_TEST";
                     g_offlineFeaturesManager.DB_UID = "OBJECTID"; //VERY IMPORTANT! We get this from the Service Directory "Fields" section.
 
