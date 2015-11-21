@@ -12,7 +12,7 @@ This library allows a developer to extend a feature layer with intermittent and 
 The pattern for how we include the tiles and edit library within the `require` statement is called generic script injection. Note that we do assign any of the editing or tile libraries an alias name. For example, we specified the mobile path "esri/map" and we gave it an alias called "Map." But, we did not do the equivalent for `offline-tiles-basic-min.js` or `offline-edit-advanced-min.js`.
 
 ```html	
-	<script src="../vendor/offline/offline.min.js"></script>
+    <script src="//github.hubspot.com/offline/offline.min.js"></script>
 	<script>
 	require([
 		"esri/map", 
