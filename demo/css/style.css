@@ -11,8 +11,16 @@ body {
     height: 50px;
     line-height: 20px;
     font-size: large;
-    color: #ffffff;
+    color: #000000;
 }
+.navbar {
+    background-color: #6699cc !important;
+}
+
+.navbar-nav:hover {
+    color: black;
+}
+
 .navbar-brand-title:hover {
     color: lightgray;
     text-decoration: none;
