@@ -39,13 +39,12 @@ OfflineFeaturesManagerAdvanced provides the following functionality.
 
 Methods | Returns | Description
 --- | --- | ---
-`extend( layer,` `callback, dataStore)`|`callback( boolean, errors )`| Overrides a feature layer, by replacing the `applyEdits()` method of the layer. You can use the FeatureLayer as always, but it's behaviour will be enhanced according to the online status of the manager and the capabilities included in this library.<br><br> `Callback` indicates the layer has been extended. <br><br>`dataStore` is an optional Object that contains any information you need when reconsistuting the layer after an offline browser restart. Refer to the [How to use the edit library doc](howtouseeditlibrary.md) for addition information.
+`extend( layer,` `callback, dataStore)`|`callback( boolean, errors )`| Overrides a feature layer, by replacing the `applyEdits()` method of the layer. You can use the FeatureLayer as always, but it's behaviour will be enhanced according to the online status of the manager and the capabilities included in this library.<br><br> `Callback` indicates the layer has been extended. <br><br>`dataStore` is an optional Object that contains any information you need when reconsistuting the layer after an offline browser restart. Refer to the [How to use the advanced edit library doc](howtouseofmadvancedlibrary.md) for addition information.
 `goOffline()` | nothing | Forces library into an offline state. Any edits applied to extended FeatureLayers during this condition will be stored locally.
-`goOnline(callback)` | No attachments: `callback( {success: boolean, responses: Object } )`<br><br> With attachments: `callback( {success: boolean, responses: uploadedResponses, dbResponses: dbResponses })` | Forces library to return to an online state. If there are pending edits, an attempt will be made to sync them with the remote feature server. Callback function will be called when resync process is done. <br><br>Refer to the [How to use the edit library doc](howtouseeditlibrary.md) for addition information on the `results` object.
-`getOnlineStatus()` | `ONLINE`, `OFFLINE` or `RECONNECTING`| Determines the current state of the manager. Please, note that this library doesn't detect actual browser offline/online condition. You need to use the `offline.min.js` library included in `vendor\offline` directory to detect connection status and connect events to goOffline() and goOnline() methods. See `military-offline.html` sample.
+`goOnline(callback)` | No attachments: `callback( {success: boolean, responses: Object } )`<br><br> With attachments: `callback( {success: boolean, responses: uploadedResponses, dbResponses: dbResponses })` | Forces library to return to an online state. If there are pending edits, an attempt will be made to sync them with the remote feature server. Callback function will be called when resync process is done. <br><br>Refer to the [How to use the advanced edit library doc](howtouseofmadvancedlibrary.md) for addition information on the `results` object.
+`getOnlineStatus()` | `ONLINE`, `OFFLINE` or `RECONNECTING`| Determines the current state of the manager. Please, note that this library doesn't detect actual browser offline/online condition. You need to use the `offline.min.js` library included in `vendor\offline` directory to detect connection status and connect events to goOffline() and goOnline() methods. See `draw-pointlinepoly-offline.html` sample.
 `getFeatureCollections( callback )` | `callback( boolean, Object)` | (Added @ v2.9) Returns and Object that contains the latest `featureLayerCollection` snapshot for each feature layer that is using the library. Each collection is updated automatically by the library when there is an associated `ADD`, `UPDATE` or `DELETE` operation.<br><br>This method should be used when working with pre-built Esri widgets such as the `AttributeInspector.`
 `getFeatureLayerJSONDataStore( callback )` | `callback( boolean, Object)` | (Added @ v2.7.1) Returns the feature layer's dataStore Object that was created using the `offlineFeaturesManagerAdvanced()` constructor. Offers more control what is provided by `getFeatureCollections()`.
-`getReadableEdit()` | String | **DEPRECATED** @ v2.5. A string value representing human readable information on pending edits. Use `featureLayer.getAllEditsArray()`.
 
 
 ###Events
@@ -53,8 +52,8 @@ Application code can subscribe to offlineFeaturesManagerAdvanced events to be no
 
 ```js
 
-	offlineFeaturesManagerAdvanced.on(
-		offlineFeaturesManagerAdvanced.events.ALL_EDITS_SENT, 
+	offlineFeaturesManager.on(
+		OfflineFeaturesManagerAdvanced.events.ALL_EDITS_SENT, 
 		function(edits) 
 		{
 			...

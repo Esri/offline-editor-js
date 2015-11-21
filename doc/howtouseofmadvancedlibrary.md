@@ -1,15 +1,15 @@
-How to use the edit library
-===========================
+How to use the advanced edit library
+====================================
 
-##`edit` library
+##`OfflineFeaturesManagerAdvanced` library
 
-The `edit` library allows a developer to extend a feature layer with offline editing support. You can combine this functionality with offline tiles. For a complete list of features consult the [OfflineFeaturesManager API doc](offlinefeaturesmanager.md).
+This library allows a developer to extend a feature layer with intermittent and full offline editing support. You can combine this functionality with offline tiles. For a complete list of features consult the [OfflineFeaturesManagerAdvanced API doc](offlinefeaturesmanageradvanced.md).
 
-**IMPORTANT:** Only use a single instance of OfflineFeaturesManager per application. With this single instance you can extend offline capabilities to multiple feature layers. This single instance contains all edits for all feature layers initialized via `offlineFeaturesManager.extend().` Multiple feature layers share a single database. The database maintains the relationship between each edit and its' respective feature layer via a UUID.
+**IMPORTANT:** Only use a single instance of OfflineFeaturesManagerAdvanced per application. With this single instance you can extend offline capabilities to multiple feature layers. This single instance contains all edits for all feature layers initialized via `offlineFeaturesManagerAdvanced.extend().` Multiple feature layers share a single database. The database maintains the relationship between each edit and its' respective feature layer via a UUID.
 
-**Step 1** Include `offline.min.js`, `offline-tiles-basic-min.js` and `offline-edit-min.js` in your app's require contstructor. Be sure to include `ofline.mins.js` which is a 3rd party library for detecting if the browser is online or offline. 
+**Step 1** Include `offline.min.js`, `offline-tiles-basic-min.js` and `offline-edit-advanced-min.js` in your app's require contstructor. Be sure to include `ofline.mins.js` which is a 3rd party library for detecting if the browser is online or offline. 
 
-The pattern for how we include the tiles and edit library within the `require` statement is called generic script injection. Note that we do assign any of the editing or tile libraries an alias name. For example, we specified the mobile path "esri/map" and we gave it an alias called "Map." But, we did not do the equivalent for `offline-tiles-based-min.js` or `offline-edit-min.js`.
+The pattern for how we include the tiles and edit library within the `require` statement is called generic script injection. Note that we do assign any of the editing or tile libraries an alias name. For example, we specified the mobile path "esri/map" and we gave it an alias called "Map." But, we did not do the equivalent for `offline-tiles-basic-min.js` or `offline-edit-advanced-min.js`.
 
 ```html	
 	<script src="../vendor/offline/offline.min.js"></script>
@@ -17,7 +17,7 @@ The pattern for how we include the tiles and edit library within the `require` s
 	require([
 		"esri/map", 
 		"..dist/offline-tiles-basic-min.js",
-		"..dist/offline-edit-min.js",
+		"..dist/offline-edit-advanced-min.js",
 		function(Map)
 	{
 		...
@@ -28,17 +28,17 @@ You can also refer to the offline-editor-js within a `define` statement using th
 
 ```js
 
-	define(["..dist/offline-edit-min"],function(){
+	define(["..dist/offline-edit-advanced-min"],function(){
 		...
 	})
 
 ```
 
-**Step 2** Once your map is created (either using new Map() or using esriUtils.createMap(webmapid,...), you create a new OfflineFeaturesManager instance and starting assigning events listeners to tie the library into your user interface:
+**Step 2** Once your map is created (either using new Map() or using esriUtils.createMap(webmapid,...), you create a new OfflineFeaturesManagerAdvanced instance and starting assigning events listeners to tie the library into your user interface:
 
 ```js
 		
-		var offlineFeaturesManager = new O.esri.Edit.OfflineFeaturesManager();
+		var offlineFeaturesManager = new O.esri.Edit.OfflineFeaturesManagerAdvanced();
 		// OPTIONAL - you can change the name of the database
 		// offlineFeaturesManager.DBNAME = "FIELD_SURVEY3";
 		// OPTIONAL - you can change the name of the unique identifier used by the feature service. Default is "objectid".
@@ -291,9 +291,9 @@ There are two ways to get the dataStore. You can get it from the instance of Off
 * `featureLayer.getFeatureLayerJSONDataStore(callback)`
 
 
-**Step 5** Once a layer has been extended the offline library will enable it with new methods. Here are a few examples that include code snippets of how to take advantage of some of the library's methods. You can also use a combination of methods from `editsStore` and `offlineFeaturesManager`.
+**Step 5** Once a layer has been extended the offline library will enable it with new methods. Here are a few examples that include code snippets of how to take advantage of some of the library's methods. 
 
-####offlineFeaturesManager.proxyPath
+####OfflineFeaturesManagerAdvanced.proxyPath
 By default, the library assumes you are using a CORS-enabled Feature Service. All ArcGIS Online Feature Services are CORS-enabled. If you are hosting your own service and it is not CORS-enabled, then you will need to set this path. More information on downloading and using ArcGIS proxies can be found here: [https://developers.arcgis.com/en/javascript/jshelp/ags_proxy.html](https://developers.arcgis.com/en/javascript/jshelp/ags_proxy.html)
 
 Here's one example:
@@ -304,18 +304,18 @@ Here's one example:
 
 ```
 
-####offlineFeaturesManager.goOffline()
+####OfflineFeaturesManagerAdvanced.goOffline()
 Force the library to go offline. Once this condition is set, then any offline edits will be cached locally.
 
 ```js
 		function goOffline()
 		{
-			offlineFeaturesManager.goOffline();
-			//TO-DO
+			offlineFeaturesManager.goOffline()														});
+			//TO-DO			
 		}
 ```
 
-####offlineFeaturesManager.goOnline()
+####OfflineFeaturesManagerAdvanced.goOnline()
 Force the library to return to an online condition. If there are pending edits, the library will attempt to sync them.
 
 ```js
@@ -352,7 +352,7 @@ Typically you should only need to call this method once for each online/offline 
 
 If there was a an failure and/or errors, it's a good idea to reevaluate the edits that remain in the database because some edits may have been synced and others may still be pending. Only then, and depending on the error message, should the app try to `goOnline()` again. 
 
-####offlineFeaturesManager.getOnlineStatus()
+####OfflineFeaturesManagerAdvanced.getOnlineStatus()
 Within your application you can manually check online status and then update your user interface. By using a switch/case statement you can check against three enums that indicate if the library thinks it is offline, online or in the process of reconnecting.
 
 ```js		
@@ -375,18 +375,18 @@ Within your application you can manually check online status and then update you
 		
 ```
 
-####featureLayer.pendingEditsCount(callback)
-You can check if there are any edits pending. If there are edits then you can iterate `editsStore.retrieveEditsQueue()` and convert the edits to a readable format via `offlineFeaturesManager.getReadableEdit(edit)`.
+####OfflineFeaturesManagerAdvanced.pendingEditsCount(callback)
+You can check if there are any edits pending.
 		
 ```js
 	
 	// Simply get a count
-	featureLayer.pendingEditsCount(function(count){
+	offlineFeaturesManager.pendingEditsCount(function(count){
 		console.log("There are " + count + " edits pending");
 	})		
 	
 	// Or retrieve all pending edits
-	featureLayer.getAllEditsArray(function(success,editsArray){
+	offlineFeaturesManager.getAllEditsArray(function(success,editsArray){
 	 	if(success && editsArray.length > 0){
 	 		editsArray.forEach(function(edit){
 	 			console.log("Pending edit: " + JSON.stringify(edit));
@@ -398,7 +398,7 @@ You can check if there are any edits pending. If there are edits then you can it
 
 ### How to empty the edits database during testing?
 
-Some browsers, like Firefox, make it difficult or impossible to delete data that's in an IndexedDB database. And, there may be times during testing were you are stuck with bad or old data in the database and you need to delete it. Fortunately there is a pattern using `editsStore.resetEditsQueue()` for helping you out with this situation. 
+Some browsers, like Firefox, make it difficult or impossible to delete data that's in an IndexedDB database. And, there may be times during testing were you are stuck with bad or old data in the database and you need to delete it.
 
 You can run the reset code seperately or you can run the app with this pattern. If you do use the pattern below be sure to comment out the reset code and then re-run the app. You should be good to go again with a completely empty database.
 
@@ -407,7 +407,7 @@ You can run the reset code seperately or you can run the app with this pattern. 
 offlineFeaturesManager.extend(myFeatureLayer,function(result, error) {
     if(result) {
         console.log("offlineFeaturesManager initialized.");
-        offlineFeaturesManager._editStore.resetEditsQueue(function(success){
+        offlineFeaturesManager.resetDatabase(function(success,error){
             console.log("DATABASE DELETED");
         });
     . . .
