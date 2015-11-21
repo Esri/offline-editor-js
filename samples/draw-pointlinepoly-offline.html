@@ -5,8 +5,8 @@
 	<title>Offline Editing - COP</title>
 
 	<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" >
-    <link rel="stylesheet" href="http://js.arcgis.com/3.12/dijit/themes/claro/claro.css">
-    <link rel="stylesheet" href="http://js.arcgis.com/3.13/esri/css/esri.css" />
+    <link rel="stylesheet" href="http://js.arcgis.com/3.14/dijit/themes/claro/claro.css">
+    <link rel="stylesheet" href="http://js.arcgis.com/3.14/esri/css/esri.css" />
 
 	<style>
 		html,body{height:100%;width:100%;margin:0;overflow:hidden;font-family: sans-serif;}
@@ -64,20 +64,9 @@
 		.dj_ie .simpleInfoWindow .content {position: relative;}	
 	</style>
 
-	<script src="http://js.arcgis.com/3.13/"></script>
-	<script src="../vendor/offline/offline.min.js"></script>
-    <script>
-        Offline.options = {
-            checks: {
-                image: {
-                    url: function() {
-                        return 'http://esri.github.io/offline-editor-js/tiny-image.png?_=' + (Math.floor(Math.random() * 1000000000));
-                    }
-                },
-                active: 'image'
-            }
-        }
-    </script>
+	<script src="http://js.arcgis.com/3.14/"></script>
+	<script src="http://github.hubspot.com/offline/offline.min.js"></script>
+
 </head>
 <body class="claro">
 <div id="loader-cloak"></div>
@@ -135,10 +124,8 @@
         "dojo/_base/array", "dojo/parser", "dojo/keys",
         "dojo/dom", "dojo/on", "dojo/dom-construct", "dojo/dom-class", "esri/domUtils",
 
-        "esri/graphic",
-
         "dijit/layout/BorderContainer", "dijit/layout/ContentPane",
-        "../dist/offline-edit-src.js",
+        "../dist/offline-edit-basic-src.js",
         "dojo/domReady!"
     ], function(
             Map, GeometryService, Edit,
@@ -148,7 +135,7 @@
             esriConfig, jsapiBundle,
             Deferred, all,
             arrayUtils, parser, keys,
-            dom, on, domConstruct, domClass, domUtils,Graphic
+            dom, on, domConstruct, domClass, domUtils
     ) {
         var editor;
 
@@ -161,7 +148,7 @@
         on(dom.byId('go-offline-btn'),'click', goOffline);
         on(dom.byId('go-online-btn'),'click', goOnline);
         on(dom.byId('refresh-feature-layers-btn'),'click', refreshFeatureLayers);
-        var offlineFeaturesManager = new O.esri.Edit.OfflineFeaturesManager();
+        var offlineFeaturesManager = new O.esri.Edit.OfflineFeaturesManagerBasic();
 
         // IMPORTANT!!!
         // A proxy page may be required to upload attachments.
@@ -291,8 +278,7 @@
         // Things to do when all the promises complete
         function resolveOfflinePromises(){
             offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_ENQUEUED, updateStatus);
-            offlineFeaturesManager.on(offlineFeaturesManager.events.ALL_EDITS_SENT, updateStatusAllEditsSent);
-            offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_SENT_ERROR, handleEditsSentError);
+            offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_SENT, updateStatusAllEditsSent);
 
             offlineInitializedLayers[0].on("edits-complete", handleEditsComplete);
             offlineInitializedLayers[1].on("edits-complete", handleEditsComplete);

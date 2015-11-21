@@ -8,7 +8,7 @@
     <title>Basic Attachments</title>
 
     <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" >
-    <link rel="stylesheet" href="http://js.arcgis.com/3.13/esri/css/esri.css">
+    <link rel="stylesheet" href="//js.arcgis.com/3.14/esri/css/esri.css">
     <style>
         html, body { height: 100%; width: 100%; margin: 0; overflow: hidden; font-family: Arial; }
         #map { height: 100%; padding: 0;}
@@ -43,20 +43,9 @@
         }
     </style>
 
-    <script src="http://js.arcgis.com/3.13/"></script>
-    <script src="../vendor/offline/offline.min.js"></script>
-    <script>
-        Offline.options = {
-            checks: {
-                image: {
-                    url: function() {
-                        return 'http://esri.github.io/offline-editor-js/tiny-image.png?_=' + (Math.floor(Math.random() * 1000000000));
-                    }
-                },
-                active: 'image'
-            }
-        }
-    </script>
+    <script src="//js.arcgis.com/3.14/"></script>
+    <script src="//github.hubspot.com/offline/offline.min.js"></script>
+
     <script>
     "use strict";
 
@@ -75,7 +64,7 @@
 
             "dijit/layout/BorderContainer", "dijit/layout/ContentPane",
 
-            "../dist/offline-edit-src.js",
+            "../dist/offline-edit-advanced-src.js",
 
             "dojo/domReady!"
         ], function(
@@ -91,7 +80,7 @@
 //            window.proxyPath = null; //can be set to null when using a CORS-enabled server
 //            esriConfig.defaults.io.proxyUrl = null; //can be set to null when using a CORS-enabled server
 
-            var offlineFeaturesManager = new O.esri.Edit.OfflineFeaturesManager();
+            var offlineFeaturesManager = new O.esri.Edit.OfflineFeaturesManagerAdvanced();
 
             // IMPORTANT!!!
             // A proxy page may be required to upload attachments.
@@ -110,7 +99,7 @@
             map = new Map("map", {
                 basemap: "streets",
                 center: [-88.1,41.7],
-                zoom: 11
+                zoom: 4
             });
 
             map.on("load", mapLoaded);

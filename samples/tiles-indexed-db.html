@@ -7,12 +7,12 @@
 	<meta name="description" content="">
 	<meta name="author" content="">
 
-	<link rel="shortcut icon" href="http://esri.github.io/bootstrap-map-js/doc/images/favicon.ico">
+	<link rel="shortcut icon" href="//esri.github.io/bootstrap-map-js/doc/images/favicon.ico">
 
-	<link rel="stylesheet" href="//js.arcgis.com/3.10/js/esri/css/esri.css">
+	<link rel="stylesheet" href="//js.arcgis.com/3.14/esri/css/esri.css">
 
 	<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" >
-	<link rel="stylesheet" href="http://esri.github.io/bootstrap-map-js/src/css/bootstrapmap.css">
+	<link rel="stylesheet" href="//esri.github.io/bootstrap-map-js/src/css/bootstrapmap.css">
 	<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" >
 	<style>
 		#state
@@ -238,21 +238,8 @@
 </script>
 
 <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
-<script src="//js.arcgis.com/3.10compact"></script>
-<script src="../vendor/IndexedDBShim/dist/IndexedDBShim.min.js"></script>
-<!-- For detecting if app is online or offline --><script src="../vendor/offline/offline.min.js"></script>
-<script>
-    Offline.options = {
-        checks: {
-            image: {
-                url: function() {
-                    return 'http://esri.github.io/offline-editor-js/tiny-image.png?_=' + (Math.floor(Math.random() * 1000000000));
-                }
-            },
-            active: 'image'
-        }
-    }
-</script>
+<script src="//js.arcgis.com/3.14compact"></script>
+<script src="//github.hubspot.com/offline/offline.min.js"></script>
 
 <script>
 "use strict"

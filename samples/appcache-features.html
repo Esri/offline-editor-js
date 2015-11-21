@@ -119,21 +119,8 @@
         .container { padding: 20px; width: 100%;}
     </style>
 
-    <script src="../vendor/offline/offline.min.js"></script>
+    <script src="//github.hubspot.com/offline/offline.min.js"></script>
     <script>
-        // This options sets up an image that the offline status detection library
-        // will use to ping to see if app is online or offline.
-        Offline.options = {
-            checks: {
-                image: {
-                    url: function() {
-                        return 'http://esri.github.io/offline-editor-js/tiny-image.png?_=' + (Math.floor(Math.random() * 1000000000));
-                    }
-                },
-                active: 'image'
-            }
-        }
-
         var locationPath = location.pathname.replace(/\/[^/]+$/, "");
         var dojoConfig = {
             paths: {
@@ -195,7 +182,7 @@
         "widgets/modal/popup",
         "//esri.github.io/bootstrap-map-js/src/js/bootstrapmap.js",
         "../dist/offline-tiles-advanced-src.js",
-        "../dist/offline-edit-src.js",
+        "../dist/offline-edit-advanced-src.js",
         "dojo/domReady!"],
             function(Map,FeatureLayer,
                 SimpleRenderer,SimpleMarkerSymbol,Color,Query,
@@ -460,7 +447,7 @@
                  */
 
                 function initOfflineFeaturesMgr(callback) {
-                    offlineFeaturesManager = new O.esri.Edit.OfflineFeaturesManager();
+                    offlineFeaturesManager = new O.esri.Edit.OfflineFeaturesManagerAdvanced();
 
                     // IMPORTANT!!!
                     // This tells the database which graphic.attribute property to use as a unique identifier
