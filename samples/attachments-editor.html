@@ -80,15 +80,15 @@
 //            window.proxyPath = null; //can be set to null when using a CORS-enabled server
 //            esriConfig.defaults.io.proxyUrl = null; //can be set to null when using a CORS-enabled server
 
-            var offlineFeaturesManager = new O.esri.Edit.OfflineFeaturesManagerAdvanced();
+            var offlineEdit = new O.esri.Edit.OfflineEditAdvanced();
 
             // IMPORTANT!!!
             // A proxy page may be required to upload attachments.
             // If you are using a CORS enabled server you may be ablew to set the proxyPath to null.
             // Refer to "Using the Proxy Page" for more information:  https://developers.arcgis.com/en/javascript/jshelp/ags_proxy.html
-            offlineFeaturesManager.proxyPath = null;
+            offlineEdit.proxyPath = null;
 
-            offlineFeaturesManager.initAttachments(function(success)
+            offlineEdit.initAttachments(function(success)
             {
                 attachmentsInited = success;
                 updateStatus();
@@ -107,8 +107,8 @@
             map.on("delete-attachments-complete", updateStatus);
             map.on("query-attachment-infos-complete", updateStatus);
 
-            offlineFeaturesManager.on(offlineFeaturesManager.events.ATTACHMENT_ENQUEUED, updateStatus);
-            offlineFeaturesManager.on(offlineFeaturesManager.events.ATTACHMENTS_SENT, updateStatus);
+            offlineEdit.on(offlineEdit.events.ATTACHMENT_ENQUEUED, updateStatus);
+            offlineEdit.on(offlineEdit.events.ATTACHMENTS_SENT, updateStatus);
 
             function mapLoaded() 
             {
@@ -158,7 +158,7 @@
                     {
                         var layer = evt.layer;
 
-                        offlineFeaturesManager.extend(featureLayer,function(success, error){
+                        offlineEdit.extend(featureLayer,function(success, error){
                             if(success == false) alert("There was a problem initiating the database. " + error);
                         });
                     }
@@ -171,7 +171,7 @@
 
             function goOnline()
             {
-                offlineFeaturesManager.goOnline(function()
+                offlineEdit.goOnline(function()
                 {
                     updateConnectivityIndicator();
                     updateStatus();
@@ -181,13 +181,13 @@
 
             function goOffline()
             {
-                offlineFeaturesManager.goOffline();
+                offlineEdit.goOffline();
                 updateConnectivityIndicator();
             }
 
             function clearLocalAttachments()
             {
-                offlineFeaturesManager.attachmentsStore.deleteAll(function(success)
+                offlineEdit.attachmentsStore.deleteAll(function(success)
                 {
                     updateStatus();
                 });
@@ -210,7 +210,7 @@
                     return;
 
                 domConstruct.empty('local-attachments-list');
-                offlineFeaturesManager.attachmentsStore.getAllAttachments(function(attachments)
+                offlineEdit.attachmentsStore.getAllAttachments(function(attachments)
                 {
                     var li;
                     if( attachments.length )
@@ -237,17 +237,17 @@
             {
                 var node = dom.byId('connectivity-indicator');
                 domClass.remove(node, "online offline reconnecting");
-                switch( offlineFeaturesManager.getOnlineStatus() )
+                switch( offlineEdit.getOnlineStatus() )
                 {
-                    case offlineFeaturesManager.OFFLINE:
+                    case offlineEdit.OFFLINE:
                         node.innerHTML = "<i class='fa fa-chain-broken'></i> offline";
                         domClass.add(node, "offline");
                         break;
-                    case offlineFeaturesManager.ONLINE:
+                    case offlineEdit.ONLINE:
                         node.innerHTML = "<i class='fa fa-link'></i> online";
                         domClass.add(node, "online");
                         break;
-                    case offlineFeaturesManager.RECONNECTING:
+                    case offlineEdit.RECONNECTING:
                         node.innerHTML = "<i class='fa fa-cog fa-spin'></i> reconnecting";
                         domClass.add(node, "reconnecting");
                         break;
@@ -273,7 +273,7 @@
                 if(!attachmentsInited)
                     return;
 
-                offlineFeaturesManager.attachmentsStore.getUsage(function(usage)
+                offlineEdit.attachmentsStore.getUsage(function(usage)
                 {
                     var str = "attachment" + ((usage.attachmentCount === 1)? "" : "s");
                     var info = usage.attachmentCount + " " + str + " (" + formatSize( usage.sizeBytes) + ")";

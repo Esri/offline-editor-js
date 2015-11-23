@@ -148,13 +148,13 @@
         on(dom.byId('go-offline-btn'),'click', goOffline);
         on(dom.byId('go-online-btn'),'click', goOnline);
         on(dom.byId('refresh-feature-layers-btn'),'click', refreshFeatureLayers);
-        var offlineFeaturesManager = new O.esri.Edit.OfflineFeaturesManagerBasic();
+        var offlineEdit = new O.esri.Edit.OfflineEditBasic();
 
         // IMPORTANT!!!
         // A proxy page may be required to upload attachments.
         // If you are using a CORS enabled server you may be ablew to set the proxyPath to null.
         // Refer to "Using the Proxy Page" for more information:  https://developers.arcgis.com/en/javascript/jshelp/ags_proxy.html
-        offlineFeaturesManager.proxyPath = null;
+        offlineEdit.proxyPath = null;
 
         map = new Map("map", {
             basemap: "satellite",
@@ -247,7 +247,7 @@
                     var layer = result.layer;
                     offlineInitializedLayers.push(layer);
 
-                    offlineFeaturesManager.extend(layer,function(success,error){
+                    offlineEdit.extend(layer,function(success,error){
                         if(success){
                             deferred.resolve(true);
                         }
@@ -277,15 +277,15 @@
 
         // Things to do when all the promises complete
         function resolveOfflinePromises(){
-            offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_ENQUEUED, updateStatus);
-            offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_SENT, updateStatusAllEditsSent);
+            offlineEdit.on(offlineEdit.events.EDITS_ENQUEUED, updateStatus);
+            offlineEdit.on(offlineEdit.events.EDITS_SENT, updateStatusAllEditsSent);
 
             offlineInitializedLayers[0].on("edits-complete", handleEditsComplete);
             offlineInitializedLayers[1].on("edits-complete", handleEditsComplete);
             offlineInitializedLayers[2].on("edits-complete", handleEditsComplete);
 
             // handle errors that happen while storing offline edits
-            offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_ENQUEUED_ERROR, function(errors)
+            offlineEdit.on(offlineEdit.events.EDITS_ENQUEUED_ERROR, function(errors)
             {
                 if( errors.length )
                 {
@@ -428,7 +428,7 @@
         function goOnline()
         {
             domUtils.show(editor.progressBar.domNode);
-            offlineFeaturesManager.goOnline(function()
+            offlineEdit.goOnline(function()
             {
                 domUtils.hide(editor.progressBar.domNode);
                 updateConnectivityIndicator();
@@ -438,7 +438,7 @@
 
         function goOffline()
         {
-            offlineFeaturesManager.goOffline();
+            offlineEdit.goOffline();
             updateConnectivityIndicator();
         }
 
@@ -446,17 +446,17 @@
         {
             var node = dom.byId('connectivityIndicator');
             domClass.remove(node, "online offline reconnecting");
-            switch( offlineFeaturesManager.getOnlineStatus() )
+            switch( offlineEdit.getOnlineStatus() )
             {
-                case offlineFeaturesManager.OFFLINE:
+                case offlineEdit.OFFLINE:
                     node.innerHTML = "<i class='fa fa-chain-broken'></i> offline";
                     domClass.add(node, "offline");
                     break;
-                case offlineFeaturesManager.ONLINE:
+                case offlineEdit.ONLINE:
                     node.innerHTML = "<i class='fa fa-link'></i> online";
                     domClass.add(node, "online");
                     break;
-                case offlineFeaturesManager.RECONNECTING:
+                case offlineEdit.RECONNECTING:
                     node.innerHTML = "<i class='fa fa-cog fa-spin'></i> reconnecting";
                     domClass.add(node, "reconnecting");
                     break;

@@ -182,7 +182,7 @@
                 "esri/graphic","esri/geometry/Extent", "esri/SpatialReference",
                 "//esri.github.io/bootstrap-map-js/src/js/bootstrapmap.js",
                 "../dist/offline-tiles-advanced-src.js",
-                "../dist/offline-edit-src.js",
+                "../dist/offline-edit-advanced-src.js",
                 "dojo/domReady!"],
             function(Map,FeatureLayer,
                      SimpleRenderer,SimpleMarkerSymbol,Color,Query,
@@ -193,7 +193,7 @@
                 var defaultSymbol, bStationSymbol;
 
                 // Variables for editing handling
-                var busStopFeatureLayer = null, offlineFeaturesManager = {};
+                var busStopFeatureLayer = null, offlineEdit = {};
                 var bicycleStationFeatureLayer = null;
                 var imgOfflineIndicator = document.getElementById("state-span");
                 var btnState = document.getElementById("btn-state");
@@ -309,11 +309,11 @@
 
                     listener1 = busStopFeatureLayer.on("update-end",function(event){
                         listener1.remove();
-                        if(!offlineFeaturesManager.hasOwnProperty("ONLINE")){
-                            initOfflineFeaturesMgr();
+                        if(!offlineEdit.hasOwnProperty("ONLINE")){
+                            initOfflineEdits();
                         }
 
-                        offlineFeaturesManager.extend(busStopFeatureLayer,function(result, error) {
+                        offlineEdit.extend(busStopFeatureLayer,function(result, error) {
                             if(result){
                                 deferred1.resolve(true);
                                 map.addLayer(bicycleStationFeatureLayer);
@@ -335,11 +335,11 @@
 
                     listener2 = bicycleStationFeatureLayer.on("update-end",function(event){
                         listener2.remove();
-                        if(!offlineFeaturesManager.hasOwnProperty("ONLINE")){
-                            initOfflineFeaturesMgr();
+                        if(!offlineEdit.hasOwnProperty("ONLINE")){
+                            initOfflineEdits();
                         }
 
-                        offlineFeaturesManager.extend(bicycleStationFeatureLayer,function(result, error) {
+                        offlineEdit.extend(bicycleStationFeatureLayer,function(result, error) {
                             if(result){
                                 deferred2.resolve(true);
                             }
@@ -366,7 +366,7 @@
                             // This is just an example of what you would do if you had stored edits!
                             console.log("Application is online...attempting to send any stored edits.");
 
-                            offlineFeaturesManager.goOnline(function(result){
+                            offlineEdit.goOnline(function(result){
                                 if(!result.success){
                                     alert("There was a problem when attempting to go back online.");
                                 }
@@ -376,7 +376,7 @@
                             });
                         }
                         else {
-                            offlineFeaturesManager.goOffline();
+                            offlineEdit.goOffline();
                         }
 
                         callback();
@@ -424,11 +424,11 @@
                  */
                 function loadFeatureLayerOffline(callback) {
 
-                    initOfflineFeaturesMgr();
+                    initOfflineEdits();
 
                     var promises = [];
 
-                    offlineFeaturesManager.getFeatureCollections(function(success,dataStore) {
+                    offlineEdit.getFeatureCollections(function(success,dataStore) {
                         if(success){
 
                             var deferred1 = new Deferred();
@@ -459,7 +459,7 @@
                             _listener1 = busStopFeatureLayer.on("update",function(evt){
                                 _listener1.remove();
 
-                                offlineFeaturesManager.extend(busStopFeatureLayer,function(success, error){
+                                offlineEdit.extend(busStopFeatureLayer,function(success, error){
                                     if(success){
                                         console.log("busStopFeatureLayer successfully extended offline");
                                         deferred1.resolve(true);
@@ -495,7 +495,7 @@
                             _listener2 = bicycleStationFeatureLayer.on("update",function(evt){
                                 _listener2.remove();
 
-                                offlineFeaturesManager.extend(bicycleStationFeatureLayer,function(success, error){
+                                offlineEdit.extend(bicycleStationFeatureLayer,function(success, error){
                                     if(success){
                                         console.log("bicycleStationFeatureLayer successfully extended offline");
                                         deferred2.resolve(true);
@@ -533,25 +533,25 @@
                  * **********************************************
                  */
 
-                function initOfflineFeaturesMgr() {
-                    console.log("Initializing OfflineFeaturesManager");
-                    offlineFeaturesManager = new O.esri.Edit.OfflineFeaturesManager();
+                function initOfflineEdits() {
+                    console.log("Initializing OfflineEditAdvanced");
+                    offlineEdit = new O.esri.Edit.OfflineEditAdvanced();
 
                     // IMPORTANT!!!
                     // This tells the database which graphic.attribute property to use as a unique identifier
                     // You can look this information up in your feature service directory under the "Fields" category.
                     // Example: http://services1.arcgis.com/M8KJPUwAXP8jhtnM/arcgis/rest/services/Denver_Bus_Stops/FeatureServer/0
-                    offlineFeaturesManager.DB_UID = "FID";
+                    offlineEdit.DB_UID = "FID";
 
                     // We want the library to automatically create the offline featureCollection for each layer
-                    offlineFeaturesManager.ENABLE_FEATURECOLLECTION = true;
+                    offlineEdit.ENABLE_FEATURECOLLECTION = true;
 
                     // IMPORTANT!!!
                     // A proxy page may be required to upload attachments.
                     // If you are using a CORS enabled feature service you can ignore this.
                     // If your feature service is not CORS-enabled then you will need to configure this.
                     // Refer to "Using the Proxy Page" for more information:  https://developers.arcgis.com/en/javascript/jshelp/ags_proxy.html
-                    offlineFeaturesManager.proxyPath = null;
+                    offlineEdit.proxyPath = null;
                 }
 
                 /**
@@ -650,7 +650,7 @@
                  * Toggles offlineFeaturesManager online/offline
                  */
                 function goOnlineOffline() {
-                    if(offlineFeaturesManager.getOnlineStatus() == offlineFeaturesManager.ONLINE){
+                    if(offlineEdit.getOnlineStatus() == offlineEdit.ONLINE){
                         goOffline();
                     }
                     else{

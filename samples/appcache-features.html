@@ -194,7 +194,7 @@
                 var _listener;
 
                 // Variables for editing handling
-                var currentFeature, busStopFeatureLayer = null, offlineFeaturesManager = null;
+                var currentFeature, busStopFeatureLayer = null, offlineEdit = null;
                 var pendingEdits = document.getElementById("span-pending-edits");
                 var imgOfflineIndicator = document.getElementById("state-span");
                 var btnState = document.getElementById("btn-state");
@@ -337,7 +337,7 @@
                     // Extend the feature layer with offline capabilities.
                     //
 
-                    initOfflineFeaturesMgr();
+                    initOfflineEdits();
 
                     // If app is online then we ONLY need to extend the feature layer.
                     if(_isOnline){
@@ -357,7 +357,7 @@
                             }
                         });
                     }
-                    // If the app is offline then we need to retrieve the dataStore from OfflineFeaturesManager
+                    // If the app is offline then we need to retrieve the dataStore from OfflineEditAdvanced
                     // and then extend the feature layer using that information.
                     else {
                         loadFeatureLayerOffline(function(success) {
@@ -403,7 +403,7 @@
                  * Load the feature while offline using information stored in database
                  */
                 function loadFeatureLayerOffline(callback) {
-                    offlineFeaturesManager.getFeatureLayerJSONDataStore(function(success,dataStore) {
+                    offlineEdit.getFeatureLayerJSONDataStore(function(success,dataStore) {
                         if(success){
 
                             // Use the feature layer returns from getFeatureDefinition() to reconstitute the layer
@@ -446,26 +446,26 @@
                  * **********************************************
                  */
 
-                function initOfflineFeaturesMgr(callback) {
-                    offlineFeaturesManager = new O.esri.Edit.OfflineFeaturesManagerAdvanced();
+                function initOfflineEdits() {
+                    offlineEdit = new O.esri.Edit.OfflineEditAdvanced();
 
                     // IMPORTANT!!!
                     // This tells the database which graphic.attribute property to use as a unique identifier
                     // You can look this information up in your feature service directory under the "Fields" category.
                     // Example: http://services1.arcgis.com/M8KJPUwAXP8jhtnM/arcgis/rest/services/Denver_Bus_Stops/FeatureServer/0
-                    offlineFeaturesManager.DB_UID = "FID";
+                    offlineEdit.DB_UID = "FID";
 
                     // IMPORTANT!!!
                     // A proxy page may be required to upload attachments.
                     // If you are using a CORS enabled feature service you can ignore this.
                     // If your feature service is not CORS-enabled then you will need to configure this.
                     // Refer to "Using the Proxy Page" for more information:  https://developers.arcgis.com/en/javascript/jshelp/ags_proxy.html
-                    offlineFeaturesManager.proxyPath = null;
+                    offlineEdit.proxyPath = null;
 
-                    offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_ENQUEUED, updateStatus);
-                    offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_SENT, updateStatus);
-                    offlineFeaturesManager.on(offlineFeaturesManager.events.ALL_EDITS_SENT, updateStatus);
-                    offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_SENT_ERROR, editsError);
+                    offlineEdit.on(offlineEdit.events.EDITS_ENQUEUED, updateStatus);
+                    offlineEdit.on(offlineEdit.events.EDITS_SENT, updateStatus);
+                    offlineEdit.on(offlineEdit.events.ALL_EDITS_SENT, updateStatus);
+                    offlineEdit.on(offlineEdit.events.EDITS_SENT_ERROR, editsError);
                 }
 
                 function extendFeatureLayer(online,callback){
@@ -484,19 +484,19 @@
                     }
 
                     // NOTE: if app is offline then we want the dataStore object to be null
-                    offlineFeaturesManager.extend(busStopFeatureLayer,function(result, error) {
+                    offlineEdit.extend(busStopFeatureLayer,function(result, error) {
                         if(result) {
-                            console.log("offlineFeaturesManager initialized.");
+                            console.log("OfflineEditAdvanced initialized.");
 
                             // This sets listeners to detect if the app goes online or offline.
                             Offline.on('up', goOnline);
                             Offline.on('down', goOffline);
 
-                                // If the app is online then force offlineFeaturesManager to its online state
+                                // If the app is online then force OfflineEditAdvanced to its online state
                                 // This will force the library to check for pending edits and attempt to
                                 // resend them to the Feature Service.
                                 if(_isOnline){
-                                    offlineFeaturesManager.goOnline(function(result){
+                                    offlineEdit.goOnline(function(result){
                                         if(!result.success){
                                             alert("There was a problem when attempting to go back online.");
                                         }
@@ -506,7 +506,7 @@
                                     });
                                 }
                                 else {
-                                    offlineFeaturesManager.goOffline();
+                                    offlineEdit.goOffline();
                                     updateStatus();
                                 }
 
@@ -672,7 +672,7 @@
                  */
 
                 /**
-                 * Forces offlineFeaturesManager to go online.
+                 * Forces OfflineEditAdvanced to go online.
                  * When invoking featureLayer.goOnline() we force library to sync any edits that were
                  * stored while offline.
                  */
@@ -685,10 +685,10 @@
 
                     }
 
-                    offlineFeaturesManager.goOnline(function(success,error) {
+                    offlineEdit.goOnline(function(success,error) {
                         if(error === undefined) {
                             setUIOnline();
-                            console.log("offlineFeatureManager is online.");
+                            console.log("OfflineEditAdvanced is online.");
                         }
                         else {
                             alert("There was a problem syncing offline edits: " + JSON.stringify(error));
@@ -702,20 +702,20 @@
                 }
 
                 /**
-                 * Forces offlineFeaturesManager offline
+                 * Forces OfflineEditAdvanced offline
                  */
                 function goOffline() {
                     console.log("Going offline...");
                     setUIOffline();
-                    offlineFeaturesManager.goOffline();
+                    offlineEdit.goOffline();
                     if(typeof tileLayer != "undefined") tileLayer.goOffline();
                 }
 
                 /**
-                 * Toggles offlineFeaturesManager online/offline
+                 * Toggles offlineEdit online/offline
                  */
                 function goOnlineOffline() {
-                    if(offlineFeaturesManager.getOnlineStatus() == offlineFeaturesManager.ONLINE){
+                    if(offlineEdit.getOnlineStatus() == offlineEdit.ONLINE){
                         goOffline();
                     }
                     else{

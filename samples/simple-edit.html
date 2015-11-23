@@ -59,7 +59,7 @@
             // refer to "Using the Proxy Page" for more information: https://developers.arcgis.com/javascript/jshelp/ags_proxy.html
             esriConfig.defaults.io.proxyUrl = "/proxy/";
 
-            var offlineFeatureLayer = new O.esri.Edit.OfflineFeaturesManagerBasic();
+            var offlineEdit = new O.esri.Edit.OfflineEditBasic();
 
 
             map = new Map("map", {
@@ -79,7 +79,7 @@
 
             function initEditing(evt) {
 
-                offlineFeatureLayer.extend(firePerimeterFL,function(success,error){
+                offlineEdit.extend(firePerimeterFL,function(success,error){
                     if(success){
                         var editToolbar = new Edit(map);
                         editToolbar.on("deactivate", function(evt) {
