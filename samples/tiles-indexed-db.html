@@ -276,7 +276,7 @@ require(
         var stateNode;
 
         initOfflineDetector();
-        var offlineTilesEnabler = new O.esri.Tiles.OfflineTilesEnabler();
+        var offlineTilesBasic = new O.esri.Tiles.OfflineTilesBasic();
 
 		// Load web map when page loads
 		var urlObject = urlUtils.urlToObject(window.location.href);
@@ -396,7 +396,7 @@ require(
 		{
 			console.log("extending");
 
-			offlineTilesEnabler.extend(basemapLayer,function(success)
+			offlineTilesBasic.extend(basemapLayer,function(success)
 			{
 				if(success)
 				{
