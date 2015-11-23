@@ -1,17 +1,17 @@
-API Doc for OfflineTilesEnabler
+API Doc for OfflineTilesBasic
 ===============================
 
 There are two different libraries for taking tiles offline: `offline-tiles-basic-min.js` and `offline-tiles-advanced-min.js`. The basic library is for use with ArcGIS.com web maps and partial/intermittently offline use cases. You won't be able to restart or reload your app when using this library offline.
 
 If you have a requirement for restarting or reloading the app while offline then you should use the advanced library. The `offline-tiles-advanced-min.js` library lets you create a custom basemap layer that extends TiledMapServiceLayer. 
 
-##O.esri.Tiles.OfflineTilesEnabler
+##O.esri.Tiles.OfflineTilesBasic
 The `offline-tiles-basic-min.js` library provides the following tools for working with with ArcGIS.com maps or tiled map services in partial-offline situations that don't require a browser restart or reload. 
 
 ###Constructor
 Constructor | Description
 --- | ---
-`O.esri.Tiles.OfflineTilesEnabler()` | Creates an instance of the offlineTilesEnabler class. This library allows you to extend an ArcGISTiledMapServiceLayer with partial offline capability as well as manage the online/offline resynchronization process.
+`O.esri.Tiles.OfflineTilesBasic()` | Creates an instance of the OfflineTilesBasic class. This library allows you to extend an ArcGISTiledMapServiceLayer with partial offline capability as well as manage the online/offline resynchronization process.
 
 ###Properties
 Property  | Value | Description

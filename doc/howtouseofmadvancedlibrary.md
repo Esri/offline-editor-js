@@ -3,7 +3,7 @@ How to use the advanced edit library
 
 ##`OfflineEditAdvanced` library
 
-This library allows a developer to extend a feature layer with intermittent and full offline editing support. You can combine this functionality with offline tiles. For a complete list of features consult the [OfflineEditAdvanced API doc](offlinefeaturesmanageradvanced.md).
+This library allows a developer to extend a feature layer with intermittent and full offline editing support. You can combine this functionality with offline tiles. For a complete list of features consult the [OfflineEditAdvanced API doc](offlineeditadvanced.md).
 
 **IMPORTANT:** Only use a single instance of OfflineEditAdvanced per application. With this single instance you can extend offline capabilities to multiple feature layers. This single instance contains all edits for all feature layers initialized via `OfflineEditAdvanced.extend().` Multiple feature layers share a single database. The database maintains the relationship between each edit and its' respective feature layer via a UUID.
 

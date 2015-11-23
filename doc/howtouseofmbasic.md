@@ -3,7 +3,7 @@ How to use the basic edit library
 
 ##`OfflineEditBasic` library
 
-This library allows a developer to extend a feature layer with intermittent offline editing support. You can combine this functionality with offline tiles. For a complete list of features consult the [OfflineEditBasic API doc](offlinefeaturesmanagerbasic.md).
+This library allows a developer to extend a feature layer with intermittent offline editing support. You can combine this functionality with offline tiles. For a complete list of features consult the [OfflineEditBasic API doc](offlineeditbasic.md).
 
 **IMPORTANT:** Only use a single instance of OfflineEditBasic per application. With this single instance you can extend offline capabilities to multiple feature layers. This single instance contains all edits for all feature layers initialized via `OfflineEditBasic.extend().` Multiple feature layers share a single database. The database maintains the relationship between each edit and its' respective feature layer via a UUID.
 
