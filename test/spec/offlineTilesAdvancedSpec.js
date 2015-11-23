@@ -193,7 +193,7 @@ describe("offline enabler custom layer library", function()
 
     async.it("getMaxZoom", function(done){
        g_basemapLayer.getMaxZoom(function(result){
-           expect(result).toBe(19);
+           expect(result).toBe(23);
            done();
        })
     });

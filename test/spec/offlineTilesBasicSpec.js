@@ -27,7 +27,7 @@ describe("offline enabler library", function()
 			objectStoreName: "TILES"
 		}
 
-		g_offlineTilesEnabler.extend(g_basemapLayer,function(success)
+		g_offlineTilesBasic.extend(g_basemapLayer,function(success)
 		{
             g_basemapLayer.offline.proxyPath = null;
 
