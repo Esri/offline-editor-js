@@ -115,7 +115,7 @@ module.exports = function(grunt) {
                     drop_console: true //remove console.log statements :)
                 },
                 beautify: {
-                    semicolons: false
+                    semicolons: false //Required: prevents dojo parser errors w/ minified files in this project
                 },
                 preserveComments: 'some',
                 wrap: false
