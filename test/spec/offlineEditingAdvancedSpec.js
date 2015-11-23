@@ -38,7 +38,7 @@ function countFeatures(featureLayer, cb)
 
 function getObjectIds(graphics)
 {
-	return graphics.map( function(g) { return g.attributes[g_offlineFeaturesManager.DB_UID]; });
+	return graphics.map( function(g) { return g.attributes[g_offlineEdit.DB_UID]; });
 }
 
 /*
@@ -190,7 +190,7 @@ describe("Normal online editing - Exercise the feature services", function()
 //                    ]
 //                };
 //
-//                g_offlineFeaturesManager.initAttachments(function(success){
+//                g_offlineEdit.initAttachments(function(success){
 //                    expect(success).toBe(true);
 //                    if(success){
 //
@@ -306,7 +306,7 @@ describe("Offline Editing", function()
 
         async.it("Prepare feature service. Add some features online - points", function(done)
         {
-            expect(g_offlineFeaturesManager.getOnlineStatus()).toBe(g_offlineFeaturesManager.ONLINE);
+            expect(g_offlineEdit.getOnlineStatus()).toBe(g_offlineEdit.ONLINE);
 
             g1 = new g_modules.Graphic({"geometry":{"x":-105400,"y":5137000,"spatialReference":{"wkid":102100}},"attributes":{"OBJECTID":1,"lat":0.0,"lng":0.0,"description":"g1"}});
             g2 = new g_modules.Graphic({"geometry":{"x":-105600,"y":5137000,"spatialReference":{"wkid":102100}},"attributes":{"OBJECTID":2,"lat":0.0,"lng":0.0,"description":"g2"}});
@@ -334,7 +334,7 @@ describe("Offline Editing", function()
         // Temporarily comment out. We have switched to a Point-based service only that accepts attachments
         //async.it("Prepare feature service. Add some features online - lines", function(done)
         //{
-        //    expect(g_offlineFeaturesManager.getOnlineStatus()).toBe(g_offlineFeaturesManager.ONLINE);
+        //    expect(g_offlineEdit.getOnlineStatus()).toBe(g_offlineEdit.ONLINE);
         //
         //    l1 = new g_modules.Graphic({"geometry":{"paths":[[[-101300,5136900],[-108400,5136900]]],"spatialReference":{"wkid":102100}},"attributes":{"ruleid":40,"zmax":null,"additionalinformation":null,"eny":null,"uniquedesignation":null,"datetimevalid":null,"datetimeexpired":null,"distance":null,"azimuth":null,"echelon":null,"x":null,"y":null,"z":null,"zmin":null}});
         //    l2 = new g_modules.Graphic({"geometry":{"paths":[[[-101300,5136800],[-108400,5136800]]],"spatialReference":{"wkid":102100}},"attributes":{"ruleid":40,"zmax":null,"additionalinformation":null,"eny":null,"uniquedesignation":null,"datetimevalid":null,"datetimeexpired":null,"distance":null,"azimuth":null,"echelon":null,"x":null,"y":null,"z":null,"zmin":null}});
@@ -364,16 +364,16 @@ describe("Offline Editing", function()
     {
         async.it("go Offline", function(done)
         {
-            expect(g_offlineFeaturesManager.getOnlineStatus()).toBe(g_offlineFeaturesManager.ONLINE);
-            g_offlineFeaturesManager.goOffline();
-            expect(g_offlineFeaturesManager.getOnlineStatus()).toBe(g_offlineFeaturesManager.OFFLINE);
+            expect(g_offlineEdit.getOnlineStatus()).toBe(g_offlineEdit.ONLINE);
+            g_offlineEdit.goOffline();
+            expect(g_offlineEdit.getOnlineStatus()).toBe(g_offlineEdit.OFFLINE);
             done();
         });
 
         async.it("Convert feature array into JSON", function(done){
 
             var adds = [g1,g2,g3];
-            g_offlineFeaturesManager.serializeFeatureGraphicsArray(adds,function(JSONString){
+            g_offlineEdit.serializeFeatureGraphicsArray(adds,function(JSONString){
                 expect(typeof JSONString).toBe("string");
                 var object = JSON.parse(JSONString);
                 expect(typeof object).toBe("object");
@@ -386,7 +386,7 @@ describe("Offline Editing", function()
         });
 
         async.it("Get empty featureCollections Object", function(done) {
-            g_offlineFeaturesManager.getFeatureCollections(function(success, result) {
+            g_offlineEdit.getFeatureCollections(function(success, result) {
                 expect(success).toBe(false);
                 expect(result).toBeNull();
                 done();
@@ -398,12 +398,12 @@ describe("Offline Editing", function()
 
             var listener = jasmine.createSpy('event listener edits enqueued');
 
-            g_offlineFeaturesManager.on(g_offlineFeaturesManager.events.EDITS_ENQUEUED,listener);
+            g_offlineEdit.on(g_offlineEdit.events.EDITS_ENQUEUED,listener);
 
 
             expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2,g3]));
             expect(g_featureLayers[0].graphics.length).toBe(3);
-            expect(g_offlineFeaturesManager.getOnlineStatus()).toBe(g_offlineFeaturesManager.OFFLINE);
+            expect(g_offlineEdit.getOnlineStatus()).toBe(g_offlineEdit.OFFLINE);
 
             g1.geometry.y += 300;
             g2.geometry.y += 100;
@@ -431,7 +431,7 @@ describe("Offline Editing", function()
         });
 
         async.it("Get featureCollections Object", function(done) {
-            g_offlineFeaturesManager.getFeatureCollections(function(success, result) {
+            g_offlineEdit.getFeatureCollections(function(success, result) {
                 expect(success).toBe(true);
                 expect(result.featureCollections.length).toBe(1);
                 expect(result.featureCollections[0].featureLayerCollection).toEqual(g_featureLayers[0].toJson());
@@ -445,7 +445,7 @@ describe("Offline Editing", function()
         //{
         //    expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([l1,l2,l3]));
         //    expect(g_featureLayers[1].graphics.length).toBe(3);
-        //    expect(g_offlineFeaturesManager.getOnlineStatus()).toBe(g_offlineFeaturesManager.OFFLINE);
+        //    expect(g_offlineEdit.getOnlineStatus()).toBe(g_offlineEdit.OFFLINE);
         //
         //
         //    l1.geometry.y += 300; // jabadia: change
@@ -503,7 +503,7 @@ describe("Offline Editing", function()
         {
             expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2]));
             expect(g_featureLayers[0].graphics.length).toBe(2);
-            expect(g_offlineFeaturesManager.getOnlineStatus()).toBe(g_offlineFeaturesManager.OFFLINE);
+            expect(g_offlineEdit.getOnlineStatus()).toBe(g_offlineEdit.OFFLINE);
 
             //g4 = new g_modules.Graphic({"geometry":{"x":-109100,"y":5137000,"spatialReference":{"wkid":102100}},"attributes":{"symbolname":"Reference Point DLRP","z":null,"additionalinformation":null,"eny":null,"datetimevalid":null,"datetimeexpired":null,"distance":null,"azimuth":null,"uniquedesignation":null,"x":null,"y":null}} );
             //g5 = new g_modules.Graphic({"geometry":{"x":-109500,"y":5137000,"spatialReference":{"wkid":102100}},"attributes":{"symbolname":"Reference Point DLRP","z":null,"additionalinformation":null,"eny":null,"datetimevalid":null,"datetimeexpired":null,"distance":null,"azimuth":null,"uniquedesignation":null,"x":null,"y":null}} );
@@ -656,7 +656,7 @@ describe("Offline Editing", function()
         });
 
         async.it("Validate featureCollections Object", function(done) {
-            g_offlineFeaturesManager.getFeatureCollections(function(success, result) {
+            g_offlineEdit.getFeatureCollections(function(success, result) {
                 expect(success).toBe(true);
                 expect(result.featureCollections.length).toBe(1);
                 expect(result.featureCollections[0].featureLayerCollection).toEqual(g_featureLayers[0].toJson());
@@ -704,7 +704,7 @@ describe("Offline Editing", function()
                         ]
                     };
 
-                    g_offlineFeaturesManager.initAttachments(function(success){
+                    g_offlineEdit.initAttachments(function(success){
                         expect(success).toBe(true);
                         if(success){
 
@@ -826,7 +826,7 @@ describe("Offline Editing", function()
             })
         });
 
-        // offlineFeaturesManager results should be the same as getting results directly from database
+        // OfflineEditAdvanced results should be the same as getting results directly from database
         async.it("Get PhantomLayerGraphics via the layer", function(done){
             g_featureLayers[0].getPhantomGraphicsArray(function(result,array){
                 expect(result).toBe(true);
@@ -1031,7 +1031,7 @@ describe("Offline Editing", function()
         });
 
         async.it("Validate featureCollections Object", function(done) {
-            g_offlineFeaturesManager.getFeatureCollections(function(success, result) {
+            g_offlineEdit.getFeatureCollections(function(success, result) {
                 expect(success).toBe(true);
                 expect(result.featureCollections.length).toBe(1);
                 expect(result.featureCollections[0].featureLayerCollection).toEqual(g_featureLayers[0].toJson());
@@ -1065,11 +1065,11 @@ describe("Offline Editing", function()
 
             var listener = jasmine.createSpy('event listener all edits sent');
 
-            g_offlineFeaturesManager.on(g_offlineFeaturesManager.events.ALL_EDITS_SENT,listener);
+            g_offlineEdit.on(g_offlineEdit.events.ALL_EDITS_SENT,listener);
 
-            g_offlineFeaturesManager.goOnline(function(results) {
+            g_offlineEdit.goOnline(function(results) {
                 console.log("Library is now back online");
-                expect(g_offlineFeaturesManager.getOnlineStatus()).toBe(g_offlineFeaturesManager.ONLINE);
+                expect(g_offlineEdit.getOnlineStatus()).toBe(g_offlineEdit.ONLINE);
                 expect(listener).toHaveBeenCalled();
                 expect(results.success).toBeTruthy();
 
@@ -1136,7 +1136,7 @@ describe("Offline Editing", function()
         });
 
         async.it("After online - verify online status",function(done){
-            expect(g_offlineFeaturesManager.getOnlineStatus()).toBe(g_offlineFeaturesManager.ONLINE);
+            expect(g_offlineEdit.getOnlineStatus()).toBe(g_offlineEdit.ONLINE);
             done();
         });
 

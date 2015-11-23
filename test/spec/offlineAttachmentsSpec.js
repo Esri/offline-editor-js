@@ -38,7 +38,7 @@ function countFeatures(featureLayer, cb)
 
 function getObjectIds(graphics)
 {
-	return graphics.map( function(g) { return g_offlineFeaturesManager.DB_UID; });
+	return graphics.map( function(g) { return g_offlineEdit.DB_UID; });
 }
 
 /*
@@ -69,14 +69,14 @@ describe("Attachments", function()
 
 		async.it("delete all local attachments", function(done)
 		{
-			expect(g_offlineFeaturesManager.attachmentsStore).not.toBeUndefined();
+			expect(g_offlineEdit.attachmentsStore).not.toBeUndefined();
 
-			g_offlineFeaturesManager.attachmentsStore.deleteAll(function(success)
+			g_offlineEdit.attachmentsStore.deleteAll(function(success)
 			{
 				expect(success).toBeTruthy();
 				setTimeout(function()
 				{
-					g_offlineFeaturesManager.attachmentsStore.getUsage(function(usage)
+					g_offlineEdit.attachmentsStore.getUsage(function(usage)
 					{
 						expect(usage.attachmentCount).toBe(0);
 						done();
@@ -181,9 +181,9 @@ describe("Attachments", function()
 
 		async.it("go offline", function(done)
 		{
-			expect(g_offlineFeaturesManager.getOnlineStatus()).toBe(g_offlineFeaturesManager.ONLINE);
-			g_offlineFeaturesManager.goOffline();
-			expect(g_offlineFeaturesManager.getOnlineStatus()).toBe(g_offlineFeaturesManager.OFFLINE);
+			expect(g_offlineEdit.getOnlineStatus()).toBe(g_offlineEdit.ONLINE);
+			g_offlineEdit.goOffline();
+			expect(g_offlineEdit.getOnlineStatus()).toBe(g_offlineEdit.OFFLINE);
 			done();
 		});
 
@@ -232,7 +232,7 @@ describe("Attachments", function()
 		});
 
         async.it("Verify Attachment DB usage as zero", function(done){
-            g_offlineFeaturesManager.attachmentsStore.getUsage(function(usage)
+            g_offlineEdit.attachmentsStore.getUsage(function(usage)
             {
                 expect(usage.attachmentCount).toBe(0);
                 done();
@@ -275,8 +275,8 @@ describe("Attachments", function()
 		async.it("add attachment to (online) feature", function(done)
 		{
 			expect(g_featureLayer.graphics.length).toBe(4);
-			expect(g_offlineFeaturesManager.attachmentsStore).not.toBeUndefined();
-            expect(g_offlineFeaturesManager.getOnlineStatus()).toBe(g_offlineFeaturesManager.OFFLINE);
+			expect(g_offlineEdit.attachmentsStore).not.toBeUndefined();
+            expect(g_offlineEdit.getOnlineStatus()).toBe(g_offlineEdit.OFFLINE);
 			expect(g1_online.attributes.objectid).toBeGreaterThan(0);
 
 			g_featureLayer.addAttachment( g1_online.attributes.objectid, g_formNode,
@@ -295,10 +295,10 @@ describe("Attachments", function()
 		});
 
         async.it("Verify Attachment DB usage", function(done){
-            g_offlineFeaturesManager.attachmentsStore.getUsage(function(usage)
+            g_offlineEdit.attachmentsStore.getUsage(function(usage)
             {
                 expect(usage.attachmentCount).toBe(1);
-                g_offlineFeaturesManager.attachmentsStore.getAttachmentsByFeatureId(g_featureLayer.url, g1_online.attributes.objectid, function(attachments)
+                g_offlineEdit.attachmentsStore.getAttachmentsByFeatureId(g_featureLayer.url, g1_online.attributes.objectid, function(attachments)
                 {
                     expect(attachments.length).toBe(1);
                     console.log("attached file:", attachments[0]);
@@ -315,7 +315,7 @@ describe("Attachments", function()
 		async.it("add attachment to (offline) feature g2_offline", function(done)
 		{
 			expect(g_featureLayer.graphics.length).toBe(4);
-			expect(g_offlineFeaturesManager.attachmentsStore).not.toBeUndefined();
+			expect(g_offlineEdit.attachmentsStore).not.toBeUndefined();
 
 			expect(g2_offline.attributes.objectid).toBeLessThan(0);
 
@@ -336,10 +336,10 @@ describe("Attachments", function()
 		});
 
         async.it("Verify attachment g2_offline exists in DB", function(done){
-            g_offlineFeaturesManager.attachmentsStore.getUsage(function(usage)
+            g_offlineEdit.attachmentsStore.getUsage(function(usage)
             {
                 expect(usage.attachmentCount).toBe(2);
-                g_offlineFeaturesManager.attachmentsStore.getAttachmentsByFeatureId(g_featureLayer.url, g2_offline.attributes.objectid, function(attachments)
+                g_offlineEdit.attachmentsStore.getAttachmentsByFeatureId(g_featureLayer.url, g2_offline.attributes.objectid, function(attachments)
                 {
                     expect(attachments.length).toBe(1);
                     console.log("attached file:", attachments[0]);
@@ -351,7 +351,7 @@ describe("Attachments", function()
 		async.it("add attachment to (offline) feature g3_offline (to be deleted)", function(done)
 		{
 			expect(g_featureLayer.graphics.length).toBe(4);
-			expect(g_offlineFeaturesManager.attachmentsStore).not.toBeUndefined();
+			expect(g_offlineEdit.attachmentsStore).not.toBeUndefined();
 
 			expect(g3_offline.attributes.objectid).toBeLessThan(0);
 
@@ -372,7 +372,7 @@ describe("Attachments", function()
 		});
 
         async.it("Verify attachment g3_offline", function(done) {
-            g_offlineFeaturesManager.attachmentsStore.getAttachmentsByFeatureId(g_featureLayer.url, g3_offline.attributes.objectid, function(attachments)
+            g_offlineEdit.attachmentsStore.getAttachmentsByFeatureId(g_featureLayer.url, g3_offline.attributes.objectid, function(attachments)
             {
                 expect(attachments.length).toBe(1);
                 console.log("attached file:", attachments[0]);
@@ -384,7 +384,7 @@ describe("Attachments", function()
         async.it("add attachment to (offline) feature g4_offline (to be deleted)", function(done)
         {
             expect(g_featureLayer.graphics.length).toBe(4);
-            expect(g_offlineFeaturesManager.attachmentsStore).not.toBeUndefined();
+            expect(g_offlineEdit.attachmentsStore).not.toBeUndefined();
 
             expect(g4_offline.attributes.objectid).toBeLessThan(0);
 
@@ -408,7 +408,7 @@ describe("Attachments", function()
         });
 
         async.it("Verify attachment g4_offline", function(done) {
-            g_offlineFeaturesManager.attachmentsStore.getAttachmentsByFeatureId(g_featureLayer.url, g4_offline.attributes.objectid, function(attachments)
+            g_offlineEdit.attachmentsStore.getAttachmentsByFeatureId(g_featureLayer.url, g4_offline.attributes.objectid, function(attachments)
             {
                 expect(attachments.length).toBe(1);
                 console.log("attached file:", attachments[0]);
@@ -417,7 +417,7 @@ describe("Attachments", function()
         });
 
         async.it("Verify Attachment DB usage", function(done){
-            g_offlineFeaturesManager.attachmentsStore.getUsage(function(usage)
+            g_offlineEdit.attachmentsStore.getUsage(function(usage)
             {
                 expect(usage.attachmentCount).toBe(4);
                 done();
@@ -426,7 +426,7 @@ describe("Attachments", function()
 
 		async.it("query offline attachments of layer", function(done)
 		{
-            g_offlineFeaturesManager.attachmentsStore.getAttachmentsByFeatureLayer(g_featureLayer.url, function(attachments)
+            g_offlineEdit.attachmentsStore.getAttachmentsByFeatureLayer(g_featureLayer.url, function(attachments)
             {
                 expect(attachments.length).toBe(4);
                 var objectIds = attachments.map(function(a){ return a.objectId; }).sort();
@@ -507,10 +507,10 @@ describe("Attachments", function()
 		});
 
         async.it("Verify Attachment DB usage", function(done){
-            g_offlineFeaturesManager.attachmentsStore.getUsage(function(usage)
+            g_offlineEdit.attachmentsStore.getUsage(function(usage)
             {
                 expect(usage.attachmentCount).toBe(3);
-                g_offlineFeaturesManager.attachmentsStore.getAttachmentsByFeatureId(g_featureLayer.url, g3_offline.attributes.objectid, function(attachments)
+                g_offlineEdit.attachmentsStore.getAttachmentsByFeatureId(g_featureLayer.url, g3_offline.attributes.objectid, function(attachments)
                 {
                     expect(attachments.length).toBe(0);
                     console.log("attached file:", attachments[0]);
@@ -527,7 +527,7 @@ describe("Attachments", function()
 		async.it("add attachment", function(done)
 		{
 			expect(g_featureLayer.graphics.length).toBe(3);
-			expect(g_offlineFeaturesManager.attachmentsStore).not.toBeUndefined();
+			expect(g_offlineEdit.attachmentsStore).not.toBeUndefined();
 
 			expect(g2_offline.attributes.objectid).toBeLessThan(0);
 
@@ -551,10 +551,10 @@ describe("Attachments", function()
 		});
 
         async.it("Verify Attachment DB usage",function(done){
-            g_offlineFeaturesManager.attachmentsStore.getUsage(function(usage)
+            g_offlineEdit.attachmentsStore.getUsage(function(usage)
             {
                 expect(usage.attachmentCount).toBe(4);
-                g_offlineFeaturesManager.attachmentsStore.getAttachmentsByFeatureId(g_featureLayer.url, g2_offline.attributes.objectid, function(attachments)
+                g_offlineEdit.attachmentsStore.getAttachmentsByFeatureId(g_featureLayer.url, g2_offline.attributes.objectid, function(attachments)
                 {
                     expect(attachments.length).toBe(2);
                     done();
@@ -565,7 +565,7 @@ describe("Attachments", function()
 		async.it("delete attachment", function(done)
 		{
 			expect(g_featureLayer.graphics.length).toBe(3);
-			expect(g_offlineFeaturesManager.attachmentsStore).not.toBeUndefined();
+			expect(g_offlineEdit.attachmentsStore).not.toBeUndefined();
 
 			g_featureLayer.deleteAttachments( g2_offline.attributes.objectid, [attachmentId],
 				function(result)
@@ -583,7 +583,7 @@ describe("Attachments", function()
 		});
 
         async.it("Verify Attachment DB usage", function(done){
-            g_offlineFeaturesManager.attachmentsStore.getUsage(function(usage)
+            g_offlineEdit.attachmentsStore.getUsage(function(usage)
             {
                 expect(usage.attachmentCount).toBe(3);
                 done();
@@ -591,7 +591,7 @@ describe("Attachments", function()
         });
 
         async.it("Verify attachment g2_offline", function(done){
-            g_offlineFeaturesManager.attachmentsStore.getAttachmentsByFeatureId(g_featureLayer.url, g2_offline.attributes.objectid, function(attachments)
+            g_offlineEdit.attachmentsStore.getAttachmentsByFeatureId(g_featureLayer.url, g2_offline.attributes.objectid, function(attachments)
             {
                 expect(attachments.length).toBe(1);
                 done();
@@ -674,7 +674,7 @@ describe("Attachments", function()
 	{
 		async.it("query offline attachments of layer", function(done)
 		{
-			g_offlineFeaturesManager.attachmentsStore.getAttachmentsByFeatureLayer(g_featureLayer.url, function(attachments)
+			g_offlineEdit.attachmentsStore.getAttachmentsByFeatureLayer(g_featureLayer.url, function(attachments)
 			{
 				// This should be 3 because we are doing a delete existing attachment operation
                 // which means that DELETE will be queued in the database and will not be
@@ -691,12 +691,12 @@ describe("Attachments", function()
 			expect(g_featureLayer.graphics.length).toBe(3);
 
 			var listener = jasmine.createSpy('event listener');
-			g_offlineFeaturesManager.on(g_offlineFeaturesManager.events.ALL_EDITS_SENT, listener);
+			g_offlineEdit.on(g_offlineEdit.events.ALL_EDITS_SENT, listener);
 
-			g_offlineFeaturesManager.goOnline(function(result)
+			g_offlineEdit.goOnline(function(result)
 			{
 				console.log("went online");
-				expect(g_offlineFeaturesManager.getOnlineStatus()).toBe(g_offlineFeaturesManager.ONLINE);
+				expect(g_offlineEdit.getOnlineStatus()).toBe(g_offlineEdit.ONLINE);
 				expect(listener).toHaveBeenCalled();
 				expect(result.success).toBeTruthy();
 				expect(result.attachments.success).toBeTruthy();
@@ -724,7 +724,7 @@ describe("Attachments", function()
 				expect(g_featureLayer.graphics.length).toBe(3);
                 done();
 			});
-			expect(g_offlineFeaturesManager.getOnlineStatus()).toBe(g_offlineFeaturesManager.RECONNECTING);
+			expect(g_offlineEdit.getOnlineStatus()).toBe(g_offlineEdit.RECONNECTING);
 		});
     });
 
@@ -749,7 +749,7 @@ describe("Attachments", function()
 
 		async.it("Get attachments database usage - check directly via attachmentsStore", function(done)
 		{
-			g_offlineFeaturesManager.attachmentsStore.getUsage(function(usage)
+			g_offlineEdit.attachmentsStore.getUsage(function(usage)
 			{
 				expect(usage.attachmentCount).toBe(0);
                 done();

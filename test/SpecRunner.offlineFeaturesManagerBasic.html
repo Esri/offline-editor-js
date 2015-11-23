@@ -2,7 +2,7 @@
         "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
-    <title>Jasmine Spec Runner - offlineFeaturesManager</title>
+    <title>Jasmine Spec Runner - OfflineEditBasic</title>
 
     <link rel="shortcut icon" type="image/png" href="../vendor/jasmine-1.3.1/jasmine_favicon.png">
     <link rel="stylesheet" type="text/css" href="../vendor/jasmine-1.3.1/jasmine.css">
@@ -23,7 +23,7 @@
     <script src="http://js.arcgis.com/3.14/"></script>
 
     <!-- include spec files here... -->
-    <script type="text/javascript" src="spec/offlineEditingLightSpec.js"></script>
+    <script type="text/javascript" src="spec/offlineEditingBasicSpec.js"></script>
 
     <script src="//github.hubspot.com/offline/offline.min.js"></script>
 
@@ -31,7 +31,7 @@
 
         var g_map;
         var g_featureLayers = [];
-        var g_offlineFeaturesManager;
+        var g_offlineEdit;
         var g_modules = {};
         var g_editsStore;
         var g_layersIds = [];
@@ -48,7 +48,6 @@
                          GraphicsLayer, Graphic,
                          FeatureLayer, geometry, esriRequest,
                          dom, on, Query,
-                         OfflineFeaturesManager,editsStore,
                          domConstruct)
                 {
 
@@ -62,9 +61,9 @@
 
                     g_modules.esriRequest = esriRequest;
                     g_modules.Graphic = Graphic;
-                    g_offlineFeaturesManager = new O.esri.Edit.OfflineFeaturesManagerBasic();
-                    g_offlineFeaturesManager.DB_NAME = "FEATURES_TEST";
-                    g_offlineFeaturesManager.DB_UID = "OBJECTID"; //VERY IMPORTANT! We get this from the Service Directory "Fields" section.
+                    g_offlineEdit = new O.esri.Edit.OfflineEditBasic();
+                    g_offlineEdit.DB_NAME = "FEATURES_TEST";
+                    g_offlineEdit.DB_UID = "OBJECTID"; //VERY IMPORTANT! We get this from the Service Directory "Fields" section.
 
 
                     // We are also validating the OfflineFeatureManager directly against the database
@@ -90,14 +89,6 @@
 
                     g_map.addLayers(g_featureLayers);
 
-//                    g_map.addLayer(g_offlineFeaturesManager);
-
-                    /////////////////////////////////////////////////////////////////////////
-                    /////////////////////////////////////////////////////////////////////////
-                    // To test what happens when you extend library before layers-add-result
-                    // comment this out below and just run test()
-//                    updateEndListener = g_offlineFeaturesManager.on('update-end', test);
-                    //test()
                     g_map.on('layers-add-result', test);
 
                     function test(evt)
@@ -107,14 +98,12 @@
                         {
                             g_featureLayers.forEach(function(layer)
                             {
-                                g_offlineFeaturesManager.extend(layer,function(result){
+                                g_offlineEdit.extend(layer,function(result){
                                     if(result == false) console.error("WARNING: Unable to initialize database");
 
 
                                     try
                                     {
-//                            g_featureLayers[0] = g_offlineFeaturesManager.featureLayer;
-//                            var test = g_offlineFeaturesManager;
                                         var jasmineEnv = jasmine.getEnv();
                                         jasmineEnv.updateInterval = 1000;
                                         jasmineEnv.defaultTimeoutInterval = 10000; // 10 sec

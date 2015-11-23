@@ -1,19 +1,19 @@
-API OfflineFeaturesManagerBasic
+API OfflineEditBasic
 ==================================
 
-##O.esri.Edit.OfflineFeaturesManagerBasic
+##O.esri.Edit.OfflineEditBasic
 The `offline-edit-basic-min.js` library provides the following tools for working with esri.layers.FeatureLayer objects while intermittently offline. 
 
 
 ###Constructor
 Constructor | Description
 --- | ---
-`O.esri.Edit.OfflineFeaturesManagerBasic()` | Creates an instance of the OfflineFeaturesManagerBasic class. This library allows you to extend FeatureLayer objects with offline editing capabilities and manage the online/offline resynchronization process.
+`O.esri.Edit.OfflineEditBasic()` | Creates an instance of the OfflineEditBasic class. This library allows you to extend FeatureLayer objects with offline editing capabilities and manage the online/offline resynchronization process.
 
 ###Properties
 Property | Value | Description
 --- | --- | ---
-`DB_NAME` | "features_store" | Sets the database name. You can instantiate multiple databases within the same application by creating seperate instances of OfflineFeaturesManagerAdvanced.
+`DB_NAME` | "features_store" | Sets the database name. You can instantiate multiple databases within the same application by creating seperate instances of OfflineEditAdvanced.
 `DB_OBJECTSTORE_NAME` | "features" | Represents an object store that allows access to a set of data in the database.
 `DB_UID` | "objectid" | IMPORTANT!** This tells the database what id to use as a unique identifier. This depends on how your feature service was created. ArcGIS Online services may use something different such as `GlobalID`.
 `proxyPath` | null | Default is `null`. If you are using a Feature Service that is not CORS-enabled then you will need to set this path.
@@ -29,7 +29,7 @@ Property | Value | Description
 
 ###Methods
 
-OfflineFeaturesManagerBasic provides the following functionality.
+OfflineEditBasic provides the following functionality.
 
 **IMPORTANT:** The library currently only works offline when the feature layer's `mode` is set to `FeatureLayer.MODE_SNAPSHOT`.
 
@@ -42,12 +42,12 @@ Methods | Returns | Description
 
 
 ###Events
-Application code can subscribe to offlineFeaturesManagerBasic events to be notified of different conditions. 
+Application code can subscribe to OfflineEditBasic events to be notified of different conditions. 
 
 ```js
 
-	offlineFeaturesManager.on(
-		OfflineFeaturesManagerBasic.events.ALL_EDITS_SENT, 
+	offlineEdit.on(
+		offlineEdit.events.ALL_EDITS_SENT, 
 		function(edits) 
 		{
 			...
@@ -63,14 +63,14 @@ Event | Value | Returns |  Description
 
 ###FeatureLayer 
 
-A FeatureLayer that has been extended using OfflineFeaturesManagerAdvanced.extend() will gain access to the following additional functionality. Example usage:
+A FeatureLayer that has been extended using OfflineEditBasic.extend() will gain access to the following additional functionality. Example usage:
 
 
 ```js
 
 	// Extend the FeatureLayer
-	var offlineFeaturesManager = new O.esri.Edit.OfflineFeaturesManagerBasic();
-	offlineFeaturesManager.extend(myCustomFeatureLayer);
+	var offlineEdit = new O.esri.Edit.OfflineEditBasic();
+	offlineEdit.extend(myCustomFeatureLayer);
 
 ```
  

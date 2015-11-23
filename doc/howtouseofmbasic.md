@@ -1,11 +1,11 @@
 How to use the basic edit library
 ====================================
 
-##`OfflineFeaturesManagerBasic` library
+##`OfflineEditBasic` library
 
-This library allows a developer to extend a feature layer with intermittent offline editing support. You can combine this functionality with offline tiles. For a complete list of features consult the [OfflineFeaturesManagerBasic API doc](offlinefeaturesmanagerbasic.md).
+This library allows a developer to extend a feature layer with intermittent offline editing support. You can combine this functionality with offline tiles. For a complete list of features consult the [OfflineEditBasic API doc](offlinefeaturesmanagerbasic.md).
 
-**IMPORTANT:** Only use a single instance of OfflineFeaturesManagerBasic per application. With this single instance you can extend offline capabilities to multiple feature layers. This single instance contains all edits for all feature layers initialized via `OfflineFeaturesManagerBasic.extend().` Multiple feature layers share a single database. The database maintains the relationship between each edit and its' respective feature layer via a UUID.
+**IMPORTANT:** Only use a single instance of OfflineEditBasic per application. With this single instance you can extend offline capabilities to multiple feature layers. This single instance contains all edits for all feature layers initialized via `OfflineEditBasic.extend().` Multiple feature layers share a single database. The database maintains the relationship between each edit and its' respective feature layer via a UUID.
 
 **Step 1** Include `offline.min.js`, `offline-tiles-basic-min.js` and `offline-edit-min.js` in your app's require contstructor. Be sure to include `ofline.mins.js` which is a 3rd party library for detecting if the browser is online or offline. 
 
@@ -34,18 +34,18 @@ You can also refer to the offline-editor-js within a `define` statement using th
 
 ```
 
-**Step 2** Once your map is created (either using `new Map()` or using `esriUtils.createMap(webmapid,...)`, you create a new OfflineFeaturesManagerBasic instance and starting assigning events listeners to tie the library into your user interface:
+**Step 2** Once your map is created (either using `new Map()` or using `esriUtils.createMap(webmapid,...)`, you create a new OfflineEditBasic instance and starting assigning events listeners to tie the library into your user interface:
 
 ```js
 		
-		var offlineFeaturesManager = new O.esri.Edit.OfflineFeaturesManagerBasic();
+		var offlineEdit = new O.esri.Edit.OfflineEditBasic();
 		// OPTIONAL - you can change the name of the database
-		// offlineFeaturesManager.DBNAME = "FIELD_SURVEY3";
+		// offlineEdit.DBNAME = "FIELD_SURVEY3";
 		// OPTIONAL - you can change the name of the unique identifier used by the feature service. Default is "objectid".
-		// offlineFeaturesManager.UID = "GlobalID";
-		offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_ENQUEUED, updateStatus);
+		// offlineEdit.UID = "GlobalID";
+		offlineEdit.on(offlineEdit.events.EDITS_ENQUEUED, updateStatus);
 updateStatus);
-		offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_SENT, updateStatus);		              
+		offlineEdit.on(offlineEdit.events.EDITS_SENT, updateStatus);		              
 
 		
 ```		
@@ -80,35 +80,35 @@ NOTE: You can also monitor standard ArcGIS API for JavaScript layer events using
 
 **Step 4** Once a layer has been extended the offline library will enable it with new methods. Here are a few examples that include code snippets of how to take advantage of some of the library's methods. 
 
-####OfflineFeaturesManagerBasic.proxyPath
+####OfflineEditBasic.proxyPath
 By default, the library assumes you are using a CORS-enabled Feature Service. All ArcGIS Online Feature Services are CORS-enabled. If you are hosting your own service and it is not CORS-enabled, then you will need to set this path. More information on downloading and using ArcGIS proxies can be found here: [https://developers.arcgis.com/en/javascript/jshelp/ags_proxy.html](https://developers.arcgis.com/en/javascript/jshelp/ags_proxy.html)
 
 Here's one example:
 
 ```js
 
-	offlineFeaturesManager.proxyPath = "../your-local-proxy-directory/proxy.php";
+	offlineEdit.proxyPath = "../your-local-proxy-directory/proxy.php";
 
 ```
 
-####OfflineFeaturesManagerBasic.goOffline()
+####OfflineEditBasic.goOffline()
 Force the library to go offline. Once this condition is set, then any offline edits will be cached locally.
 
 ```js
 		function goOffline()
 		{
-			offlineFeaturesManager.goOffline()														});
+			offlineEdit.goOffline()														});
 			//TO-DO			
 		}
 ```
 
-####OfflineFeaturesManagerBasic.goOnline()
+####OfflineEditBasic.goOnline()
 Force the library to return to an online condition. If there are pending edits, the library will attempt to sync them.
 
 ```js
 		function goOnline()
 		{			
-			offlineFeaturesManager.goOnline(function(result)
+			offlineEdit.goOnline(function(result)
 			{
 				if(result.success){
 				    //Modify user inteface depending on success/failure
@@ -139,22 +139,22 @@ Typically you should only need to call this method once for each online/offline 
 
 If there was a an failure and/or errors, it's a good idea to reevaluate the edits that remain in the database because some edits may have been synced and others may still be pending. Only then, and depending on the error message, should the app try to `goOnline()` again. 
 
-####OfflineFeaturesManagerBasic.getOnlineStatus()
+####OfflineEditBasic.getOnlineStatus()
 Within your application you can manually check online status and then update your user interface. By using a switch/case statement you can check against three enums that indicate if the library thinks it is offline, online or in the process of reconnecting.
 
 ```js		
 			
-			switch( offlineFeaturesManager.getOnlineStatus() )
+			switch( offlineEdit.getOnlineStatus() )
 			{
-				case offlineFeaturesManager.OFFLINE:
+				case offlineEdit.OFFLINE:
 					node.innerHTML = "<i class='fa fa-chain-broken'></i> offline";
 					domClass.add(node, "offline");
 					break;
-				case offlineFeaturesManager.ONLINE:
+				case offlineEdit.ONLINE:
 					node.innerHTML = "<i class='fa fa-link'></i> online";
 					domClass.add(node, "online");
 					break;
-				case offlineFeaturesManager.RECONNECTING:
+				case offlineEdit.RECONNECTING:
 					node.innerHTML = "<i class='fa fa-cog fa-spin'></i> reconnecting";
 					domClass.add(node, "reconnecting");
 					break;
@@ -162,18 +162,18 @@ Within your application you can manually check online status and then update you
 		
 ```
 
-####OfflineFeaturesManagerBasic.pendingEditsCount(callback)
+####OfflineEditBasic.pendingEditsCount(callback)
 You can check if there are any edits pending. 
 		
 ```js
 	
 	// Simply get a count
-	offlineFeaturesManager.pendingEditsCount(function(count){
+	offlineEdit.pendingEditsCount(function(count){
 		console.log("There are " + count + " edits pending");
 	})		
 	
 	// Or retrieve all pending edits
-	offlineFeaturesManager.getAllEditsArray(function(success,editsArray){
+	offlineEdit.getAllEditsArray(function(success,editsArray){
 	 	if(success && editsArray.length > 0){
 	 		editsArray.forEach(function(edit){
 	 			console.log("Pending edit: " + JSON.stringify(edit));
@@ -191,10 +191,10 @@ You can run the reset code seperately or you can run the app with this pattern. 
 
 ```js
 
-offlineFeaturesManager.extend(myFeatureLayer,function(result, error) {
+offlineEdit.extend(myFeatureLayer,function(result, error) {
     if(result) {
-        console.log("offlineFeaturesManager initialized.");
-        offlineFeaturesManager.resetDatabase(function(success,error){
+        console.log("OfflineEditBasic initialized.");
+        offlineEdit.resetDatabase(function(success,error){
             console.log("DATABASE DELETED");
         });
     . . .

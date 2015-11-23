@@ -38,7 +38,7 @@ function countFeatures(featureLayer, cb)
 
 function getObjectIds(graphics)
 {
-    return graphics.map( function(g) { return g.attributes[g_offlineFeaturesManager.DB_UID]; });
+    return graphics.map( function(g) { return g.attributes[g_offlineEdit.DB_UID]; });
 }
 
 /*
@@ -210,7 +210,7 @@ describe("Offline Editing", function()
 
         async.it("Prepare feature service. Add some features online - points", function(done)
         {
-            expect(g_offlineFeaturesManager.getOnlineStatus()).toBe(g_offlineFeaturesManager.ONLINE);
+            expect(g_offlineEdit.getOnlineStatus()).toBe(g_offlineEdit.ONLINE);
 
             g1 = new g_modules.Graphic({"geometry":{"x":-105400,"y":5137000,"spatialReference":{"wkid":102100}},"attributes":{"OBJECTID":1,"lat":0.0,"lng":0.0,"description":"g1"}});
             g2 = new g_modules.Graphic({"geometry":{"x":-105600,"y":5137000,"spatialReference":{"wkid":102100}},"attributes":{"OBJECTID":2,"lat":0.0,"lng":0.0,"description":"g2"}});
@@ -242,9 +242,9 @@ describe("Offline Editing", function()
     {
         async.it("go Offline", function(done)
         {
-            expect(g_offlineFeaturesManager.getOnlineStatus()).toBe(g_offlineFeaturesManager.ONLINE);
-            g_offlineFeaturesManager.goOffline();
-            expect(g_offlineFeaturesManager.getOnlineStatus()).toBe(g_offlineFeaturesManager.OFFLINE);
+            expect(g_offlineEdit.getOnlineStatus()).toBe(g_offlineEdit.ONLINE);
+            g_offlineEdit.goOffline();
+            expect(g_offlineEdit.getOnlineStatus()).toBe(g_offlineEdit.OFFLINE);
             done();
         });
 
@@ -253,12 +253,12 @@ describe("Offline Editing", function()
 
             var listener = jasmine.createSpy('event listener edits enqueued');
 
-            g_offlineFeaturesManager.on(g_offlineFeaturesManager.events.EDITS_ENQUEUED,listener);
+            g_offlineEdit.on(g_offlineEdit.events.EDITS_ENQUEUED,listener);
 
 
             expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2,g3]));
             expect(g_featureLayers[0].graphics.length).toBe(3);
-            expect(g_offlineFeaturesManager.getOnlineStatus()).toBe(g_offlineFeaturesManager.OFFLINE);
+            expect(g_offlineEdit.getOnlineStatus()).toBe(g_offlineEdit.OFFLINE);
 
             g1.geometry.y += 300;
             g2.geometry.y += 100;
@@ -315,7 +315,7 @@ describe("Offline Editing", function()
         {
             expect(getObjectIds(g_featureLayers[0].graphics)).toEqual(getObjectIds([g1,g2]));
             expect(g_featureLayers[0].graphics.length).toBe(2);
-            expect(g_offlineFeaturesManager.getOnlineStatus()).toBe(g_offlineFeaturesManager.OFFLINE);
+            expect(g_offlineEdit.getOnlineStatus()).toBe(g_offlineEdit.OFFLINE);
 
             //g4 = new g_modules.Graphic({"geometry":{"x":-109100,"y":5137000,"spatialReference":{"wkid":102100}},"attributes":{"symbolname":"Reference Point DLRP","z":null,"additionalinformation":null,"eny":null,"datetimevalid":null,"datetimeexpired":null,"distance":null,"azimuth":null,"uniquedesignation":null,"x":null,"y":null}} );
             //g5 = new g_modules.Graphic({"geometry":{"x":-109500,"y":5137000,"spatialReference":{"wkid":102100}},"attributes":{"symbolname":"Reference Point DLRP","z":null,"additionalinformation":null,"eny":null,"datetimevalid":null,"datetimeexpired":null,"distance":null,"azimuth":null,"uniquedesignation":null,"x":null,"y":null}} );
@@ -533,11 +533,11 @@ describe("Offline Editing", function()
 
             var listener = jasmine.createSpy('event listener all edits sent');
 
-            //g_offlineFeaturesManager.on(g_offlineFeaturesManager.events.ALL_EDITS_SENT,listener);
+            //g_offlineEdit.on(g_offlineEdit.events.ALL_EDITS_SENT,listener);
 
-            g_offlineFeaturesManager.goOnline(function(success,results) {
+            g_offlineEdit.goOnline(function(success,results) {
                 console.log("Library is now back online");
-                expect(g_offlineFeaturesManager.getOnlineStatus()).toBe(g_offlineFeaturesManager.ONLINE);
+                expect(g_offlineEdit.getOnlineStatus()).toBe(g_offlineEdit.ONLINE);
                 //expect(listener).toHaveBeenCalled();
                 expect(success).toBeTruthy();
 
@@ -600,7 +600,7 @@ describe("Offline Editing", function()
         });
 
         async.it("After online - verify online status",function(done){
-            expect(g_offlineFeaturesManager.getOnlineStatus()).toBe(g_offlineFeaturesManager.ONLINE);
+            expect(g_offlineEdit.getOnlineStatus()).toBe(g_offlineEdit.ONLINE);
             done();
         });
 

@@ -1,11 +1,11 @@
 How to use the advanced edit library
 ====================================
 
-##`OfflineFeaturesManagerAdvanced` library
+##`OfflineEditAdvanced` library
 
-This library allows a developer to extend a feature layer with intermittent and full offline editing support. You can combine this functionality with offline tiles. For a complete list of features consult the [OfflineFeaturesManagerAdvanced API doc](offlinefeaturesmanageradvanced.md).
+This library allows a developer to extend a feature layer with intermittent and full offline editing support. You can combine this functionality with offline tiles. For a complete list of features consult the [OfflineEditAdvanced API doc](offlinefeaturesmanageradvanced.md).
 
-**IMPORTANT:** Only use a single instance of OfflineFeaturesManagerAdvanced per application. With this single instance you can extend offline capabilities to multiple feature layers. This single instance contains all edits for all feature layers initialized via `offlineFeaturesManagerAdvanced.extend().` Multiple feature layers share a single database. The database maintains the relationship between each edit and its' respective feature layer via a UUID.
+**IMPORTANT:** Only use a single instance of OfflineEditAdvanced per application. With this single instance you can extend offline capabilities to multiple feature layers. This single instance contains all edits for all feature layers initialized via `OfflineEditAdvanced.extend().` Multiple feature layers share a single database. The database maintains the relationship between each edit and its' respective feature layer via a UUID.
 
 **Step 1** Include `offline.min.js`, `offline-tiles-basic-min.js` and `offline-edit-advanced-min.js` in your app's require contstructor. Be sure to include `ofline.mins.js` which is a 3rd party library for detecting if the browser is online or offline. 
 
@@ -34,19 +34,19 @@ You can also refer to the offline-editor-js within a `define` statement using th
 
 ```
 
-**Step 2** Once your map is created (either using new Map() or using esriUtils.createMap(webmapid,...), you create a new OfflineFeaturesManagerAdvanced instance and starting assigning events listeners to tie the library into your user interface:
+**Step 2** Once your map is created (either using new Map() or using esriUtils.createMap(webmapid,...), you create a new OfflineEditAdvanced instance and starting assigning events listeners to tie the library into your user interface:
 
 ```js
 		
-		var offlineFeaturesManager = new O.esri.Edit.OfflineFeaturesManagerAdvanced();
+		var offlineEdit = new O.esri.Edit.OfflineEditAdvanced();
 		// OPTIONAL - you can change the name of the database
-		// offlineFeaturesManager.DBNAME = "FIELD_SURVEY3";
+		// OfflineEdit.DBNAME = "FIELD_SURVEY3";
 		// OPTIONAL - you can change the name of the unique identifier used by the feature service. Default is "objectid".
-		// offlineFeaturesManager.UID = "GlobalID";
-		offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_ENQUEUED, updateStatus);
+		// offlineEdit.UID = "GlobalID";
+		offlineEdit.on(offlineEdit.events.EDITS_ENQUEUED, updateStatus);
 updateStatus);
-		offlineFeaturesManager.on(offlineFeaturesManager.events.ALL_EDITS_SENT, updateStatus);		              
-		offlineFeaturesManager.on(offlineFeaturesManager.events.EDITS_SENT_ERROR, handleEditsSentError);
+		offlineEdit.on(offlineEdit.events.ALL_EDITS_SENT, updateStatus);		              
+		offlineEdit.on(offlineEdit.events.EDITS_SENT_ERROR, handleEditsSentError);
 		
 ```		
 
@@ -54,7 +54,7 @@ NOTE: You can also monitor standard ArcGIS API for JavaScript layer events using
 
 ```js
 
-      	offlineFeatureLayer.on("edits-complete", handleEditsComplete);
+      	offlineEdit.on("edits-complete", handleEditsComplete);
 
 ```
 
@@ -93,7 +93,7 @@ Here is an example of initializing the library for partial offline use. Note tha
 		
 		function initEditor(evt)
 		{
-			offlineFeaturesManager.extend(layer1,function(success, error){
+			offlineEdit.extend(layer1,function(success, error){
 				if(success){
 					console.log("Layer has been extended for offline use.");
 				}
@@ -113,7 +113,7 @@ For full offline use, the pattern would look like this where we are creating a `
             dataStore.featureLayerJSON = layer1.toJson();
             dataStore.zoom = map.getZoom();      
             
-            offlineFeaturesManager.extend(layer1,function(success, error){
+            offlineEdit.extend(layer1,function(success, error){
 				if(success){
 					console.log("Layer has been extended for offline use.");
 				}
@@ -129,13 +129,13 @@ The workflow for this coding pattern is you start out online > offline > browser
 
 ```js
 
-    offlineFeaturesManager.extend(layer1, function(success, error) {
+    offlineEdit.extend(layer1, function(success, error) {
         if(success) {
-            // If the app is online then force offlineFeaturesManager to its online state
+            // If the app is online then force offlineEdit to its online state
             // This will force the library to check for pending edits and attempt to
             // resend them to the Feature Service.
             if(_isOnline){ // Check if app is online or offline
-                offlineFeaturesManager.goOnline(function(result){
+                offlineEdit.goOnline(function(result){
                     if(!result.success){
                         alert("There was a problem when attempting to go back online.");
                     }
@@ -145,7 +145,7 @@ The workflow for this coding pattern is you start out online > offline > browser
                 });
             }
             else {
-                offlineFeaturesManager.goOffline();
+                offlineEdit.goOffline();
             }
         }
     });
@@ -157,7 +157,7 @@ There are two approaches to using the dataStore:
 
 * **Approach 1** involves you manually creating the dataStore for greater control over what goes into the Data Store Object and then inserting that Object into the offlineFeatureManager's constructor.
 
-* **Approach 2**, you can let the library manage it automatically upon an ADD, UPDATE or DELETE. This is accomplished by not inserting a manual Data Store Object into offlineFeatureManager constructor and instead setting offlineFeaturesManager.ENABLE_FEATURECOLLECTION = true.
+* **Approach 2**, you can let the library manage it automatically upon an ADD, UPDATE or DELETE. This is accomplished by not inserting a manual Data Store Object into OfflineEditAdvanced constructor and instead setting OfflineEditAdvanced.ENABLE_FEATURECOLLECTION = true.
 
 #### Approach 1 - manually create dataStore
 
@@ -184,7 +184,7 @@ Here's one approach for using a recursive function for loading the feature layer
     var count = 0;
     function extendFeatureLayers(){
         if(count <= featureLayerArray.length){
-            offlineFeaturesManager.extend(featureLayerArray[count],
+            offlineEdit.extend(featureLayerArray[count],
                 function(success, error){
                     if(success){
                         count++;
@@ -208,7 +208,7 @@ You can then retrieve this data after an offline restart by using the following 
 
 ```js
 
-	offlineFeaturesManager.getFeatureLayerJSONDataStore(function(success, dataStore){
+	offlineEdit.getFeatureLayerJSONDataStore(function(success, dataStore){
 		if(success){
 			myFeatureLayer = new 
 				FeatureLayer(dataStore.featureLayerJSON,{
@@ -216,7 +216,7 @@ You can then retrieve this data after an offline restart by using the following 
                	outFields: ["GlobalID","BSID","ROUTES","STOPNAME"]
            	});
            	
-           	offlineFeaturesManager.extend(myFeatureLayer,function(result, error) {
+           	offlineEdit.extend(myFeatureLayer,function(result, error) {
            		if(result) {
            			console.log("Layer has been successfully rebuilt while offline!");
            		}
@@ -238,9 +238,9 @@ Once you set `ENABLED_FEATURECOLLECTION` to `true` the library will automaticall
 
 			// Tell the library to automatically create and store a snapshot of the
 			// of the feature layer.
-			offlineFeaturesManager.ENABLE_FEATURECOLLECTION = true
+			offlineEdit.ENABLE_FEATURECOLLECTION = true
 			
-			offlineFeaturesManager.extend(layer1,function(success, error){
+			offlineEdit.extend(layer1,function(success, error){
 				if(success){
 					console.log("layer1 has been extended for offline use.");
 				}
@@ -252,7 +252,7 @@ Now you can use this pattern to reconstitute the layer after an offline browser 
 
 ```js
 
-     offlinefeaturesManager.getFeatureCollections(function(success, collection) {
+     offlineEdit.getFeatureCollections(function(success, collection) {
          if(success) { 
          	myFeatureLayer = new 
 			    FeatureLayer(collection.featureCollections[0].featureLayerCollection),{
@@ -260,7 +260,7 @@ Now you can use this pattern to reconstitute the layer after an offline browser 
                	outFields: ["GlobalID","BSID","ROUTES","STOPNAME"]
            	});
            	
-           	offlineFeaturesManager.extend(myFeatureLayer,function(result, error) {
+           	offlineEdit.extend(myFeatureLayer,function(result, error) {
            		if(result) {
            			console.log("Layer has been successfully rebuilt while offline!");
            		}
@@ -287,41 +287,41 @@ Here is an example of the Object returned in the `getFeatureCollections()` callb
 
 There are two ways to get the dataStore. You can get it from the instance of Offline Features Manager or from the feature layer, itself:
 
-* `offlineFeaturesManager.getFeatureLayerJSONDataStore( callback )`
+* `offlineEdit.getFeatureLayerJSONDataStore( callback )`
 * `featureLayer.getFeatureLayerJSONDataStore(callback)`
 
 
 **Step 5** Once a layer has been extended the offline library will enable it with new methods. Here are a few examples that include code snippets of how to take advantage of some of the library's methods. 
 
-####OfflineFeaturesManagerAdvanced.proxyPath
+####OfflineEditAdvanced.proxyPath
 By default, the library assumes you are using a CORS-enabled Feature Service. All ArcGIS Online Feature Services are CORS-enabled. If you are hosting your own service and it is not CORS-enabled, then you will need to set this path. More information on downloading and using ArcGIS proxies can be found here: [https://developers.arcgis.com/en/javascript/jshelp/ags_proxy.html](https://developers.arcgis.com/en/javascript/jshelp/ags_proxy.html)
 
 Here's one example:
 
 ```js
 
-	offlineFeaturesManager.proxyPath = "../your-local-proxy-directory/proxy.php";
+	offlineEdit.proxyPath = "../your-local-proxy-directory/proxy.php";
 
 ```
 
-####OfflineFeaturesManagerAdvanced.goOffline()
+####OfflineEditAdvanced.goOffline()
 Force the library to go offline. Once this condition is set, then any offline edits will be cached locally.
 
 ```js
 		function goOffline()
 		{
-			offlineFeaturesManager.goOffline()														});
+			offlineEdit.goOffline()														});
 			//TO-DO			
 		}
 ```
 
-####OfflineFeaturesManagerAdvanced.goOnline()
+####OfflineEditAdvanced.goOnline()
 Force the library to return to an online condition. If there are pending edits, the library will attempt to sync them.
 
 ```js
 		function goOnline()
 		{			
-			offlineFeaturesManager.goOnline(function(result)
+			offlineEdit.goOnline(function(result)
 			{
 				if(result.success){
 				    //Modify user inteface depending on success/failure
@@ -352,22 +352,22 @@ Typically you should only need to call this method once for each online/offline 
 
 If there was a an failure and/or errors, it's a good idea to reevaluate the edits that remain in the database because some edits may have been synced and others may still be pending. Only then, and depending on the error message, should the app try to `goOnline()` again. 
 
-####OfflineFeaturesManagerAdvanced.getOnlineStatus()
+####OfflineEditAdvanced.getOnlineStatus()
 Within your application you can manually check online status and then update your user interface. By using a switch/case statement you can check against three enums that indicate if the library thinks it is offline, online or in the process of reconnecting.
 
 ```js		
 			
-			switch( offlineFeaturesManager.getOnlineStatus() )
+			switch( offlineEdit.getOnlineStatus() )
 			{
-				case offlineFeaturesManager.OFFLINE:
+				case offlineEdit.OFFLINE:
 					node.innerHTML = "<i class='fa fa-chain-broken'></i> offline";
 					domClass.add(node, "offline");
 					break;
-				case offlineFeaturesManager.ONLINE:
+				case offlineEdit.ONLINE:
 					node.innerHTML = "<i class='fa fa-link'></i> online";
 					domClass.add(node, "online");
 					break;
-				case offlineFeaturesManager.RECONNECTING:
+				case offlineEdit.RECONNECTING:
 					node.innerHTML = "<i class='fa fa-cog fa-spin'></i> reconnecting";
 					domClass.add(node, "reconnecting");
 					break;
@@ -375,18 +375,18 @@ Within your application you can manually check online status and then update you
 		
 ```
 
-####OfflineFeaturesManagerAdvanced.pendingEditsCount(callback)
+####OfflineEditAdvanced.pendingEditsCount(callback)
 You can check if there are any edits pending.
 		
 ```js
 	
 	// Simply get a count
-	offlineFeaturesManager.pendingEditsCount(function(count){
+	offlineEdit.pendingEditsCount(function(count){
 		console.log("There are " + count + " edits pending");
 	})		
 	
 	// Or retrieve all pending edits
-	offlineFeaturesManager.getAllEditsArray(function(success,editsArray){
+	offlineEdit.getAllEditsArray(function(success,editsArray){
 	 	if(success && editsArray.length > 0){
 	 		editsArray.forEach(function(edit){
 	 			console.log("Pending edit: " + JSON.stringify(edit));
@@ -404,10 +404,10 @@ You can run the reset code seperately or you can run the app with this pattern. 
 
 ```js
 
-offlineFeaturesManager.extend(myFeatureLayer,function(result, error) {
+offlineEdit.extend(myFeatureLayer,function(result, error) {
     if(result) {
-        console.log("offlineFeaturesManager initialized.");
-        offlineFeaturesManager.resetDatabase(function(success,error){
+        console.log("OfflineEditAdvanced initialized.");
+        offlineEdit.resetDatabase(function(success,error){
             console.log("DATABASE DELETED");
         });
     . . .

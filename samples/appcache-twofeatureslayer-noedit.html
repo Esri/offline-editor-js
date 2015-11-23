@@ -371,7 +371,7 @@
                                     alert("There was a problem when attempting to go back online.");
                                 }
                                 else {
-                                    console.log("OfflineFeaturesManager is online");
+                                    console.log("OfflineEditAdvanced is online");
                                 }
                             });
                         }
@@ -404,7 +404,7 @@
                     if(_isOnline){
                         initializeFeaturesLayersOnline();
                     }
-                    // If the app is offline then we need to retrieve the dataStore from OfflineFeaturesManager
+                    // If the app is offline then we need to retrieve the dataStore from OfflineEditAdvanced
                     // and then extend the feature layer using that information.
                     else {
                         loadFeatureLayerOffline(function(success) {
@@ -627,7 +627,7 @@
                  */
 
                 /**
-                 * Forces offlineFeaturesManager to go online.
+                 * Forces OfflineEditAdvanced to go online.
                  * When invoking featureLayer.goOnline() we force library to sync any edits that were
                  * stored while offline.
                  */
@@ -638,7 +638,7 @@
                 }
 
                 /**
-                 * Forces offlineFeaturesManager offline
+                 * Forces OfflineEditAdvanced offline
                  */
                 function goOffline() {
                     console.log("Going offline...");
@@ -647,7 +647,7 @@
                 }
 
                 /**
-                 * Toggles offlineFeaturesManager online/offline
+                 * Toggles OfflineEditAdvanced online/offline
                  */
                 function goOnlineOffline() {
                     if(offlineEdit.getOnlineStatus() == offlineEdit.ONLINE){

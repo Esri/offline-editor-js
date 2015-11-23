@@ -2,7 +2,7 @@
 	"http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
-	<title>Jasmine Spec Runner - offlineFeaturesManagerAdvanced</title>
+	<title>Jasmine Spec Runner - Offline Edit Advanced</title>
 
 		<link rel="shortcut icon" type="image/png" href="../vendor/jasmine-1.3.1/jasmine_favicon.png">
 		<link rel="stylesheet" type="text/css" href="../vendor/jasmine-1.3.1/jasmine.css">
@@ -24,14 +24,14 @@
 	<script src="//github.hubspot.com/offline/offline.min.js"></script>
 
 	<!-- include spec files here... -->
-	<script type="text/javascript" src="spec/offlineFeaturesManagerSpec.js"></script>
+	<script type="text/javascript" src="spec/offlineEditingAdvancedSpec.js"></script>
 
 	<script type="text/javascript">
 
 	var g_map;
 	var g_featureLayers = [];
-	var g_offlineFeaturesManager;
-    var g_offlineFeaturesManagerAttach;
+	var g_offlineEdit;
+    var g_offlineEditAttach;
 	var g_modules = {};
 	var g_editsStore;
     var g_layersIds = [];
@@ -47,18 +47,17 @@
 			GraphicsLayer, Graphic, 
 			FeatureLayer, geometry, esriRequest,
 			dom, on, query,
-			OfflineFeaturesManager,editsStore,
 			domConstruct) 
 		{
 			g_modules.esriRequest = esriRequest;
 			g_modules.Graphic = Graphic;
-			g_offlineFeaturesManager = new O.esri.Edit.OfflineFeaturesManagerAdvanced();
-            g_offlineFeaturesManager.DB_NAME = "FEATURES_TEST";
-            g_offlineFeaturesManager.DB_UID = "OBJECTID"; //VERY IMPORTANT! We get this from the Service Directory "Fields" section.
+			g_offlineEdit = new O.esri.Edit.OfflineEditAdvanced();
+            g_offlineEdit.DB_NAME = "FEATURES_TEST";
+            g_offlineEdit.DB_UID = "OBJECTID"; //VERY IMPORTANT! We get this from the Service Directory "Fields" section.
 
             // For testing attachments
-            g_offlineFeaturesManagerAttach = new O.esri.Edit.OfflineFeaturesManagerAdvanced();
-            g_offlineFeaturesManagerAttach.DB_NAME = "ATTACH_TEST";
+            g_offlineEditAttach = new O.esri.Edit.OfflineEditAdvanced();
+            g_offlineEditAttach.DB_NAME = "ATTACH_TEST";
 
 			// We are also validating the OfflineFeatureManager directly against the database
 			g_editsStore = new O.esri.Edit.EditStore();
@@ -110,8 +109,8 @@
                         options.zoom = g_map.getZoom();
 
                         // WE will use both the featureLayerCollection and dataStore objects for testing purposes
-						g_offlineFeaturesManager.ENABLE_FEATURECOLLECTION = true;
-                        g_offlineFeaturesManager.extend(layer,function(result){
+						g_offlineEdit.ENABLE_FEATURECOLLECTION = true;
+                        g_offlineEdit.extend(layer,function(result){
                             if(result == false) console.error("WARNING: Unable to initialize database");
                         },options);
 					});

@@ -1,19 +1,19 @@
-API OfflineFeaturesManagerAdvanced
+API OfflineEditAdvanced
 ==================================
 
-##O.esri.Edit.OfflineFeaturesManagerAdvanced
+##O.esri.Edit.OfflineEditAdvanced
 The `offline-edit-advanced-min.js` library provides the following tools for working with esri.layers.FeatureLayer objects while intermittently and fully offline. 
 
 
 ###Constructor
 Constructor | Description
 --- | ---
-`O.esri.Edit.OfflineFeaturesManagerAdvanced()` | Creates an instance of the OfflineFeaturesManagerAdvanced class. This library allows you to extend FeatureLayer objects with offline editing capabilities and manage the online/offline resynchronization process.
+`O.esri.Edit.OfflineEditAdvanced()` | Creates an instance of the OfflineEditAdvanced class. This library allows you to extend FeatureLayer objects with offline editing capabilities and manage the online/offline resynchronization process.
 
 ###Properties
 Property | Value | Description
 --- | --- | ---
-`DB_NAME` | "features_store" | Sets the database name. You can instantiate multiple databases within the same application by creating seperate instances of OfflineFeaturesManagerAdvanced.
+`DB_NAME` | "features_store" | Sets the database name. You can instantiate multiple databases within the same application by creating seperate instances of OfflineEditAdvanced.
 `DB_OBJECTSTORE_NAME` | "features" | Represents an object store that allows access to a set of data in the database.
 `DB_UID` | "objectid" | IMPORTANT!** This tells the database what id to use as a unique identifier. This depends on how your feature service was created. ArcGIS Online services may use something different such as `GlobalID`.
 `ATTACHMENTS_DB_NAME` | "attachments_store" | (Added @ v2.7) Sets the attachments database name.
@@ -33,7 +33,7 @@ Property | Value | Description
 
 ###Methods
 
-OfflineFeaturesManagerAdvanced provides the following functionality.
+OfflineEditAdvanced provides the following functionality.
 
 **IMPORTANT:** The library currently only works offline when the feature layer's `mode` is set to `FeatureLayer.MODE_SNAPSHOT`.
 
@@ -44,16 +44,16 @@ Methods | Returns | Description
 `goOnline(callback)` | No attachments: `callback( {success: boolean, responses: Object } )`<br><br> With attachments: `callback( {success: boolean, responses: uploadedResponses, dbResponses: dbResponses })` | Forces library to return to an online state. If there are pending edits, an attempt will be made to sync them with the remote feature server. Callback function will be called when resync process is done. <br><br>Refer to the [How to use the advanced edit library doc](howtouseofmadvancedlibrary.md) for addition information on the `results` object.
 `getOnlineStatus()` | `ONLINE`, `OFFLINE` or `RECONNECTING`| Determines the current state of the manager. Please, note that this library doesn't detect actual browser offline/online condition. You need to use the `offline.min.js` library included in `vendor\offline` directory to detect connection status and connect events to goOffline() and goOnline() methods. See `draw-pointlinepoly-offline.html` sample.
 `getFeatureCollections( callback )` | `callback( boolean, Object)` | (Added @ v2.9) Returns and Object that contains the latest `featureLayerCollection` snapshot for each feature layer that is using the library. Each collection is updated automatically by the library when there is an associated `ADD`, `UPDATE` or `DELETE` operation.<br><br>This method should be used when working with pre-built Esri widgets such as the `AttributeInspector.`
-`getFeatureLayerJSONDataStore( callback )` | `callback( boolean, Object)` | (Added @ v2.7.1) Returns the feature layer's dataStore Object that was created using the `offlineFeaturesManagerAdvanced()` constructor. Offers more control what is provided by `getFeatureCollections()`.
+`getFeatureLayerJSONDataStore( callback )` | `callback( boolean, Object)` | (Added @ v2.7.1) Returns the feature layer's dataStore Object that was created using the `OfflineEditAdvanced()` constructor. Offers more control what is provided by `getFeatureCollections()`.
 
 
 ###Events
-Application code can subscribe to offlineFeaturesManagerAdvanced events to be notified of different conditions. 
+Application code can subscribe to OfflineEditAdvanced events to be notified of different conditions. 
 
 ```js
 
-	offlineFeaturesManager.on(
-		OfflineFeaturesManagerAdvanced.events.ALL_EDITS_SENT, 
+	offlineEdit.on(
+		offlineEdit.events.ALL_EDITS_SENT, 
 		function(edits) 
 		{
 			...
@@ -72,14 +72,14 @@ Event | Value | Returns |  Description
 
 ###FeatureLayer 
 
-A FeatureLayer that has been extended using OfflineFeaturesManagerAdvanced.extend() will gain access to the following additional functionality. Example usage:
+A FeatureLayer that has been extended using OfflineEditAdvancedoff.extend() will gain access to the following additional functionality. Example usage:
 
 
 ```js
 
 	// Extend the FeatureLayer
-	var offlineFeaturesManager = new O.esri.Edit.OfflineFeaturesManager();
-	offlineFeaturesManager.extend(myCustomFeatureLayer);
+	var offlineEdit = new O.esri.Edit.OfflineEditAdvanced();
+	offlineEdit.extend(myCustomFeatureLayer);
 	
 	// Access additional functionality
 	myCustomFeatureLayer.getPhantomGraphicsLayer(function(json){...});
