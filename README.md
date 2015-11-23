@@ -11,10 +11,10 @@ This repo contains the following libraries in the `/dist` directory. `src` files
 
 Library Name | Description
 --- | ---
-`offline-edit-basic-min.js` | Simple, lightweight (14k minimized) library that stores adds, updates and deletes<br> of features when the internet is temporarily interrupted.
-`offline-edit-advanced-mins.js` | Used for intermittent and full offline editing workflows. Also includes limited <br>support for attachments. 
-`offline-tiles-basic-min.js` | Caches map tiles for simple, intermittent offline workflows. Use this library with <br>ArcGIS Online Web maps as well as with tiled map services. For offline browser restarts or reloads use `offline-tiles-advanced-min-js`. 
-`offline-tiles-advanced-min.js` | Used for intermittent and full offline tile caching. Extends any ArcGIS Tiled Map Service.<br> This library should be used in conjunction with an HTML5 application cache manifest coding pattern.
+`offline-edit-basic-min.js` | Simple, lightweight (14k minimized) library that stores adds, updates and deletes of features when the internet is temporarily interrupted.
+`offline-edit-advanced-mins.js` | Used for intermittent and full offline editing workflows. <br><br>Also includes limited <br>support for attachments. 
+`offline-tiles-basic-min.js` | Caches map tiles for simple, intermittent offline workflows. Use this library with ArcGIS Online Web maps as well as with tiled map services.<br><br> For offline browser restarts or reloads use `offline-tiles-advanced-min-js`. 
+`offline-tiles-advanced-min.js` | Used for intermittent and full offline tile caching. Extends any ArcGIS Tiled Map Service.<br><br> This library should be used in conjunction with an HTML5 application cache manifest coding pattern.
 `offline-tpk-min.js` | parses a TPK file and displays it as a tiled map layer.
 
 Also checkout the `/samples` directory. The sample apps demonstrate best practices for the different library capabilities.
