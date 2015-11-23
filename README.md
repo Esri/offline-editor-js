@@ -7,17 +7,17 @@ Online samples and getting started tutorials are available here: **[http://esri.
 
 *IMPORTANT:* If you need a fully integrated, robust offline solution then you should be using our native ArcGIS Runtime SDKs for .NET, WPF, Java, iOS, Android and Qt.
 
-This repo contains the following libraries in the `/dist` directory. `src` files are for software development-only. The`min` versions are minified and should be used in production:
+# Libraries
 
-Library Name _______________________ | Description and gh-pages URL
+This repo contains the following libraries in the `/dist` directory. `src` files are for software development-only. The`min` versions are minified and should be used in production. The use of `basic` in the name indicates intermittent offline-only, and `advanced` indicates the library can be used for both intermittent and full offline.
+
+Purpose | Name, Description and gh-pages URL
 --- | ---
-`offline-edit-basic-min.js`| Simple, lightweight (14k minimized) offline editing library that automatically caches adds, updates and deletes when the internet is temporarily interrupted.<br><br>[`http://esri.github.io/offline-editor-js/dist/offline-edit-basic-min.js`](http://esri.github.io/offline-editor-js/dist/offline-edit-basic-min.js)
-`offline-edit-advanced-mins.js`| Used for intermittent and full offline editing workflows. Also includes limited support for attachments. <br><br>[`http://esri.github.io/offline-editor-js/dist/offline-edit-advanced-min.js`](http://esri.github.io/offline-editor-js/dist/offline-edit-advanced-min.js)
-`offline-tiles-basic-min.js` | Caches map tiles for simple, intermittent-only offline workflows. Use this library with ArcGIS Online Web maps as well as with tiled map services.<br><br> [`http://esri.github.io/offline-editor-js/dist/offline-tiles-basic-min.js`](http://esri.github.io/offline-editor-js/dist/offline-tiles-basic-min.js) 
-`offline-tiles-advanced-min.js` | Used for intermittent and full offline tile caching. Extends any ArcGIS Tiled Map Service. This library should be used in conjunction with an HTML5 application cache manifest coding pattern.<br><br>[`http://esri.github.io/offline-editor-js/dist/offline-tiles-advanced-min.js`](http://esri.github.io/offline-editor-js/dist/offline-tiles-advanced-min.js)
-`offline-tpk-min.js` | parses a TPK file and displays it as a tiled map layer.<br><br>[`http://esri.github.io/offline-editor-js/dist/offline-tpk-min.js`](http://esri.github.io/offline-editor-js/dist/offline-tpk-min.js)
-
-Also checkout the `/samples` directory. The sample apps demonstrate best practices for the different library capabilities.
+Basic editing | **`offline-edit-basic-min.js`** Simple, lightweight *(14k minimized)* offline editing library that automatically caches adds, updates and deletes when the internet is temporarily interrupted.<br><br>[`http://esri.github.io/offline-editor-js/dist/offline-edit-basic-min.js`](http://esri.github.io/offline-editor-js/dist/offline-edit-basic-min.js)
+Advanced dditing | **`offline-edit-advanced-min.js`** Used for intermittent and full offline editing workflows. Also includes limited support for attachments. <br><br>[`http://esri.github.io/offline-editor-js/dist/offline-edit-advanced-min.js`](http://esri.github.io/offline-editor-js/dist/offline-edit-advanced-min.js)
+Basic map tiles |  **`offline-tiles-basic-min.js`** Caches map tiles for simple, intermittent-only offline workflows. Use this library with ArcGIS Online Web maps as well as with tiled map services.<br><br> [`http://esri.github.io/offline-editor-js/dist/offline-tiles-basic-min.js`](http://esri.github.io/offline-editor-js/dist/offline-tiles-basic-min.js) 
+Advanced map tiles | **`offline-tiles-advanced-min.js`** Used for intermittent and full offline tile caching. Extends any ArcGIS Tiled Map Service. This library should be used in conjunction with an HTML5 application cache manifest coding pattern.<br><br>[`http://esri.github.io/offline-editor-js/dist/offline-tiles-advanced-min.js`](http://esri.github.io/offline-editor-js/dist/offline-tiles-advanced-min.js)
+TPK files | **`offline-tpk-min.js`** Parses a TPK file and displays it as a tiled map layer.<br><br>[`http://esri.github.io/offline-editor-js/dist/offline-tpk-min.js`](http://esri.github.io/offline-editor-js/dist/offline-tpk-min.js)
 
 
 #Workflows Supported
