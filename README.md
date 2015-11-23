@@ -12,7 +12,7 @@ Online samples and getting started tutorials are available here: **[http://esri.
 
 # Libraries
 
-This repo contains the following libraries in the `/dist` directory. 
+This repo contains the following libraries in the `/dist` directory. The use of `basic` in the name indicates intermittent offline-only, and `advanced` indicates the library can be used for both intermittent and full offline.
 
 Use_Case | Name, Description and gh-pages URL
 --- | ---
@@ -22,7 +22,7 @@ Basic map tiles |  **`offline-tiles-basic-min.js`** Caches map tiles for simple,
 Advanced map tiles | **`offline-tiles-advanced-min.js`** Used for intermittent and full offline tile caching. Extends any ArcGIS Tiled Map Service. This library should be used in conjunction with an HTML5 Application Cache Manifest coding pattern.<br><br>[`http://esri.github.io/offline-editor-js/dist/offline-tiles-advanced-min.js`](http://esri.github.io/offline-editor-js/dist/offline-tiles-advanced-min.js)
 TPK files | **`offline-tpk-min.js`** Reads TPK files and displays and caches them as a tiled map layer.<br><br>[`http://esri.github.io/offline-editor-js/dist/offline-tpk-min.js`](http://esri.github.io/offline-editor-js/dist/offline-tpk-min.js)
 
-`src` files are for software development-only. The`min` versions are minified and should be used in production. The use of `basic` in the name indicates intermittent offline-only, and `advanced` indicates the library can be used for both intermittent and full offline.
+`src` files are for software development-only. The`min` versions are minified and should be used in production. 
 
 #Workflows Supported
 The following workflow is currently supported for both both features and tiles:
@@ -70,6 +70,7 @@ Go __[here](https://github.com/Esri/offline-editor-js/wiki/FAQ)__ for answers to
 ##Limitations
 
 * Currently does not support related tables, domains or subtypes. The ArcGIS Runtime SDKs fully support these and more.
+* There are browser limitations and technical dependencies. The offline capabilities in this toolkit depend on certain JavaScript capabilities being present in the browser. Go [here](doc/dependencies.md) for a detailed breakdown.
 * Attachments are supported with some limitations listed [here](./doc/attachments.md).
 * Browser storage space on mobile devices is a known limitation. This applies to stand-alone web applications and hybrid applications.
 
@@ -79,17 +80,15 @@ Go __[here](https://github.com/Esri/offline-editor-js/wiki/FAQ)__ for answers to
 
 ##Dependencies
 
-* ArcGIS API for JavaScript (v3.12+)
+* [ArcGIS API for JavaScript (v3.12+)](https://developers.arcgis.com/javascript/)
 * [Offline.js](http://github.hubspot.com/offline/docs/welcome/) - it allows detection of the online/offline condition and provides events to hook callbacks on when this condition changes
 * Node.js required for building the source
-* NOTE: browser limitations and technical dependencies. The offline capabilities in this toolkit depend on certain HTML5 capabilities being present in the browser. Go [here](doc/dependencies.md) for a detailed breakdown of the information.
+* [IndexedDBShim](https://github.com/axemclion/IndexedDBShim) - polyfill to simulate indexedDB functionality in browsers/platforms where it is not supported notably older versions desktop Safari and iOS Safari.
 * Sub-modules (see `/vendor` directory)
 
-   * [IndexedDBShim](https://github.com/axemclion/IndexedDBShim) - polyfill to simulate indexedDB functionality in browsers/platforms where it is not supported (notably desktop Safari and iOS Safari)
-   		- IMPORTANT: There are known [issues](https://github.com/axemclion/IndexedDBShim/issues/115) with IndexedDBShim on Safari. For Safari, the storage error workaround is to switch from using /dist/IndexedDBShim.min.js to just using IndexedDBShim.js and then search for and modify the line that defines the value for `DEFAULT_DB_SIZE`. Set this to more appropriate size that will meet all your storage needs, for example: ```var DEFAULT_DB_SIZE = 24 * 1024 * 1024```
    * [jasmine.async](https://github.com/derickbailey/jasmine.async.git) - Used specifically for unit testing.
 
-* Non sub-module based libraries
+* Non sub-module based libraries that are used internally by this project
 	* [FileSaver.js](https://github.com/Esri/offline-editor-js/blob/master/lib/tiles/README.md) - library to assist with uploading and downloading of files containing tile information.
 	* [grunt-manifest](https://github.com/gunta/grunt-manifest) node.js library to assist with the creation of manifest files.
 	* [zip](http://gildas-lormeau.github.io/zip.js/) A library for zipping and unzipping files. 

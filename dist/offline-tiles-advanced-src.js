@@ -1,4 +1,4 @@
-/*! esri-offline-maps - v2.16.0 - 2015-10-29
+/*! esri-offline-maps - v3.0.0 - 2015-11-23
 *   Copyright (c) 2015 Environmental Systems Research Institute, Inc.
 *   Apache License*/
 define([
@@ -15,7 +15,7 @@ define([
 ], function(query, request, declare,LOD,Point,Extent,TileInfo,SpatialReference,Polygon,TiledMapServerLayer)
 {
     "use strict";
-    return declare("O.esri.Tiles.OfflineTileEnablerLayer",[TiledMapServerLayer],{
+    return declare("O.esri.Tiles.OfflineTilesAdvanced",[TiledMapServerLayer],{
 
         tileInfo: null,
         _imageType: "",
@@ -898,8 +898,8 @@ O.esri.Tiles.saveAs =
 
 
 /**
- * This library contains common core code between offlineTilesEnabler.js
- * and OfflineTilesEnablerLayer.js
+ * This library contains common core code between OfflineTilesBasic.js
+ * and OfflineTilesAdvanced.js
  */
 
 O.esri.Tiles.TilesCore = function(){
