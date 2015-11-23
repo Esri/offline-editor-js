@@ -1,7 +1,7 @@
 offline-editor-js
 =================
 
-Offline-editor-js is a family of libraries for building offline capabilities into web mapping applications. It's specifically designed to work with the ArcGIS API for JavaScript and ArcGIS Online. It enables you to store feature edits, attachments, map tiles and TPKs (Tile Packages). 
+Offline-editor-js is a family of libraries for building offline capabilities into web mapping applications. It's specifically designed to work with the ArcGIS API for JavaScript and ArcGIS Online. With these libraries you can store feature edits, attachments, map tiles and TPKs (Tile Packages). 
 
 Online samples and getting started tutorials are available here: **[http://esri.github.io/offline-editor-js/demo/](http://esri.github.io/offline-editor-js/demo/)**
 
@@ -10,9 +10,10 @@ Online samples and getting started tutorials are available here: **[http://esri.
 This repo contains the following libraries:
 
 - `/dist` - contains src and min versions of each library: 
-   * `offline-edit-min.js` - stores adds, updates and deletes of features as well as limited attachment support while offline. Resync's edits with server once connection is reestablished.
-   * `offline-tiles-basic-min.js` - caches map tiles for partial offline use cases. Use this library with ArcGIS Online Web maps as well as with tiled map services. This repo will not work with browser restarts or reloads while offline. 
-   * `offline-tiles-advanced-min.js` - Extends any ArcGIS Tiled Map Service that has a requirement for offline browser reload and/or restart. This library should be used in conjunction with an HTML5 application cache coding pattern.
+   * `offline-edit-basic-min.js` - simple, lightweight (14k minimized) library that stores adds, updates and deletes of features when the internet is temporarily interrupted.
+   * `offline-edit-advanced-mins.js` - library for intermittent and full offline editing workflows. Also includes limited support for attachments. 
+   * `offline-tiles-basic-min.js` - caches map tiles for simple, intermittent offline workflows. Use this library with ArcGIS Online Web maps as well as with tiled map services. For offline browser restarts or reloads use `offline-tiles-advanced-min-js`. 
+   * `offline-tiles-advanced-min.js` - Specifically designed for intermittent and full offline tile caching. Extends any ArcGIS Tiled Map Service. This library should be used in conjunction with an HTML5 application cache manifest coding pattern.
    * `offline-tpk-min.js` - parses a TPK file and displays it as a tiled map layer.
 - `/utils`: contains various helper library modules. These modules are all AMD compliant.
 - `/samples`: samples that show how to use the different offline libraries capabilities.
@@ -73,14 +74,14 @@ Go __[here](https://github.com/Esri/offline-editor-js/wiki/FAQ)__ for answers to
 ##Dependencies
 
 * ArcGIS API for JavaScript (v3.12+)
+* [Offline.js](http://github.hubspot.com/offline/docs/welcome/) - it allows detection of the online/offline condition and provides events to hook callbacks on when this condition changes
 * Node.js required for building the source
 * NOTE: browser limitations and technical dependencies. The offline capabilities in this toolkit depend on certain HTML5 capabilities being present in the browser. Go [here](doc/dependencies.md) for a detailed breakdown of the information.
 * Sub-modules (see `/vendor` directory)
 
-   * [offline.js](https://github.com/hubspot/offline) - it allows detection of the online/offline condition and provides events to hook callbacks on when this condition changes
    * [IndexedDBShim](https://github.com/axemclion/IndexedDBShim) - polyfill to simulate indexedDB functionality in browsers/platforms where it is not supported (notably desktop Safari and iOS Safari)
    		- IMPORTANT: There are known [issues](https://github.com/axemclion/IndexedDBShim/issues/115) with IndexedDBShim on Safari. For Safari, the storage error workaround is to switch from using /dist/IndexedDBShim.min.js to just using IndexedDBShim.js and then search for and modify the line that defines the value for `DEFAULT_DB_SIZE`. Set this to more appropriate size that will meet all your storage needs, for example: ```var DEFAULT_DB_SIZE = 24 * 1024 * 1024```
-   * [jasmine.async](https://github.com/derickbailey/jasmine.async.git) - library to help implementing tests of async functionality (used in tests)
+   * [jasmine.async](https://github.com/derickbailey/jasmine.async.git) - Used specifically for unit testing.
 
 * Non sub-module based libraries
 	* [FileSaver.js](https://github.com/Esri/offline-editor-js/blob/master/lib/tiles/README.md) - library to assist with uploading and downloading of files containing tile information.
