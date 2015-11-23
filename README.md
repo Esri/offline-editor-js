@@ -7,16 +7,18 @@ Online samples and getting started tutorials are available here: **[http://esri.
 
 *IMPORTANT:* If you need a fully integrated, robust offline solution then you should be using our native ArcGIS Runtime SDKs for .NET, WPF, Java, iOS, Android and Qt.
 
-This repo contains the following libraries:
+This repo contains the following libraries in the `/dist` directory. `src` files are for software development-only. The`min` versions are minified and should be used in production:
 
-- `/dist` - contains src and min versions of each library: 
-   * `offline-edit-basic-min.js` - simple, lightweight (14k minimized) library that stores adds, updates and deletes of features when the internet is temporarily interrupted.
-   * `offline-edit-advanced-mins.js` - library for intermittent and full offline editing workflows. Also includes limited support for attachments. 
-   * `offline-tiles-basic-min.js` - caches map tiles for simple, intermittent offline workflows. Use this library with ArcGIS Online Web maps as well as with tiled map services. For offline browser restarts or reloads use `offline-tiles-advanced-min-js`. 
-   * `offline-tiles-advanced-min.js` - Specifically designed for intermittent and full offline tile caching. Extends any ArcGIS Tiled Map Service. This library should be used in conjunction with an HTML5 application cache manifest coding pattern.
-   * `offline-tpk-min.js` - parses a TPK file and displays it as a tiled map layer.
-- `/utils`: contains various helper library modules. These modules are all AMD compliant.
-- `/samples`: samples that show how to use the different offline libraries capabilities.
+Library Name | Description
+--- | ---
+`offline-edit-basic-min.js` | Simple, lightweight (14k minimized) library that stores adds, updates and deletes of features when the internet is temporarily interrupted.
+`offline-edit-advanced-mins.js` | Used for intermittent and full offline editing workflows. Also includes limited support for attachments. 
+`offline-tiles-basic-min.js` | Caches map tiles for simple, intermittent offline workflows. Use this library with ArcGIS Online Web maps as well as with tiled map services. For offline browser restarts or reloads use `offline-tiles-advanced-min-js`. 
+`offline-tiles-advanced-min.js` | Used for intermittent and full offline tile caching. Extends any ArcGIS Tiled Map Service. This library should be used in conjunction with an HTML5 application cache manifest coding pattern.
+`offline-tpk-min.js` | parses a TPK file and displays it as a tiled map layer.
+
+Also checkout the `/samples` directory. The sample apps demonstrate best practices for the different library capabilities.
+
 
 #Workflows Supported
 The following workflow is currently supported for both both features and tiles:
