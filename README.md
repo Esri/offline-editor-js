@@ -3,22 +3,26 @@ offline-editor-js
 
 Offline-editor-js is a family of libraries for building offline capabilities into web mapping applications. It's specifically designed to work with the ArcGIS API for JavaScript and ArcGIS Online. With these libraries you can store feature edits, attachments, map tiles and TPKs (Tile Packages). 
 
+***IMPORTANT:*** If you need a fully integrated, robust offline solution then you should be using our native ArcGIS Runtime SDKs for .NET, WPF, Java, iOS, Android and Qt.
+
+# Getting Started
+
 Online samples and getting started tutorials are available here: **[http://esri.github.io/offline-editor-js/demo/](http://esri.github.io/offline-editor-js/demo/)**
 
-*IMPORTANT:* If you need a fully integrated, robust offline solution then you should be using our native ArcGIS Runtime SDKs for .NET, WPF, Java, iOS, Android and Qt.
 
 # Libraries
 
-This repo contains the following libraries in the `/dist` directory. `src` files are for software development-only. The`min` versions are minified and should be used in production. The use of `basic` in the name indicates intermittent offline-only, and `advanced` indicates the library can be used for both intermittent and full offline.
+This repo contains the following libraries in the `/dist` directory. 
 
-Purpose | Name, Description and gh-pages URL
+Use_Case | Name, Description and gh-pages URL
 --- | ---
 Basic editing | **`offline-edit-basic-min.js`** Simple, lightweight *(14k minimized)* offline editing library that automatically caches adds, updates and deletes when the internet is temporarily interrupted.<br><br>[`http://esri.github.io/offline-editor-js/dist/offline-edit-basic-min.js`](http://esri.github.io/offline-editor-js/dist/offline-edit-basic-min.js)
-Advanced dditing | **`offline-edit-advanced-min.js`** Used for intermittent and full offline editing workflows. Also includes limited support for attachments. <br><br>[`http://esri.github.io/offline-editor-js/dist/offline-edit-advanced-min.js`](http://esri.github.io/offline-editor-js/dist/offline-edit-advanced-min.js)
+Advanced editing | **`offline-edit-advanced-min.js`** Used for intermittent and full offline editing workflows. Also includes limited support for attachments. <br><br>[`http://esri.github.io/offline-editor-js/dist/offline-edit-advanced-min.js`](http://esri.github.io/offline-editor-js/dist/offline-edit-advanced-min.js)
 Basic map tiles |  **`offline-tiles-basic-min.js`** Caches map tiles for simple, intermittent-only offline workflows. Use this library with ArcGIS Online Web maps as well as with tiled map services.<br><br> [`http://esri.github.io/offline-editor-js/dist/offline-tiles-basic-min.js`](http://esri.github.io/offline-editor-js/dist/offline-tiles-basic-min.js) 
-Advanced map tiles | **`offline-tiles-advanced-min.js`** Used for intermittent and full offline tile caching. Extends any ArcGIS Tiled Map Service. This library should be used in conjunction with an HTML5 application cache manifest coding pattern.<br><br>[`http://esri.github.io/offline-editor-js/dist/offline-tiles-advanced-min.js`](http://esri.github.io/offline-editor-js/dist/offline-tiles-advanced-min.js)
-TPK files | **`offline-tpk-min.js`** Parses a TPK file and displays it as a tiled map layer.<br><br>[`http://esri.github.io/offline-editor-js/dist/offline-tpk-min.js`](http://esri.github.io/offline-editor-js/dist/offline-tpk-min.js)
+Advanced map tiles | **`offline-tiles-advanced-min.js`** Used for intermittent and full offline tile caching. Extends any ArcGIS Tiled Map Service. This library should be used in conjunction with an HTML5 Application Cache Manifest coding pattern.<br><br>[`http://esri.github.io/offline-editor-js/dist/offline-tiles-advanced-min.js`](http://esri.github.io/offline-editor-js/dist/offline-tiles-advanced-min.js)
+TPK files | **`offline-tpk-min.js`** Reads TPK files and displays and caches them as a tiled map layer.<br><br>[`http://esri.github.io/offline-editor-js/dist/offline-tpk-min.js`](http://esri.github.io/offline-editor-js/dist/offline-tpk-min.js)
 
+`src` files are for software development-only. The`min` versions are minified and should be used in production. The use of `basic` in the name indicates intermittent offline-only, and `advanced` indicates the library can be used for both intermittent and full offline.
 
 #Workflows Supported
 The following workflow is currently supported for both both features and tiles:
