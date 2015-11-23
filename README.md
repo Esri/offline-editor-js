@@ -9,9 +9,9 @@ Online samples and getting started tutorials are available here: **[http://esri.
 
 This repo contains the following libraries in the `/dist` directory. `src` files are for software development-only. The`min` versions are minified and should be used in production:
 
-Library Name | Description and gh-pages URL
+Library Name _______________________ | Description and gh-pages URL
 --- | ---
-`offline-edit-basic-min.js` | Simple, lightweight (14k minimized) offline editing library that automatically caches adds, updates and deletes when the internet is temporarily interrupted.<br><br>[`http://esri.github.io/offline-editor-js/dist/offline-edit-basic-min.js`](http://esri.github.io/offline-editor-js/dist/offline-edit-basic-min.js)
+`offline-edit-basic-min.js`| Simple, lightweight (14k minimized) offline editing library that automatically caches adds, updates and deletes when the internet is temporarily interrupted.<br><br>[`http://esri.github.io/offline-editor-js/dist/offline-edit-basic-min.js`](http://esri.github.io/offline-editor-js/dist/offline-edit-basic-min.js)
 `offline-edit-advanced-mins.js`| Used for intermittent and full offline editing workflows. Also includes limited support for attachments. <br><br>[`http://esri.github.io/offline-editor-js/dist/offline-edit-advanced-min.js`](http://esri.github.io/offline-editor-js/dist/offline-edit-advanced-min.js)
 `offline-tiles-basic-min.js` | Caches map tiles for simple, intermittent-only offline workflows. Use this library with ArcGIS Online Web maps as well as with tiled map services.<br><br> [`http://esri.github.io/offline-editor-js/dist/offline-tiles-basic-min.js`](http://esri.github.io/offline-editor-js/dist/offline-tiles-basic-min.js) 
 `offline-tiles-advanced-min.js` | Used for intermittent and full offline tile caching. Extends any ArcGIS Tiled Map Service. This library should be used in conjunction with an HTML5 application cache manifest coding pattern.<br><br>[`http://esri.github.io/offline-editor-js/dist/offline-tiles-advanced-min.js`](http://esri.github.io/offline-editor-js/dist/offline-tiles-advanced-min.js)
