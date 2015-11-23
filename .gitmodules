@@ -1,6 +1,3 @@
-[submodule "vendor/offline"]
-	path = vendor/offline
-	url = https://github.com/HubSpot/offline.git
 [submodule "vendor/IndexedDBShim"]
 	path = vendor/IndexedDBShim
 	url = https://github.com/axemclion/IndexedDBShim.git
