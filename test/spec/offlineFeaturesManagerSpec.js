@@ -923,58 +923,6 @@ describe("Offline Editing", function()
            })
         });
 
-        //async.it("delete temporary feature", function(done){
-        //    g_featureLayers[0]._deleteTemporaryFeature(g6,function(results){
-        //        expect(results[0]).toBe(true);
-        //        expect(results[1]).toBe(true);
-        //        done();
-        //    });
-        //});
-
-        async.it("Delete one of the phantom graphics using resetLimitedPhantomGraphicsQueue()", function(done){
-            var responseObject = {
-                0:{
-                    "id":-1,
-                    "updateResults":[
-                        {
-                        "success":false
-                        }
-                    ],
-                    "addResults":[
-                        {
-                            "success":true
-                        }
-                    ],
-                    "deleteResults":[
-                        {
-                            "success":false
-                        }
-                    ]
-                }
-            };
-
-            g_editsStore.resetLimitedPhantomGraphicsQueue(responseObject,function(success){
-                expect(success).toBe(true);
-                done();
-            });
-        });
-
-        async.it("Reverify total number of phantom graphics", function(done){
-            g_editsStore._getPhantomGraphicsArraySimple(function(results,errors){
-
-                // We remove one graphic from the previous result and should now be @ 9
-                expect(results.length).toBe(6);
-                expect(results[0]).toBe("phantom-layer|@|-3");
-                expect((results[1]).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
-                expect((results[2]).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
-                expect((results[3]).indexOf(g_editsStore.PHANTOM_GRAPHIC_PREFIX)).toBe(0);
-                expect(results[4]).toBe("phantom-layer|@|test002");
-                expect(results[5]).toBe("phantom-layer|@|test003");
-                expect(errors).toBe("end");
-                done();
-            })
-        });
-
         async.it("Delete all PhantomLayerGraphics", function(done){
 
            g_editsStore.resetPhantomGraphicsQueue(function(result){
