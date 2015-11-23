@@ -47,8 +47,6 @@ http://js.arcgis.com/3.14/esri/nls/jsapi_en-us.js
 ../samples/images/blue-pin.png
 ../samples/images/red-pin.png
 ../samples/css/modular-popup.css
-../vendor/IndexedDBShim/dist/indexeddbshim.js
-../vendor/IndexedDBShim/dist/indexeddbshim.min.js
 ../lib/tiles/blank_map_tile.png
 ../lib/tiles/notile.png
 ../lib/tiles/notile.psd

@@ -74,7 +74,6 @@ module.exports = function(grunt) {
 		      src: [
                     "../samples/images/*.png",
                     "../samples/css/*.css",
-                    "../vendor/IndexedDBShim/dist/*.js",
                     "../lib/tiles/*.png",
                     "../lib/tiles/*.psd",
                     "../utils/*.js",
