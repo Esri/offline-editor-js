@@ -7,7 +7,7 @@ This library allows a developer to extend a feature layer with intermittent offl
 
 **IMPORTANT:** Only use a single instance of OfflineEditBasic per application. With this single instance you can extend offline capabilities to multiple feature layers. This single instance contains all edits for all feature layers initialized via `OfflineEditBasic.extend().` Multiple feature layers share a single database. The database maintains the relationship between each edit and its' respective feature layer via a UUID.
 
-**Step 1** Include `offline.min.js`, `offline-tiles-basic-min.js` and `offline-edit-min.js` in your app's require contstructor. Be sure to include `ofline.mins.js` which is a 3rd party library for detecting if the browser is online or offline. 
+**Step 1** Include `offline.min.js`, `offline-tiles-basic-min.js` and `offline-edit-basic-min.js` in your app's require contstructor. Be sure to include `ofline.mins.js` which is a 3rd party library for detecting if the browser is online or offline. 
 
 The pattern for how we include the tiles and edit library within the `require` statement is called generic script injection. Note that we do assign any of the editing or tile libraries an alias name. For example, we specified the mobile path "esri/map" and we gave it an alias called "Map." But, we did not do the equivalent for `offline-tiles-basic-min.js` or `offline-edit-basic-min.js`.
 
@@ -137,7 +137,7 @@ resultsObject = {
 
 Typically you should only need to call this method once for each online/offline cycle. However, resync attempts won't always happen perfectliy. In your code, if there are errors or the library fails to sync for some reason then the best practice is to evaluate any error messages, recheck the online/offline status and recheck the contents of the edits database. 
 
-If there was a an failure and/or errors, it's a good idea to reevaluate the edits that remain in the database because some edits may have been synced and others may still be pending. Only then, and depending on the error message, should the app try to `goOnline()` again. 
+If there was a failure and/or errors, it's a good idea to reevaluate the edits that remain in the database because some edits may have been synced and others may still be pending. Only then, and depending on the error message, should the app try to `goOnline()` again. 
 
 ####OfflineEditBasic.getOnlineStatus()
 Within your application you can manually check online status and then update your user interface. By using a switch/case statement you can check against three enums that indicate if the library thinks it is offline, online or in the process of reconnecting.
