@@ -1,5 +1,5 @@
 #Attachment Support
-The __offline-edit-min.js__ has support for attachments in offline mode. See [attachments-editor.html](../samples/attachments-editor.html) sample.
+The __offline-edit-advanced-min.js__ has support for attachments in offline mode. See [attachments-editor.html](../samples/attachments-editor.html) sample.
 
 ##What you can do:
 While your application is in `OFFLINE` mode, you can:
@@ -18,7 +18,7 @@ The only differences in your code are:
 * create an OfflineEditAdvanced instance that is enabled for attachment support. Make sure you initialize the attachments database:
 
             var offlineEdit = new O.esri.Edit.OfflineEditAdvanced();
-            offlineEdit.initAttachments();
+            offlineEdit.initAttachments(function(success, error){ . . . });
 
 * extend your featureLayers with offline editing functionality:
 
@@ -34,7 +34,7 @@ users that have a requirement to run multiple databases:
             offlineEdit.ATTACHMENTS_DB_NAME = "attachment-store-two";
             offlineEdit.ATTACHMENTS_DB_OBJECTSTORE_NAME = "attachments-two";
             
-            offlineEdit.initAttachments();
+            offlineEdit.initAttachments(function(success, error){ . . . });
 
 ###Using the FeatureLayer API
 The FeatureLayer API for handling attachments consists primarily of four methods. In general you should let `OfflineEditAdvanced`
@@ -84,5 +84,4 @@ The widget internally uses the FeatureLayer API, and it works well in OFFLINE mo
 ##Limitations
 Attachment support in OFFLINE mode has some limitations:
 
-* while in OFFLINE mode, features in a featureLayer don't know whether they have any attachments in the server or any other 
-information about attachments unless you specifically build out that functionality. Therefore queryAttachmentInfos() and deleteAttachments() can't take those attachments into account. Calling queryAttachmentInfos() will only return attachments that are stored in local storage and deleteAttachments() can only remove local attachments.
+* While in OFFLINE mode, features in a featureLayer don't know whether they have any attachments on the server or any other information about attachments unless you specifically build out that functionality. Therefore `queryAttachmentInfos()` and `deleteAttachments()` won't take their respective attachments into account. Calling `queryAttachmentInfos()` will only return locally stored attachments and `deleteAttachments()` can also only remove local attachments.
