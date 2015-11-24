@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <!--The viewport meta tag is used to improve the presentation and behavior of the samples 
+      on iOS devices-->
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no">
+    <title>Update Fire Perimeter</title>
+
+    <link rel="stylesheet" href="http://js.arcgis.com/3.14/dijit/themes/claro/claro.css">
+    <link rel="stylesheet" href="http://js.arcgis.com/3.14/esri/css/esri.css">
+    <style>
+        html, body { height: 100%; width: 100%; margin: 0; }
+        #map, #header {
+            border: 1px solid #444;
+        }
+        #map {
+            padding: 0;
+            margin: 5px;
+        }
+        #header {
+            height: 45px;
+            margin: 5px 5px 0 5px;
+            padding: 0.5em;
+            font-family: sans-serif;
+            font-weight: 500;
+            color: #0f3b5f;
+            font-size: 1.1em;
+        }
+        .dj_ie .infowindow .window .top .right .user .content { position: relative; }
+        .dj_ie .simpleInfoWindow .content { position: relative; }
+    </style>
+
+    <script src="http://github.hubspot.com/offline/offline.min.js"></script>
+    <script src="http://js.arcgis.com/3.14/"></script>
+    <script>
+        var map;
+        require([
+            "esri/map",
+            "esri/toolbars/edit",
+            "esri/layers/FeatureLayer",
+            "esri/tasks/query",
+            "esri/config",
+
+            "dojo/_base/event",
+            "dojo/parser",
+
+            "dijit/layout/BorderContainer", "dijit/layout/ContentPane",
+
+
+            "../dist/offline-edit-basic-src.js",
+            "dojo/domReady!"
+        ], function(
+                Map, Edit, FeatureLayer, Query, esriConfig,
+                event, parser
+        ) {
+            parser.parse();
+
+            // refer to "Using the Proxy Page" for more information: https://developers.arcgis.com/javascript/jshelp/ags_proxy.html
+            esriConfig.defaults.io.proxyUrl = "/proxy/";
+
+            var offlineEdit = new O.esri.Edit.OfflineEditBasic();
+
+
+            map = new Map("map", {
+                basemap: "topo",
+                center: [-117.72, 34.352],
+                zoom: 11
+            });
+
+            map.on("layers-add-result", initEditing);
+
+            var firePerimeterFL = new FeatureLayer("http://sampleserver6.arcgisonline.com/arcgis/rest/services/Wildfire/FeatureServer/2", {
+                mode: FeatureLayer.MODE_SNAPSHOT,
+                outFields: ["*"],
+                id: "firePerimeterFL"
+            });
+            map.addLayers([firePerimeterFL]);
+
+            function initEditing(evt) {
+
+                offlineEdit.extend(firePerimeterFL,function(success,error){
+                    if(success){
+                        var editToolbar = new Edit(map);
+                        editToolbar.on("deactivate", function(evt) {
+                            if (evt.info.isModified) {
+                                firePerimeterFL.applyEdits(null, [evt.graphic], null);
+                            }
+                        });
+
+                        var editingEnabled = false;
+                        firePerimeterFL.on("dbl-click", function(evt) {
+                            event.stop(evt);
+                            if (editingEnabled) {
+                                editingEnabled = false;
+                                editToolbar.deactivate();
+                                firePerimeterFL.clearSelection();
+                            }
+                            else {
+                                editingEnabled = true;
+                                editToolbar.activate(Edit.EDIT_VERTICES, evt.graphic);
+                                // select the feature to prevent it from being updated by map navigation
+                                var query = new Query();
+                                query.objectIds = [evt.graphic.attributes[firePerimeterFL.objectIdField]];
+                                firePerimeterFL.selectFeatures(query);
+                            }
+                        });
+                    }
+                    else {
+                        alert("unable to load feature layer for offline usage");
+                    }
+                });
+
+            }
+        });
+    </script>
+</head>
+<body class="claro">
+<div data-dojo-type="dijit/layout/BorderContainer" data-dojo-props="design:'headline'" style="width:100%;height:100%;" gutters="false">
+    <div id="header" data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:'top'">
+        <center>Zoom in to a fire perimeter and double click a feature to edit its vertices. Double click again on the feature to stop editing and apply edits.</center>
+    </div>
+    <div id="map" data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:'center'"></div>
+</div>
+
+</body>
+</html>

@@ -61,17 +61,31 @@
     </div>
 
     <hr>
-<div class="container">
-    <div class="row">
-        <h1 id="examples" class="page-header">Get Started</h1>
-        <p class="lead">Go <a href="../demo/getstarted.html"> here</a> to try out basic step-by-step samples. </p>
-    </div>
-</div>
-
 </div> <!-- /container -->
+
 <div class="container">
     <div class="bs-docs-section">
-        <h1 id="examples" class="page-header">Examples</h1>
+        <h1 id="basic" class="page-header">Super Simple Editing App</h1>
+        <p class="lead"></p>
+        <div class="row bs-examples">
+            <div class="col-md-12">
+                <a class="thumbnail" href="../samples/simple-edit.html">
+                    <img src="images/simple-edit-thumb.png">
+                </a>
+                <h3>Basic Editing Only</h3>
+                <p>This bare-bones sample provides lightweight protection from the occasional internet connection interruption while editing.
+                It automatically manages storing edits while the app is offline and then resync's the edits when the app returns online.
+                </p>
+            </div>
+
+        </div>
+    </div>
+    <hr>
+</div>
+
+<div class="container">
+    <div class="bs-docs-section">
+        <h1 id="examples" class="page-header">Advanced Apps</h1>
         <p class="lead">Check out the following full-featured applications. </p>
         <div class="row bs-examples">
             <div class="col-xs-4 col-md-4">
@@ -175,14 +189,13 @@
             </tbody>
          </table>
         <p class="lead"><strong>Important note for Hybrid app developers (e.g. PhoneGap\Cordova):</strong> this library is <strong>not supported</strong> for hybrid deployments.
-            There are too many different variations of iOS and Android to make this feasible.
+            There are too many different variations of iOS and Android browser's and versions to make this feasible.
             We've only done very limited proof-of-concept testing using WebView.
             Make sure you do thorough testing on as many different phones and tablets as possible.
             One suggestion is to build a test app and run the Unit Test suite which is in this project under /test.
         </p>
         <p class="lead">
-            <strong>Windows developers:</strong> Edge is under consideration for developement support-only. However, at this time I don't have
-            a machine that runs it.
+            <strong>Windows developers:</strong> Edge is under consideration for developement support-only.
         </p>
         <span class="text-success"><span class="glyphicon glyphicon-ok">*</span></span> - means that <a href="https://github.com/axemclion/IndexedDBShim"> IndexedDBShim.js</a> may be required on this browser/platform. More info available in the <a href="https://github.com/Esri/offline-editor-js"> README </a> under Dependencies.
         <p></p><p></p>

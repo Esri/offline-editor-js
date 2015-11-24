@@ -1,0 +1,772 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta name="description" content="">
+	<meta name="author" content="">
+
+	<link rel="shortcut icon" href="//esri.github.io/bootstrap-map-js/doc/images/favicon.ico">
+
+	<link rel="stylesheet" href="//js.arcgis.com/3.14/esri/css/esri.css">
+
+	<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" >
+	<link rel="stylesheet" href="//esri.github.io/bootstrap-map-js/src/css/bootstrapmap.css">
+	<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" >
+	<style>
+		#state
+		{
+			position: fixed;
+			top: 7px;
+			right: 7px;
+			width: 105px;
+			padding: 8px 10px;
+			background-color: blue;
+			color: white;
+			text-align: center;
+			z-index:2000;
+		}
+		#state.up	{		background-color: green;	}
+		#state.down	{		background-color: red;		}
+	</style>
+	<style>
+		body {
+		  padding-top: 50px;
+		}
+
+		body > .container {
+		  padding-bottom: 20px;
+		}
+
+		#mapDiv {
+		  min-height: 450px; 
+		  max-height: 450px; 
+		  margin-bottom: 20px;
+		}
+
+		#mapDiv_layers>:first-child .layerTile {
+		  /*border: 1px solid red !important;*/
+		  /*
+		  border-width: 1px !important;
+		  border-style: solid !important; */
+		}
+
+		#tile-count-table-body tr td {
+			text-align: center;
+		}
+
+		#downloading-ui {
+			display: none;
+		}
+
+		#ready-to-download-ui, #downloading-ui {
+		  margin-bottom: 10px;
+		}
+
+		#ready-to-download-ui .btn
+		{
+		  margin-top: 5px;
+		}
+
+		#error-div {
+		  margin-top: 10px;
+		  display: none;
+		}
+
+		.alert {
+		  margin-bottom: 0px;
+		}
+
+		#load-file {
+		    position: relative;
+		    overflow: hidden;
+		}
+
+		#load-file input[type=file] {
+		    position: absolute;
+		    top: 0;
+		    right: 0;
+		    min-width: 100%;
+		    min-height: 100%;
+		    font-size: 999px;
+		    text-align: right;
+		    filter: alpha(opacity=0);
+		    opacity: 0;
+		    background: red;
+		    cursor: inherit;
+		    display: block;
+		}
+	</style>
+
+	<!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+	<!--[if lt IE 9]>
+	  <script src="http://esri.github.io/bootstrap-map-js/bootstrap_v3/docs-assets/js/html5shiv.js"></script>
+	  <script src="http://esri.github.io/bootstrap-map-js/bootstrap_v3/docs-assets/js/respond.min.js"></script>
+	  <![endif]-->
+
+	  <title>Offline</title>
+
+  </head>
+  <body>
+	<div class="navbar navbar-inverse navbar-fixed-top">
+		<div class="container">
+			<div class="navbar-header">
+				<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+				</button>
+				<a class="navbar-brand" href="http://github.com/Esri/offline-editor-js"><i class="fa fa-html5"></i> JS Offline Mapping</a>
+				<a class="navbar-brand" href="http://developers.arcgis.com"><i class="fa fa-globe"></i> esri</a>
+			</div>
+		<!--
+		<div class="collapse navbar-collapse">
+		  <ul class="nav navbar-nav">
+			<li class="active"><a href="#">Home</a></li>
+			<li><a href="#about">About</a></li>
+			<li><a href="#contact">Contact</a></li>
+		  </ul>
+		</div>
+	--><!--/.nav-collapse -->
+		</div>
+	</div>
+
+<div class="container">
+	<div class="row">
+		<div class="col-sm-4">
+		</div>
+		<div class="col-sm-8">
+			<h3>Map: <span id="mapTitle">[none]</span></h3>
+			<p id="mapDescription">[none]</p>
+		</div>
+	</div>
+
+	<div class="row">
+		<div class="col-sm-4">
+			<form role="form">
+				<div class="form-group">
+					<label class="control-label" for="minLevel">Min Zoom Level (farthest from ground)</label>
+					<input type="number" id="minLevel" name="minLevel" class="form-control" value=1 min=0 max=19 />
+				</div>
+				<div class="form-group">
+					<label class="control-label" for="currentLevel">Current Zoom Level</label>
+					<input type="number" id="currentLevel" name="currentLevel" class="form-control" value=19 min=0 max=19 />
+				</div>
+				<div class="form-group">
+					<label class="control-label" for="maxLevel">Max Zoom Level (closer to ground)</label>
+					<input type="number" id="maxLevel" name"maxLevel" class="form-control" value=19 min=0 max=19 />
+				</div>
+			</form>
+			<table id="tile-count-table" class="table table-striped table-condensed table-hover">
+				<thead>
+					<tr>
+						<th>Level</th>
+						<th>Tile Count</th>
+						<th>Size Mb (aprox.)</th>
+					</tr>
+				</thead>
+				<tbody id="tile-count-table-body">
+				</tbody>
+			</table>
+		</div>
+		<div class="col-sm-8">
+			<!-- Bootstrap-map-js -->
+			<div id="mapDiv"></div>
+		</div>
+	</div>
+
+	<div class="row">
+		<div id="ready-to-download-ui">
+			<div class="col-xs-12">
+				<button id="prepare-for-offline-btn" type="button" class="btn btn-primary"><i class="glyphicon glyphicon-cloud-download"></i> Prepare for Offline</button>
+				<button id="delete-all-tiles-btn" type="button" class="btn btn-danger"><i class="glyphicon glyphicon-floppy-remove"></i> Delete All Tiles</button>
+				<button id="go-offline-btn" type="button" class="btn btn-default"><i class="fa fa-chain-broken"></i> Go Offline</button>
+				<button id="go-online-btn" type="button" class="btn btn-default" disabled="disabled" style="display:none;"><i class="fa fa-link"></i> Go Online</button>
+				<button id="update-offline-usage" type="button" class="btn btn-default"><i class="fa fa-refresh"></i> Usage: <span id="offline-usage">[click to update]</span></button>
+				<button id="show-stored-tiles" type="button" class="btn btn-default"><i class="fa fa-th"></i> <span id="show-stored-tiles-caption">Show Stored Tiles</span></button>
+				<button id="save-file" type="button" class="btn btn-default"><i class="fa fa-download"></i> Save to File</button>
+				<span id="load-file" type="button" class="btn btn-default"><i class="fa fa-upload"></i> Load from File <input type="file" id="file-select" name="file-select"></span>
+			</div>
+		</div>
+		<div id="downloading-ui">
+			<div class="col-xs-1">
+				<button id="cancel-btn" type="button" class="btn btn-warning"><i class="glyphicon glyphicon-remove"></i> Cancel</button>
+			</div>
+			<div id="download-progress" class="col-xs-10">
+				<div class="progress progress-striped active">
+					<div class="progress-bar progress-bar-success" role="progressbar" style="width:0%;"></div>
+				</div>
+			</div>
+			<div id="remaining-time" class="col-xs-1">__:__</div>
+		</div>
+	</div>
+
+	<div class="row">
+		<div class="col-xs-12" id="error-div">
+			<div class="alert alert-danger">
+				<a class="close" data-dismiss="alert">&times;</a>
+				<i class="fa fa-info-circle"></i><strong></strong> <span id="error-msg">Change a few things up and try submitting again..</span>
+			</div>
+		</div>
+	</div>
+
+	<hr>
+
+	<div class="row">
+		<div class="col-xs-12 col-sm-4">
+			<div class="well lead step-1"><i class="fa fa-arrows"></i> 1. Navigate to your area of interest</div>
+		</div>
+		<div class="col-xs-12 col-sm-4">
+			<div class="well lead step-2"><i class="glyphicon glyphicon-cloud-download"></i> 2. Click 'Prepare for Offline' button</div>
+		</div>
+		<div class="col-xs-12 col-sm-4">
+			<div class="well lead step-3"><i class="fa fa-chain-broken"></i> 3. Go Offline and enjoy!</div>
+		</div>
+	</div>
+
+
+</div><!-- /.container -->
+<script>
+	var locationPath = location.pathname.replace(/\/[^/]+$/, "");
+	var dojoConfig = {
+		paths: {
+            utils: locationPath  + "/../utils",
+            bootstrapmap: "//esri.github.io/bootstrap-map-js/src/js/bootstrapmap"
+		}
+	}
+</script>
+
+<script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
+<script src="//js.arcgis.com/3.14compact"></script>
+<script src="//github.hubspot.com/offline/offline.min.js"></script>
+
+<script>
+"use strict"
+
+var map;
+var basemapLayer;
+var graphics;
+var cancelRequested, startTime, errorList;
+var showTiles = false;
+
+require(
+["esri/map",
+	"esri/layers/GraphicsLayer", "esri/graphic", "esri/symbols/SimpleFillSymbol",
+	"esri/dijit/Scalebar", "esri/arcgis/utils", "esri/geometry",
+	"esri/urlUtils", "esri/geometry/webMercatorUtils",
+	"utils/debouncer",
+    "dojo/on", "dojo/query",
+    "dojo/dom","dojo/dom-construct","dojo/dom-class","dojo/dom-style",
+    "dojo/_base/window",
+    "bootstrapmap","../dist/offline-tiles-basic-min.js", "dojo/domReady!"],
+	function(Map,
+		GraphicsLayer, Graphic, SimpleFillSymbol,
+		Scalebar, esriUtils, geometry,
+		urlUtils, webMercatorUtils,
+		debouncer,
+        on, query,
+        dom,domConstruct,domClass,domStyle,
+        win,
+        BootstrapMap)
+	{
+		var scalebar;
+		var symbol;
+        var orientationChange = false;
+        var stateNode;
+
+        initOfflineDetector();
+        var offlineTilesBasic = new O.esri.Tiles.OfflineTilesBasic();
+
+		// Load web map when page loads
+		var urlObject = urlUtils.urlToObject(window.location.href);
+		var webmapid;
+		if( urlObject.query && urlObject.query.webmap)
+			webmapid = urlObject.query.webmap;
+
+		loadWebmap(webmapid);
+
+		function loadWebmap(webmapid)
+		{
+			webmapid = webmapid || "bbc1a04a3eca4430be144d7a08b43a17";
+			// Get new webmap and extract map and map parts
+			var mapDeferred = esriUtils.createMap(webmapid, "mapDiv", {
+				mapOptions: {
+					slider: true,
+					nav:false,
+					smartNavigation:false
+				}
+			});
+
+			mapDeferred.then(function(response)
+			{
+				map = response.map;
+                try{
+				    // Bind to map
+				    BootstrapMap.create(map);
+                }
+                catch(err){
+                    console.log("boot " + err.toString())
+                }
+				// Add title and description
+				dom.byId("mapTitle").innerHTML = response.itemInfo.item.title;
+				dom.byId("mapDescription").innerHTML = response.itemInfo.item.snippet;
+
+				if(map.loaded)
+				{
+					basemapLayer = map.getLayer( map.layerIds[0] );
+					initMapParts();
+					initEvents();
+					initOffline();
+				}
+				else
+				{
+					on(map,"load",function()
+					{
+						basemapLayer = map.getLayer( map.layerIds[0] );
+                        initMapParts();
+                        initEvents();
+                        initOffline();
+					});
+				}
+
+			},function(error){
+				showAlert('alert-danger',"Sorry, couldn't load webmap: " + error.message);
+				console.log("Error loading webmap:",error);
+			});
+		}
+
+	  	function initMapParts()
+	  	{
+			scalebar = new Scalebar({
+				map:map,
+				scalebarUnit: 'metric'
+			});
+
+			graphics = new GraphicsLayer();
+			map.addLayer( graphics );
+
+			symbol = new SimpleFillSymbol({
+							"type": "esriSFS",
+							"style": "esriSFSSolid",
+							"color": [255,0,0,5],
+							"outline": {
+								"type": "esriSLS",
+								"style": "esriSLSSolid",
+								"color": [0,0,0,100],
+								"width": 0.5
+							}
+						});
+		}
+
+		function initEvents()
+		{
+			map.on('extent-change',debouncer.debounceMap(function(){
+                var zoomLevel = map.getLevel();
+                dojo.byId('currentLevel').value = zoomLevel;
+                var low = Math.max(basemapLayer.minLevel, zoomLevel - 3);
+                var high = Math.min(basemapLayer.maxLevel, zoomLevel + 4)
+                dojo.byId('minLevel').value = low;
+                dojo.byId('maxLevel').value = high;
+                updateTileCountEstimation();
+            },250));
+
+            debouncer.setOrientationListener(250,function(){
+                console.log("orientation"); orientationChange = true;
+                //updateTileCountEstimation();
+            })
+
+			on(dojo.byId('minLevel'),'change', updateTileCountEstimation);
+			on(dojo.byId('maxLevel'),'change', updateTileCountEstimation);
+
+            var currentLevel = map.getLevel();
+            if(currentLevel - 3 < 0){
+                dojo.byId('minLevel').value = currentLevel;
+            }
+            else{
+                dojo.byId('minLevel').value = currentLevel - 3;
+            }
+
+            basemapLayer.minLevel = basemapLayer.tileInfo.lods[0].level;
+			basemapLayer.maxLevel = basemapLayer.tileInfo.lods[basemapLayer.tileInfo.lods.length-1].level;
+            updateMinMaxLayerInfo();
+		}
+
+		function initOffline()
+		{
+			console.log("extending");
+
+			offlineTilesBasic.extend(basemapLayer,function(success)
+			{
+				if(success)
+				{
+                    //basemapLayer.offline.proxyPath = window.proxyPath || "../lib/resource-proxy/proxy.php";
+					basemapLayer.showBlankTiles = true; // if you don't want to see blank tile indicator images
+                    basemapLayer.offline.proxyPath = null; //We are using CORS
+					on(dojo.byId('prepare-for-offline-btn'),'click', prepareForOffline);
+					on(dojo.byId('cancel-btn'),'click', cancel);
+					on(dojo.byId('delete-all-tiles-btn'),'click', deleteAllTiles);
+					on(dojo.byId('go-offline-btn'),'click', goOffline);
+					on(dojo.byId('go-online-btn'),'click', goOnline);
+					on(dojo.byId('update-offline-usage'),'click', updateOfflineUsage);
+					on(dojo.byId('show-stored-tiles'),'click', toggleShowStoredTiles);
+					on(dojo.byId('save-file'),'click', saveToFile);
+					on(dojo.byId('file-select'),'change', loadFromFile);
+					dojo.byId('go-online-btn').style.display = "none";
+					esri.show(dojo.byId('ready-to-download-ui'));
+					esri.hide(dojo.byId('downloading-ui'));
+					updateOfflineUsage();
+
+                    // Hack to correctly set _lastTileUrl. It needs to be set for the tile size
+                    // estimation to work properly.
+                    var cellArray = basemapLayer.getTileUrlsByExtent(map.extent,map.getLevel());
+                    var uriFragment = cellArray[0].split("/MapServer/");
+                    var rebuiltURI = uriFragment[0] + "/MapServer/tile/" + uriFragment[1];
+                    basemapLayer._lastTileUrl = rebuiltURI;
+
+					updateTileCountEstimation();
+				}
+				else
+				{
+					dojo.byId('prepare-for-offline-btn').disabled = true;
+					dojo.byId('delete-all-tiles-btn').disabled = true;
+					dojo.byId('go-offline-btn').disabled = true;
+					dojo.byId('go-online-btn').disabled = true;
+					esri.hide(dojo.byId('go-online-btn'));
+					dojo.byId('update-offline-usage').disabled = true;
+					dojo.byId('show-stored-tiles').disabled = true;
+					esri.hide(dojo.byId('downloading-ui'));
+
+					showAlert("alert-danger","Failed initializing storage, probably your browser doesn't support <a href='http://caniuse.com/#feat=indexeddb'>IndexedDB</a> nor <a href='http://caniuse.com/#feat=sql-storage'>WebSQL</a>");
+				}
+            });
+
+			Offline.on('up', goOnline );
+			Offline.on('down', goOffline );
+		}
+
+        function initOfflineDetector(){
+            stateNode = domConstruct.create("div",
+                    {
+                        id: "state",
+                        innerHTML: "? unknown"
+                    }, win.body(), "first");
+            console.log(stateNode);
+            domStyle.set(stateNode, "border-radius","10px");
+
+            Offline.check();
+            updateState();
+
+            Offline.on('up down', updateState );
+        }
+
+        function updateState()
+        {
+            //Use this pattern when not running application in testing mode
+            console.log('updateState', Offline.state);
+            var icon = Offline.state === 'up' ?  "fa-link" : "fa-chain-broken";
+            domClass.remove(stateNode, "up down");
+            domClass.add(stateNode, Offline.state);
+            stateNode.innerHTML = '<i class="fa '+icon+'"></i> ' + Offline.state;
+        }
+
+        function updateTestState()
+        {
+            //Use this pattern for testing application and forcing online/offline
+            console.log('updateState', basemapLayer.isOnline());
+            var updown = "up";
+            basemapLayer.isOnline() === true ? updown = 'up' : updown = 'down';
+            var icon = basemapLayer.isOnline() === true ?  "fa-link" : "fa-chain-broken";
+            domClass.remove(stateNode, "up down");
+            domClass.add(stateNode, updown);
+            stateNode.innerHTML = '<i class="fa '+icon+'"></i> ' + updown;
+        }
+
+		function updateOfflineUsage()
+		{
+			dojo.byId('offline-usage').innerHTML = "updating...";
+			basemapLayer.getOfflineUsage(function(usage)
+			{
+				console.log(usage);
+				console.log("Avg tile size:", Math.round(usage.sizeBytes / 1024 / usage.tileCount * 100) / 100, "Kb");
+				var usageStr = Math.round(usage.sizeBytes/1024/1024*100)/100 + " Mb (" + usage.tileCount + " tiles)";
+				dojo.byId('offline-usage').innerHTML = usageStr;
+			});
+		}
+
+        function updateMinMaxLayerInfo(){
+            var zoomLevel = map.getLevel();
+            dojo.byId('currentLevel').value = zoomLevel;
+            var low = Math.max(basemapLayer.minLevel, zoomLevel - 3);
+            var high = Math.min(basemapLayer.maxLevel, zoomLevel + 4)
+            dojo.byId('minLevel').value = low;
+            dojo.byId('maxLevel').value = high;
+        }
+
+		function updateTileCountEstimation()
+		{
+			console.log('updating');
+
+            var minLevel = parseInt(dojo.byId('minLevel').value);
+            var maxLevel = parseInt(dojo.byId('maxLevel').value);
+
+			var totalEstimation = { tileCount:0, sizeBytes:0 }
+
+            basemapLayer.estimateTileSize(function(tileSize)
+            {
+				domConstruct.empty('tile-count-table-body');
+
+                for(var level=minLevel; level<=maxLevel; level++)
+                {
+                    var levelEstimation = basemapLayer.getLevelEstimation(map.extent,level,tileSize);
+
+                    totalEstimation.tileCount += levelEstimation.tileCount;
+                    totalEstimation.sizeBytes += levelEstimation.sizeBytes;
+
+                    if( levelEstimation.tileCount > 0)
+                    {
+                        var rowContent = [levelEstimation.level, levelEstimation.tileCount, Math.round(levelEstimation.sizeBytes / 1024 / 1024 * 100) / 100 + " Mb"]
+                        rowContent = "<td>" + rowContent.join("</td><td>") + "</td>";
+                        var tr = domConstruct.place("<tr>", dojo.byId('tile-count-table-body'),'last')
+                        domConstruct.place(rowContent, tr,'last');
+                    }
+
+                    if( totalEstimation.tileCount > 5000 )
+                    {
+                        var tr = domConstruct.place("<tr>", dojo.byId('tile-count-table-body'),'last')
+                        domConstruct.place("<td colspan=4>...</td>", tr,'last');
+                        break;
+                    }
+                }
+
+                rowContent = ["Total", totalEstimation.tileCount, Math.floor(totalEstimation.sizeBytes / 1024 / 1024 * 100)/100 + " Mb"];
+                rowContent = "<td><b>" + rowContent.join("</b></td><td><b>") + "</b></td>";
+                tr = domConstruct.place("<tr>", dojo.byId('tile-count-table-body'),'last')
+                domConstruct.place(rowContent, tr,'last');
+            })
+		}
+
+		function goOffline()
+		{
+			dojo.byId('go-offline-btn').disabled = true;
+			dojo.byId('go-online-btn').disabled = undefined;
+			dojo.byId('go-offline-btn').style.display = "none";
+			dojo.byId('go-online-btn').style.display = "";
+
+			basemapLayer.goOffline();
+
+            updateTestState();
+		}
+
+		function goOnline()
+		{
+			dojo.byId('go-offline-btn').disabled = undefined;
+			dojo.byId('go-online-btn').disabled = true;
+			dojo.byId('go-offline-btn').style.display = "";
+			dojo.byId('go-online-btn').style.display = "none";
+
+			basemapLayer.goOnline();
+
+            updateTestState();
+		}
+
+		function deleteAllTiles()
+		{
+			basemapLayer.deleteAllTiles(function(success, err)
+			{
+				console.log("deleteAllTiles():", success,err);
+
+				if( success )
+					showAlert("alert-success", "All tiles deleted");
+				else
+					showAlert("alert-danger", "Can't delete tiles: " + err);
+
+				setTimeout(function()
+				{
+					updateOfflineUsage();
+					showStoredTiles(showTiles);
+				},0); // request execution in the next turn of the event loop
+			});
+		}
+
+		function prepareForOffline()
+		{
+			/* put UI in downloading mode */
+			cancelRequested = false;
+			errorList = [];
+			query('#download-progress [role=progressbar]')
+				.removeClass('progress-bar-warning')
+				.addClass('progress-bar-success');
+			hideAlert();
+			reportProgress({countNow:0,countMax:1});
+			esri.hide(dojo.byId('ready-to-download-ui'));
+			esri.show(dojo.byId('downloading-ui'));
+			startTime = new Date();
+
+			/* launch offline preparation process */
+			var minLevel = parseInt(dojo.byId('minLevel').value);
+            var maxLevel = parseInt(dojo.byId('maxLevel').value);
+			basemapLayer.prepareForOffline(minLevel, maxLevel, map.extent, reportProgress);
+		}
+
+		function cancel()
+		{
+			cancelRequested = true;
+		}
+
+		function reportProgress(progress)
+		{
+			console.log(progress);
+			
+			if( progress.finishedDownloading )
+			{
+				if( progress.cancelRequested )
+					showAlert('alert-warning', 'Cancelled');
+				else if (errorList.length == 0)
+					showAlert('alert-success', 'All tiles downloaded and stored');
+				else
+					showAlert('alert-warning', "Finished downloading tiles, " + errorList.length + " tiles couldn't be downloaded");
+
+				setTimeout(function()
+				{
+					esri.show(dojo.byId('ready-to-download-ui'));
+					esri.hide(dojo.byId('downloading-ui'));
+					updateOfflineUsage();
+					showStoredTiles(showTiles);
+				}, 1000);
+			}
+			else
+			{
+				// progress bar
+				var pbar = query('#download-progress [role=progressbar]')[0];
+				var percent = progress.countMax? (progress.countNow / progress.countMax * 100) : 0;
+				pbar.style.width = percent+"%";
+
+				// any errors?
+				if( progress.error )
+				{
+					query('#download-progress [role=progressbar]')
+						.removeClass('progress-bar-success')
+						.addClass('progress-bar-warning');
+
+					errorList.push(progress.error.msg);
+
+					showAlert('alert-warning', progress.error.msg);
+				}
+
+				// remaining time
+				if( progress.countNow > 5 )
+				{
+					var currentTime = new Date();
+					var elapsedTime = currentTime - startTime;
+					var remainingTime = (elapsedTime / progress.countNow) * (progress.countMax - progress.countNow);
+					var sec = 1 + Math.floor(remainingTime / 1000);
+					var min = Math.floor(sec / 60);
+					sec -= (min * 60);
+					dojo.byId('remaining-time').innerHTML = ((min<10)? "0" + min : min) + ":" + ((sec<10)? "0" + sec : sec);
+				}
+
+				return cancelRequested;
+			}
+		}
+
+		function toggleShowStoredTiles()
+		{
+			showTiles = !showTiles;
+			dojo.byId('show-stored-tiles-caption').innerHTML = showTiles? "Hide Stored Tiles" : "Show Stored Tiles";
+			showStoredTiles(showTiles);
+		}
+
+		function showStoredTiles(showTiles)
+		{
+			graphics.clear();
+
+			if( showTiles )
+			{
+				basemapLayer.getTilePolygons(function(polygon,err)
+				{
+					if(polygon)
+					{
+						var graphic = new Graphic(polygon, symbol);
+						graphics.add(graphic);
+					}
+					else
+					{
+						console.log("showStoredTiles: ", err);
+					}
+				}.bind(this));
+			}
+		}
+
+		function saveToFile()
+		{
+			basemapLayer.saveToFile("tiles.csv", function(success,msg)
+			{
+				if(success)
+					showAlert('alert-success',msg);
+				else
+					showAlert('alert-danger',msg);
+			});
+		}
+
+		function loadFromFile()
+		{
+			var selectedFile = dojo.byId('file-select').files[0];
+
+			// clear input.files variable, so that next time it is empty again
+			// otherwise selecting the same file twice will not trigger the 'change' event the second time
+			var form = domConstruct.create('form');
+			domConstruct.place(dojo.byId('file-select'), form, "before");
+			form.reset();
+
+			if( !selectedFile )
+			{
+				showAlert('alert-warning',"Please, select one file");
+				return;
+			}
+
+			basemapLayer.loadFromFile(selectedFile, function(success,msg)
+			{
+				if(success)
+					showAlert('alert-success',msg);
+				else
+					showAlert('alert-danger',msg);
+
+				updateOfflineUsage();
+				showStoredTiles(showTiles);
+			});
+		}
+
+		function showAlert(type, msg)
+		{
+			var icon = "";
+			switch(type)
+			{
+				case 'alert-success': icon = "fa-check"; break;
+				case 'alert-info':    icon = "fa-info-circle"; break;
+				case 'alert-warning': icon = "fa-warning"; break;
+				case 'alert-danger':  icon = "fa-ban"; break;
+			}
+			dojo.byId('error-msg').innerHTML = msg;
+			dojo.query('#error-div .close').onclick(hideAlert);
+			dojo.query('#error-div .alert')
+				.removeClass('alert-success')
+				.removeClass('alert-info')
+				.removeClass('alert-warning')
+				.removeClass('alert-danger')
+				.addClass(type);
+			dojo.query('#error-div .fa')
+				.removeClass('fa-info-circle')
+				.addClass(icon);
+			esri.show(dojo.byId('error-div'));
+		}
+
+		function hideAlert()
+		{
+			esri.hide(dojo.byId('error-div'));
+		}
+	});
+	
+</script>
+</body>
+</html>

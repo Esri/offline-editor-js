@@ -116,20 +116,15 @@ ask if you want to reload the application.
 <script src="../samples/jsolib/dojo.js" data-dojo-config="async: true"></script>
 <!-- Use this tag below if you are hosting your ArcGIS API for JavaScript files locally -->
 <!--<script src="libs/dojo/dojo/dojo.js" data-dojo-config="async: true"></script>-->
-<script src="../vendor/IndexedDBShim/dist/IndexedDBShim.min.js"></script>
-<script src="../vendor/offline/offline.min.js"></script>
-<script>
-    Offline.options = {
-        checks: {
-            image: {
-                url: function() {
-                    return 'http://esri.github.io/offline-editor-js/tiny-image.png?_=' + (Math.floor(Math.random() * 1000000000));
-                }
-            },
-            active: 'image'
-        }
-    }
-</script>
+
+    <!--
+        Include a reference to IndexedDBShim for library to work on Safari 7.x.
+        May not be required for all Safari browsers.
+     -->
+    <!--<script src="//nparashuram.com/IndexedDBShim/dist/indexeddbshim.min.js"></script>-->
+
+<script src="//github.hubspot.com/offline/offline.min.js"></script>
+
 </head>
 
 <body>

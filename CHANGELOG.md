@@ -1,5 +1,40 @@
 # offline-editor-js - Changelog
 
+## Version 3.0 - Nov. 23, 2015
+
+Has many breaking changes due to new naming conventions. 
+
+This version adds a new, lightweight (14Kb) editing library aimed at intermittent offline-only workflows. And, there was a significant amount of refactoring aimed at fixing and simplifying the library's naming conventions.
+
+This version implements a consistent naming convention that uses "basic" and "advanced". If `basic` is in the name of the distribution library that means support for intermittent offline-only. `advanced` in the name means support for both intermittent and full offline usage including browser restarts while offline.
+
+In general, migrating from v2.x to 3.x should be a straightforward exercise in simple refactoring of library names. 
+
+**Enhancements**
+* Creates a new `OfflineEditBasic` library. This lightweight (14Kb) library is designed specifically for easy use and intermittent offline-only editing use cases. 
+* Created `offline-edit-basic` and `offline-edit-advanced` for both `src` and `min` versions.
+* Updates documentation, samples and unit tests to reflect the name changes.
+
+**Refactored**
+* `offlineFeaturesManager.js` renamed `OfflineEditAdvanced.js`. No other changes were made to this library.
+* `offlineTilesEnabler.js` renamed `OfflineTilesBasic.js`.
+* `OfflineTilesEnablerLayer.js` renamed `OfflineTilesAdvanced`. No other changes made.
+* `tiles-indexed-db.html` renamed to `simple-tiles.html`.
+* All samples have been updated to reflect the new library names.
+* All test specs have been updated and refactored to reflect the new library names.
+
+**Deprecated**
+* Deprecated `offline-edit-min.js` and `offline-edit-src.js`.
+* In `OfflineEditAdvanced.js` removed deprecated functions `_cleanSuccessfulEditsDatabaseRecords()`, `_internalApplyEdits()`.
+* In `editStore.js` removed deprecated function `resetLimitedPhantomGraphicsQueue()`.
+* In `editStore.js` removed unused functions `_serialize()`, `_deserialize()`.
+* Deleted `/demo/samples` directory.
+* Removed Offline.js and IndexedDBShim from sub-module depencies. You'll need to reference these via their respective CDNs for gh-pages URL.
+
+**Bug Fixes**
+* Minor - `OfflineEditAdvanced` no longer throws an error when reinitialized with a featureCollection.
+
+
 ## Version 2.16 - Oct. 29, 2015
 
 No breaking changes. Recommended update.
