@@ -1,5 +1,12 @@
 # offline-editor-js - Changelog
 
+## Version 3.0.1 - Nov. 23, 2015
+
+No breaking changes. Attempt to fix failed gh-pages build on github.
+
+**Enhancements**
+* Delete /vendor/IndexedDB and /offline
+
 ## Version 3.0 - Nov. 23, 2015
 
 Has many breaking changes due to new naming conventions. 
