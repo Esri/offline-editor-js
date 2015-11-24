@@ -28,8 +28,8 @@ module.exports = function(grunt) {
                     'Gruntfile.js',
                     'lib/edit/*.js',
                     'lib/tiles/base64utils.js',
-                    'lib/tiles/OfflineTilesEnabler.js',
-                    'lib/tiles/OfflineTilesEnablerLayer.js',
+                    'lib/tiles/OfflineTilesBasic.js',
+                    'lib/tiles/OfflineTilesAdvanced.js',
                     'lib/tiles/OfflineTilesNS.js',
                     'lib/tiles/TilesCore.js',
                     'lib/tiles/TilesStore.js',
@@ -49,19 +49,29 @@ module.exports = function(grunt) {
                     '*/\n'
             },
             /* All feature editing capabilities: adds, updates and deletes */
-            edit: {
+            editAdvanced: {
                 src: [
-                    'lib/edit/offlineFeaturesManager.js',
+                    'lib/edit/offlineJSOptions.js',
+                    'lib/edit/OfflineEditAdvanced.js',
                     'lib/edit/OfflineEditNS.js',
                     'lib/edit/editsStore.js',
                     'lib/edit/attachmentsStore.js'
                 ],
-                dest: 'dist/offline-edit-src.js'
+                dest: 'dist/offline-edit-advanced-src.js'
+            },
+            editBasic: {
+                src: [
+                    'lib/edit/offlineJSOptions.js',
+                    'lib/edit/OfflineEditBasic.js',
+                    'lib/edit/OfflineEditNS.js',
+                    'lib/edit/editStorePOLS.js'
+                ],
+                dest: 'dist/offline-edit-basic-src.js'
             },
             /* Tiles basic is for use with WebMaps. Cannot be reloaded or restarted while offline */
             tilesBasic: {
                 src: [
-                    'lib/tiles/offlineTilesEnabler.js',
+                    'lib/tiles/OfflineTilesBasic.js',
                     'lib/tiles/OfflineTilesNS.js',
                     'lib/tiles/base64utils.js',
                     'lib/tiles/FileSaver.js',
@@ -74,7 +84,7 @@ module.exports = function(grunt) {
             /* Tiles advanced is for use with tiled map services. Works with reload or restart while offline */
             tilesAdvanced: {
                 src: [
-                    'lib/tiles/offlineTilesEnablerLayer.js',
+                    'lib/tiles/OfflineTilesAdvanced.js',
                     'lib/tiles/OfflineTilesNS.js',
                     'lib/tiles/base64utils.js',
                     'lib/tiles/FileSaver.js',
@@ -104,6 +114,9 @@ module.exports = function(grunt) {
                 compress: {
                     drop_console: true //remove console.log statements :)
                 },
+                beautify: {
+                    semicolons: false //Required: prevents dojo parser errors w/ minified files in this project
+                },
                 preserveComments: 'some',
                 wrap: false
 //                mangle: {
@@ -112,7 +125,8 @@ module.exports = function(grunt) {
             },
             dist: {
                 files: {
-                    'dist/offline-edit-min.js': ['dist/offline-edit-src.js'],
+                    'dist/offline-edit-advanced-min.js': ['dist/offline-edit-advanced-src.js'],
+                    'dist/offline-edit-basic-min.js': ['dist/offline-edit-basic-src.js'],
                     'dist/offline-tiles-basic-min.js': ['dist/offline-tiles-basic-src.js'],
                     'dist/offline-tiles-advanced-min.js': ['dist/offline-tiles-advanced-src.js'],
                     'dist/offline-tpk-min.js': ['dist/offline-tpk-src.js']

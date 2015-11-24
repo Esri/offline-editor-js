@@ -1,4 +1,4 @@
-/*! esri-offline-maps - v2.16.0 - 2015-10-29
+/*! esri-offline-maps - v3.0.0 - 2015-11-23
 *   Copyright (c) 2015 Environmental Systems Research Institute, Inc.
 *   Apache License*/
 /**
@@ -147,7 +147,7 @@ define([
                         // sets img visibility to 'hidden', so we need to show the image back once we have put the data:image
                         img.style.visibility = "visible";
                         img.src = imgURL;
-                        console.log("URL length " + imgURL.length + ", image: " + imgURL);
+                        //console.log("URL length " + imgURL.length + ", image: " + imgURL);
                         this.emit(this.PROGRESS_EVENT,this.PROGRESS_END);
                         return "";
                         /* this result goes nowhere, seriously */
@@ -204,7 +204,7 @@ define([
             },
 
             /**
-             * Reads a tile into tile database. Works with offlineTilesEnabler.js and OfflineTilesEnablerLayer.js
+             * Reads a tile into tile database. Works with OfflineTilesBasic.js and OfflineTilesAdvanced.js
              * saveToFile() functionality.
              * IMPORTANT! The tile must confirm to an object using the pattern shown in _storeTile().
              * @param file

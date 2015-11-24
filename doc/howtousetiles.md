@@ -33,8 +33,8 @@ Approach #1 is for intermittent offline use cases and it uses the `offline-tiles
 
 ```js
 	var basemapLayer = map.getLayer( map.layerIds[0] );
-	var offlineTilesEnabler = new O.esri.Tiles.OfflineTilesEnabler();
-	offlineTilesEnabler.extend(basemapLayer, function(success)
+	var offlineTilesBasic = new O.esri.Tiles.OfflineTilesBasic();
+	offlineTilesBasic.extend(basemapLayer, function(success)
 	{
 		if(success)	{
 			// Now we can use offline functionality on this layer 
@@ -190,9 +190,9 @@ To get the current extent you will need to monitor the `zoom-end` and `pan-end` 
 
 ## Specifying a custom database and dataStore name
 
-Both `offlineTilesEnablerLayer` and `offlineTilesEnabler` have an optional property that allows you to specify your own database name and dataStore name.
+Both `OfflineTilesAdvanced` and `OfflineTilesBasic` have an optional property that allows you to specify your own database name and dataStore name.
 
-For offlineTilesEnabler you can use the following pattern within the `extend()` method:
+For OfflineTilesBasic you can use the following pattern within the `extend()` method:
 
 ```js
 
@@ -201,7 +201,7 @@ For offlineTilesEnabler you can use the following pattern within the `extend()` 
         objectStoreName : "TILES"
     }
     
-	offlineTilesEnabler.extend(basemapLayer, function(success)
+	offlineTilesBasic.extend(basemapLayer, function(success)
 	{
 		if(success)	{
 			// Now we can use offline functionality on this layer 
@@ -212,7 +212,7 @@ For offlineTilesEnabler you can use the following pattern within the `extend()` 
 
 ```
 
-For offlineTilesEnablerLayer use this pattern in the constructor:
+For OfflineTilesAdvanced use this pattern in the constructor:
 
 ```js
 
@@ -221,7 +221,7 @@ For offlineTilesEnablerLayer use this pattern in the constructor:
         objectStoreName : "TILES"
     }
 
-    tileLayer = new O.esri.Tiles.OfflineTileEnablerLayer("http://xyz",function(evt){
+    tileLayer = new O.esri.Tiles.OfflineTilesAdvanced("http://xyz",function(evt){
 		. . .
 		. . .
     }, true /* online */, dbConfig);
@@ -230,11 +230,11 @@ For offlineTilesEnablerLayer use this pattern in the constructor:
 
 ## Setting the online state property
 
-In the constructor for `offlineTilesEnablerLayer` and in the `extend()` method for `offlineTilesEnabler` is a `state` property. This always defaults to `true`. It's important because it allows you to tell the library at runtime whether the application is online (true) or offline (false) so that the library initializes correctly. 
+In the constructor for `OfflineTilesAdvanced` and in the `extend()` method for `OfflineTilesBasic` is a `state` property. This always defaults to `true`. It's important because it allows you to tell the library at runtime whether the application is online (true) or offline (false) so that the library initializes correctly. 
 
 ## Working with secure tile services
 
-If you are using a secure tiled map service then you'll need to use the `offlineTilesEnablerLayer` library. There isn't anything special you need to do, the library should automatically recognize you are using a secure service and it will trigger `esri/IdentityManager` if it cannot find valid credentials.
+If you are using a secure tiled map service then you'll need to use the `OfflineTilesAdvanced` library. There isn't anything special you need to do, the library should automatically recognize you are using a secure service and it will trigger `esri/IdentityManager` if it cannot find valid credentials.
 
 The library manually stores credential information using the following localStorage pattern: `window.localStorage.offline_id_manager`.
 
