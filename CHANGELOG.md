@@ -1,5 +1,13 @@
 # offline-editor-js - Changelog
 
+## Version 3.0.2 - Nov 24, 2015
+
+No breaking changes. Documentation updates only.
+
+**Enhancements**
+* Closes #427 - update attachments doc
+* Closes #426 - fix broken How To doc links
+
 ## Version 3.0.1 - Nov. 23, 2015
 
 No breaking changes. Attempt to fix failed gh-pages build on github.
