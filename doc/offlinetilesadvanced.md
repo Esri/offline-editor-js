@@ -1,4 +1,4 @@
-API Doc for OfflineTileEnablerLayer
+API Doc for OfflineTilesAdvanced
 ====================================
 
 There are two different libraries for taking tiles offline: `offline-tiles-basic-min.js` and `offline-tiles-advanced-min.js`. The basic library is for use with ArcGIS.com web maps and partial/intermittently offline use cases. You won't be able to restart or reload your app when using this library offline.
@@ -7,13 +7,13 @@ If you have a requirement for restarting or reloading the app while offline then
 
 If you have a requirement for using token-based security on your tiled map service then you'll need to use this library.
 
-##O.esri.Tiles.OfflineTileEnablerLayer
+##O.esri.Tiles.OfflineTilesAdvanced
 The `offline-tiles-advanced-min.js` library provides the following tools for working with tiled map services. This library is designed for both partial and full offline use cases, and it will work if you have a requirement for browser reloads or restarts while offline.
 
 ###Constructor
 Constructor | Description
 --- | ---
-`O.esri.Tiles.OfflineTileEnablerLayer(` `url,callback,state,dbConfig)` | Creates an instance of the offlineTileEnabler class. This library allows you to extend an ArcGISTiledMapServiceLayer with offline capability as well as manage the online/offline resynchronization process. Any Esri basemap REST endpoint should work. <br><br>The `state` property is a boolean for specifying if the application is intializing the layer online (true) or offline (false). It defaults to `true`. When you first load the map it is a best practice to set this property to `true`. <br><br>`dbConfig` is an optional object that can be used to customize the database name (`dbName`) and the object store (`objectStoreName`) name. Example: `{dbName: "TILES_TEST", objectStoreName: "TILES"}`. 
+`O.esri.Tiles.OfflineTilesAdvanced(` `url,callback,state,dbConfig)` | Creates an instance of the offlineTilesAdvanced class. This library allows you to extend an ArcGISTiledMapServiceLayer with offline capability as well as manage the online/offline resynchronization process. Any Esri basemap REST endpoint should work. <br><br>The `state` property is a boolean for specifying if the application is intializing the layer online (true) or offline (false). It defaults to `true`. When you first load the map it is a best practice to set this property to `true`. <br><br>`dbConfig` is an optional object that can be used to customize the database name (`dbName`) and the object store (`objectStoreName`) name. Example: `{dbName: "TILES_TEST", objectStoreName: "TILES"}`. 
 
 ###Properties
 Property  | Value | Description
