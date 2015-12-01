@@ -7,7 +7,7 @@ Offline-editor-js is a family of libraries for building offline capabilities int
 
 # Getting Started
 
-Online samples and getting started tutorials are available here: **[http://esri.github.io/offline-editor-js/demo/](http://esri.github.io/offline-editor-js/demo/)**
+Online samples are available here: **[http://esri.github.io/offline-editor-js/demo/](http://esri.github.io/offline-editor-js/demo/)**
 
 
 # Libraries
@@ -20,7 +20,7 @@ Basic editing | **`offline-edit-basic-min.js`** Simple, lightweight *(14k minimi
 Advanced editing | **`offline-edit-advanced-min.js`** Used for intermittent and full offline editing workflows. Also includes limited support for attachments. <br><br>[`http://esri.github.io/offline-editor-js/dist/offline-edit-advanced-min.js`](http://esri.github.io/offline-editor-js/dist/offline-edit-advanced-min.js)
 Basic map tiles |  **`offline-tiles-basic-min.js`** Caches map tiles for simple, intermittent-only offline workflows. Use this library with ArcGIS Online Web maps as well as with tiled map services.<br><br> [`http://esri.github.io/offline-editor-js/dist/offline-tiles-basic-min.js`](http://esri.github.io/offline-editor-js/dist/offline-tiles-basic-min.js) 
 Advanced map tiles | **`offline-tiles-advanced-min.js`** Used for intermittent and full offline tile caching. Extends any ArcGIS Tiled Map Service. This library should be used in conjunction with an HTML5 Application Cache Manifest coding pattern.<br><br>[`http://esri.github.io/offline-editor-js/dist/offline-tiles-advanced-min.js`](http://esri.github.io/offline-editor-js/dist/offline-tiles-advanced-min.js)
-TPK files | **`offline-tpk-min.js`** Reads TPK files and displays and caches them as a tiled map layer.<br><br>[`http://esri.github.io/offline-editor-js/dist/offline-tpk-min.js`](http://esri.github.io/offline-editor-js/dist/offline-tpk-min.js)
+TPK files | **`offline-tpk-min.js`** Reads TPK files and displays and caches them as a tiled map layer. Works for both intermittent and full offline.<br><br>[`http://esri.github.io/offline-editor-js/dist/offline-tpk-min.js`](http://esri.github.io/offline-editor-js/dist/offline-tpk-min.js)
 
 `src` files are for software development-only. The`min` versions are minified and should be used in production. 
 
