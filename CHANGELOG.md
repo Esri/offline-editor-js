@@ -1,5 +1,14 @@
 # offline-editor-js - Changelog
 
+## Version 3.0.3 - Nov 30, 2015
+
+No breaking changes.
+
+**Enhancements**
+* Multiple bug fixes to the appcache-twofeaturelayers-noedit.html sample.
+* Minor updates to README.
+* Minor update to explanation text in simple-edit.html
+
 ## Version 3.0.2 - Nov 24, 2015
 
 No breaking changes. Documentation updates only.

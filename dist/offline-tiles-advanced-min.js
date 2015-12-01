@@ -1,4 +1,4 @@
-/*! esri-offline-maps - v3.0.0 - 2015-11-23
+/*! esri-offline-maps - v3.0.3 - 2015-11-30
 *   Copyright (c) 2015 Environmental Systems Research Institute, Inc.
 *   Apache License*/
 define(["dojo/query","dojo/request","dojo/_base/declare","esri/layers/LOD","esri/geometry/Point","esri/geometry/Extent","esri/layers/TileInfo","esri/SpatialReference","esri/geometry/Polygon","esri/layers/TiledMapServiceLayer"],function(a,b,c,d,e,f,g,h,i,j){"use strict"
