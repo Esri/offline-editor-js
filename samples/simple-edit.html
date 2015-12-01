@@ -19,7 +19,7 @@
             margin: 5px;
         }
         #header {
-            height: 45px;
+            height: 65px;
             margin: 5px 5px 0 5px;
             padding: 0.5em;
             font-family: sans-serif;
@@ -31,8 +31,8 @@
         .dj_ie .simpleInfoWindow .content { position: relative; }
     </style>
 
-    <script src="http://github.hubspot.com/offline/offline.min.js"></script>
-    <script src="http://js.arcgis.com/3.14/"></script>
+    <script src="//github.hubspot.com/offline/offline.min.js"></script>
+    <script src="//js.arcgis.com/3.14/"></script>
     <script>
         var map;
         require([
@@ -117,8 +117,11 @@
 </head>
 <body class="claro">
 <div data-dojo-type="dijit/layout/BorderContainer" data-dojo-props="design:'headline'" style="width:100%;height:100%;" gutters="false">
-    <div id="header" data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:'top'">
-        <center>Zoom in to a fire perimeter and double click a feature to edit its vertices. Double click again on the feature to stop editing and apply edits.</center>
+    <div id="header" data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:'top'" >
+        1. Load app while online, zoom in to a fire perimeter<br>
+        2. Cut internet and double click a feature to edit its vertices. Double click again on the feature to stop editing and apply edits.<br>
+        3. Reestablish internet. You should be able to see the app resync edits in the developer console's network window.
+
     </div>
     <div id="map" data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:'center'"></div>
 </div>

@@ -111,7 +111,7 @@
         .container { padding: 20px; width: 100%;}
     </style>
 
-    <script src="../vendor/offline/offline.min.js"></script>
+    <script src="//github.hubspot.com/offline/offline.min.js"></script>
     <script>
         // This options sets up an image that the offline status detection library
         // will use to ping to see if app is online or offline.
@@ -250,7 +250,7 @@
                     featureLayers[0] = "http://services1.arcgis.com/M8KJPUwAXP8jhtnM/arcgis/rest/services/Denver_Bus_Stops/FeatureServer/0";
                     featureLayers[1] = "http://services1.arcgis.com/M8KJPUwAXP8jhtnM/ArcGIS/rest/services/b_cycle_stations/FeatureServer/0";
 
-                    tileLayer = new O.esri.Tiles.OfflineTileEnablerLayer("http://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer",function(evt){
+                    tileLayer = new O.esri.Tiles.OfflineTilesAdvanced("http://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer",function(evt){
                         console.log("Tile Layer initialized for offline. App state is: " + Offline.state);
                     },_isOnline);
 
@@ -506,8 +506,6 @@
                                         deferred2.reject(false);
                                     }
                                 });
-
-                                deferred2.resolve(true);
                             });
 
                             map.addLayer(bicycleStationFeatureLayer);

@@ -1,4 +1,4 @@
-/*! esri-offline-maps - v3.0.0 - 2015-11-23
+/*! esri-offline-maps - v3.0.3 - 2015-11-30
 *   Copyright (c) 2015 Environmental Systems Research Institute, Inc.
 *   Apache License*/
 Offline.options={checks:{image:{url:function(){return"http://esri.github.io/offline-editor-js/tiny-image.png?_="+Math.floor(1e9*Math.random())}},active:"image"}},define(["dojo/Evented","dojo/_base/Deferred","dojo/promise/all","dojo/_base/declare","dojo/_base/array","dojo/dom-attr","dojo/dom-style","dojo/query","esri/config","esri/layers/GraphicsLayer","esri/graphic","esri/request","esri/symbols/SimpleMarkerSymbol","esri/symbols/SimpleLineSymbol","esri/symbols/SimpleFillSymbol","esri/urlUtils"],function(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p){"use strict"
