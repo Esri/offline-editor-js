@@ -200,7 +200,7 @@
                 var btnState = document.getElementById("btn-state");
 
                 // Variables for handling tiles
-                var tileLayer, featureLayers = [];
+                var tileLayer;
                 var _currentExtent = null;
                 var _wantToCancel;
                 var globalState = {};
@@ -246,9 +246,6 @@
                     //
                     // Extend the feature layer with offline capabilities.
                     //
-
-                    featureLayers[0] = "http://services1.arcgis.com/M8KJPUwAXP8jhtnM/arcgis/rest/services/Denver_Bus_Stops/FeatureServer/0";
-                    featureLayers[1] = "http://services1.arcgis.com/M8KJPUwAXP8jhtnM/ArcGIS/rest/services/b_cycle_stations/FeatureServer/0";
 
                     tileLayer = new O.esri.Tiles.OfflineTilesAdvanced("http://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer",function(evt){
                         console.log("Tile Layer initialized for offline. App state is: " + Offline.state);
