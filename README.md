@@ -12,7 +12,7 @@ Online samples are available here: **[http://esri.github.io/offline-editor-js/de
 
 # Libraries
 
-This repo contains the following libraries in the `/dist` directory. The use of `basic` in the name indicates intermittent offline-only, and `advanced` indicates the library can be used for both intermittent and full offline.
+This repo contains the following libraries in the `/dist` directory. The use of `basic` in the name indicates intermittent offline-only, and `advanced` indicates the library can be used for both intermittent and full offline. 
 
 Use_Case | Name, Description and gh-pages URL
 --- | ---
@@ -73,6 +73,7 @@ Go __[here](https://github.com/Esri/offline-editor-js/wiki/FAQ)__ for answers to
 * There are browser limitations and technical dependencies. The offline capabilities in this toolkit depend on certain JavaScript capabilities being present in the browser. Go [here](doc/dependencies.md) for a detailed breakdown.
 * Attachments are supported with some limitations listed [here](./doc/attachments.md).
 * Browser storage space on mobile devices is a known limitation. This applies to stand-alone web applications and hybrid applications.
+* The ArcGIS Editor Widget (ArcGIS API for JavaScript v3.x) may not work with `OfflineEditAdvanced` after a full offline restart. It's recommended that you build your own custom editing functionality that is fully mobile compliant.
 
 ## Supported browsers
 * Only the latest versions of Chrome, Firefox and Safari are supported.  
