@@ -1,5 +1,14 @@
 # offline-editor-js - Changelog
 
+## Version 3.0.4 - Jan 5, 2016
+
+No breaking changes. 
+
+**Enhancements**
+* Closes #439, #438 - simple refactoring to use the new library names to fix broken samples
+* Reference #437 - Add clarification in README about Editor Widget support.
+* Closes #436 - document support for multiple feature layers with the OfflineEditAdvanced library and clarification on using TPKLayer with OfflineEditAdvanced.
+
 ## Version 3.0.3 - Nov 30, 2015
 
 No breaking changes.
