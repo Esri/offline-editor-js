@@ -396,6 +396,10 @@ You can check if there are any edits pending.
 			
 ```
 
+### Use of the library with multiple feature layers
+
+Yes, you can use this library with multiple feature layers. Edits are stored in the database based on a UUID that includes a reference to the associated feature layer. See the `appcache-twofeatureslayer-noedit.html` sample for one example of how to implement this functionality.
+
 ### How to empty the edits database during testing?
 
 Some browsers, like Firefox, make it difficult or impossible to delete data that's in an IndexedDB database. And, there may be times during testing were you are stuck with bad or old data in the database and you need to delete it.
