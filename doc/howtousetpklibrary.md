@@ -118,7 +118,7 @@ See the [TPKLayer API doc](tpklayer.md) for more info.
 
 For more information on creating TPKs go [here](http://resources.arcgis.com/en/help/main/10.1/index.html#//006600000457000000).
 
-**Can I use the TPKLayer with `OfflineEditAdvanced`?
+**Can I use the TPKLayer with `OfflineEditAdvanced`?**
 
 Yes, you can use the TPKLayer library alongside the `OfflineEditAdvanced` library. Spatial references must be exactly the same for both the TPK and the feature service.
 
