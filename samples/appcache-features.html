@@ -279,7 +279,7 @@
                  */
                 function startMap() {
 
-                    tileLayer = new O.esri.Tiles.OfflineTileEnablerLayer("http://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer",function(evt){
+                    tileLayer = new O.esri.Tiles.OfflineTilesAdvanced("http://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer",function(evt){
                         console.log("Tile Layer initialized for offline. App state is: " + Offline.state);
                     },_isOnline);
 
