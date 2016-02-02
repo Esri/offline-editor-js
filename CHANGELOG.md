@@ -1,5 +1,13 @@
 # offline-editor-js - Changelog
 
+## Version 3.0.5 - Feb 2, 2016
+
+No breaking changes. Documentation updates only.
+
+**Enhancements**
+* Closes #442 - Add npm reference to README
+* Closes #444 - Provide a getting started for full offline doc
+
 ## Version 3.0.4 - Jan 5, 2016
 
 No breaking changes. 

@@ -9,6 +9,8 @@ Offline-editor-js is a family of libraries for building offline capabilities int
 
 Online samples are available here: **[http://esri.github.io/offline-editor-js/demo/](http://esri.github.io/offline-editor-js/demo/)**
 
+This project is also available on npm: **[https://www.npmjs.com/package/esri-offline-maps](https://www.npmjs.com/package/esri-offline-maps)**
+
 
 # Libraries
 
