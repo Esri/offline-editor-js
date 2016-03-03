@@ -1,5 +1,5 @@
-/*! esri-offline-maps - v3.0.3 - 2015-11-30
-*   Copyright (c) 2015 Environmental Systems Research Institute, Inc.
+/*! esri-offline-maps - v3.0.6 - 2016-03-03
+*   Copyright (c) 2016 Environmental Systems Research Institute, Inc.
 *   Apache License*/
 // Configure offline/online detection
 // Requires: http://github.hubspot.com/offline/docs/welcome/
@@ -1166,7 +1166,19 @@ define([
 
                     // we need to identify ADDs before sending them to the server
                     // we assign temporary ids (using negative numbers to distinguish them from real ids)
-                    layer._nextTempId = -1;
+                    // query the database first to find any existing offline adds, and find the next lowest integer to start with.
+                    this._editStore.getNextLowestTempId(layer, function(value, status){
+                        if(status === "success"){
+                            console.log("_nextTempId:", value);
+                            layer._nextTempId = value;
+                        }
+                        else{
+                            console.log("_nextTempId, not success:", value);
+                            layer._nextTempId = -1;
+                            console.debug(layer._nextTempId);
+                        }
+                    });
+
                     layer._getNextTempId = function () {
                         return this._nextTempId--;
                     };
@@ -2672,6 +2684,58 @@ O.esri.Edit.EditStore = function () {
             callback(null, "no db");
         }
     };
+
+    /*
+     * Query the database, looking for any existing Add temporary OIDs, and return the nextTempId to be used.
+     * @param feature - extended layer from offline edit advanced
+     * @param callback {int, messageString} or {null, messageString}
+     */
+    this.getNextLowestTempId = function (feature, callback) {
+        var addOIDsArray = [],
+            self = this;
+
+        if (this._db !== null) {
+
+            var fLayerJSONId = this.FEATURE_LAYER_JSON_ID;
+            var fCollectionId = this.FEATURE_COLLECTION_ID;
+            var phantomGraphicPrefix = this.PHANTOM_GRAPHIC_PREFIX;
+            
+            var transaction = this._db.transaction([this.objectStoreName])
+                .objectStore(this.objectStoreName)
+                .openCursor();
+
+            transaction.onsuccess = function (event) {
+                var cursor = event.target.result;
+                if (cursor && cursor.value && cursor.value.id) {
+                    // Make sure we are not return FeatureLayer JSON data or a Phantom Graphic
+                    if (cursor.value.id !== fLayerJSONId && cursor.value.id !== fCollectionId && cursor.value.id.indexOf(phantomGraphicPrefix) == -1) {
+                        if(cursor.value.layer === feature.url && cursor.value.operation === "add"){ // check to make sure the edit is for the feature we are looking for, and that the operation is an add.
+                            addOIDsArray.push(cursor.value.graphic.attributes[self.objectId]); // add the temporary OID to the array
+                        }
+                    }
+                    cursor.continue();
+                }
+                else {
+                    if(addOIDsArray.length === 0){ // if we didn't find anything,
+                        callback(-1, "success"); // we'll start with -1
+                    }
+                    else{
+                        var filteredOIDsArray = addOIDsArray.filter(function(val){ // filter out any non numbers from the array...
+                            return !isNaN(val); // .. should anything have snuck in or returned a NaN
+                        });
+                        var lowestTempId = Math.min.apply(Math, filteredOIDsArray); // then find the lowest number from the array
+                        callback(lowestTempId--, "success"); // and we'll start with one less than tat.
+                    }
+                }
+            }.bind(this);
+            transaction.onerror = function (err) {
+                callback(null, err);
+            };
+        }
+        else {
+            callback(null, "no db");
+        }
+    },
 
     /**
      * Returns all the edits as a single Array via the callback
