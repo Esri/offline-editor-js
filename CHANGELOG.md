@@ -2,7 +2,7 @@
 
 ## Version 3.0.6 - March 3, 2016
 
-No break changes
+No breaking changes
 
 **Bug Fixes**
 
