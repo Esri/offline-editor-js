@@ -1,6 +1,3 @@
-/*! esri-offline-maps - v3.0.3 - 2015-11-30
-*   Copyright (c) 2015 Environmental Systems Research Institute, Inc.
-*   Apache License*/
 define(["dojo/query","dojo/request","esri/geometry/Polygon","dojo/_base/declare"],function(a,b,c,d){"use strict"
 return d("O.esri.Tiles.OfflineTilesBasic",[],{getBasemapLayer:function(a){var b=a.layerIds[0]
 return a.getLayer(b)},extend:function(c,d,e,f){c._tilesCore=new O.esri.Tiles.TilesCore,c._lastTileUrl="",c._imageType="",c._minZoom=null,c._maxZoom=null,void 0===f||null===f?(c.DB_NAME="offline_tile_store",c.DB_OBJECTSTORE_NAME="tilepath"):(c.DB_NAME=f.dbName,c.DB_OBJECTSTORE_NAME=f.objectStoreName),c._getTileUrl=c.getTileUrl
@@ -22,13 +19,12 @@ return d<<16|65535&c},O.esri.Tiles.Base64Utils.stringToWord=function(a){for(var 
 return d},O.esri.Tiles.Base64Utils.wordToString=function(a){for(var b=8,c=(1<<b)-1,d=[],e=0,f=32*a.length;f>e;e+=b)d.push(String.fromCharCode(a[e>>5]>>>e%32&c))
 return d.join("")},O.esri.Tiles.Base64Utils.wordToHex=function(a){for(var b="0123456789abcdef",c=[],d=0,e=4*a.length;e>d;d++)c.push(b.charAt(a[d>>2]>>d%4*8+4&15)+b.charAt(a[d>>2]>>d%4*8&15))
 return c.join("")},O.esri.Tiles.Base64Utils.wordToBase64=function(a){for(var b="=",c="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/",d=[],e=0,f=4*a.length;f>e;e+=3)for(var g=(a[e>>2]>>8*(e%4)&255)<<16|(a[e+1>>2]>>8*((e+1)%4)&255)<<8|a[e+2>>2]>>8*((e+2)%4)&255,h=0;4>h;h++)8*e+6*h>32*a.length?d.push(b):d.push(c.charAt(g>>6*(3-h)&63))
-return d.join("")},/*! @source http://purl.eligrey.com/github/FileSaver.js/blob/master/FileSaver.js */
-O.esri.Tiles.saveAs=function(a){"use strict"
+return d.join("")},O.esri.Tiles.saveAs=function(a){"use strict"
 var b=a.document,c=function(){return a.URL||a.webkitURL||a},d=a.URL||a.webkitURL||a,e=b.createElementNS("http://www.w3.org/1999/xhtml","a"),f=!a.externalHost&&"download"in e,g=a.webkitRequestFileSystem,h=a.requestFileSystem||g||a.mozRequestFileSystem,i=function(b){(a.setImmediate||a.setTimeout)(function(){throw b},0)},j="application/octet-stream",k=0,l=[],m=function(){for(var a=l.length;a--;){var b=l[a]
 "string"==typeof b?d.revokeObjectURL(b):b.remove()}l.length=0},n=function(a,b,c){b=[].concat(b)
 for(var d=b.length;d--;){var e=a["on"+b[d]]
 if("function"==typeof e)try{e.call(a,c||a)}catch(f){i(f)}}},o=function(d,i){var m,o,p,q=this,r=d.type,s=!1,t=function(){var a=c().createObjectURL(d)
-return l.push(a),a},u=function(){n(q,"writestart progress write writeend".split(" "))},v=function(){(s||!m)&&(m=t(d)),o?o.location.href=m:window.open(m,"_blank"),q.readyState=q.DONE,u()},w=function(a){return function(){return q.readyState!==q.DONE?a.apply(this,arguments):void 0}},x={create:!0,exclusive:!1}
+return l.push(a),a},u=function(){n(q,"writestart progress write writeend".split(" "))},v=function(){!s&&m||(m=t(d)),o?o.location.href=m:window.open(m,"_blank"),q.readyState=q.DONE,u()},w=function(a){return function(){return q.readyState!==q.DONE?a.apply(this,arguments):void 0}},x={create:!0,exclusive:!1}
 if(q.readyState=q.INIT,i||(i="download"),f){m=t(d),b=a.document,e=b.createElementNS("http://www.w3.org/1999/xhtml","a"),e.href=m,e.download=i
 var y=b.createEvent("MouseEvents")
 return y.initMouseEvent("click",!0,!1,a,0,0,0,0,0,!1,!1,!1,!1,0,null),e.dispatchEvent(y),q.readyState=q.DONE,void u()}return a.chrome&&r&&r!==j&&(p=d.slice||d.webkitSlice,d=p.call(d,0,d.size,j),s=!0),g&&"download"!==i&&(i+=".download"),(r===j||g)&&(o=a),h?(k+=d.size,void h(a.TEMPORARY,k,w(function(a){a.root.getDirectory("saved",x,w(function(a){var b=function(){a.getFile(i,x,w(function(a){a.createWriter(w(function(b){b.onwriteend=function(b){o.location.href=a.toURL(),l.push(a),q.readyState=q.DONE,n(q,"writeend",b)},b.onerror=function(){var a=b.error
@@ -59,7 +55,7 @@ JSON.parse(a,function(a,b){if("number"!=typeof a&&a%1!==0||"object"!=typeof b)re
 var c=new e
 return c.level=b.level,c.resolution=b.resolution,c.scale=b.scale,b.hasOwnProperty("level")&&j.push(c),b})
 var k=new f(parseFloat(d.initialExtent.xmin),parseFloat(d.initialExtent.ymin),parseFloat(d.initialExtent.xmax),parseFloat(d.initialExtent.ymax),i),l=new f(parseFloat(d.fullExtent.xmin),parseFloat(d.fullExtent.ymin),parseFloat(d.fullExtent.xmax),parseFloat(d.fullExtent.ymax),i),m=new g(d.tileInfo),n=new h(m.origin.x,m.origin.y,i)
-m.origin=n,m.lods=j,b({initExtent:k,fullExtent:l,tileInfo:m,resultObj:d})})}},O.esri.Tiles.TilesStore=function(){this._db=null,this.dbName="offline_tile_store",this.objectStoreName="tilepath",this.isSupported=function(){return window.indexedDB||window.openDatabase?!0:!1},this.store=function(a,b){try{var c=this._db.transaction([this.objectStoreName],"readwrite")
+m.origin=n,m.lods=j,b({initExtent:k,fullExtent:l,tileInfo:m,resultObj:d})})}},O.esri.Tiles.TilesStore=function(){this._db=null,this.dbName="offline_tile_store",this.objectStoreName="tilepath",this.isSupported=function(){return!(!window.indexedDB&&!window.openDatabase)},this.store=function(a,b){try{var c=this._db.transaction([this.objectStoreName],"readwrite")
 c.oncomplete=function(){b(!0)},c.onerror=function(a){b(!1,a.target.error.message)}
 var d=c.objectStore(this.objectStoreName),e=d.put(a)
 e.onsuccess=function(){}}catch(f){b(!1,f.stack)}},this.retrieve=function(a,b){if(null!==this._db){var c=this._db.transaction([this.objectStoreName]).objectStore(this.objectStoreName),d=c.get(a)

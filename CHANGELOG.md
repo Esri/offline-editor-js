@@ -1,5 +1,14 @@
 # offline-editor-js - Changelog
 
+## Version 3.0.6 - March 3, 2016
+
+No break changes
+
+**Bug Fixes**
+
+* Closes #448 - OfflineEditAdvanced - after multiple offline restarts, UID begins at -1 again for Adds.
+
+
 ## Version 3.0.5 - Feb 2, 2016
 
 No breaking changes. Documentation updates only.
