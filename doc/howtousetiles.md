@@ -7,7 +7,7 @@ The `tiles` library allows a developer to extend a tiled layer with offline supp
 
 There are two primary approaches to using this set of libraries. The first approaches is for intermittent offline use cases where you only expect occasional and temporary internet outages and you don't need to worry about restarting the application while offline. The first approach works with both an `ArcGISTiledMapServiceLayer` and ArcGIS.com Web maps.
 
-The second approach is if you need to be able to restart or reload your application offline and only works with `ArcGISTiledMapServiceLayer`.
+The second approach is if you need to be able to restart or reload your application offline and only works with `ArcGISTiledMapServiceLayer`.  *You must use this approach if your tiled layer uses token-based security.*
 
 For detecting whether the browser is online, offline or listen for connection changes we recommend the [Offline.js](http://github.hubspot.com/offline/docs/welcome/) library.
 
@@ -188,9 +188,9 @@ To get the current extent you will need to monitor the `zoom-end` and `pan-end` 
 
 ```
 
-## Specifying a custom database and dataStore name
+## Specifying a custom database, dataStore name, and Offline Tiles Id Manager name
 
-Both `OfflineTilesAdvanced` and `OfflineTilesBasic` have an optional property that allows you to specify your own database name and dataStore name.
+Both `OfflineTilesAdvanced` and `OfflineTilesBasic` have an optional property that allows you to specify your own database name, dataStore name, and offline tile ID manager name.
 
 For OfflineTilesBasic you can use the following pattern within the `extend()` method:
 
@@ -212,13 +212,14 @@ For OfflineTilesBasic you can use the following pattern within the `extend()` me
 
 ```
 
-For OfflineTilesAdvanced use this pattern in the constructor:
+For OfflineTilesAdvanced use this pattern in the constructor.  Note that the Advanced approach also supports token-based security, so an optional ```offlineIdManager``` can also be specified.
 
 ```js
 
     var dbConfig = {
         dbName : "TILES_TEST",
-        objectStoreName : "TILES"
+        objectStoreName : "TILES",
+        offlineIdManager: "TILES_ID_MANAGER"
     }
 
     tileLayer = new O.esri.Tiles.OfflineTilesAdvanced("http://xyz",function(evt){
@@ -236,7 +237,7 @@ In the constructor for `OfflineTilesAdvanced` and in the `extend()` method for `
 
 If you are using a secure tiled map service then you'll need to use the `OfflineTilesAdvanced` library. There isn't anything special you need to do, the library should automatically recognize you are using a secure service and it will trigger `esri/IdentityManager` if it cannot find valid credentials.
 
-The library manually stores credential information using the following localStorage pattern: `window.localStorage.offline_id_manager`.
+The library manually stores credential information using the following localStorage pattern: ```window.localStorage[offlineIdManager```.  If you do not specify the ```offlineIdManager``` parameter in the ```dbConfig``` constructor parameter, a default value of `window.localStorage.offline_id_manager` will be assigned.
 
 If you are using an optimized version of the ArcGIS API for JavaScript make sure you include the `esri/IdentityManager` module.
 

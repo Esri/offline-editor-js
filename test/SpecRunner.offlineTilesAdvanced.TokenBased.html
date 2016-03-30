@@ -49,8 +49,9 @@
 
                     var dbConfig = {
                         dbName: "TILES_TEST",
-                        objectStoreName: "TILES"
-                    }
+                        objectStoreName: "TILES",
+                        offlineIdManager: "OFFLINE_ID_MGR" // This parameteter is optional.  If not provided, it will default to "offline_id_manager"
+                    };
 
                     g_basemapLayer = new O.esri.Tiles.OfflineTilesAdvanced(g_url,function(evt){
                         console.log("Tile Layer Loaded.");

@@ -1,5 +1,5 @@
-/*! esri-offline-maps - v3.0.3 - 2015-11-30
-*   Copyright (c) 2015 Environmental Systems Research Institute, Inc.
+/*! esri-offline-maps - v3.0.6 - 2016-03-30
+*   Copyright (c) 2016 Environmental Systems Research Institute, Inc.
 *   Apache License*/
 define([
     "dojo/query",
@@ -331,7 +331,7 @@ define([
                  */
                 layer.estimateTileSize = function(callback)
                 {
-                    layer._tilesCore._estimateTileSize(request,this._lastTileUrl,this.offline.proxyPath,callback);
+                    layer._tilesCore._estimateTileSize(request,this._lastTileUrl,this.offline.proxyPath,"",callback);
                 };
 
                 /**
@@ -905,7 +905,7 @@ O.esri.Tiles.TilesCore = function(){
      * @param callback
      * @returns {Number} Returns NaN if there was a problem retrieving the tile
      */
-    this._estimateTileSize = function(request,lastTileUrl,proxyPath,callback)
+    this._estimateTileSize = function(request,lastTileUrl,proxyPath,offline_id_manager,callback)
     {
         if(lastTileUrl)
         {
@@ -914,7 +914,9 @@ O.esri.Tiles.TilesCore = function(){
             // code then there will be a problem because the library won't be able to retrieve
             // secure tiles without appending the token to the URL
             var token;
-            var secureInfo = window.localStorage.offline_id_manager;
+            if(offline_id_manager !== ""){ // this will be blank if coming in from OfflineTilesBasic, and will remain undefined,
+                var secureInfo = window.localStorage[offline_id_manager]; // but if coming from OfflineTilesAdvanced, we need to find the value from localStorage.
+            }
 
             if(secureInfo === undefined || secureInfo === ""){
                 token = "";
