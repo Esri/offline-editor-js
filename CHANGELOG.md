@@ -1,13 +1,15 @@
 # offline-editor-js - Changelog
 
-## Version 3.0.6 - March 3, 2016
+## Version 3.0.6 - March 30, 2016
 
 No breaking changes
 
 **Bug Fixes**
-
 * Closes #448 - OfflineEditAdvanced - after multiple offline restarts, UID begins at -1 again for Adds.
 
+**Enhancements**
+* Closes #451 - OfflineTiles - Option for offline_id_manager localStorage key name
+* Updates to howtousetiles.md documentation for the offlineIdManager parameter.
 
 ## Version 3.0.5 - Feb 2, 2016
 

@@ -117,7 +117,7 @@ module.exports = function(grunt) {
                 beautify: {
                     semicolons: false //Required: prevents dojo parser errors w/ minified files in this project
                 },
-                // preserveComments: 'some',
+                preserveComments: /^!/,
                 wrap: false
 //                mangle: {
 //                    except: ['O']

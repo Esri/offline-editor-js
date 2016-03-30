@@ -1,4 +1,4 @@
-/*! esri-offline-maps - v3.0.6 - 2016-03-03
+/*! esri-offline-maps - v3.0.6 - 2016-03-30
 *   Copyright (c) 2016 Environmental Systems Research Institute, Inc.
 *   Apache License*/
 define([
@@ -31,18 +31,22 @@ define([
                 alert("OfflineTiles Library not supported on this browser.");
                 callback(false);
             }
-            else {
-                window.localStorage.offline_id_manager = ""; //this is where we will store secure service info
-            }
 
             if( dbConfig === undefined || dbConfig === null){
                 // Database properties
                 this.DB_NAME = "offline_tile_store";       // Sets the database name.
                 this.DB_OBJECTSTORE_NAME = "tilepath"; // Represents an object store that allows access to a set of data in the IndexedDB database
+                this.offline_id_manager = "offline_id_manager";
             }
             else {
                 this.DB_NAME = dbConfig.dbName;
                 this.DB_OBJECTSTORE_NAME = dbConfig.objectStoreName;
+                if( dbConfig.offlineIdManager === undefined || dbConfig.offlineIdManger === null ){
+                    this.offline_id_manager = "offline_id_manager";
+                }
+                else{
+                    this.offline_id_manager = dbConfig.offlineIdManager;
+                }
             }
 
             this._tilesCore = new O.esri.Tiles.TilesCore();
@@ -128,7 +132,7 @@ define([
             // code then there will be a problem because the library won't be able to retrieve
             // secure tiles without appending the token to the URL
             var token;
-            var secureInfo = window.localStorage.offline_id_manager;
+            var secureInfo = window.localStorage[this.offline_id_manager];
 
             if(secureInfo === undefined || secureInfo === ""){
                 token = "";
@@ -370,7 +374,7 @@ define([
          */
         estimateTileSize : function(callback)
         {
-            this._tilesCore._estimateTileSize(request,this._lastTileUrl,this.offline.proxyPath,callback);
+            this._tilesCore._estimateTileSize(request,this._lastTileUrl,this.offline.proxyPath,this.offline_id_manager,callback);
         },
 
         /**
@@ -490,7 +494,7 @@ define([
             var self = this;
             var req = new XMLHttpRequest();
             var token;
-            var secureInfo = window.localStorage.offline_id_manager;
+            var secureInfo = window.localStorage[this.offline_id_manager];
 
             if(secureInfo === undefined || secureInfo === ""){
                 token = "";
@@ -531,7 +535,7 @@ define([
                                         //https://developers.arcgis.com/javascript/jssamples/widget_identitymanager_client_side.html
                                         esriId.getCredential(url).then(function () {
                                             self._secure = true;
-                                            window.localStorage.offline_id_manager = JSON.stringify(esriId.toJson());
+                                            window.localStorage[self.offline_id_manager] = JSON.stringify(esriId.toJson());
                                             self._getTileInfoPrivate(url, callback);
                                         });
                                     }
@@ -1073,7 +1077,7 @@ O.esri.Tiles.TilesCore = function(){
      * @param callback
      * @returns {Number} Returns NaN if there was a problem retrieving the tile
      */
-    this._estimateTileSize = function(request,lastTileUrl,proxyPath,callback)
+    this._estimateTileSize = function(request,lastTileUrl,proxyPath,offline_id_manager,callback)
     {
         if(lastTileUrl)
         {
@@ -1082,7 +1086,9 @@ O.esri.Tiles.TilesCore = function(){
             // code then there will be a problem because the library won't be able to retrieve
             // secure tiles without appending the token to the URL
             var token;
-            var secureInfo = window.localStorage.offline_id_manager;
+            if(offline_id_manager !== ""){ // this will be blank if coming in from OfflineTilesBasic, and will remain undefined,
+                var secureInfo = window.localStorage[offline_id_manager]; // but if coming from OfflineTilesAdvanced, we need to find the value from localStorage.
+            }
 
             if(secureInfo === undefined || secureInfo === ""){
                 token = "";
