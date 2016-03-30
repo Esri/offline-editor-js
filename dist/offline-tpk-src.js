@@ -1,5 +1,5 @@
-/*! esri-offline-maps - v3.0.3 - 2015-11-30
-*   Copyright (c) 2015 Environmental Systems Research Institute, Inc.
+/*! esri-offline-maps - v3.0.6 - 2016-03-30
+*   Copyright (c) 2016 Environmental Systems Research Institute, Inc.
 *   Apache License*/
 /**
  * Library for reading an ArcGIS Tile Package (.tpk) file and displaying the tiles

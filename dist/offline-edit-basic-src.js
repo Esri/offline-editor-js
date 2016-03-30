@@ -1,5 +1,5 @@
-/*! esri-offline-maps - v3.0.3 - 2015-11-30
-*   Copyright (c) 2015 Environmental Systems Research Institute, Inc.
+/*! esri-offline-maps - v3.0.6 - 2016-03-30
+*   Copyright (c) 2016 Environmental Systems Research Institute, Inc.
 *   Apache License*/
 // Configure offline/online detection
 // Requires: http://github.hubspot.com/offline/docs/welcome/
@@ -504,7 +504,19 @@ define([
 
                     // we need to identify ADDs before sending them to the server
                     // we assign temporary ids (using negative numbers to distinguish them from real ids)
-                    layer._nextTempId = -1;
+                    // query the database first to find any existing offline adds, and find the next lowest integer to start with.
+                    this._editStore.getNextLowestTempId(layer, function(value, status){
+                        if(status === "success"){
+                            console.log("_nextTempId:", value);
+                            layer._nextTempId = value;
+                        }
+                        else{
+                            console.log("_nextTempId, not success:", value);
+                            layer._nextTempId = -1;
+                            console.debug(layer._nextTempId);
+                        }
+                    });
+                    
                     layer._getNextTempId = function () {
                         return this._nextTempId--;
                     };

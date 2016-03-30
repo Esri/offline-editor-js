@@ -1,5 +1,5 @@
-/*! esri-offline-maps - v3.0.3 - 2015-11-30
-*   Copyright (c) 2015 Environmental Systems Research Institute, Inc.
+/*! esri-offline-maps - v3.0.6 - 2016-03-30
+*   Copyright (c) 2016 Environmental Systems Research Institute, Inc.
 *   Apache License*/
 define(["dojo/query","dojo/request","esri/geometry/Polygon","dojo/_base/declare"],function(a,b,c,d){"use strict"
 return d("O.esri.Tiles.OfflineTilesBasic",[],{getBasemapLayer:function(a){var b=a.layerIds[0]
@@ -13,7 +13,7 @@ return c._tilesCore._getTiles(h,this._imageType,f,g,this.offline.store,a,c.showB
 return f},c.prepareForOffline=function(a,b,d,e){c._tilesCore._createCellsForOffline(this,a,b,d,function(a){this._doNextTile(0,a,e)}.bind(this))},c.goOffline=function(){this.offline.online=!1},c.goOnline=function(){this.offline.online=!0,this.refresh()},c.isOnline=function(){return this.offline.online},c.deleteAllTiles=function(a){var b=this.offline.store
 b.deleteAll(a)},c.getOfflineUsage=function(a){var b=this.offline.store
 b.usedSpace(a)},c.getTilePolygons=function(a){c._tilesCore._getTilePolygons(this.offline.store,c.url,this,a)},c.saveToFile=function(a,b){c._tilesCore._saveToFile(a,this.offline.store,b)},c.loadFromFile=function(a,b){c._tilesCore._loadFromFile(a,this.offline.store,b)},c.getMaxZoom=function(a){null==this._maxZoom&&(this._maxZoom=c.tileInfo.lods[c.tileInfo.lods.length-1].level),a(this._maxZoom)},c.getMinZoom=function(a){null==this._minZoom&&(this._minZoom=c.tileInfo.lods[0].level),a(this._minZoom)},c.getMinMaxLOD=function(a,b){var d={},e=c.getMap(),f=e.getLevel()-Math.abs(a),g=e.getLevel()+b
-return null!=this._maxZoom&&null!=this._minZoom?(d.max=Math.min(this._maxZoom,g),d.min=Math.max(this._minZoom,f)):(c.getMinZoom(function(a){d.min=Math.max(a,f)}),c.getMaxZoom(function(a){d.max=Math.min(a,g)})),d},c.estimateTileSize=function(a){c._tilesCore._estimateTileSize(b,this._lastTileUrl,this.offline.proxyPath,a)},c.getExtentBuffer=function(a,b){return b.xmin-=a,b.ymin-=a,b.xmax+=a,b.ymax+=a,b},c.getTileUrlsByExtent=function(a,b){var d=new O.esri.Tiles.TilingScheme(c),e=d.getAllCellIdsInExtent(a,b),f=[]
+return null!=this._maxZoom&&null!=this._minZoom?(d.max=Math.min(this._maxZoom,g),d.min=Math.max(this._minZoom,f)):(c.getMinZoom(function(a){d.min=Math.max(a,f)}),c.getMaxZoom(function(a){d.max=Math.min(a,g)})),d},c.estimateTileSize=function(a){c._tilesCore._estimateTileSize(b,this._lastTileUrl,this.offline.proxyPath,"",a)},c.getExtentBuffer=function(a,b){return b.xmin-=a,b.ymin-=a,b.xmax+=a,b.ymax+=a,b},c.getTileUrlsByExtent=function(a,b){var d=new O.esri.Tiles.TilingScheme(c),e=d.getAllCellIdsInExtent(a,b),f=[]
 return e.forEach(function(a){f.push(c.url+"/"+b+"/"+a[1]+"/"+a[0])}.bind(this)),f},void(c._doNextTile=function(a,b,d){var e=b[a],f=this._getTileUrl(e.level,e.row,e.col)
 c._tilesCore._storeTile(f,this.offline.proxyPath,this.offline.store,function(c,f){c||(f={cell:e,msg:f})
 var g=d({countNow:a,countMax:b.length,cell:e,error:f,finishedDownloading:!1})
@@ -28,7 +28,7 @@ var b=a.document,c=function(){return a.URL||a.webkitURL||a},d=a.URL||a.webkitURL
 "string"==typeof b?d.revokeObjectURL(b):b.remove()}l.length=0},n=function(a,b,c){b=[].concat(b)
 for(var d=b.length;d--;){var e=a["on"+b[d]]
 if("function"==typeof e)try{e.call(a,c||a)}catch(f){i(f)}}},o=function(d,i){var m,o,p,q=this,r=d.type,s=!1,t=function(){var a=c().createObjectURL(d)
-return l.push(a),a},u=function(){n(q,"writestart progress write writeend".split(" "))},v=function(){(s||!m)&&(m=t(d)),o?o.location.href=m:window.open(m,"_blank"),q.readyState=q.DONE,u()},w=function(a){return function(){return q.readyState!==q.DONE?a.apply(this,arguments):void 0}},x={create:!0,exclusive:!1}
+return l.push(a),a},u=function(){n(q,"writestart progress write writeend".split(" "))},v=function(){!s&&m||(m=t(d)),o?o.location.href=m:window.open(m,"_blank"),q.readyState=q.DONE,u()},w=function(a){return function(){return q.readyState!==q.DONE?a.apply(this,arguments):void 0}},x={create:!0,exclusive:!1}
 if(q.readyState=q.INIT,i||(i="download"),f){m=t(d),b=a.document,e=b.createElementNS("http://www.w3.org/1999/xhtml","a"),e.href=m,e.download=i
 var y=b.createEvent("MouseEvents")
 return y.initMouseEvent("click",!0,!1,a,0,0,0,0,0,!1,!1,!1,!1,0,null),e.dispatchEvent(y),q.readyState=q.DONE,void u()}return a.chrome&&r&&r!==j&&(p=d.slice||d.webkitSlice,d=p.call(d,0,d.size,j),s=!0),g&&"download"!==i&&(i+=".download"),(r===j||g)&&(o=a),h?(k+=d.size,void h(a.TEMPORARY,k,w(function(a){a.root.getDirectory("saved",x,w(function(a){var b=function(){a.getFile(i,x,w(function(a){a.createWriter(w(function(b){b.onwriteend=function(b){o.location.href=a.toURL(),l.push(a),q.readyState=q.DONE,n(q,"writeend",b)},b.onerror=function(){var a=b.error
@@ -44,12 +44,13 @@ c.store(g,d)}else d(!1,f.status+" "+f.statusText+": "+f.response+" when download
 if(i.forEach(function(a){g.push({level:h,row:a[1],col:a[0]})}),g.length>5e3&&h!==c)break}e(g)},this._saveToFile=function(a,b,c){var d=[]
 d.push("url,img"),b.getAllTiles(function(b,e,f){if("end"===f){var g=new Blob([d.join("\r\n")],{type:"text/plain;charset=utf-8"}),h=O.esri.Tiles.saveAs(g,a)
 if(h.readyState===h.DONE)return h.error?c(!1,"Error saving file "+a):c(!0,"Saved "+(d.length-1)+" tiles ("+Math.floor(g.size/1024/1024*100)/100+" Mb) into "+a)
-h.onerror=function(){c(!1,"Error saving file "+a)},h.onwriteend=function(){c(!0,"Saved "+(d.length-1)+" tiles ("+Math.floor(g.size/1024/1024*100)/100+" Mb) into "+a)}}else d.push(b+","+e)})},this._estimateTileSize=function(a,b,c,d){if(b){var e,f=window.localStorage.offline_id_manager
-if(void 0===f||""===f)e=""
-else{var g=JSON.parse(f)
-g.credentials.forEach(function(a){-1!==b.indexOf(a.server)&&(e="?token="+a.token)})}var h=c?c+"?"+b+e:b+e
-a.get(h,{handleAs:"text/plain; charset=x-user-defined",headers:{"X-Requested-With":""},timeout:2e3}).then(function(a){var b=O.esri.Tiles.Base64Utils.wordToBase64(O.esri.Tiles.Base64Utils.stringToWord(a))
-d(b.length+h.length,null)},function(a){d(null,a)})}else d(NaN)},this._loadFromFile=function(a,b,c){if(window.File&&window.FileReader&&window.FileList&&window.Blob){var d=new FileReader
+h.onerror=function(){c(!1,"Error saving file "+a)},h.onwriteend=function(){c(!0,"Saved "+(d.length-1)+" tiles ("+Math.floor(g.size/1024/1024*100)/100+" Mb) into "+a)}}else d.push(b+","+e)})},this._estimateTileSize=function(a,b,c,d,e){if(b){var f
+if(""!==d)var g=window.localStorage[d]
+if(void 0===g||""===g)f=""
+else{var h=JSON.parse(g)
+h.credentials.forEach(function(a){-1!==b.indexOf(a.server)&&(f="?token="+a.token)})}var i=c?c+"?"+b+f:b+f
+a.get(i,{handleAs:"text/plain; charset=x-user-defined",headers:{"X-Requested-With":""},timeout:2e3}).then(function(a){var b=O.esri.Tiles.Base64Utils.wordToBase64(O.esri.Tiles.Base64Utils.stringToWord(a))
+e(b.length+i.length,null)},function(a){e(null,a)})}else e(NaN)},this._loadFromFile=function(a,b,c){if(window.File&&window.FileReader&&window.FileList&&window.Blob){var d=new FileReader
 d.onload=function(d){var e,f,g=d.target.result,h=g.split("\r\n"),i=0
 if("url,img"!==h[0])return c(!1,"File "+a.name+" doesn't contain tiles that can be loaded")
 for(var j=1;j<h.length;j++)e=h[j].split(","),f={url:e[0],img:e[1]},b.store(f,function(b){b&&(i+=1),i===h.length-1&&(window.setTimeout(function(){},1e3),c(!0,i+" tiles loaded from "+a.name))})},d.readAsText(a)}else c(!1,"The File APIs are not fully supported in this browser.")},this._getTilePolygons=function(a,b,c,d){var e,f,g,h,i,j,k=new O.esri.Tiles.TilingScheme(c)
@@ -59,7 +60,7 @@ JSON.parse(a,function(a,b){if("number"!=typeof a&&a%1!==0||"object"!=typeof b)re
 var c=new e
 return c.level=b.level,c.resolution=b.resolution,c.scale=b.scale,b.hasOwnProperty("level")&&j.push(c),b})
 var k=new f(parseFloat(d.initialExtent.xmin),parseFloat(d.initialExtent.ymin),parseFloat(d.initialExtent.xmax),parseFloat(d.initialExtent.ymax),i),l=new f(parseFloat(d.fullExtent.xmin),parseFloat(d.fullExtent.ymin),parseFloat(d.fullExtent.xmax),parseFloat(d.fullExtent.ymax),i),m=new g(d.tileInfo),n=new h(m.origin.x,m.origin.y,i)
-m.origin=n,m.lods=j,b({initExtent:k,fullExtent:l,tileInfo:m,resultObj:d})})}},O.esri.Tiles.TilesStore=function(){this._db=null,this.dbName="offline_tile_store",this.objectStoreName="tilepath",this.isSupported=function(){return window.indexedDB||window.openDatabase?!0:!1},this.store=function(a,b){try{var c=this._db.transaction([this.objectStoreName],"readwrite")
+m.origin=n,m.lods=j,b({initExtent:k,fullExtent:l,tileInfo:m,resultObj:d})})}},O.esri.Tiles.TilesStore=function(){this._db=null,this.dbName="offline_tile_store",this.objectStoreName="tilepath",this.isSupported=function(){return!(!window.indexedDB&&!window.openDatabase)},this.store=function(a,b){try{var c=this._db.transaction([this.objectStoreName],"readwrite")
 c.oncomplete=function(){b(!0)},c.onerror=function(a){b(!1,a.target.error.message)}
 var d=c.objectStore(this.objectStoreName),e=d.put(a)
 e.onsuccess=function(){}}catch(f){b(!1,f.stack)}},this.retrieve=function(a,b){if(null!==this._db){var c=this._db.transaction([this.objectStoreName]).objectStore(this.objectStoreName),d=c.get(a)
