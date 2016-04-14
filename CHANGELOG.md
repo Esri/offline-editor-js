@@ -1,5 +1,16 @@
 # offline-editor-js - Changelog
 
+## Version 3.0.7 - April 14, 2016
+
+No breaking changes.
+
+**Bug fixes**
+* Closes #454 Broken gh-pages link
+* Closes #455 Edit spec throwing error on deprecated unit test
+
+**Enhancements**
+* Updated copyright year from 2015 to 2016
+
 ## Version 3.0.6 - March 30, 2016
 
 No breaking changes
