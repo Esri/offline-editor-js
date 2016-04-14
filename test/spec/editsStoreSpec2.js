@@ -345,18 +345,6 @@ describe("Public Interface", function()
                 });
             });
 
-            async.it("delete only phantom graphics - test resetLimitedPhantomGraphicsQueue", function(done){
-                var responseObject = {
-                    "0":{"id":621,"tempId":[],"addResults":[],"updateResults":[],"deleteResults":[{"objectId":621,"success":true}]},
-                    "1":{"id":622,"tempId":[],"addResults":[],"updateResults":[],"deleteResults":[{"objectId":622,"success":true}]}
-                };
-
-                g_editsStore.resetLimitedPhantomGraphicsQueue(responseObject,function(result){
-                    expect(result).toBe(true);
-                    done();
-                })
-            });
-
             // This will be 3 because we had 3 non-Phantom Graphics in the database :-)
             async.it("validate number of database entries", function(done){
                 g_editsStore.getAllEditsArray(function(array,msg){
