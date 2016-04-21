@@ -1,6 +1,3 @@
-/*! esri-offline-maps - v3.0.6 - 2016-03-30
-*   Copyright (c) 2016 Environmental Systems Research Institute, Inc.
-*   Apache License*/
 Offline.options={checks:{image:{url:function(){return"http://esri.github.io/offline-editor-js/tiny-image.png?_="+Math.floor(1e9*Math.random())}},active:"image"}},define(["dojo/Evented","dojo/_base/Deferred","dojo/promise/all","dojo/_base/declare","dojo/_base/array","dojo/dom-attr","dojo/dom-style","dojo/query","dojo/on","esri/config","esri/layers/GraphicsLayer","esri/layers/FeatureLayer","esri/graphic"],function(a,b,c,d,e,f,g,h,i,j,k,l,m){"use strict"
 return d("O.esri.Edit.OfflineEditBasic",[a],{_onlineStatus:"online",_featureLayers:{},_editStore:new O.esri.Edit.EditStorePOLS,_defaultXhrTimeout:15e3,_autoOfflineDetect:!0,ONLINE:"online",OFFLINE:"offline",RECONNECTING:"reconnecting",proxyPath:null,DB_NAME:"features_store",DB_OBJECTSTORE_NAME:"features",DB_UID:"objectid",events:{EDITS_SENT:"edits-sent",EDITS_ENQUEUED:"edits-enqueued",EDITS_ENQUEUED_ERROR:"edits-enqueued-error"},constructor:function(a){a&&a.hasOwnProperty("autoDetect")&&(this._autoOfflineDetect=a.autoDetect)},extend:function(a,d){var f=[],g=this
 a.offlineExtended=!0,!a.loaded||null===a._url,a.objectIdField=this.DB_UID
