@@ -1,5 +1,12 @@
 # offline-editor-js - Changelog
 
+## Version 3.1.0 - April 21, 2016
+
+No breaking changes.
+
+**Bug Fixes**
+* Closes #458 - old prototype extension causing breaking failures.
+
 ## Version 3.0.7 - April 14, 2016
 
 No breaking changes.
