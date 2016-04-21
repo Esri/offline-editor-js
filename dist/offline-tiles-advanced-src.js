@@ -1,4 +1,4 @@
-/*! esri-offline-maps - v3.0.6 - 2016-03-30
+/*! esri-offline-maps - v3.1.0 - 2016-04-21
 *   Copyright (c) 2016 Environmental Systems Research Institute, Inc.
 *   Apache License*/
 define([
@@ -50,9 +50,6 @@ define([
             }
 
             this._tilesCore = new O.esri.Tiles.TilesCore();
-
-            //For calculating minZoom and maxZoom
-            Array.prototype.sortNumber = function(){return this.sort(function(a,b){return a - b;});};
 
             this._self = this;
             this._lastTileUrl = "";

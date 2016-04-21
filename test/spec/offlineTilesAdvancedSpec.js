@@ -1,6 +1,6 @@
 "use strict"
 
-describe("offline enabler custom layer library", function()
+describe("offline tiles advanced custom layer library", function()
 {
     var async = new AsyncSpec(this);
 
