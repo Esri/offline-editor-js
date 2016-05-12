@@ -79,6 +79,7 @@ describe("Normal online editing - Exercise the feature services", function()
         async.it("add test features", function(done)
         {
             expect(g_featureLayers[0].graphics.length).toBe(0);
+            expect(g_featureLayers[0]._nextTempId).toBe(-1);
 
             g1 = new g_modules.Graphic({"geometry":{"x":-105400,"y":5137000,"spatialReference":{"wkid":102100}},"attributes":{"lat":0.0,"lng":0.0,"description":"g1"}});
             g2 = new g_modules.Graphic({"geometry":{"x":-105600,"y":5137000,"spatialReference":{"wkid":102100}},"attributes":{"lat":0.0,"lng":0.0,"description":"g2"}});

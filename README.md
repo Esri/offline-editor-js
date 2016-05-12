@@ -16,9 +16,11 @@ This project is also available on npm: **[https://www.npmjs.com/package/esri-off
 
 This repo contains the following libraries in the `/dist` directory. The use of `basic` in the name indicates intermittent offline-only, and `advanced` indicates the library can be used for both intermittent and full offline. 
 
+Reference URLs are provided for developement only. It's recommended to use a CDN or host your own.
+
 Use_Case | Name, Description and gh-pages URL
 --- | ---
-Basic editing | **`offline-edit-basic-min.js`** Simple, lightweight *(14k minimized)* offline editing library that automatically caches adds, updates and deletes when the internet is temporarily interrupted.<br><br>[`http://esri.github.io/offline-editor-js/dist/offline-edit-basic-min.js`](http://esri.github.io/offline-editor-js/dist/offline-edit-basic-min.js)
+Basic editing | **`offline-edit-basic-min.js`** Simple, lightweight *(15k minimized)* offline editing library that automatically caches adds, updates and deletes when the internet is temporarily interrupted.<br><br>[`http://esri.github.io/offline-editor-js/dist/offline-edit-basic-min.js`](http://esri.github.io/offline-editor-js/dist/offline-edit-basic-min.js)
 Advanced editing | **`offline-edit-advanced-min.js`** Used for intermittent and full offline editing workflows. Also includes limited support for attachments. <br><br>[`http://esri.github.io/offline-editor-js/dist/offline-edit-advanced-min.js`](http://esri.github.io/offline-editor-js/dist/offline-edit-advanced-min.js)
 Basic map tiles |  **`offline-tiles-basic-min.js`** Caches map tiles for simple, intermittent-only offline workflows. Use this library with ArcGIS Online Web maps as well as with tiled map services.<br><br> [`http://esri.github.io/offline-editor-js/dist/offline-tiles-basic-min.js`](http://esri.github.io/offline-editor-js/dist/offline-tiles-basic-min.js) 
 Advanced map tiles | **`offline-tiles-advanced-min.js`** Used for intermittent and full offline tile caching. Extends any ArcGIS Tiled Map Service. This library should be used in conjunction with an HTML5 Application Cache Manifest coding pattern.<br><br>[`http://esri.github.io/offline-editor-js/dist/offline-tiles-advanced-min.js`](http://esri.github.io/offline-editor-js/dist/offline-tiles-advanced-min.js)
@@ -83,7 +85,7 @@ Go __[here](https://github.com/Esri/offline-editor-js/wiki/FAQ)__ for answers to
 
 ##Dependencies
 
-* [ArcGIS API for JavaScript (v3.12+)](https://developers.arcgis.com/javascript/)
+* [ArcGIS API for JavaScript (v3.14+)](https://developers.arcgis.com/javascript/)
 * [Offline.js](http://github.hubspot.com/offline/docs/welcome/) - it allows detection of the online/offline condition and provides events to hook callbacks on when this condition changes
 * Node.js required for building the source
 * [IndexedDBShim](https://github.com/axemclion/IndexedDBShim) - polyfill to simulate indexedDB functionality in browsers/platforms where it is not supported notably older versions desktop Safari and iOS Safari.

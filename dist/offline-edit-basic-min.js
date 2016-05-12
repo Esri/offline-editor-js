@@ -30,7 +30,7 @@ case g._editStore.UPDATE:d.operation==g._editStore.ADD&&(c.operation=g._editStor
 break
 case g._editStore.DELETE:var h=!0
 d.operation==g._editStore.ADD&&a._deleteTemporaryFeature(c,function(a,b){a||(h=!1)}),f.resolve({success:h,graphic:c,operation:e})}else"Id not found"==d?f.resolve({success:!0,graphic:c,operation:e}):f.reject(c)}),f},a._deleteTemporaryFeature=function(b,c){g._editStore["delete"](a.url,b,function(a,b){c(a,b)})},a._getFilesFromForm=function(a){var b=[],c=e.filter(a.elements,function(a){return"file"===a.type})
-return c.forEach(function(a){b.push.apply(b,a.files)},this),b},this._editStore.getNextLowestTempId(a,function(b,c){"success"===c?a._nextTempId=b:a._nextTempId=-1}),a._getNextTempId=function(){return this._nextTempId--},c(f).then(function(a){g._autoOfflineDetect&&(Offline.on("up",function(){g.goOnline(function(a,b){})}),Offline.on("down",function(){g.goOffline()})),d(!0,null)})},goOffline:function(){this._onlineStatus=this.OFFLINE},goOnline:function(a){this._onlineStatus=this.RECONNECTING,this._replayStoredEdits(function(b,c){this._onlineStatus=this.ONLINE,a&&a(b,c)}.bind(this))},getOnlineStatus:function(){return this._onlineStatus},_initializeDB:function(a){var c=new b,d=this._editStore
+return c.forEach(function(a){b.push.apply(b,a.files)},this),b},a._getNextTempId=function(){return this._nextTempId--},c(f).then(function(b){b[0].success?(g._editStore.getNextLowestTempId(a,function(b,c){"success"===c?a._nextTempId=b:a._nextTempId=-1}),g._autoOfflineDetect&&(Offline.on("up",function(){g.goOnline(function(a,b){})}),Offline.on("down",function(){g.goOffline()})),d(!0,null)):d(!1,b[0].error)})},goOffline:function(){this._onlineStatus=this.OFFLINE},goOnline:function(a){this._onlineStatus=this.RECONNECTING,this._replayStoredEdits(function(b,c){this._onlineStatus=this.ONLINE,a&&a(b,c)}.bind(this))},getOnlineStatus:function(){return this._onlineStatus},_initializeDB:function(a){var c=new b,d=this._editStore
 return d.dbName=this.DB_NAME,d.objectStoreName=this.DB_OBJECTSTORE_NAME,d.objectId=this.DB_UID,d.init(function(a,b){a?c.resolve({success:!0,error:null}):c.reject({success:!1,error:null})}),c},_replayStoredEdits:function(a){var b,d={},e=this,f=[],g=[],h=[],i=[],j=[],k=this._featureLayers,l=this._editStore
 this._editStore.getAllEditsArray(function(n,o){if(n.length>0){j=n
 for(var p=j.length,q=0;p>q;q++){b=k[j[q].layer],b.__onEditsComplete=b.onEditsComplete,b.onEditsComplete=function(){},f=[],g=[],h=[],i=[]
@@ -56,9 +56,9 @@ return i.attributes={},i.attributes[this.DB_UID]=h,this._editStore["delete"](a.u
 if(b.length>0&&(e.forEach(b,function(a){a.hasOwnProperty("infoTemplate")&&delete a.infoTemplate},this),i="&adds="+JSON.stringify(b)),c.length>0&&(e.forEach(c,function(a){a.hasOwnProperty("infoTemplate")&&delete a.infoTemplate},this),j="&updates="+JSON.stringify(c)),d.length>0){var l=d[0].attributes[this.DB_UID]
 k="&deletes="+l}var m=h+i+j+k
 a.hasOwnProperty("credential")&&a.credential&&a.credential.hasOwnProperty("token")&&a.credential.token&&(m=m+"&token="+a.credential.token)
-var n=new XMLHttpRequest
-n.open("POST",a.url+"/applyEdits",!0),n.setRequestHeader("Content-type","application/x-www-form-urlencoded"),n.onload=function(){if(200===n.status&&""!==n.responseText)try{var a=JSON.parse(this.response)
-f(a.addResults,a.updateResults,a.deleteResults)}catch(b){g("Unable to parse xhr response",n)}},n.onerror=function(a){g(a)},n.ontimeout=function(){g("xhr timeout error")},n.timeout=this._defaultXhrTimeout,n.send(m)},_parseResponsesArray:function(a,b){var c=0
+var n=this.proxyPath?this.proxyPath+"?"+a.url:a.url,o=new XMLHttpRequest
+o.open("POST",n+"/applyEdits",!0),o.setRequestHeader("Content-type","application/x-www-form-urlencoded"),o.onload=function(){if(200===o.status&&""!==o.responseText)try{var a=JSON.parse(this.response)
+f(a.addResults,a.updateResults,a.deleteResults)}catch(b){g("Unable to parse xhr response",o)}},o.onerror=function(a){g(a)},o.ontimeout=function(){g("xhr timeout error")},o.timeout=this._defaultXhrTimeout,o.send(m)},_parseResponsesArray:function(a,b){var c=0
 for(var d in a)a.hasOwnProperty(d)&&(a[d].addResults.forEach(function(a){a.success||c++}),a[d].updateResults.forEach(function(a){a.success||c++}),a[d].deleteResults.forEach(function(a){a.success||c++}))
 b(!(c>0))}})}),"undefined"!=typeof O?O.esri.Edit={}:(O={},O.esri={Edit:{}}),O.esri.Edit.EditStorePOLS=function(){"use strict"
 this._db=null,this._isDBInit=!1,this.dbName="features_store",this.objectStoreName="features",this.objectId="objectid",this.ADD="add",this.UPDATE="update",this.DELETE="delete",this.FEATURE_LAYER_JSON_ID="feature-layer-object-1001",this.FEATURE_COLLECTION_ID="feature-collection-object-1001",this.isSupported=function(){return!!window.indexedDB},this.pushEdit=function(a,b,c,d){var e={id:b+"/"+c.attributes[this.objectId],operation:a,layer:b,type:c.geometry.type,graphic:c.toJson()}
@@ -73,7 +73,13 @@ d.onsuccess=function(){var c=d.result
 c&&c.id==a?b(!0,c):b(!1,"Id not found")},d.onerror=function(a){b(!1,a)}},this.getAllEditsArray=function(a){var b=[]
 if(null!==this._db){var c=this.FEATURE_LAYER_JSON_ID,d=this.FEATURE_COLLECTION_ID,e=this._db.transaction([this.objectStoreName]).objectStore(this.objectStoreName).openCursor()
 e.onsuccess=function(e){var f=e.target.result
-f&&f.value&&f.value.id?(f.value.id!==c&&f.value.id!==d&&b.push(f.value),f["continue"]()):a(b,"end")}.bind(this),e.onerror=function(b){a(null,b)}}else a(null,"no db")},this.updateExistingEdit=function(a,b,c,d){var e=this._db.transaction([this.objectStoreName],"readwrite").objectStore(this.objectStoreName),f=e.get(c.attributes[this.objectId])
+f&&f.value&&f.value.id?(f.value.id!==c&&f.value.id!==d&&b.push(f.value),f["continue"]()):a(b,"end")}.bind(this),e.onerror=function(b){a(null,b)}}else a(null,"no db")},this.getNextLowestTempId=function(a,b){var c=[],d=this
+if(null!==this._db){var e=this.FEATURE_LAYER_JSON_ID,f=this.FEATURE_COLLECTION_ID,g=this._db.transaction([this.objectStoreName]).objectStore(this.objectStoreName).openCursor()
+g.onsuccess=function(g){var h=g.target.result
+if(h&&h.value&&h.value.id)h.value.id!==e&&h.value.id!==f&&h.value.layer===a.url&&"add"===h.value.operation&&c.push(h.value.graphic.attributes[d.objectId]),h["continue"]()
+else if(0===c.length)b(-1,"success")
+else{var i=c.filter(function(a){return!isNaN(a)}),j=Math.min.apply(Math,i)
+b(j-1,"success")}}.bind(this),g.onerror=function(a){b(null,a)}}else b(null,"no db")},this.updateExistingEdit=function(a,b,c,d){var e=this._db.transaction([this.objectStoreName],"readwrite").objectStore(this.objectStoreName),f=e.get(c.attributes[this.objectId])
 f.onsuccess=function(){f.result
 var g={id:b+"/"+c.attributes[this.objectId],operation:a,layer:b,graphic:c.toJson()},h=e.put(g)
 h.onsuccess=function(){d(!0)},h.onerror=function(a){d(!1,a)}}.bind(this)},this["delete"]=function(a,b,c){var d=this._db,e=null,f=this,g=a+"/"+b.attributes[this.objectId]
