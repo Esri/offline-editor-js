@@ -1,4 +1,4 @@
-/*! esri-offline-maps - v3.1.0 - 2016-04-21
+/*! esri-offline-maps - v3.2.0 - 2016-05-12
 *   Copyright (c) 2016 Environmental Systems Research Institute, Inc.
 *   Apache License*/
 // Configure offline/online detection
@@ -501,21 +501,6 @@ define([
                         }, this);
                         return files;
                     };
-
-                    // we need to identify ADDs before sending them to the server
-                    // we assign temporary ids (using negative numbers to distinguish them from real ids)
-                    // query the database first to find any existing offline adds, and find the next lowest integer to start with.
-                    this._editStore.getNextLowestTempId(layer, function(value, status){
-                        if(status === "success"){
-                            console.log("_nextTempId:", value);
-                            layer._nextTempId = value;
-                        }
-                        else{
-                            console.log("_nextTempId, not success:", value);
-                            layer._nextTempId = -1;
-                            console.debug(layer._nextTempId);
-                        }
-                    });
                     
                     layer._getNextTempId = function () {
                         return this._nextTempId--;
@@ -524,20 +509,39 @@ define([
                     // We are currently only passing in a single deferred.
                     all(extendPromises).then(function (r) {
 
-                        if(self._autoOfflineDetect){
-                            Offline.on('up', function(){ // jshint ignore:line
+                        if(r[0].success){
 
-                                self.goOnline(function(success,error){ // jshint ignore:line
-                                    console.log("GOING ONLINE");
+                            // we need to identify ADDs before sending them to the server
+                            // we assign temporary ids (using negative numbers to distinguish them from real ids)
+                            // query the database first to find any existing offline adds, and find the next lowest integer to start with.
+                            self._editStore.getNextLowestTempId(layer, function(value, status){
+                                if(status === "success"){
+                                    layer._nextTempId = value;
+                                }
+                                else{
+                                    console.log("Set _nextTempId not found: " + value + ", resetting to -1");
+                                    layer._nextTempId = -1;
+                                }
+                            });
+
+                            if(self._autoOfflineDetect){
+                                Offline.on('up', function(){ // jshint ignore:line
+
+                                    self.goOnline(function(success,error){ // jshint ignore:line
+                                        console.log("GOING ONLINE");
+                                    });
                                 });
-                            });
 
-                            Offline.on('down', function(){ // jshint ignore:line
-                               self.goOffline(); // jshint ignore:line
-                            });
+                                Offline.on('down', function(){ // jshint ignore:line
+                                    self.goOffline(); // jshint ignore:line
+                                });
+                            }
+
+                            callback(true, null);
                         }
-
-                        callback(true, null);
+                        else {
+                            callback(false, r[0].error);
+                        }
                     });
 
                 }, // extend
@@ -963,8 +967,11 @@ define([
                         }
                     }
 
+                    // Respect the proxyPath if one has been set (Added at v3.2.0)
+                    var url = this.proxyPath ? this.proxyPath + "?" + layer.url : layer.url;
+
                     var req = new XMLHttpRequest();
-                    req.open("POST", layer.url + "/applyEdits", true);
+                    req.open("POST", url + "/applyEdits", true);
                     req.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
                     req.onload = function()
                     {
@@ -1185,6 +1192,57 @@ O.esri.Edit.EditStorePOLS = function () {
                 }
                 else {
                     callback(editsArray, "end");
+                }
+            }.bind(this);
+            transaction.onerror = function (err) {
+                callback(null, err);
+            };
+        }
+        else {
+            callback(null, "no db");
+        }
+    };
+
+    /*
+     * Query the database, looking for any existing Add temporary OIDs, and return the nextTempId to be used.
+     * @param feature - extended layer from offline edit advanced
+     * @param callback {int, messageString} or {null, messageString}
+     */
+    this.getNextLowestTempId = function (feature, callback) {
+        var addOIDsArray = [],
+            self = this;
+
+        if (this._db !== null) {
+
+            var fLayerJSONId = this.FEATURE_LAYER_JSON_ID;
+            var fCollectionId = this.FEATURE_COLLECTION_ID;
+
+            var transaction = this._db.transaction([this.objectStoreName])
+                .objectStore(this.objectStoreName)
+                .openCursor();
+
+            transaction.onsuccess = function (event) {
+                var cursor = event.target.result;
+                if (cursor && cursor.value && cursor.value.id) {
+                    // Make sure we are not return FeatureLayer JSON data or a Phantom Graphic
+                    if (cursor.value.id !== fLayerJSONId && cursor.value.id !== fCollectionId) {
+                        if(cursor.value.layer === feature.url && cursor.value.operation === "add"){ // check to make sure the edit is for the feature we are looking for, and that the operation is an add.
+                            addOIDsArray.push(cursor.value.graphic.attributes[self.objectId]); // add the temporary OID to the array
+                        }
+                    }
+                    cursor.continue();
+                }
+                else {
+                    if(addOIDsArray.length === 0){ // if we didn't find anything,
+                        callback(-1, "success"); // we'll start with -1
+                    }
+                    else{
+                        var filteredOIDsArray = addOIDsArray.filter(function(val){ // filter out any non numbers from the array...
+                            return !isNaN(val); // .. should anything have snuck in or returned a NaN
+                        });
+                        var lowestTempId = Math.min.apply(Math, filteredOIDsArray); // then find the lowest number from the array
+                        callback(lowestTempId-1, "success"); // and we'll start with one less than tat.
+                    }
                 }
             }.bind(this);
             transaction.onerror = function (err) {

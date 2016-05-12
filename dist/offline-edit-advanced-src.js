@@ -1,4 +1,4 @@
-/*! esri-offline-maps - v3.1.0 - 2016-04-21
+/*! esri-offline-maps - v3.2.0 - 2016-05-12
 *   Copyright (c) 2016 Environmental Systems Research Institute, Inc.
 *   Apache License*/
 // Configure offline/online detection
@@ -2056,8 +2056,11 @@ define([
                         }
                     }
 
+                    // Respect the proxyPath if one has been set (Added at v3.2.0)
+                    var url = this.proxyPath ? this.proxyPath + "?" + layer.url : layer.url;
+
                     var req = new XMLHttpRequest();
-                    req.open("POST", layer.url + "/applyEdits", true);
+                    req.open("POST", url + "/applyEdits", true);
                     req.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
                     req.onload = function()
                     {
@@ -2068,7 +2071,7 @@ define([
                                 callback(obj.addResults, obj.updateResults, obj.deleteResults);
                             }
                             catch(err) {
-                                console.error("EDIT REQUEST REPONSE WAS NOT SUCCESSFUL:", req);
+                                console.error("EDIT REQUEST RESPONSE WAS NOT SUCCESSFUL:", req);
                                 errback("Unable to parse xhr response", req);
                             }
                         }
@@ -2735,7 +2738,7 @@ O.esri.Edit.EditStore = function () {
         else {
             callback(null, "no db");
         }
-    },
+    };
 
     /**
      * Returns all the edits as a single Array via the callback

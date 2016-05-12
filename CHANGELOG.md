@@ -1,5 +1,17 @@
 # offline-editor-js - Changelog
 
+## Version 3.2.0 - May 11, 2016
+
+No breaking changes. 
+
+**Enhancements**
+* Added CleanFeatureService.js util for deleting all features in a demo feature service
+
+**Bug Fixes**
+* Closes #461 - proxyPath not respected in OfflineEditAdvanced. Also fixed proxyPath in OfflineEditBasic
+* Closes #462 - getNextLowestTempId does not exist in editStorePOLS.
+* Closes #463 - sample feature service no longer allows editing. Complete rewrite.
+
 ## Version 3.1.0 - April 21, 2016
 
 No breaking changes.
