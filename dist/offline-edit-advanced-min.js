@@ -123,9 +123,9 @@ this._editStore.deletePhantomGraphic(c,function(a,b){a?g.resolve({success:!0,err
 if(b.length>0&&(e.forEach(b,function(a){a.hasOwnProperty("infoTemplate")&&delete a.infoTemplate},this),i="&adds="+JSON.stringify(b)),c.length>0&&(e.forEach(c,function(a){a.hasOwnProperty("infoTemplate")&&delete a.infoTemplate},this),j="&updates="+JSON.stringify(c)),d.length>0){var l=d[0].attributes[this.DB_UID]
 k="&deletes="+l}var m=h+i+j+k
 a.hasOwnProperty("credential")&&a.credential&&a.credential.hasOwnProperty("token")&&a.credential.token&&(m=m+"&token="+a.credential.token)
-var n=new XMLHttpRequest
-n.open("POST",a.url+"/applyEdits",!0),n.setRequestHeader("Content-type","application/x-www-form-urlencoded"),n.onload=function(){if(200===n.status&&""!==n.responseText)try{var a=JSON.parse(this.response)
-f(a.addResults,a.updateResults,a.deleteResults)}catch(b){g("Unable to parse xhr response",n)}},n.onerror=function(a){g(a)},n.ontimeout=function(){g("xhr timeout error")},n.timeout=this._defaultXhrTimeout,n.send(m)},_parseResponsesArray:function(a){var c=new b,d=0
+var n=this.proxyPath?this.proxyPath+"?"+a.url:a.url,o=new XMLHttpRequest
+o.open("POST",n+"/applyEdits",!0),o.setRequestHeader("Content-type","application/x-www-form-urlencoded"),o.onload=function(){if(200===o.status&&""!==o.responseText)try{var a=JSON.parse(this.response)
+f(a.addResults,a.updateResults,a.deleteResults)}catch(b){g("Unable to parse xhr response",o)}},o.onerror=function(a){g(a)},o.ontimeout=function(){g("xhr timeout error")},o.timeout=this._defaultXhrTimeout,o.send(m)},_parseResponsesArray:function(a){var c=new b,d=0
 for(var e in a)a.hasOwnProperty(e)&&(a[e].addResults.map(function(a){a.success||d++}),a[e].updateResults.map(function(a){a.success||d++}),a[e].deleteResults.map(function(a){a.success||d++}))
 return d>0?c.resolve(!1):c.resolve(!0),c.promise}})}),"undefined"!=typeof O?O.esri.Edit={}:(O={},O.esri={Edit:{}}),O.esri.Edit.EditStore=function(){"use strict"
 this._db=null,this._isDBInit=!1,this.dbName="features_store",this.objectStoreName="features",this.objectId="objectid",this.ADD="add",this.UPDATE="update",this.DELETE="delete",this.FEATURE_LAYER_JSON_ID="feature-layer-object-1001",this.FEATURE_COLLECTION_ID="feature-collection-object-1001",this.PHANTOM_GRAPHIC_PREFIX="phantom-layer",this._PHANTOM_PREFIX_TOKEN="|@|",this.isSupported=function(){return!!window.indexedDB},this.pushEdit=function(a,b,c,d){var e={id:b+"/"+c.attributes[this.objectId],operation:a,layer:b,type:c.geometry.type,graphic:c.toJson()}
