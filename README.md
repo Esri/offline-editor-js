@@ -1,9 +1,9 @@
 offline-editor-js
 =================
 
-Offline-editor-js is a family of libraries for building offline capabilities into web mapping applications. It's specifically designed to work with the ArcGIS API for JavaScript and ArcGIS Online. With these libraries you can store feature edits, attachments, map tiles and TPKs (Tile Packages). 
+**DEPRECATED** As of May 1, 2016 no new functionality will be added to this project. 
 
-***IMPORTANT:*** If you need a fully integrated, robust offline solution then you should be using our native ArcGIS Runtime SDKs for .NET, WPF, Java, iOS, Android and Qt.
+If you need a fully integrated, robust offline solution that's officially supported, then please refer to our native [ArcGIS Runtime SDKs](https://developers.arcgis.com/arcgis-runtime/) for iOS, Android, .NET, Xamarin, Java, OSx and Qt.
 
 # Getting Started
 
