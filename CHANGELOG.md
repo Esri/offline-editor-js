@@ -1,5 +1,9 @@
 # offline-editor-js - Changelog
 
+## Deprecation Notice - May 16, 2016
+
+This project is now deprecated. No new functionality will be added.
+
 ## Version 3.2.0 - May 11, 2016
 
 No breaking changes. 
