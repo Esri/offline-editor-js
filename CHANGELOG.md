@@ -1,5 +1,9 @@
 # offline-editor-js - Changelog
 
+## Deprecation details - May 23, 2016
+
+For details and comments on the deprecation refer to this [issue](https://github.com/Esri/offline-editor-js/issues/468).
+
 ## Deprecation Notice - May 16, 2016
 
 This project is now deprecated. No new functionality will be added.
