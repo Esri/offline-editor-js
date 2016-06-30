@@ -1,7 +1,7 @@
 offline-editor-js
 =================
 
-**DEPRECATED** As of May 1, 2016 no new functionality will be added to this project. For additional details refer to this [issue](https://github.com/Esri/offline-editor-js/issues/468).
+**Maintenance Mode** As of May 1, 2016 no new functionality will be added to this project. For additional details refer to this [issue](https://github.com/Esri/offline-editor-js/issues/468).
 
 If you need a fully integrated, robust offline solution that's officially supported, then please refer to our native [ArcGIS Runtime SDKs](https://developers.arcgis.com/arcgis-runtime/) for iOS, Android, .NET, Xamarin, Java, OSx and Qt.
 
