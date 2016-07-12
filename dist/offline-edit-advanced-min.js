@@ -120,7 +120,7 @@ e.length>0&&e[0].success&&(h=e[0].objectId),f.length>0&&f[0].success&&(h=f[0].ob
 var i={}
 return i.attributes={},i.attributes[this.DB_UID]=h,this._editStore["delete"](a.url,i,function(a,b){if(a){var c=this._editStore.PHANTOM_GRAPHIC_PREFIX+this._editStore._PHANTOM_PREFIX_TOKEN+i.attributes[this.DB_UID]
 this._editStore.deletePhantomGraphic(c,function(a,b){a?g.resolve({success:!0,error:null,id:c}):g.reject({success:!1,error:b,id:c})})}else g.reject({success:!1,error:b,id:c})}.bind(this)),g.promise},_makeEditRequest:function(a,b,c,d,f,g){var h="f=json",i="",j="",k=""
-if(b.length>0&&(e.forEach(b,function(a){a.hasOwnProperty("infoTemplate")&&delete a.infoTemplate},this),i="&adds="+JSON.stringify(b)),c.length>0&&(e.forEach(c,function(a){a.hasOwnProperty("infoTemplate")&&delete a.infoTemplate},this),j="&updates="+JSON.stringify(c)),d.length>0){var l=d[0].attributes[this.DB_UID]
+if(b.length>0&&(e.forEach(b,function(a){a.hasOwnProperty("infoTemplate")&&delete a.infoTemplate},this),i="&adds="+encodeURIComponent(JSON.stringify(b))),c.length>0&&(e.forEach(c,function(a){a.hasOwnProperty("infoTemplate")&&delete a.infoTemplate},this),j="&updates="+encodeURIComponent(JSON.stringify(c))),d.length>0){var l=d[0].attributes[this.DB_UID]
 k="&deletes="+l}var m=h+i+j+k
 a.hasOwnProperty("credential")&&a.credential&&a.credential.hasOwnProperty("token")&&a.credential.token&&(m=m+"&token="+a.credential.token)
 var n=this.proxyPath?this.proxyPath+"?"+a.url:a.url,o=new XMLHttpRequest
