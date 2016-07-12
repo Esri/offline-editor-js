@@ -1,5 +1,12 @@
 # offline-editor-js - Changelog
 
+## Version 3.3.1 - June 12, 2016
+
+No breaking changes.
+
+**Enhancements**
+* Adds an ISSUE_TEMPLATE
+
 ## Version 3.3.0 - June 12, 2016
 
 No breaking changes.
