@@ -1,5 +1,17 @@
 # offline-editor-js - Changelog
 
+## Version 3.3.0 - June 12, 2016
+
+No breaking changes.
+
+**Enhancements**
+* Closes #473 - offline edits breaking when special characters such as "&" are used within attribute values.
+
+## Changed deprecation notice to Maintenance Mode notice - June 1, 2016
+
+Per several requests, this hopefully clarifies that the library is still being maintained and not being 
+removed.
+
 ## Deprecation details - May 23, 2016
 
 For details and comments on the deprecation refer to this [issue](https://github.com/Esri/offline-editor-js/issues/468).
