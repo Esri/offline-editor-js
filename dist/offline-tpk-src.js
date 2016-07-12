@@ -1,4 +1,4 @@
-/*! esri-offline-maps - v3.2.0 - 2016-05-12
+/*! esri-offline-maps - v3.3.0 - 2016-07-12
 *   Copyright (c) 2016 Environmental Systems Research Institute, Inc.
 *   Apache License*/
 /**

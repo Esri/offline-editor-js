@@ -1,4 +1,4 @@
-/*! esri-offline-maps - v3.2.0 - 2016-05-12
+/*! esri-offline-maps - v3.3.0 - 2016-07-12
 *   Copyright (c) 2016 Environmental Systems Research Institute, Inc.
 *   Apache License*/
 // Configure offline/online detection
@@ -2033,7 +2033,7 @@ define([
                                 delete add.infoTemplate; // delete it to reduce payload size.
                             }
                         }, this);
-                        a = "&adds=" + JSON.stringify((adds));
+                        a = "&adds=" + encodeURIComponent(JSON.stringify(adds));
                     }
                     if(updates.length > 0) {
                         array.forEach(updates, function(update){
@@ -2041,7 +2041,7 @@ define([
                                 delete update.infoTemplate; // delete it to reduce payload size.
                             }
                         }, this);
-                        u = "&updates=" + JSON.stringify(updates);
+                        u = "&updates=" + encodeURIComponent(JSON.stringify(updates));
                     }
                     if(deletes.length > 0) {
                         var id = deletes[0].attributes[this.DB_UID];
