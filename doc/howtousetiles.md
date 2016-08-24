@@ -146,13 +146,13 @@ This approach is best if you have requirements for restarting or reloading your 
 	});
 ```
 
-**Step 2** Create a new instance of `OfflineTileEnablerLayer`. Note, when you instantiate the `Map` leave off the `basemap` property because we are adding a customer tile layer as our basemap. `OfflineTileEnablerLayer` has three properties in the constructor. The first is the REST endpoint of the basemap you want to use, the second is the callback and the last is an optional parameter to preset the layer as online or offline. This will help with with drawing tiles correctly during offline restarts or reloads.
+**Step 2** Create a new instance of `OfflineTileAdvanced`. Note, when you instantiate the `Map` leave off the `basemap` property because we are adding a customer tile layer as our basemap. `OfflineTileAdvanced` has four parameters in the [constructor](https://github.com/Esri/offline-editor-js/blob/master/doc/offlinetilesadvanced.md#constructor). The first is the REST endpoint of the basemap you want to use, the second is the callback, the third is a state property to preset the layer as online or offline, and the fourth is an optional parameter to set a custom object store. This will help with with drawing tiles correctly during offline restarts or reloads.
 
-IMPORTANT: If you are trying to use a non-CORS-enabled Feature Service you will need to explicity declare your `proxyPath`. We've set `proxyPath` to `null` here just as an illustration. You don't need to do that since its default is `null`.
+IMPORTANT: If you are trying to use a non-CORS-enabled Feature Service you will need to explicity declare your `proxyPath`. We've set `proxyPath` to `null` here just as an illustration, but it's not required.
 
 ```js
 
-    tileLayer = new O.esri.Tiles.OfflineTileEnablerLayer("http://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer",function(evt){
+    tileLayer = new O.esri.Tiles.OfflineTilesAdvanced("http://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer",function(evt){
         console.log("Tile Layer Loaded.");
         // All non-CORS-enabled Feature Services require a proxy.
         // You can set the property here if needed.
@@ -171,7 +171,7 @@ IMPORTANT: If you are trying to use a non-CORS-enabled Feature Service you will 
 
 ```
 
-All map events will continue to work normally. Although some methods that are typically available will now have to be accessed through `OfflineTileEnablerLayer` such as `getLevel()`, `getMaxZoom()`, and `getMinZoom()`.
+All map events will continue to work normally. Although some methods that are typically available will now have to be accessed through `OfflineTilesAdvanced` such as `getLevel()`, `getMaxZoom()`, and `getMinZoom()`.
 
 To get the current extent you will need to monitor the `zoom-end` and `pan-end` events like this:
 
