@@ -51,10 +51,12 @@ return 1===b.length?"000"+b:2===b.length?"00"+b:3===b.length?"0"+b:b.substr(0,b.
 return 16+5*f},_getCacheFilePath:function(a,b,c,d){var e=[]
 return e.push(a),e.push("/"),e.push("L"),e.push(10>b?"0"+b:b),e.push("/"),e.push("R"),e.push(this._int2HexString(c)),e.push("C"),e.push(this._int2HexString(d)),e.join("")},_bytes2MBs:function(a){return(a>>>20)+"."+(2046&a)}})}),"undefined"!=typeof O?O.esri.TPK={}:(O={},O.esri={TPK:{},Tiles:{}}),O.esri.Tiles.TilesStore=function(){this._db=null,this.dbName="offline_tile_store",this.objectStoreName="tilepath",this.isSupported=function(){return!(!window.indexedDB&&!window.openDatabase)},this.store=function(a,b){try{var c=this._db.transaction([this.objectStoreName],"readwrite")
 c.oncomplete=function(){b(!0)},c.onerror=function(a){b(!1,a.target.error.message)}
-var d=c.objectStore(this.objectStoreName),e=d.put(a)
+var d=c.objectStore(this.objectStoreName)
+a.img=O.esri.Tiles.Base64String.compress(a.img)
+var e=d.put(a)
 e.onsuccess=function(){}}catch(f){b(!1,f.stack)}},this.retrieve=function(a,b){if(null!==this._db){var c=this._db.transaction([this.objectStoreName]).objectStore(this.objectStoreName),d=c.get(a)
 d.onsuccess=function(a){var c=a.target.result
-void 0===c?b(!1,"not found"):b(!0,c)},d.onerror=function(a){b(!1,a)}}},this.deleteAll=function(a){if(null!==this._db){var b=this._db.transaction([this.objectStoreName],"readwrite").objectStore(this.objectStoreName).clear()
+void 0===c?b(!1,"not found"):(c.img=O.esri.Tiles.Base64String.decompress(c.img),b(!0,c))},d.onerror=function(a){b(!1,a)}}},this.deleteAll=function(a){if(null!==this._db){var b=this._db.transaction([this.objectStoreName],"readwrite").objectStore(this.objectStoreName).clear()
 b.onsuccess=function(){a(!0)},b.onerror=function(b){a(!1,b)}}else a(!1,null)},this["delete"]=function(a,b){if(null!==this._db){var c=this._db.transaction([this.objectStoreName],"readwrite").objectStore(this.objectStoreName)["delete"](a)
 c.onsuccess=function(){b(!0)},c.onerror=function(a){b(!1,a)}}else b(!1,null)},this.getAllTiles=function(a){if(null!==this._db){var b=this._db.transaction([this.objectStoreName]).objectStore(this.objectStoreName).openCursor()
 b.onsuccess=function(b){var c=b.target.result
