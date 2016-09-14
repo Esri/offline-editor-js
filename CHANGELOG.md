@@ -1,5 +1,16 @@
 # offline-editor-js - Changelog
 
+## Version 3.4.0 - September 13, 2016
+
+Possible breaking changes.
+
+**Enhancements**
+* Added base64 re-encoding to the tile database that results in a 2.7x (16/6) reduction in storage size.
+
+**Known Issues**
+* Firefox v48.x is showing tiles as hidden when they should be visible. This issue existed at v3.3.2.
+
+
 ## Version 3.3.2 - August 24, 2016
 
 No breaking changes. 

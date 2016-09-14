@@ -30,7 +30,69 @@ return d<<16|65535&c},O.esri.Tiles.Base64Utils.stringToWord=function(a){for(var 
 return d},O.esri.Tiles.Base64Utils.wordToString=function(a){for(var b=8,c=(1<<b)-1,d=[],e=0,f=32*a.length;f>e;e+=b)d.push(String.fromCharCode(a[e>>5]>>>e%32&c))
 return d.join("")},O.esri.Tiles.Base64Utils.wordToHex=function(a){for(var b="0123456789abcdef",c=[],d=0,e=4*a.length;e>d;d++)c.push(b.charAt(a[d>>2]>>d%4*8+4&15)+b.charAt(a[d>>2]>>d%4*8&15))
 return c.join("")},O.esri.Tiles.Base64Utils.wordToBase64=function(a){for(var b="=",c="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/",d=[],e=0,f=4*a.length;f>e;e+=3)for(var g=(a[e>>2]>>8*(e%4)&255)<<16|(a[e+1>>2]>>8*((e+1)%4)&255)<<8|a[e+2>>2]>>8*((e+2)%4)&255,h=0;4>h;h++)8*e+6*h>32*a.length?d.push(b):d.push(c.charAt(g>>6*(3-h)&63))
-return d.join("")},O.esri.Tiles.saveAs=function(a){"use strict"
+return d.join("")},O.esri.Tiles.Base64String={compressToUTF16:function(a){var b,c,d,e=[],f=0
+for(a=this.compress(a),b=0;b<a.length;b++)switch(c=a.charCodeAt(b),f++){case 0:e.push(String.fromCharCode((c>>1)+32)),d=(1&c)<<14
+break
+case 1:e.push(String.fromCharCode(d+(c>>2)+32)),d=(3&c)<<13
+break
+case 2:e.push(String.fromCharCode(d+(c>>3)+32)),d=(7&c)<<12
+break
+case 3:e.push(String.fromCharCode(d+(c>>4)+32)),d=(15&c)<<11
+break
+case 4:e.push(String.fromCharCode(d+(c>>5)+32)),d=(31&c)<<10
+break
+case 5:e.push(String.fromCharCode(d+(c>>6)+32)),d=(63&c)<<9
+break
+case 6:e.push(String.fromCharCode(d+(c>>7)+32)),d=(127&c)<<8
+break
+case 7:e.push(String.fromCharCode(d+(c>>8)+32)),d=(255&c)<<7
+break
+case 8:e.push(String.fromCharCode(d+(c>>9)+32)),d=(511&c)<<6
+break
+case 9:e.push(String.fromCharCode(d+(c>>10)+32)),d=(1023&c)<<5
+break
+case 10:e.push(String.fromCharCode(d+(c>>11)+32)),d=(2047&c)<<4
+break
+case 11:e.push(String.fromCharCode(d+(c>>12)+32)),d=(4095&c)<<3
+break
+case 12:e.push(String.fromCharCode(d+(c>>13)+32)),d=(8191&c)<<2
+break
+case 13:e.push(String.fromCharCode(d+(c>>14)+32)),d=(16383&c)<<1
+break
+case 14:e.push(String.fromCharCode(d+(c>>15)+32,(32767&c)+32)),f=0}return e.push(String.fromCharCode(d+32)),e.join("")},decompressFromUTF16:function(a){for(var b,c,d=[],e=0,f=0;f<a.length;){switch(c=a.charCodeAt(f)-32,e++){case 0:b=c<<1
+break
+case 1:d.push(String.fromCharCode(b|c>>14)),b=(16383&c)<<2
+break
+case 2:d.push(String.fromCharCode(b|c>>13)),b=(8191&c)<<3
+break
+case 3:d.push(String.fromCharCode(b|c>>12)),b=(4095&c)<<4
+break
+case 4:d.push(String.fromCharCode(b|c>>11)),b=(2047&c)<<5
+break
+case 5:d.push(String.fromCharCode(b|c>>10)),b=(1023&c)<<6
+break
+case 6:d.push(String.fromCharCode(b|c>>9)),b=(511&c)<<7
+break
+case 7:d.push(String.fromCharCode(b|c>>8)),b=(255&c)<<8
+break
+case 8:d.push(String.fromCharCode(b|c>>7)),b=(127&c)<<9
+break
+case 9:d.push(String.fromCharCode(b|c>>6)),b=(63&c)<<10
+break
+case 10:d.push(String.fromCharCode(b|c>>5)),b=(31&c)<<11
+break
+case 11:d.push(String.fromCharCode(b|c>>4)),b=(15&c)<<12
+break
+case 12:d.push(String.fromCharCode(b|c>>3)),b=(7&c)<<13
+break
+case 13:d.push(String.fromCharCode(b|c>>2)),b=(3&c)<<14
+break
+case 14:d.push(String.fromCharCode(b|c>>1)),b=(1&c)<<15
+break
+case 15:d.push(String.fromCharCode(b|c)),e=0}f++}return this.decompress(d.join(""))},_keyStr:"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=",decompress:function(a){for(var b,c,d,e,f,g,h,i=[],j=1,k=a.charCodeAt(0)>>8;j<2*a.length&&(j<2*a.length-1||0===k);)j%2===0?(b=a.charCodeAt(j/2)>>8,c=255&a.charCodeAt(j/2),d=j/2+1<a.length?a.charCodeAt(j/2+1)>>8:NaN):(b=255&a.charCodeAt((j-1)/2),(j+1)/2<a.length?(c=a.charCodeAt((j+1)/2)>>8,d=255&a.charCodeAt((j+1)/2)):c=d=NaN),j+=3,e=b>>2,f=(3&b)<<4|c>>4,g=(15&c)<<2|d>>6,h=63&d,isNaN(c)||j==2*a.length+1&&k?g=h=64:(isNaN(d)||j==2*a.length&&k)&&(h=64),i.push(this._keyStr.charAt(e)),i.push(this._keyStr.charAt(f)),i.push(this._keyStr.charAt(g)),i.push(this._keyStr.charAt(h))
+return i.join("")},compress:function(a){var b,c,d,e,f,g,h,i,j=[],k=1,l=0,m=!1
+for(a=a.replace(/[^A-Za-z0-9\+\/\=]/g,"");l<a.length;)f=this._keyStr.indexOf(a.charAt(l++)),g=this._keyStr.indexOf(a.charAt(l++)),h=this._keyStr.indexOf(a.charAt(l++)),i=this._keyStr.indexOf(a.charAt(l++)),c=f<<2|g>>4,d=(15&g)<<4|h>>2,e=(3&h)<<6|i,k%2===0?(b=c<<8,m=!0,64!=h&&(j.push(String.fromCharCode(b|d)),m=!1),64!=i&&(b=e<<8,m=!0)):(j.push(String.fromCharCode(b|c)),m=!1,64!=h&&(b=d<<8,m=!0),64!=i&&(j.push(String.fromCharCode(b|e)),m=!1)),k+=3
+return m?(j.push(String.fromCharCode(b)),j=j.join(""),j=String.fromCharCode(256|j.charCodeAt(0))+j.substring(1)):j=j.join(""),j}},O.esri.Tiles.saveAs=function(a){"use strict"
 var b=a.document,c=function(){return a.URL||a.webkitURL||a},d=a.URL||a.webkitURL||a,e=b.createElementNS("http://www.w3.org/1999/xhtml","a"),f=!a.externalHost&&"download"in e,g=a.webkitRequestFileSystem,h=a.requestFileSystem||g||a.mozRequestFileSystem,i=function(b){(a.setImmediate||a.setTimeout)(function(){throw b},0)},j="application/octet-stream",k=0,l=[],m=function(){for(var a=l.length;a--;){var b=l[a]
 "string"==typeof b?d.revokeObjectURL(b):b.remove()}l.length=0},n=function(a,b,c){b=[].concat(b)
 for(var d=b.length;d--;){var e=a["on"+b[d]]
@@ -69,10 +131,12 @@ return c.level=b.level,c.resolution=b.resolution,c.scale=b.scale,b.hasOwnPropert
 var k=new f(parseFloat(d.initialExtent.xmin),parseFloat(d.initialExtent.ymin),parseFloat(d.initialExtent.xmax),parseFloat(d.initialExtent.ymax),i),l=new f(parseFloat(d.fullExtent.xmin),parseFloat(d.fullExtent.ymin),parseFloat(d.fullExtent.xmax),parseFloat(d.fullExtent.ymax),i),m=new g(d.tileInfo),n=new h(m.origin.x,m.origin.y,i)
 m.origin=n,m.lods=j,b({initExtent:k,fullExtent:l,tileInfo:m,resultObj:d})})}},O.esri.Tiles.TilesStore=function(){this._db=null,this.dbName="offline_tile_store",this.objectStoreName="tilepath",this.isSupported=function(){return!(!window.indexedDB&&!window.openDatabase)},this.store=function(a,b){try{var c=this._db.transaction([this.objectStoreName],"readwrite")
 c.oncomplete=function(){b(!0)},c.onerror=function(a){b(!1,a.target.error.message)}
-var d=c.objectStore(this.objectStoreName),e=d.put(a)
+var d=c.objectStore(this.objectStoreName)
+a.img=O.esri.Tiles.Base64String.compress(a.img)
+var e=d.put(a)
 e.onsuccess=function(){}}catch(f){b(!1,f.stack)}},this.retrieve=function(a,b){if(null!==this._db){var c=this._db.transaction([this.objectStoreName]).objectStore(this.objectStoreName),d=c.get(a)
 d.onsuccess=function(a){var c=a.target.result
-void 0===c?b(!1,"not found"):b(!0,c)},d.onerror=function(a){b(!1,a)}}},this.deleteAll=function(a){if(null!==this._db){var b=this._db.transaction([this.objectStoreName],"readwrite").objectStore(this.objectStoreName).clear()
+void 0===c?b(!1,"not found"):(c.img=O.esri.Tiles.Base64String.decompress(c.img),b(!0,c))},d.onerror=function(a){b(!1,a)}}},this.deleteAll=function(a){if(null!==this._db){var b=this._db.transaction([this.objectStoreName],"readwrite").objectStore(this.objectStoreName).clear()
 b.onsuccess=function(){a(!0)},b.onerror=function(b){a(!1,b)}}else a(!1,null)},this["delete"]=function(a,b){if(null!==this._db){var c=this._db.transaction([this.objectStoreName],"readwrite").objectStore(this.objectStoreName)["delete"](a)
 c.onsuccess=function(){b(!0)},c.onerror=function(a){b(!1,a)}}else b(!1,null)},this.getAllTiles=function(a){if(null!==this._db){var b=this._db.transaction([this.objectStoreName]).objectStore(this.objectStoreName).openCursor()
 b.onsuccess=function(b){var c=b.target.result

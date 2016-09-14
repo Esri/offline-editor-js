@@ -1,4 +1,4 @@
-/*! esri-offline-maps - v3.3.0 - 2016-07-12
+/*! esri-offline-maps - v3.4.0 - 2016-09-13
 *   Copyright (c) 2016 Environmental Systems Research Institute, Inc.
 *   Apache License*/
 /**
@@ -794,6 +794,7 @@ O.esri.Tiles.TilesStore = function(){
             };
 
             var objectStore = transaction.objectStore(this.objectStoreName);
+            urlDataPair.img = O.esri.Tiles.Base64String.compress(urlDataPair.img);
             var request = objectStore.put(urlDataPair);
             request.onsuccess = function()
             {
@@ -827,6 +828,7 @@ O.esri.Tiles.TilesStore = function(){
                 }
                 else
                 {
+                    result.img = O.esri.Tiles.Base64String.decompress(result.img);
                     callback(true,result);
                 }
             };
