@@ -163,7 +163,7 @@
 					<tr>
 						<th>Level</th>
 						<th>Tile Count</th>
-						<th>Size Mb (aprox.)</th>
+						<th>~Download Size</th>
 					</tr>
 				</thead>
 				<tbody id="tile-count-table-body">
@@ -183,7 +183,7 @@
 				<button id="delete-all-tiles-btn" type="button" class="btn btn-danger"><i class="glyphicon glyphicon-floppy-remove"></i> Delete All Tiles</button>
 				<button id="go-offline-btn" type="button" class="btn btn-default"><i class="fa fa-chain-broken"></i> Go Offline</button>
 				<button id="go-online-btn" type="button" class="btn btn-default" disabled="disabled" style="display:none;"><i class="fa fa-link"></i> Go Online</button>
-				<button id="update-offline-usage" type="button" class="btn btn-default"><i class="fa fa-refresh"></i> Usage: <span id="offline-usage">[click to update]</span></button>
+				<button id="update-offline-usage" type="button" class="btn btn-default"><i class="fa fa-refresh"></i> DB Usage: <span id="offline-usage">[click to update]</span></button>
 				<button id="show-stored-tiles" type="button" class="btn btn-default"><i class="fa fa-th"></i> <span id="show-stored-tiles-caption">Show Stored Tiles</span></button>
 				<button id="save-file" type="button" class="btn btn-default"><i class="fa fa-download"></i> Save to File</button>
 				<span id="load-file" type="button" class="btn btn-default"><i class="fa fa-upload"></i> Load from File <input type="file" id="file-select" name="file-select"></span>
@@ -259,7 +259,7 @@ require(
     "dojo/on", "dojo/query",
     "dojo/dom","dojo/dom-construct","dojo/dom-class","dojo/dom-style",
     "dojo/_base/window",
-    "bootstrapmap","../dist/offline-tiles-basic-min.js", "dojo/domReady!"],
+    "bootstrapmap","../dist/offline-tiles-basic-src.js", "dojo/domReady!"],
 	function(Map,
 		GraphicsLayer, Graphic, SimpleFillSymbol,
 		Scalebar, esriUtils, geometry,
