@@ -52,16 +52,16 @@ return 16+5*f},_getCacheFilePath:function(a,b,c,d){var e=[]
 return e.push(a),e.push("/"),e.push("L"),e.push(10>b?"0"+b:b),e.push("/"),e.push("R"),e.push(this._int2HexString(c)),e.push("C"),e.push(this._int2HexString(d)),e.join("")},_bytes2MBs:function(a){return(a>>>20)+"."+(2046&a)}})}),"undefined"!=typeof O?O.esri.TPK={}:(O={},O.esri={TPK:{},Tiles:{}}),O.esri.Tiles.TilesStore=function(){this._db=null,this.dbName="offline_tile_store",this.objectStoreName="tilepath",this.isSupported=function(){return!(!window.indexedDB&&!window.openDatabase)},this.store=function(a,b){try{var c=this._db.transaction([this.objectStoreName],"readwrite")
 c.oncomplete=function(){b(!0)},c.onerror=function(a){b(!1,a.target.error.message)}
 var d=c.objectStore(this.objectStoreName)
-a.img=O.esri.Tiles.Base64String.compress(a.img)
+a.url=O.esri.Tiles.LZString.compress(a.url),a.img=O.esri.Tiles.Base64String.compress(a.img)
 var e=d.put(a)
-e.onsuccess=function(){}}catch(f){b(!1,f.stack)}},this.retrieve=function(a,b){if(null!==this._db){var c=this._db.transaction([this.objectStoreName]).objectStore(this.objectStoreName),d=c.get(a)
+e.onsuccess=function(){}}catch(f){b(!1,f.stack)}},this.retrieve=function(a,b){if(null!==this._db){var c=this._db.transaction([this.objectStoreName]).objectStore(this.objectStoreName),d=c.get(O.esri.Tiles.LZString.compress(a))
 d.onsuccess=function(a){var c=a.target.result
-void 0===c?b(!1,"not found"):(c.img=O.esri.Tiles.Base64String.decompress(c.img),b(!0,c))},d.onerror=function(a){b(!1,a)}}},this.deleteAll=function(a){if(null!==this._db){var b=this._db.transaction([this.objectStoreName],"readwrite").objectStore(this.objectStoreName).clear()
+void 0===c?b(!1,"not found"):(c.url=O.esri.Tiles.LZString.decompress(c.url),c.img=O.esri.Tiles.Base64String.decompress(c.img),b(!0,c))},d.onerror=function(a){b(!1,a)}}},this.deleteAll=function(a){if(null!==this._db){var b=this._db.transaction([this.objectStoreName],"readwrite").objectStore(this.objectStoreName).clear()
 b.onsuccess=function(){a(!0)},b.onerror=function(b){a(!1,b)}}else a(!1,null)},this["delete"]=function(a,b){if(null!==this._db){var c=this._db.transaction([this.objectStoreName],"readwrite").objectStore(this.objectStoreName)["delete"](a)
 c.onsuccess=function(){b(!0)},c.onerror=function(a){b(!1,a)}}else b(!1,null)},this.getAllTiles=function(a){if(null!==this._db){var b=this._db.transaction([this.objectStoreName]).objectStore(this.objectStoreName).openCursor()
 b.onsuccess=function(b){var c=b.target.result
 if(c){var d=c.value.url,e=c.value.img
-a(d,e,null),c["continue"]()}else a(null,null,"end")}.bind(this),b.onerror=function(b){a(null,null,b)}}else a(null,null,"no db")},this.usedSpace=function(a){if(null!==this._db){var b={sizeBytes:0,tileCount:0},c=this._db.transaction([this.objectStoreName]).objectStore(this.objectStoreName).openCursor()
+d=O.esri.Tiles.LZString.decompress(d),e=O.esri.Tiles.Base64String.decompress(e),a(d,e,null),c["continue"]()}else a(null,null,"end")}.bind(this),b.onerror=function(b){a(null,null,b)}}else a(null,null,"no db")},this.usedSpace=function(a){if(null!==this._db){var b={sizeBytes:0,tileCount:0},c=this._db.transaction([this.objectStoreName]).objectStore(this.objectStoreName).openCursor()
 c.onsuccess=function(c){var d=c.target.result
 if(d){var e=d.value,f=JSON.stringify(e)
 b.sizeBytes+=this._stringBytes(f),b.tileCount+=1,d["continue"]()}else a(b,null)}.bind(this),c.onerror=function(b){a(null,b)}}else a(null,null)},this._stringBytes=function(a){return a.length},this.init=function(a){var b=indexedDB.open(this.dbName,4)
