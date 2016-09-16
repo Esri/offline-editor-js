@@ -2,6 +2,10 @@
 License for base64String.js is WTFPL, Version 2, http://www.wtfpl.net/ and provided courtesy and copyright of Pieroxy <pieroxy@pieroxy.net>.
 
 
+## LZString.js
+License for LZString.js is WTFPL, Version 2, http://www.wtfpl.net/ and provided courtesy and copyright of Pieroxy <pieroxy@pieroxy.net>.
+
+
 ## FileSaver.js
 
 License for FileSaver.js
