@@ -134,6 +134,8 @@ The following three properties will affect the size of the TPK file. Minimizing 
 
 It's a general recommended to keep the size of the local database below 75MBs, with a maximum of 100MBs for best performance. Allowing the database to grow to large can result in browser crashes and slow app performance. 
 
+The library helps where it can by providing 2.7x compression of the tile imagery and about 50% compression of the tile URLs.
+
 The amount of memory allowed to the browser is dependant on many variables including the available device memory, other applications already running and the number of open browser tabs.
 
 

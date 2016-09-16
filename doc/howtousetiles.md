@@ -91,7 +91,7 @@ Deletes all tiles stored in the indexed db database.
 The callback is called to indicate success (true) or failure (false,err)
 
 ####basemap.getOfflineUsage(callback)
-It calculates the number of tiles that are stored in the indexed db database and the space used by them. The callback is called with an object containing the result of this calculation:
+It calculates the number of tiles that are stored in the indexed db database and the space used by them. Because the library uses compression, the database size will be significantly smaller than the downloaded tiles size. The callback is called with an object containing the result of this calculation:
 
 ```js
 	{
@@ -244,5 +244,7 @@ If you are using an optimized version of the ArcGIS API for JavaScript make sure
 ## Browser storage limitations
 
 Our general guideline for the amount of total storage you can use on a device is be between 50MBs and 100MBs. If you need greater storage than that you'll need to either switch to a hybrid model (e.g. PhoneGap) or use one of our native ArcGIS Runtime SDKs. The Runtime SDKs have fully supported and robust offline capabilities that go beyond what JavaScript is currently capable of.
+
+The library helps where it can by providing 2.7x compression of the tile imagery and about 50% compression of the tile URLs. 
 
 Some developers have mentioned that they have stored alot more than 100MBs. How much you can store varies between devices and browsers. Every mobile operating system sets a limit on how much memory a single application can use. Since web apps are dependant on the browser, which is a web app, if it consumes too much memory the operating system will simply kill the browser. Poof and it's gone. So, web apps are dependant on a variety of things including how many other browser tabs are open, browser memory leakage especially if it's been running for a long time, other storage being used such as feature edits, the application cache and the general browser cache.

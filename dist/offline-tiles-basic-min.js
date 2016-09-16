@@ -81,7 +81,48 @@ break
 case 15:d.push(String.fromCharCode(b|c)),e=0}f++}return this.decompress(d.join(""))},_keyStr:"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=",decompress:function(a){for(var b,c,d,e,f,g,h,i=[],j=1,k=a.charCodeAt(0)>>8;j<2*a.length&&(j<2*a.length-1||0===k);)j%2===0?(b=a.charCodeAt(j/2)>>8,c=255&a.charCodeAt(j/2),d=j/2+1<a.length?a.charCodeAt(j/2+1)>>8:NaN):(b=255&a.charCodeAt((j-1)/2),(j+1)/2<a.length?(c=a.charCodeAt((j+1)/2)>>8,d=255&a.charCodeAt((j+1)/2)):c=d=NaN),j+=3,e=b>>2,f=(3&b)<<4|c>>4,g=(15&c)<<2|d>>6,h=63&d,isNaN(c)||j==2*a.length+1&&k?g=h=64:(isNaN(d)||j==2*a.length&&k)&&(h=64),i.push(this._keyStr.charAt(e)),i.push(this._keyStr.charAt(f)),i.push(this._keyStr.charAt(g)),i.push(this._keyStr.charAt(h))
 return i.join("")},compress:function(a){var b,c,d,e,f,g,h,i,j=[],k=1,l=0,m=!1
 for(a=a.replace(/[^A-Za-z0-9\+\/\=]/g,"");l<a.length;)f=this._keyStr.indexOf(a.charAt(l++)),g=this._keyStr.indexOf(a.charAt(l++)),h=this._keyStr.indexOf(a.charAt(l++)),i=this._keyStr.indexOf(a.charAt(l++)),c=f<<2|g>>4,d=(15&g)<<4|h>>2,e=(3&h)<<6|i,k%2===0?(b=c<<8,m=!0,64!=h&&(j.push(String.fromCharCode(b|d)),m=!1),64!=i&&(b=e<<8,m=!0)):(j.push(String.fromCharCode(b|c)),m=!1,64!=h&&(b=d<<8,m=!0),64!=i&&(j.push(String.fromCharCode(b|e)),m=!1)),k+=3
-return m?(j.push(String.fromCharCode(b)),j=j.join(""),j=String.fromCharCode(256|j.charCodeAt(0))+j.substring(1)):j=j.join(""),j}},O.esri.Tiles.saveAs=function(a){"use strict"
+return m?(j.push(String.fromCharCode(b)),j=j.join(""),j=String.fromCharCode(256|j.charCodeAt(0))+j.substring(1)):j=j.join(""),j}},O.esri.Tiles.LZString=function(){function a(a,b){if(!e[a]){e[a]={}
+for(var c=0;c<a.length;c++)e[a][a.charAt(c)]=c}return e[a][b]}var b=String.fromCharCode,c="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=",d="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+-$",e={},f={compressToBase64:function(a){if(null==a)return""
+var b=f._compress(a,6,function(a){return c.charAt(a)})
+switch(b.length%4){default:case 0:return b
+case 1:return b+"==="
+case 2:return b+"=="
+case 3:return b+"="}},decompressFromBase64:function(b){return null==b?"":""==b?null:f._decompress(b.length,32,function(d){return a(c,b.charAt(d))})},compressToUTF16:function(a){return null==a?"":f._compress(a,15,function(a){return b(a+32)})+" "},decompressFromUTF16:function(a){return null==a?"":""==a?null:f._decompress(a.length,16384,function(b){return a.charCodeAt(b)-32})},compressToUint8Array:function(a){for(var b=f.compress(a),c=new Uint8Array(2*b.length),d=0,e=b.length;e>d;d++){var g=b.charCodeAt(d)
+c[2*d]=g>>>8,c[2*d+1]=g%256}return c},decompressFromUint8Array:function(a){if(null===a||void 0===a)return f.decompress(a)
+for(var c=new Array(a.length/2),d=0,e=c.length;e>d;d++)c[d]=256*a[2*d]+a[2*d+1]
+var g=[]
+return c.forEach(function(a){g.push(b(a))}),f.decompress(g.join(""))},compressToEncodedURIComponent:function(a){return null==a?"":f._compress(a,6,function(a){return d.charAt(a)})},decompressFromEncodedURIComponent:function(b){return null==b?"":""==b?null:(b=b.replace(/ /g,"+"),f._decompress(b.length,32,function(c){return a(d,b.charAt(c))}))},compress:function(a){return f._compress(a,16,function(a){return b(a)})},_compress:function(a,b,c){if(null==a)return""
+var d,e,f,g={},h={},i="",j="",k="",l=2,m=3,n=2,o=[],p=0,q=0
+for(f=0;f<a.length;f+=1)if(i=a.charAt(f),Object.prototype.hasOwnProperty.call(g,i)||(g[i]=m++,h[i]=!0),j=k+i,Object.prototype.hasOwnProperty.call(g,j))k=j
+else{if(Object.prototype.hasOwnProperty.call(h,k)){if(k.charCodeAt(0)<256){for(d=0;n>d;d++)p<<=1,q==b-1?(q=0,o.push(c(p)),p=0):q++
+for(e=k.charCodeAt(0),d=0;8>d;d++)p=p<<1|1&e,q==b-1?(q=0,o.push(c(p)),p=0):q++,e>>=1}else{for(e=1,d=0;n>d;d++)p=p<<1|e,q==b-1?(q=0,o.push(c(p)),p=0):q++,e=0
+for(e=k.charCodeAt(0),d=0;16>d;d++)p=p<<1|1&e,q==b-1?(q=0,o.push(c(p)),p=0):q++,e>>=1}l--,0==l&&(l=Math.pow(2,n),n++),delete h[k]}else for(e=g[k],d=0;n>d;d++)p=p<<1|1&e,q==b-1?(q=0,o.push(c(p)),p=0):q++,e>>=1
+l--,0==l&&(l=Math.pow(2,n),n++),g[j]=m++,k=String(i)}if(""!==k){if(Object.prototype.hasOwnProperty.call(h,k)){if(k.charCodeAt(0)<256){for(d=0;n>d;d++)p<<=1,q==b-1?(q=0,o.push(c(p)),p=0):q++
+for(e=k.charCodeAt(0),d=0;8>d;d++)p=p<<1|1&e,q==b-1?(q=0,o.push(c(p)),p=0):q++,e>>=1}else{for(e=1,d=0;n>d;d++)p=p<<1|e,q==b-1?(q=0,o.push(c(p)),p=0):q++,e=0
+for(e=k.charCodeAt(0),d=0;16>d;d++)p=p<<1|1&e,q==b-1?(q=0,o.push(c(p)),p=0):q++,e>>=1}l--,0==l&&(l=Math.pow(2,n),n++),delete h[k]}else for(e=g[k],d=0;n>d;d++)p=p<<1|1&e,q==b-1?(q=0,o.push(c(p)),p=0):q++,e>>=1
+l--,0==l&&(l=Math.pow(2,n),n++)}for(e=2,d=0;n>d;d++)p=p<<1|1&e,q==b-1?(q=0,o.push(c(p)),p=0):q++,e>>=1
+for(;;){if(p<<=1,q==b-1){o.push(c(p))
+break}q++}return o.join("")},decompress:function(a){return null==a?"":""==a?null:f._decompress(a.length,32768,function(b){return a.charCodeAt(b)})},_decompress:function(a,c,d){var e,f,g,h,i,j,k,l,m=[],n=4,o=4,p=3,q="",r=[],s={val:d(0),position:c,index:1}
+for(f=0;3>f;f+=1)m[f]=f
+for(h=0,j=Math.pow(2,2),k=1;k!=j;)i=s.val&s.position,s.position>>=1,0==s.position&&(s.position=c,s.val=d(s.index++)),h|=(i>0?1:0)*k,k<<=1
+switch(e=h){case 0:for(h=0,j=Math.pow(2,8),k=1;k!=j;)i=s.val&s.position,s.position>>=1,0==s.position&&(s.position=c,s.val=d(s.index++)),h|=(i>0?1:0)*k,k<<=1
+l=b(h)
+break
+case 1:for(h=0,j=Math.pow(2,16),k=1;k!=j;)i=s.val&s.position,s.position>>=1,0==s.position&&(s.position=c,s.val=d(s.index++)),h|=(i>0?1:0)*k,k<<=1
+l=b(h)
+break
+case 2:return""}for(m[3]=l,g=l,r.push(l);;){if(s.index>a)return""
+for(h=0,j=Math.pow(2,p),k=1;k!=j;)i=s.val&s.position,s.position>>=1,0==s.position&&(s.position=c,s.val=d(s.index++)),h|=(i>0?1:0)*k,k<<=1
+switch(l=h){case 0:for(h=0,j=Math.pow(2,8),k=1;k!=j;)i=s.val&s.position,s.position>>=1,0==s.position&&(s.position=c,s.val=d(s.index++)),h|=(i>0?1:0)*k,k<<=1
+m[o++]=b(h),l=o-1,n--
+break
+case 1:for(h=0,j=Math.pow(2,16),k=1;k!=j;)i=s.val&s.position,s.position>>=1,0==s.position&&(s.position=c,s.val=d(s.index++)),h|=(i>0?1:0)*k,k<<=1
+m[o++]=b(h),l=o-1,n--
+break
+case 2:return r.join("")}if(0==n&&(n=Math.pow(2,p),p++),m[l])q=m[l]
+else{if(l!==o)return null
+q=g+g.charAt(0)}r.push(q),m[o++]=g+q.charAt(0),n--,g=q,0==n&&(n=Math.pow(2,p),p++)}}}
+return f}(),O.esri.Tiles.saveAs=function(a){"use strict"
 var b=a.document,c=function(){return a.URL||a.webkitURL||a},d=a.URL||a.webkitURL||a,e=b.createElementNS("http://www.w3.org/1999/xhtml","a"),f=!a.externalHost&&"download"in e,g=a.webkitRequestFileSystem,h=a.requestFileSystem||g||a.mozRequestFileSystem,i=function(b){(a.setImmediate||a.setTimeout)(function(){throw b},0)},j="application/octet-stream",k=0,l=[],m=function(){for(var a=l.length;a--;){var b=l[a]
 "string"==typeof b?d.revokeObjectURL(b):b.remove()}l.length=0},n=function(a,b,c){b=[].concat(b)
 for(var d=b.length;d--;){var e=a["on"+b[d]]
@@ -121,16 +162,16 @@ var k=new f(parseFloat(d.initialExtent.xmin),parseFloat(d.initialExtent.ymin),pa
 m.origin=n,m.lods=j,b({initExtent:k,fullExtent:l,tileInfo:m,resultObj:d})})}},O.esri.Tiles.TilesStore=function(){this._db=null,this.dbName="offline_tile_store",this.objectStoreName="tilepath",this.isSupported=function(){return!(!window.indexedDB&&!window.openDatabase)},this.store=function(a,b){try{var c=this._db.transaction([this.objectStoreName],"readwrite")
 c.oncomplete=function(){b(!0)},c.onerror=function(a){b(!1,a.target.error.message)}
 var d=c.objectStore(this.objectStoreName)
-a.img=O.esri.Tiles.Base64String.compress(a.img)
+a.url=O.esri.Tiles.LZString.compress(a.url),a.img=O.esri.Tiles.Base64String.compress(a.img)
 var e=d.put(a)
-e.onsuccess=function(){}}catch(f){b(!1,f.stack)}},this.retrieve=function(a,b){if(null!==this._db){var c=this._db.transaction([this.objectStoreName]).objectStore(this.objectStoreName),d=c.get(a)
+e.onsuccess=function(){}}catch(f){b(!1,f.stack)}},this.retrieve=function(a,b){if(null!==this._db){var c=this._db.transaction([this.objectStoreName]).objectStore(this.objectStoreName),d=c.get(O.esri.Tiles.LZString.compress(a))
 d.onsuccess=function(a){var c=a.target.result
-void 0===c?b(!1,"not found"):(c.img=O.esri.Tiles.Base64String.decompress(c.img),b(!0,c))},d.onerror=function(a){b(!1,a)}}},this.deleteAll=function(a){if(null!==this._db){var b=this._db.transaction([this.objectStoreName],"readwrite").objectStore(this.objectStoreName).clear()
+void 0===c?b(!1,"not found"):(c.url=O.esri.Tiles.LZString.decompress(c.url),c.img=O.esri.Tiles.Base64String.decompress(c.img),b(!0,c))},d.onerror=function(a){b(!1,a)}}},this.deleteAll=function(a){if(null!==this._db){var b=this._db.transaction([this.objectStoreName],"readwrite").objectStore(this.objectStoreName).clear()
 b.onsuccess=function(){a(!0)},b.onerror=function(b){a(!1,b)}}else a(!1,null)},this["delete"]=function(a,b){if(null!==this._db){var c=this._db.transaction([this.objectStoreName],"readwrite").objectStore(this.objectStoreName)["delete"](a)
 c.onsuccess=function(){b(!0)},c.onerror=function(a){b(!1,a)}}else b(!1,null)},this.getAllTiles=function(a){if(null!==this._db){var b=this._db.transaction([this.objectStoreName]).objectStore(this.objectStoreName).openCursor()
 b.onsuccess=function(b){var c=b.target.result
 if(c){var d=c.value.url,e=c.value.img
-a(d,e,null),c["continue"]()}else a(null,null,"end")}.bind(this),b.onerror=function(b){a(null,null,b)}}else a(null,null,"no db")},this.usedSpace=function(a){if(null!==this._db){var b={sizeBytes:0,tileCount:0},c=this._db.transaction([this.objectStoreName]).objectStore(this.objectStoreName).openCursor()
+d=O.esri.Tiles.LZString.decompress(d),e=O.esri.Tiles.Base64String.decompress(e),a(d,e,null),c["continue"]()}else a(null,null,"end")}.bind(this),b.onerror=function(b){a(null,null,b)}}else a(null,null,"no db")},this.usedSpace=function(a){if(null!==this._db){var b={sizeBytes:0,tileCount:0},c=this._db.transaction([this.objectStoreName]).objectStore(this.objectStoreName).openCursor()
 c.onsuccess=function(c){var d=c.target.result
 if(d){var e=d.value,f=JSON.stringify(e)
 b.sizeBytes+=this._stringBytes(f),b.tileCount+=1,d["continue"]()}else a(b,null)}.bind(this),c.onerror=function(b){a(null,b)}}else a(null,null)},this._stringBytes=function(a){return a.length},this.init=function(a){var b=indexedDB.open(this.dbName,4)

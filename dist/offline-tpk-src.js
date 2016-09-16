@@ -1,4 +1,4 @@
-/*! esri-offline-maps - v3.4.0 - 2016-09-13
+/*! esri-offline-maps - v3.5.0 - 2016-09-15
 *   Copyright (c) 2016 Environmental Systems Research Institute, Inc.
 *   Apache License*/
 /**
@@ -794,6 +794,7 @@ O.esri.Tiles.TilesStore = function(){
             };
 
             var objectStore = transaction.objectStore(this.objectStoreName);
+            urlDataPair.url = O.esri.Tiles.LZString.compress(urlDataPair.url);
             urlDataPair.img = O.esri.Tiles.Base64String.compress(urlDataPair.img);
             var request = objectStore.put(urlDataPair);
             request.onsuccess = function()
@@ -818,7 +819,7 @@ O.esri.Tiles.TilesStore = function(){
         if(this._db !== null)
         {
             var objectStore = this._db.transaction([this.objectStoreName]).objectStore(this.objectStoreName);
-            var request = objectStore.get(url);
+            var request = objectStore.get(O.esri.Tiles.LZString.compress(url));
             request.onsuccess = function(event)
             {
                 var result = event.target.result;
@@ -828,6 +829,7 @@ O.esri.Tiles.TilesStore = function(){
                 }
                 else
                 {
+                    result.url = O.esri.Tiles.LZString.decompress(result.url);
                     result.img = O.esri.Tiles.Base64String.decompress(result.img);
                     callback(true,result);
                 }
@@ -910,6 +912,8 @@ O.esri.Tiles.TilesStore = function(){
                 if(cursor){
                     var url = cursor.value.url;
                     var img = cursor.value.img;
+                    url = O.esri.Tiles.LZString.decompress(url);
+                    img = O.esri.Tiles.Base64String.decompress(img);
                     callback(url,img,null);
                     cursor.continue();
                 }
