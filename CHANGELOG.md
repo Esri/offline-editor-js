@@ -1,8 +1,17 @@
 # offline-editor-js - Changelog
 
+## Version 3.5.0 - September 15, 2016
+
+Possible breaking changes. Changes to database storage pattern.
+
+**Enhancements**
+* Added compression to the tiles database URL field, resulting in approximately 50% reduction in that field's size. This will make the largest difference when storing thousands of tiles.
+* Closes #482 - clarify tile reporting in simple-tiles.html sample app.
+* Minor doc updates.
+
 ## Version 3.4.0 - September 13, 2016
 
-Possible breaking changes.
+Possible breaking changes. Changes to database storage pattern.
 
 **Enhancements**
 * Added base64 re-encoding to the tile database that results in a 2.7x (16/6) reduction in storage size.
