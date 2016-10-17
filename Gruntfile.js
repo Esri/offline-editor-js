@@ -106,6 +106,8 @@ module.exports = function(grunt) {
                     'lib/tpk/TPKLayer.js',
                     'lib/tpk/OfflineTpkNS.js',
                     'lib/tiles/TilesStore.js',
+                    'lib/tiles/lzString.js',
+                    'lib/tiles/base64String.js',
                     'lib/tpk/zip.js',
                     'lib/tpk/autoCenterMap.js',
                     'lib/tpk/inflate.js',
