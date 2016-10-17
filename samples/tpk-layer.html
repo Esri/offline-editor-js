@@ -134,11 +134,13 @@
                     xhrRequest.open("GET", url.value, true);
                     xhrRequest.responseType = "blob";
                     xhrRequest.onprogress = function(evt){
-                        if(evt.hasOwnProperty("total")){
-                            var percent = (parseFloat(evt.loaded / evt.total) * 100).toFixed(0);
+                        var percent = 0;
+
+                        if("total" in evt){
+                            percent = (parseFloat(evt.loaded / evt.total) * 100).toFixed(0);
                         }
                         else{
-                            var percent = (parseFloat(evt.loaded / evt.totalSize) * 100).toFixed(0);
+                            percent = (parseFloat(evt.loaded / evt.totalSize) * 100).toFixed(0);
                         }
                         urlInputBtn.innerHTML = "Get file via url " + percent + "%";
                         console.log("Begin downloading remote tpk file...")
