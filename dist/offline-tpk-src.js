@@ -1,4 +1,4 @@
-/*! esri-offline-maps - v3.5.0 - 2016-09-15
+/*! esri-offline-maps - v3.6.0 - 2016-10-17
 *   Copyright (c) 2016 Environmental Systems Research Institute, Inc.
 *   Apache License*/
 /**
@@ -54,6 +54,7 @@ define([
             _inMemTilesObject: null,                // Stores unzipped files from tpk
             _inMemTilesObjectLength: 0,
             _zeroLengthFileCounter: 0,              // For counting the number of zero length files in the tpk (e.g. directories)
+            _imageURL: "data:image/png;base64,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pmk0TROPj48Hn3l4eIimaSJN06O3A4NJwDMxm82ibdtXo4D5fB6r1Sp+//4dz8/Pw5H+6ekpdrtdJEkS8/n8S/9f713ie3vaceo9x557QAB451Sgfyin34HKshweunk5HzAej2MymXz5+f9nbjJyI9L39Wu5XP55+XQZ39uxR4Z3u90wSXjqEV0wAjhjx47oaZq63Me/ZhIQBAAQAEAAAAEABAAQAEAAAAEABAAQAEAAAAEABAAQAEAAAAEABAAQAEAAAAEABAAQAEAAAAEABAAQAEAAAAEABAAQAEAAAAEABAAQAEAAAAEAAbAJQAAAAQAEABAAQAAAAQAEABAAQAAAAQAEABAAQAAAAQAEABAAQAAAAQAEABAAQAAAAQAEABAAQAAAAQAEABAAQAAAAQAEABAAQAAAAQAEABAAEABAAAABAAQAEABAAAABAAQAEABAAAABAAQAEABAAAABAAQAEABAAAABAAQAEABAAAABAAQAEABAAAABAAQAEABAAAABAAQAEABAAAABAAQAEAAQAEAAAAEABAAQAEAAAAEABAAQAEAAAAEABAAQAEAAAAEAvqe/BwCeKjUweoA8pQAAAABJRU5ErkJggg==",
 
             constructor:function(){
                 this._self = this;
@@ -141,7 +142,7 @@ define([
                         else {
                             img.style.borderColor = "green";
                             console.log("tile is not in the offline store", url);
-                            imgURL = "data:image/png;base64,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pmk0TROPj48Hn3l4eIimaSJN06O3A4NJwDMxm82ibdtXo4D5fB6r1Sp+//4dz8/Pw5H+6ekpdrtdJEkS8/n8S/9f713ie3vaceo9x557QAB451Sgfyin34HKshweunk5HzAej2MymXz5+f9nbjJyI9L39Wu5XP55+XQZ39uxR4Z3u90wSXjqEV0wAjhjx47oaZq63Me/ZhIQBAAQAEAAAAEABAAQAEAAAAEABAAQAEAAAAEABAAQAEAAAAEABAAQAEAAAAEABAAQAEAAAAEABAAQAEAAAAEABAAQAEAAAAEABAAQAEAAAAEAAbAJQAAAAQAEABAAQAAAAQAEABAAQAAAAQAEABAAQAAAAQAEABAAQAAAAQAEABAAQAAAAQAEABAAQAAAAQAEABAAQAAAAQAEABAAQAAAAQAEABAAEABAAAABAAQAEABAAAABAAQAEABAAAABAAQAEABAAAABAAQAEABAAAABAAQAEABAAAABAAQAEABAAAABAAQAEABAAAABAAQAEABAAAABAAQAEAAQAEAAAAEABAAQAEAAAAEABAAQAEAAAAEABAAQAEAAAAEAvqe/BwCeKjUweoA8pQAAAABJRU5ErkJggg==";
+                            imgURL = this._imageURL;
                         }
                         // when we return a nonexistent url to the image, the TiledMapServiceLayer::_tileErrorHandler() method
                         // sets img visibility to 'hidden', so we need to show the image back once we have put the data:image
@@ -481,7 +482,7 @@ define([
                 //First check in the database if the tile exists.
                 //If not then we store the tile in the database later.
                 this.store.retrieve(url, function(success, offlineTile){
-                    if( success )
+                    if( success && offlineTile.img !== "")
                     {
                         console.log("Tile found in storage: " + url);
                         callback(offlineTile.img,tileId,url);
@@ -814,7 +815,7 @@ O.esri.Tiles.TilesStore = function(){
      * @param url
      * @param callback
      */
-    this.retrieve = function(/* String */ url,callback)
+    this.retrieve = function(url,callback)
     {
         if(this._db !== null)
         {
@@ -1006,6 +1007,794 @@ O.esri.Tiles.TilesStore = function(){
     };
 };
 
+
+// Copyright (c) 2013 Pieroxy <pieroxy@pieroxy.net>
+// This work is free. You can redistribute it and/or modify it
+// under the terms of the WTFPL, Version 2
+// For more information see LICENSE.txt or http://www.wtfpl.net/
+//
+// For more information, the home page:
+// http://pieroxy.net/blog/pages/lz-string/testing.html
+//
+// LZ-based compression algorithm, version 1.4.4
+O.esri.Tiles.LZString = (function() {
+
+// private property
+    var f = String.fromCharCode;
+    var keyStrBase64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
+    var keyStrUriSafe = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+-$";
+    var baseReverseDic = {};
+
+    function getBaseValue(alphabet, character) {
+        if (!baseReverseDic[alphabet]) {
+            baseReverseDic[alphabet] = {};
+            for (var i=0 ; i<alphabet.length ; i++) {
+                baseReverseDic[alphabet][alphabet.charAt(i)] = i;
+            }
+        }
+        return baseReverseDic[alphabet][character];
+    }
+
+    var LZString = {
+        compressToBase64 : function (input) {
+            if (input == null) return "";
+            var res = LZString._compress(input, 6, function(a){return keyStrBase64.charAt(a);});
+            switch (res.length % 4) { // To produce valid Base64
+                default: // When could this happen ?
+                case 0 : return res;
+                case 1 : return res+"===";
+                case 2 : return res+"==";
+                case 3 : return res+"=";
+            }
+        },
+
+        decompressFromBase64 : function (input) {
+            if (input == null) return "";
+            if (input == "") return null;
+            return LZString._decompress(input.length, 32, function(index) { return getBaseValue(keyStrBase64, input.charAt(index)); });
+        },
+
+        compressToUTF16 : function (input) {
+            if (input == null) return "";
+            return LZString._compress(input, 15, function(a){return f(a+32);}) + " ";
+        },
+
+        decompressFromUTF16: function (compressed) {
+            if (compressed == null) return "";
+            if (compressed == "") return null;
+            return LZString._decompress(compressed.length, 16384, function(index) { return compressed.charCodeAt(index) - 32; });
+        },
+
+        //compress into uint8array (UCS-2 big endian format)
+        compressToUint8Array: function (uncompressed) {
+            var compressed = LZString.compress(uncompressed);
+            var buf=new Uint8Array(compressed.length*2); // 2 bytes per character
+
+            for (var i=0, TotalLen=compressed.length; i<TotalLen; i++) {
+                var current_value = compressed.charCodeAt(i);
+                buf[i*2] = current_value >>> 8;
+                buf[i*2+1] = current_value % 256;
+            }
+            return buf;
+        },
+
+        //decompress from uint8array (UCS-2 big endian format)
+        decompressFromUint8Array:function (compressed) {
+            if (compressed===null || compressed===undefined){
+                return LZString.decompress(compressed);
+            } else {
+                var buf=new Array(compressed.length/2); // 2 bytes per character
+                for (var i=0, TotalLen=buf.length; i<TotalLen; i++) {
+                    buf[i]=compressed[i*2]*256+compressed[i*2+1];
+                }
+
+                var result = [];
+                buf.forEach(function (c) {
+                    result.push(f(c));
+                });
+                return LZString.decompress(result.join(''));
+
+            }
+
+        },
+
+
+        //compress into a string that is already URI encoded
+        compressToEncodedURIComponent: function (input) {
+            if (input == null) return "";
+            return LZString._compress(input, 6, function(a){return keyStrUriSafe.charAt(a);});
+        },
+
+        //decompress from an output of compressToEncodedURIComponent
+        decompressFromEncodedURIComponent:function (input) {
+            if (input == null) return "";
+            if (input == "") return null;
+            input = input.replace(/ /g, "+");
+            return LZString._decompress(input.length, 32, function(index) { return getBaseValue(keyStrUriSafe, input.charAt(index)); });
+        },
+
+        compress: function (uncompressed) {
+            return LZString._compress(uncompressed, 16, function(a){return f(a);});
+        },
+        _compress: function (uncompressed, bitsPerChar, getCharFromInt) {
+            if (uncompressed == null) return "";
+            var i, value,
+                context_dictionary= {},
+                context_dictionaryToCreate= {},
+                context_c="",
+                context_wc="",
+                context_w="",
+                context_enlargeIn= 2, // Compensate for the first entry which should not count
+                context_dictSize= 3,
+                context_numBits= 2,
+                context_data=[],
+                context_data_val=0,
+                context_data_position=0,
+                ii;
+
+            for (ii = 0; ii < uncompressed.length; ii += 1) {
+                context_c = uncompressed.charAt(ii);
+                if (!Object.prototype.hasOwnProperty.call(context_dictionary,context_c)) {
+                    context_dictionary[context_c] = context_dictSize++;
+                    context_dictionaryToCreate[context_c] = true;
+                }
+
+                context_wc = context_w + context_c;
+                if (Object.prototype.hasOwnProperty.call(context_dictionary,context_wc)) {
+                    context_w = context_wc;
+                } else {
+                    if (Object.prototype.hasOwnProperty.call(context_dictionaryToCreate,context_w)) {
+                        if (context_w.charCodeAt(0)<256) {
+                            for (i=0 ; i<context_numBits ; i++) {
+                                context_data_val = (context_data_val << 1);
+                                if (context_data_position == bitsPerChar-1) {
+                                    context_data_position = 0;
+                                    context_data.push(getCharFromInt(context_data_val));
+                                    context_data_val = 0;
+                                } else {
+                                    context_data_position++;
+                                }
+                            }
+                            value = context_w.charCodeAt(0);
+                            for (i=0 ; i<8 ; i++) {
+                                context_data_val = (context_data_val << 1) | (value&1);
+                                if (context_data_position == bitsPerChar-1) {
+                                    context_data_position = 0;
+                                    context_data.push(getCharFromInt(context_data_val));
+                                    context_data_val = 0;
+                                } else {
+                                    context_data_position++;
+                                }
+                                value = value >> 1;
+                            }
+                        } else {
+                            value = 1;
+                            for (i=0 ; i<context_numBits ; i++) {
+                                context_data_val = (context_data_val << 1) | value;
+                                if (context_data_position ==bitsPerChar-1) {
+                                    context_data_position = 0;
+                                    context_data.push(getCharFromInt(context_data_val));
+                                    context_data_val = 0;
+                                } else {
+                                    context_data_position++;
+                                }
+                                value = 0;
+                            }
+                            value = context_w.charCodeAt(0);
+                            for (i=0 ; i<16 ; i++) {
+                                context_data_val = (context_data_val << 1) | (value&1);
+                                if (context_data_position == bitsPerChar-1) {
+                                    context_data_position = 0;
+                                    context_data.push(getCharFromInt(context_data_val));
+                                    context_data_val = 0;
+                                } else {
+                                    context_data_position++;
+                                }
+                                value = value >> 1;
+                            }
+                        }
+                        context_enlargeIn--;
+                        if (context_enlargeIn == 0) {
+                            context_enlargeIn = Math.pow(2, context_numBits);
+                            context_numBits++;
+                        }
+                        delete context_dictionaryToCreate[context_w];
+                    } else {
+                        value = context_dictionary[context_w];
+                        for (i=0 ; i<context_numBits ; i++) {
+                            context_data_val = (context_data_val << 1) | (value&1);
+                            if (context_data_position == bitsPerChar-1) {
+                                context_data_position = 0;
+                                context_data.push(getCharFromInt(context_data_val));
+                                context_data_val = 0;
+                            } else {
+                                context_data_position++;
+                            }
+                            value = value >> 1;
+                        }
+
+
+                    }
+                    context_enlargeIn--;
+                    if (context_enlargeIn == 0) {
+                        context_enlargeIn = Math.pow(2, context_numBits);
+                        context_numBits++;
+                    }
+                    // Add wc to the dictionary.
+                    context_dictionary[context_wc] = context_dictSize++;
+                    context_w = String(context_c);
+                }
+            }
+
+            // Output the code for w.
+            if (context_w !== "") {
+                if (Object.prototype.hasOwnProperty.call(context_dictionaryToCreate,context_w)) {
+                    if (context_w.charCodeAt(0)<256) {
+                        for (i=0 ; i<context_numBits ; i++) {
+                            context_data_val = (context_data_val << 1);
+                            if (context_data_position == bitsPerChar-1) {
+                                context_data_position = 0;
+                                context_data.push(getCharFromInt(context_data_val));
+                                context_data_val = 0;
+                            } else {
+                                context_data_position++;
+                            }
+                        }
+                        value = context_w.charCodeAt(0);
+                        for (i=0 ; i<8 ; i++) {
+                            context_data_val = (context_data_val << 1) | (value&1);
+                            if (context_data_position == bitsPerChar-1) {
+                                context_data_position = 0;
+                                context_data.push(getCharFromInt(context_data_val));
+                                context_data_val = 0;
+                            } else {
+                                context_data_position++;
+                            }
+                            value = value >> 1;
+                        }
+                    } else {
+                        value = 1;
+                        for (i=0 ; i<context_numBits ; i++) {
+                            context_data_val = (context_data_val << 1) | value;
+                            if (context_data_position == bitsPerChar-1) {
+                                context_data_position = 0;
+                                context_data.push(getCharFromInt(context_data_val));
+                                context_data_val = 0;
+                            } else {
+                                context_data_position++;
+                            }
+                            value = 0;
+                        }
+                        value = context_w.charCodeAt(0);
+                        for (i=0 ; i<16 ; i++) {
+                            context_data_val = (context_data_val << 1) | (value&1);
+                            if (context_data_position == bitsPerChar-1) {
+                                context_data_position = 0;
+                                context_data.push(getCharFromInt(context_data_val));
+                                context_data_val = 0;
+                            } else {
+                                context_data_position++;
+                            }
+                            value = value >> 1;
+                        }
+                    }
+                    context_enlargeIn--;
+                    if (context_enlargeIn == 0) {
+                        context_enlargeIn = Math.pow(2, context_numBits);
+                        context_numBits++;
+                    }
+                    delete context_dictionaryToCreate[context_w];
+                } else {
+                    value = context_dictionary[context_w];
+                    for (i=0 ; i<context_numBits ; i++) {
+                        context_data_val = (context_data_val << 1) | (value&1);
+                        if (context_data_position == bitsPerChar-1) {
+                            context_data_position = 0;
+                            context_data.push(getCharFromInt(context_data_val));
+                            context_data_val = 0;
+                        } else {
+                            context_data_position++;
+                        }
+                        value = value >> 1;
+                    }
+
+
+                }
+                context_enlargeIn--;
+                if (context_enlargeIn == 0) {
+                    context_enlargeIn = Math.pow(2, context_numBits);
+                    context_numBits++;
+                }
+            }
+
+            // Mark the end of the stream
+            value = 2;
+            for (i=0 ; i<context_numBits ; i++) {
+                context_data_val = (context_data_val << 1) | (value&1);
+                if (context_data_position == bitsPerChar-1) {
+                    context_data_position = 0;
+                    context_data.push(getCharFromInt(context_data_val));
+                    context_data_val = 0;
+                } else {
+                    context_data_position++;
+                }
+                value = value >> 1;
+            }
+
+            // Flush the last char
+            while (true) {
+                context_data_val = (context_data_val << 1);
+                if (context_data_position == bitsPerChar-1) {
+                    context_data.push(getCharFromInt(context_data_val));
+                    break;
+                }
+                else context_data_position++;
+            }
+            return context_data.join('');
+        },
+
+        decompress: function (compressed) {
+            if (compressed == null) return "";
+            if (compressed == "") return null;
+            return LZString._decompress(compressed.length, 32768, function(index) { return compressed.charCodeAt(index); });
+        },
+
+        _decompress: function (length, resetValue, getNextValue) {
+            var dictionary = [],
+                next,
+                enlargeIn = 4,
+                dictSize = 4,
+                numBits = 3,
+                entry = "",
+                result = [],
+                i,
+                w,
+                bits, resb, maxpower, power,
+                c,
+                data = {val:getNextValue(0), position:resetValue, index:1};
+
+            for (i = 0; i < 3; i += 1) {
+                dictionary[i] = i;
+            }
+
+            bits = 0;
+            maxpower = Math.pow(2,2);
+            power=1;
+            while (power!=maxpower) {
+                resb = data.val & data.position;
+                data.position >>= 1;
+                if (data.position == 0) {
+                    data.position = resetValue;
+                    data.val = getNextValue(data.index++);
+                }
+                bits |= (resb>0 ? 1 : 0) * power;
+                power <<= 1;
+            }
+
+            switch (next = bits) {
+                case 0:
+                    bits = 0;
+                    maxpower = Math.pow(2,8);
+                    power=1;
+                    while (power!=maxpower) {
+                        resb = data.val & data.position;
+                        data.position >>= 1;
+                        if (data.position == 0) {
+                            data.position = resetValue;
+                            data.val = getNextValue(data.index++);
+                        }
+                        bits |= (resb>0 ? 1 : 0) * power;
+                        power <<= 1;
+                    }
+                    c = f(bits);
+                    break;
+                case 1:
+                    bits = 0;
+                    maxpower = Math.pow(2,16);
+                    power=1;
+                    while (power!=maxpower) {
+                        resb = data.val & data.position;
+                        data.position >>= 1;
+                        if (data.position == 0) {
+                            data.position = resetValue;
+                            data.val = getNextValue(data.index++);
+                        }
+                        bits |= (resb>0 ? 1 : 0) * power;
+                        power <<= 1;
+                    }
+                    c = f(bits);
+                    break;
+                case 2:
+                    return "";
+            }
+            dictionary[3] = c;
+            w = c;
+            result.push(c);
+            while (true) {
+                if (data.index > length) {
+                    return "";
+                }
+
+                bits = 0;
+                maxpower = Math.pow(2,numBits);
+                power=1;
+                while (power!=maxpower) {
+                    resb = data.val & data.position;
+                    data.position >>= 1;
+                    if (data.position == 0) {
+                        data.position = resetValue;
+                        data.val = getNextValue(data.index++);
+                    }
+                    bits |= (resb>0 ? 1 : 0) * power;
+                    power <<= 1;
+                }
+
+                switch (c = bits) {
+                    case 0:
+                        bits = 0;
+                        maxpower = Math.pow(2,8);
+                        power=1;
+                        while (power!=maxpower) {
+                            resb = data.val & data.position;
+                            data.position >>= 1;
+                            if (data.position == 0) {
+                                data.position = resetValue;
+                                data.val = getNextValue(data.index++);
+                            }
+                            bits |= (resb>0 ? 1 : 0) * power;
+                            power <<= 1;
+                        }
+
+                        dictionary[dictSize++] = f(bits);
+                        c = dictSize-1;
+                        enlargeIn--;
+                        break;
+                    case 1:
+                        bits = 0;
+                        maxpower = Math.pow(2,16);
+                        power=1;
+                        while (power!=maxpower) {
+                            resb = data.val & data.position;
+                            data.position >>= 1;
+                            if (data.position == 0) {
+                                data.position = resetValue;
+                                data.val = getNextValue(data.index++);
+                            }
+                            bits |= (resb>0 ? 1 : 0) * power;
+                            power <<= 1;
+                        }
+                        dictionary[dictSize++] = f(bits);
+                        c = dictSize-1;
+                        enlargeIn--;
+                        break;
+                    case 2:
+                        return result.join('');
+                }
+
+                if (enlargeIn == 0) {
+                    enlargeIn = Math.pow(2, numBits);
+                    numBits++;
+                }
+
+                if (dictionary[c]) {
+                    entry = dictionary[c];
+                } else {
+                    if (c === dictSize) {
+                        entry = w + w.charAt(0);
+                    } else {
+                        return null;
+                    }
+                }
+                result.push(entry);
+
+                // Add w+entry[0] to the dictionary.
+                dictionary[dictSize++] = w + entry.charAt(0);
+                enlargeIn--;
+
+                w = entry;
+
+                if (enlargeIn == 0) {
+                    enlargeIn = Math.pow(2, numBits);
+                    numBits++;
+                }
+
+            }
+        }
+    };
+    return LZString;
+})();
+// Copyright (c) 2013 Pieroxy <pieroxy@pieroxy.net>
+// This work is free. You can redistribute it and/or modify it
+// under the terms of the WTFPL, Version 2
+// For more information see LICENSE.txt or http://www.wtfpl.net/
+//
+// This lib is part of the lz-string project.
+// For more information, the home page:
+// http://pieroxy.net/blog/pages/lz-string/index.html
+//
+// Base64 compression / decompression for already compressed content (gif, png, jpg, mp3, ...)
+// version 1.4.1
+
+/*jslint bitwise: true */
+O.esri.Tiles.Base64String = {
+
+    compressToUTF16 : function (input) {
+        var output = [],
+            i,c,
+            current,
+            status = 0;
+
+        input = this.compress(input);
+
+        for (i=0 ; i<input.length ; i++) {
+            c = input.charCodeAt(i);
+            switch (status++) {
+                case 0:
+                    output.push(String.fromCharCode((c >> 1)+32));
+                    current = (c & 1) << 14;
+                    break;
+                case 1:
+                    output.push(String.fromCharCode((current + (c >> 2))+32));
+                    current = (c & 3) << 13;
+                    break;
+                case 2:
+                    output.push(String.fromCharCode((current + (c >> 3))+32));
+                    current = (c & 7) << 12;
+                    break;
+                case 3:
+                    output.push(String.fromCharCode((current + (c >> 4))+32));
+                    current = (c & 15) << 11;
+                    break;
+                case 4:
+                    output.push(String.fromCharCode((current + (c >> 5))+32));
+                    current = (c & 31) << 10;
+                    break;
+                case 5:
+                    output.push(String.fromCharCode((current + (c >> 6))+32));
+                    current = (c & 63) << 9;
+                    break;
+                case 6:
+                    output.push(String.fromCharCode((current + (c >> 7))+32));
+                    current = (c & 127) << 8;
+                    break;
+                case 7:
+                    output.push(String.fromCharCode((current + (c >> 8))+32));
+                    current = (c & 255) << 7;
+                    break;
+                case 8:
+                    output.push(String.fromCharCode((current + (c >> 9))+32));
+                    current = (c & 511) << 6;
+                    break;
+                case 9:
+                    output.push(String.fromCharCode((current + (c >> 10))+32));
+                    current = (c & 1023) << 5;
+                    break;
+                case 10:
+                    output.push(String.fromCharCode((current + (c >> 11))+32));
+                    current = (c & 2047) << 4;
+                    break;
+                case 11:
+                    output.push(String.fromCharCode((current + (c >> 12))+32));
+                    current = (c & 4095) << 3;
+                    break;
+                case 12:
+                    output.push(String.fromCharCode((current + (c >> 13))+32));
+                    current = (c & 8191) << 2;
+                    break;
+                case 13:
+                    output.push(String.fromCharCode((current + (c >> 14))+32));
+                    current = (c & 16383) << 1;
+                    break;
+                case 14:
+                    output.push(String.fromCharCode((current + (c >> 15))+32, (c & 32767)+32));
+                    status = 0;
+                    break;
+            }
+        }
+        output.push(String.fromCharCode(current + 32));
+        return output.join('');
+    },
+
+
+    decompressFromUTF16 : function (input) {
+        var output = [],
+            current,c,
+            status=0,
+            i = 0;
+
+        while (i < input.length) {
+            c = input.charCodeAt(i) - 32;
+
+            switch (status++) {
+                case 0:
+                    current = c << 1;
+                    break;
+                case 1:
+                    output.push(String.fromCharCode(current | (c >> 14)));
+                    current = (c&16383) << 2;
+                    break;
+                case 2:
+                    output.push(String.fromCharCode(current | (c >> 13)));
+                    current = (c&8191) << 3;
+                    break;
+                case 3:
+                    output.push(String.fromCharCode(current | (c >> 12)));
+                    current = (c&4095) << 4;
+                    break;
+                case 4:
+                    output.push(String.fromCharCode(current | (c >> 11)));
+                    current = (c&2047) << 5;
+                    break;
+                case 5:
+                    output.push(String.fromCharCode(current | (c >> 10)));
+                    current = (c&1023) << 6;
+                    break;
+                case 6:
+                    output.push(String.fromCharCode(current | (c >> 9)));
+                    current = (c&511) << 7;
+                    break;
+                case 7:
+                    output.push(String.fromCharCode(current | (c >> 8)));
+                    current = (c&255) << 8;
+                    break;
+                case 8:
+                    output.push(String.fromCharCode(current | (c >> 7)));
+                    current = (c&127) << 9;
+                    break;
+                case 9:
+                    output.push(String.fromCharCode(current | (c >> 6)));
+                    current = (c&63) << 10;
+                    break;
+                case 10:
+                    output.push(String.fromCharCode(current | (c >> 5)));
+                    current = (c&31) << 11;
+                    break;
+                case 11:
+                    output.push(String.fromCharCode(current | (c >> 4)));
+                    current = (c&15) << 12;
+                    break;
+                case 12:
+                    output.push(String.fromCharCode(current | (c >> 3)));
+                    current = (c&7) << 13;
+                    break;
+                case 13:
+                    output.push(String.fromCharCode(current | (c >> 2)));
+                    current = (c&3) << 14;
+                    break;
+                case 14:
+                    output.push(String.fromCharCode(current | (c >> 1)));
+                    current = (c&1) << 15;
+                    break;
+                case 15:
+                    output.push(String.fromCharCode(current | c));
+                    status=0;
+                    break;
+            }
+
+
+            i++;
+        }
+
+        return this.decompress(output.join(''));
+        //return output;
+
+    },
+
+
+    // private property
+    _keyStr : "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=", // jshint ignore:line
+
+    decompress : function (input) {
+        var output = [];
+        var chr1, chr2, chr3, enc1, enc2, enc3, enc4;
+        var i = 1;
+        var odd = input.charCodeAt(0) >> 8;
+
+        while (i < input.length*2 && (i < input.length*2-1 || odd===0)) {
+
+            if (i%2===0) {
+                chr1 = input.charCodeAt(i/2) >> 8;
+                chr2 = input.charCodeAt(i/2) & 255;
+                if (i/2+1 < input.length) {
+                    chr3 = input.charCodeAt(i / 2 + 1) >> 8;
+                }
+                else {
+                    chr3 = NaN;
+                }
+            } else {
+                chr1 = input.charCodeAt((i-1)/2) & 255;
+                if ((i+1)/2 < input.length) {
+                    chr2 = input.charCodeAt((i+1)/2) >> 8;
+                    chr3 = input.charCodeAt((i+1)/2) & 255;
+                } else {
+                    chr2 = chr3 = NaN;
+                }
+            }
+            i+=3;
+
+            enc1 = chr1 >> 2;
+            enc2 = ((chr1 & 3) << 4) | (chr2 >> 4);
+            enc3 = ((chr2 & 15) << 2) | (chr3 >> 6);
+            enc4 = chr3 & 63;
+
+            if (isNaN(chr2) || (i==input.length*2+1 && odd)) {
+                enc3 = enc4 = 64;
+            } else if (isNaN(chr3) || (i==input.length*2 && odd)) {
+                enc4 = 64;
+            }
+
+            output.push(this._keyStr.charAt(enc1));
+            output.push(this._keyStr.charAt(enc2));
+            output.push(this._keyStr.charAt(enc3));
+            output.push(this._keyStr.charAt(enc4));
+        }
+
+        return output.join('');
+    },
+
+    compress : function (input) {
+        var output = [],
+            ol = 1,
+            output_,
+            chr1, chr2, chr3,
+            enc1, enc2, enc3, enc4,
+            i = 0, flush=false;
+
+        input = input.replace(/[^A-Za-z0-9\+\/\=]/g, ""); // jshint ignore:line
+
+        while (i < input.length) {
+
+            enc1 = this._keyStr.indexOf(input.charAt(i++));
+            enc2 = this._keyStr.indexOf(input.charAt(i++));
+            enc3 = this._keyStr.indexOf(input.charAt(i++));
+            enc4 = this._keyStr.indexOf(input.charAt(i++));
+
+            chr1 = (enc1 << 2) | (enc2 >> 4);
+            chr2 = ((enc2 & 15) << 4) | (enc3 >> 2);
+            chr3 = ((enc3 & 3) << 6) | enc4;
+
+            if (ol%2===0) {
+                output_ = chr1 << 8;
+                flush = true;
+
+                if (enc3 != 64) {
+                    output.push(String.fromCharCode(output_ | chr2));
+                    flush = false;
+                }
+                if (enc4 != 64) {
+                    output_ = chr3 << 8;
+                    flush = true;
+                }
+            } else {
+                output.push(String.fromCharCode(output_ | chr1));
+                flush = false;
+
+                if (enc3 != 64) {
+                    output_ = chr2 << 8;
+                    flush = true;
+                }
+                if (enc4 != 64) {
+                    output.push(String.fromCharCode(output_ | chr3));
+                    flush = false;
+                }
+            }
+            ol+=3;
+        }
+
+        if (flush) {
+            output.push(String.fromCharCode(output_));
+            output = output.join('');
+            output = String.fromCharCode(output.charCodeAt(0)|256) + output.substring(1);
+        } else {
+            output = output.join('');
+        }
+
+        return output;
+
+    }
+};
+
+/*jslint bitwise: false */
 
 //https://github.com/gildas-lormeau/zip.js/blob/master/WebContent/zip.js
 /*

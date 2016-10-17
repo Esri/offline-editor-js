@@ -1,4 +1,4 @@
-define(["dojo/_base/declare","esri/geometry/Extent","dojo/query","esri/SpatialReference","esri/layers/TileInfo","esri/layers/TiledMapServiceLayer","dojo/Deferred","dojo/promise/all","dojo/Evented"],function(a,b,c,d,e,f,g,h,i){return a("O.esri.TPK.TPKLayer",[f,i],{map:null,store:null,MAX_DB_SIZE:75,TILE_PATH:"",RECENTER_DELAY:350,PARSING_ERROR:"parsingError",DB_INIT_ERROR:"dbInitError",DB_FULL_ERROR:"dbFullError",NO_SUPPORT_ERROR:"libNotSupportedError",PROGRESS_START:"start",PROGRESS_END:"end",WINDOW_VALIDATED:"windowValidated",DB_VALIDATED:"dbValidated",DATABASE_ERROR_EVENT:"databaseErrorEvent",VALIDATION_EVENT:"validationEvent",PROGRESS_EVENT:"progress",_maxDBSize:75,_isDBWriteable:!0,_isDBValid:!1,_autoCenter:null,_fileEntriesLength:0,_inMemTilesObject:null,_inMemTilesObjectLength:0,_zeroLengthFileCounter:0,constructor:function(){this._self=this,this._inMemTilesIndex=[],this._inMemTilesObject={},this.store=new O.esri.Tiles.TilesStore,this._validate()},extend:function(a){this._fileEntriesLength=a.length,this.emit(this.PROGRESS_EVENT,this.PROGRESS_START),this._parseInMemFiles(a,function(){this._parseConfCdi(function(a){this.initialExtent=this.fullExtent=a,this._parseConfXml(function(a){this.tileInfo=new e(a),this.spatialReference=new d({wkid:this.tileInfo.spatialReference.wkid}),this.loaded=!0,this.onLoad(this),this.emit(this.PROGRESS_EVENT,this.PROGRESS_END)}.bind(this._self))}.bind(this._self))}.bind(this._self))},getTileUrl:function(a,b,d){this.emit(this.PROGRESS_EVENT,this.PROGRESS_START)
+define(["dojo/_base/declare","esri/geometry/Extent","dojo/query","esri/SpatialReference","esri/layers/TileInfo","esri/layers/TiledMapServiceLayer","dojo/Deferred","dojo/promise/all","dojo/Evented"],function(a,b,c,d,e,f,g,h,i){return a("O.esri.TPK.TPKLayer",[f,i],{map:null,store:null,MAX_DB_SIZE:75,TILE_PATH:"",RECENTER_DELAY:350,PARSING_ERROR:"parsingError",DB_INIT_ERROR:"dbInitError",DB_FULL_ERROR:"dbFullError",NO_SUPPORT_ERROR:"libNotSupportedError",PROGRESS_START:"start",PROGRESS_END:"end",WINDOW_VALIDATED:"windowValidated",DB_VALIDATED:"dbValidated",DATABASE_ERROR_EVENT:"databaseErrorEvent",VALIDATION_EVENT:"validationEvent",PROGRESS_EVENT:"progress",_maxDBSize:75,_isDBWriteable:!0,_isDBValid:!1,_autoCenter:null,_fileEntriesLength:0,_inMemTilesObject:null,_inMemTilesObjectLength:0,_zeroLengthFileCounter:0,_imageURL:"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAYAAABccqhmAAAACXBIWXMAAAsTAAALEwEAmpwYAAAKT2lDQ1BQaG90b3Nob3AgSUNDIHByb2ZpbGUAAHjanVNnVFPpFj333vRCS4iAlEtvUhUIIFJCi4AUkSYqIQkQSoghodkVUcERRUUEG8igiAOOjoCMFVEsDIoK2AfkIaKOg6OIisr74Xuja9a89+bN/rXXPues852zzwfACAyWSDNRNYAMqUIeEeCDx8TG4eQuQIEKJHAAEAizZCFz/SMBAPh+PDwrIsAHvgABeNMLCADATZvAMByH/w/qQplcAYCEAcB0kThLCIAUAEB6jkKmAEBGAYCdmCZTAKAEAGDLY2LjAFAtAGAnf+bTAICd+Jl7AQBblCEVAaCRACATZYhEAGg7AKzPVopFAFgwABRmS8Q5ANgtADBJV2ZIALC3AMDOEAuyAAgMADBRiIUpAAR7AGDIIyN4AISZABRG8lc88SuuEOcqAAB4mbI8uSQ5RYFbCC1xB1dXLh4ozkkXKxQ2YQJhmkAuwnmZGTKBNA/g88wAAKCRFRHgg/P9eM4Ors7ONo62Dl8t6r8G/yJiYuP+5c+rcEAAAOF0ftH+LC+zGoA7BoBt/qIl7gRoXgugdfeLZrIPQLUAoOnaV/Nw+H48PEWhkLnZ2eXk5NhKxEJbYcpXff5nwl/AV/1s+X48/Pf14L7iJIEyXYFHBPjgwsz0TKUcz5IJhGLc5o9H/LcL//wd0yLESWK5WCoU41EScY5EmozzMqUiiUKSKcUl0v9k4t8s+wM+3zUAsGo+AXuRLahdYwP2SycQWHTA4vcAAPK7b8HUKAgDgGiD4c93/+8//UegJQCAZkmScQAAXkQkLlTKsz/HCAAARKCBKrBBG/TBGCzABhzBBdzBC/xgNoRCJMTCQhBCCmSAHHJgKayCQiiGzbAdKmAv1EAdNMBRaIaTcA4uwlW4Dj1wD/phCJ7BKLyBCQRByAgTYSHaiAFiilgjjggXmYX4IcFIBBKLJCDJiBRRIkuRNUgxUopUIFVIHfI9cgI5h1xGupE7yAAygvyGvEcxlIGyUT3UDLVDuag3GoRGogvQZHQxmo8WoJvQcrQaPYw2oefQq2gP2o8+Q8cwwOgYBzPEbDAuxsNCsTgsCZNjy7EirAyrxhqwVqwDu4n1Y8+xdwQSgUXACTYEd0IgYR5BSFhMWE7YSKggHCQ0EdoJNwkDhFHCJyKTqEu0JroR+cQYYjIxh1hILCPWEo8TLxB7iEPENyQSiUMyJ7mQAkmxpFTSEtJG0m5SI+ksqZs0SBojk8naZGuyBzmULCAryIXkneTD5DPkG+Qh8lsKnWJAcaT4U+IoUspqShnlEOU05QZlmDJBVaOaUt2ooVQRNY9aQq2htlKvUYeoEzR1mjnNgxZJS6WtopXTGmgXaPdpr+h0uhHdlR5Ol9BX0svpR+iX6AP0dwwNhhWDx4hnKBmbGAcYZxl3GK+YTKYZ04sZx1QwNzHrmOeZD5lvVVgqtip8FZHKCpVKlSaVGyovVKmqpqreqgtV81XLVI+pXlN9rkZVM1PjqQnUlqtVqp1Q61MbU2epO6iHqmeob1Q/pH5Z/YkGWcNMw09DpFGgsV/jvMYgC2MZs3gsIWsNq4Z1gTXEJrHN2Xx2KruY/R27iz2qqaE5QzNKM1ezUvOUZj8H45hx+Jx0TgnnKKeX836K3hTvKeIpG6Y0TLkxZVxrqpaXllirSKtRq0frvTau7aedpr1Fu1n7gQ5Bx0onXCdHZ4/OBZ3nU9lT3acKpxZNPTr1ri6qa6UbobtEd79up+6Ynr5egJ5Mb6feeb3n+hx9L/1U/W36p/VHDFgGswwkBtsMzhg8xTVxbzwdL8fb8VFDXcNAQ6VhlWGX4YSRudE8o9VGjUYPjGnGXOMk423GbcajJgYmISZLTepN7ppSTbmmKaY7TDtMx83MzaLN1pk1mz0x1zLnm+eb15vft2BaeFostqi2uGVJsuRaplnutrxuhVo5WaVYVVpds0atna0l1rutu6cRp7lOk06rntZnw7Dxtsm2qbcZsOXYBtuutm22fWFnYhdnt8Wuw+6TvZN9un2N/T0HDYfZDqsdWh1+c7RyFDpWOt6azpzuP33F9JbpL2dYzxDP2DPjthPLKcRpnVOb00dnF2e5c4PziIuJS4LLLpc+Lpsbxt3IveRKdPVxXeF60vWdm7Obwu2o26/uNu5p7ofcn8w0nymeWTNz0MPIQ+BR5dE/C5+VMGvfrH5PQ0+BZ7XnIy9jL5FXrdewt6V3qvdh7xc+9j5yn+M+4zw33jLeWV/MN8C3yLfLT8Nvnl+F30N/I/9k/3r/0QCngCUBZwOJgUGBWwL7+Hp8Ib+OPzrbZfay2e1BjKC5QRVBj4KtguXBrSFoyOyQrSH355jOkc5pDoVQfujW0Adh5mGLw34MJ4WHhVeGP45wiFga0TGXNXfR3ENz30T6RJZE3ptnMU85ry1KNSo+qi5qPNo3ujS6P8YuZlnM1VidWElsSxw5LiquNm5svt/87fOH4p3iC+N7F5gvyF1weaHOwvSFpxapLhIsOpZATIhOOJTwQRAqqBaMJfITdyWOCnnCHcJnIi/RNtGI2ENcKh5O8kgqTXqS7JG8NXkkxTOlLOW5hCepkLxMDUzdmzqeFpp2IG0yPTq9MYOSkZBxQqohTZO2Z+pn5mZ2y6xlhbL+xW6Lty8elQfJa7OQrAVZLQq2QqboVFoo1yoHsmdlV2a/zYnKOZarnivN7cyzytuQN5zvn//tEsIS4ZK2pYZLVy0dWOa9rGo5sjxxedsK4xUFK4ZWBqw8uIq2Km3VT6vtV5eufr0mek1rgV7ByoLBtQFr6wtVCuWFfevc1+1dT1gvWd+1YfqGnRs+FYmKrhTbF5cVf9go3HjlG4dvyr+Z3JS0qavEuWTPZtJm6ebeLZ5bDpaql+aXDm4N2dq0Dd9WtO319kXbL5fNKNu7g7ZDuaO/PLi8ZafJzs07P1SkVPRU+lQ27tLdtWHX+G7R7ht7vPY07NXbW7z3/T7JvttVAVVN1WbVZftJ+7P3P66Jqun4lvttXa1ObXHtxwPSA/0HIw6217nU1R3SPVRSj9Yr60cOxx++/p3vdy0NNg1VjZzG4iNwRHnk6fcJ3/ceDTradox7rOEH0x92HWcdL2pCmvKaRptTmvtbYlu6T8w+0dbq3nr8R9sfD5w0PFl5SvNUyWna6YLTk2fyz4ydlZ19fi753GDborZ752PO32oPb++6EHTh0kX/i+c7vDvOXPK4dPKy2+UTV7hXmq86X23qdOo8/pPTT8e7nLuarrlca7nuer21e2b36RueN87d9L158Rb/1tWeOT3dvfN6b/fF9/XfFt1+cif9zsu72Xcn7q28T7xf9EDtQdlD3YfVP1v+3Njv3H9qwHeg89HcR/cGhYPP/pH1jw9DBY+Zj8uGDYbrnjg+OTniP3L96fynQ89kzyaeF/6i/suuFxYvfvjV69fO0ZjRoZfyl5O/bXyl/erA6xmv28bCxh6+yXgzMV70VvvtwXfcdx3vo98PT+R8IH8o/2j5sfVT0Kf7kxmTk/8EA5jz/GMzLdsAAAAgY0hSTQAAeiUAAICDAAD5/wAAgOkAAHUwAADqYAAAOpgAABdvkl/FRgAABQdJREFUeNrs2yFv6mocwOH/ualYRUVJRrKKCRATCCZqJ/mOfKQJBGaiYkcguoSJigoQTc4VN222Mdhu7l0ysudJjqFAD13669u37a/lcvkngB8piYhYLBa2BPxAf9kEIACAAAACAAgAIACAAAACAAgAIACAAAACAAgAIACAAAACAAgAIACAAAACAAgAIACAAAACAAgAIACAAAACAAgAIACAAAACAAgAIACAAAACAAgACAAgAIAAAAIACAAgAIAAAAIACAAgAIAAAAIACAAgAIAAAAIACAAgAIAAAAIACAAgAIAAAAIACAAgAIAAAAIACAAgAIAAAAIACAAgAIAAAAIACAAIACAAgAAAAgAIACAAgAAAAgAIACAAgAAAAgAIACAAgAAAAgAIACAAgAAAAgAIACAAgAAAAgAIACAAgAAAAgAIACAAgAAAAgAIACAAgAAAAgAIAPxsiU3wfbRtG1mWnVzedV3kef7q9a7rYrvdxm63i4iILMtiNBpFkiQfftdnZFkWbdtGRAzr7j+fZdnR9Xy0jiRJTv5eBOBHqaoqsiyLm5ubo8ubponFYjG8Vtd1VFV1sKMlSRI3NzdRFMXJ7/qMsixjtVpFRAzr7j9fluVBkD67jjzPoyxLf3gBoLfZbGI8Hh/dqV6q6zoeHh4iSZKYTCYxGo0iImK73Q7Luq6L6+vrg88WRfFqHfv9Puq6jjRN4+rq6tV7Ly4u/tNvKori3e9I09QfXAB4a71ex93d3ckhfNd1UVXVcIR+OZTO8zyKooj7+/uoqiouLy8Pdra3I4OmaaKu67i4uIjpdPq//p63seH7MAn4DXVdF+v1+sOjf390f+88Osuy4ci/2WxsVATgXEwmk2ia5uSOu91uIyJiPB4ffU+/rJ/AA6cAZ2A6ncbz83NUVRV5nr97hO8n104Nrftln53s+ypVVR2czpj8MwLghPl8HkmSDBN556xt22ia5tU/jAA4IU3TmE6nUVVVVFUVs9nsbH/LqUuFGAFwxPX1deR5HnVdD+f8LwPx0fl9f2OQy20IwJm6vb0dTgX2+/3wej8vcCoA/VDb3XYIwLmeoyVJzGaz6LpuOKJHRFxeXkbEP5cDj+mX9e8FAThD4/H44HJfURSRpmk0TROPj48Hn3l4eIimaSJN06O3A4NJwDMxm82ibdtXo4D5fB6r1Sp+//4dz8/Pw5H+6ekpdrtdJEkS8/n8S/9f713ie3vaceo9x557QAB451Sgfyin34HKshweunk5HzAej2MymXz5+f9nbjJyI9L39Wu5XP55+XQZ39uxR4Z3u90wSXjqEV0wAjhjx47oaZq63Me/ZhIQBAAQAEAAAAEABAAQAEAAAAEABAAQAEAAAAEABAAQAEAAAAEABAAQAEAAAAEABAAQAEAAAAEABAAQAEAAAAEABAAQAEAAAAEABAAQAEAAAAEAAbAJQAAAAQAEABAAQAAAAQAEABAAQAAAAQAEABAAQAAAAQAEABAAQAAAAQAEABAAQAAAAQAEABAAQAAAAQAEABAAQAAAAQAEABAAQAAAAQAEABAAEABAAAABAAQAEABAAAABAAQAEABAAAABAAQAEABAAAABAAQAEABAAAABAAQAEABAAAABAAQAEABAAAABAAQAEABAAAABAAQAEABAAAABAAQAEAAQAEAAAAEABAAQAEAAAAEABAAQAEAAAAEABAAQAEAAAAEAvqe/BwCeKjUweoA8pQAAAABJRU5ErkJggg==",constructor:function(){this._self=this,this._inMemTilesIndex=[],this._inMemTilesObject={},this.store=new O.esri.Tiles.TilesStore,this._validate()},extend:function(a){this._fileEntriesLength=a.length,this.emit(this.PROGRESS_EVENT,this.PROGRESS_START),this._parseInMemFiles(a,function(){this._parseConfCdi(function(a){this.initialExtent=this.fullExtent=a,this._parseConfXml(function(a){this.tileInfo=new e(a),this.spatialReference=new d({wkid:this.tileInfo.spatialReference.wkid}),this.loaded=!0,this.onLoad(this),this.emit(this.PROGRESS_EVENT,this.PROGRESS_END)}.bind(this._self))}.bind(this._self))}.bind(this._self))},getTileUrl:function(a,b,d){this.emit(this.PROGRESS_EVENT,this.PROGRESS_START)
 var e=this._self.TILE_PATH+"_alllayers",f=this._getCacheFilePath(e,a,b,d)
 if(this._inMemTilesObject!={}){var g="void:/"+a+"/"+b+"/"+d
 return null==this.map&&(this.map=this.getMap()),null==this._autoCenter&&(this._autoCenter=new O.esri.TPK.autoCenterMap(this.map,this.RECENTER_DELAY),this._autoCenter.init()),this._getInMemTiles(f,e,a,b,d,g,function(a,b,d){var e=c("img[src="+b+"]")[0]
@@ -15,7 +15,7 @@ case"PNG24":f=g+a
 break
 case"PNG32":f=g+a
 break
-default:f="data:image/jpg;base64,"+a}e.style.borderColor="blue"}else e.style.borderColor="green",f="data:image/png;base64,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pmk0TROPj48Hn3l4eIimaSJN06O3A4NJwDMxm82ibdtXo4D5fB6r1Sp+//4dz8/Pw5H+6ekpdrtdJEkS8/n8S/9f713ie3vaceo9x557QAB451Sgfyin34HKshweunk5HzAej2MymXz5+f9nbjJyI9L39Wu5XP55+XQZ39uxR4Z3u90wSXjqEV0wAjhjx47oaZq63Me/ZhIQBAAQAEAAAAEABAAQAEAAAAEABAAQAEAAAAEABAAQAEAAAAEABAAQAEAAAAEABAAQAEAAAAEABAAQAEAAAAEABAAQAEAAAAEABAAQAEAAAAEAAbAJQAAAAQAEABAAQAAAAQAEABAAQAAAAQAEABAAQAAAAQAEABAAQAAAAQAEABAAQAAAAQAEABAAQAAAAQAEABAAQAAAAQAEABAAQAAAAQAEABAAEABAAAABAAQAEABAAAABAAQAEABAAAABAAQAEABAAAABAAQAEABAAAABAAQAEABAAAABAAQAEABAAAABAAQAEABAAAABAAQAEABAAAABAAQAEAAQAEAAAAEABAAQAEAAAAEABAAQAEAAAAEABAAQAEAAAAEAvqe/BwCeKjUweoA8pQAAAABJRU5ErkJggg=="
+default:f="data:image/jpg;base64,"+a}e.style.borderColor="blue"}else e.style.borderColor="green",f=this._imageURL
 return e.style.visibility="visible",e.src=f,this.emit(this.PROGRESS_EVENT,this.PROGRESS_END),""}.bind(this._self)),g}},setMaxDBSize:function(a){var b=/^\d+$/
 b.test(a)&&a<=this.MAX_DB_SIZE&&(this._maxDBSize=a)},getDBSize:function(a){this.store.usedSpace(function(b,c){a(b,c)}.bind(this))},setDBWriteable:function(a){this._isDBWriteable=a},isDBValid:function(){return this._validate(),this._isDBValid},loadFromURL:function(a,b){this.isDBValid()?this.store.store(a,function(a,c){a?b(!0,""):b(!1,c)}):b(!1,"not supported")},_validate:function(){window.File||window.FileReader||window.Blob||window.btoa||window.DataView?this.emit(this.VALIDATION_EVENT,{msg:this.WINDOW_VALIDATED,err:null}):this.emit(this.VALIDATION_EVENT,{msg:this.NO_SUPPORT_ERROR,err:null}),this.store.isSupported()?this.store.init(function(a){a===!1?this.emit(this.DATABASE_ERROR_EVENT,{msg:this.DB_INIT_ERROR,err:null}):this.store.usedSpace(function(a,b){var c=this._bytes2MBs(a.sizeBytes)
 c>this.MAX_DB_SIZE&&this.emit(this.DATABASE_ERROR_EVENT,{msg:this.DB_FULL_ERROR,err:b}),this.emit(this.VALIDATION_EVENT,{msg:this.DB_VALIDATED,err:null}),this._isDBValid=!0}.bind(this))}.bind(this)):this.emit(this.VALIDATION_EVENT,{msg:this.NO_SUPPORT_ERROR,err:null})},_parseInMemFiles:function(a,b){var c=this._fileEntriesLength
@@ -38,7 +38,7 @@ a(m)},_parseConfXml:function(a){var b=this._inMemTilesObject[this.TILE_PATH+"CON
 f.rows=parseInt(e.TileCacheInfo.TileRows),f.cols=parseInt(e.TileCacheInfo.TileCols),f.dpi=parseInt(e.TileCacheInfo.DPI),f.format=e.TileImageInfo.CacheTileFormat,f.compressionQuality=parseInt(e.TileImageInfo.CompressionQuality),f.origin={x:parseInt(e.TileCacheInfo.TileOrigin.X),y:parseInt(e.TileCacheInfo.TileOrigin.Y)},f.spatialReference={wkid:parseInt(e.TileCacheInfo.SpatialReference.WKID)}
 for(var g=e.TileCacheInfo.LODInfos.LODInfo,h=[],i=0;i<g.length;i++)h.push({level:parseFloat(g[i].LevelID),resolution:parseFloat(g[i].Resolution),scale:parseFloat(g[i].Scale)})
 f.lods=h,a(f)},_getInMemTiles:function(a,b,c,d,e,f,g){var h=this._self,i=this.store
-this.store.retrieve(a,function(j,k){if(j)g(k.img,f,a)
+this.store.retrieve(a,function(j,k){if(j&&""!==k.img)g(k.img,f,a)
 else{var l,m=128*Math.floor(d/128),n=128*Math.floor(e/128),o=this._getCacheFilePath(b,c,m,n).toLocaleUpperCase(),p=o+".BUNDLE",q=this._inMemTilesObject[p],r=this._inMemTilesObject[o+".BUNDLX"]
 if(void 0!==q||void 0!==r){l=this._getOffset(c,d,e,m,n)
 var s=h._getPointer(r,l)
@@ -66,7 +66,110 @@ c.onsuccess=function(c){var d=c.target.result
 if(d){var e=d.value,f=JSON.stringify(e)
 b.sizeBytes+=this._stringBytes(f),b.tileCount+=1,d["continue"]()}else a(b,null)}.bind(this),c.onerror=function(b){a(null,b)}}else a(null,null)},this._stringBytes=function(a){return a.length},this.init=function(a){var b=indexedDB.open(this.dbName,4)
 a=a||function(a){}.bind(this),b.onerror=function(b){a(!1,b.target.errorCode)}.bind(this),b.onupgradeneeded=function(a){var b=a.target.result
-b.objectStoreNames.contains(this.objectStoreName)&&b.deleteObjectStore(this.objectStoreName),b.createObjectStore(this.objectStoreName,{keyPath:"url"})}.bind(this),b.onsuccess=function(b){this._db=b.target.result,a(!0)}.bind(this)}},function(a){function b(){var a=-1,b=this
+b.objectStoreNames.contains(this.objectStoreName)&&b.deleteObjectStore(this.objectStoreName),b.createObjectStore(this.objectStoreName,{keyPath:"url"})}.bind(this),b.onsuccess=function(b){this._db=b.target.result,a(!0)}.bind(this)}},O.esri.Tiles.LZString=function(){function a(a,b){if(!e[a]){e[a]={}
+for(var c=0;c<a.length;c++)e[a][a.charAt(c)]=c}return e[a][b]}var b=String.fromCharCode,c="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=",d="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+-$",e={},f={compressToBase64:function(a){if(null==a)return""
+var b=f._compress(a,6,function(a){return c.charAt(a)})
+switch(b.length%4){default:case 0:return b
+case 1:return b+"==="
+case 2:return b+"=="
+case 3:return b+"="}},decompressFromBase64:function(b){return null==b?"":""==b?null:f._decompress(b.length,32,function(d){return a(c,b.charAt(d))})},compressToUTF16:function(a){return null==a?"":f._compress(a,15,function(a){return b(a+32)})+" "},decompressFromUTF16:function(a){return null==a?"":""==a?null:f._decompress(a.length,16384,function(b){return a.charCodeAt(b)-32})},compressToUint8Array:function(a){for(var b=f.compress(a),c=new Uint8Array(2*b.length),d=0,e=b.length;e>d;d++){var g=b.charCodeAt(d)
+c[2*d]=g>>>8,c[2*d+1]=g%256}return c},decompressFromUint8Array:function(a){if(null===a||void 0===a)return f.decompress(a)
+for(var c=new Array(a.length/2),d=0,e=c.length;e>d;d++)c[d]=256*a[2*d]+a[2*d+1]
+var g=[]
+return c.forEach(function(a){g.push(b(a))}),f.decompress(g.join(""))},compressToEncodedURIComponent:function(a){return null==a?"":f._compress(a,6,function(a){return d.charAt(a)})},decompressFromEncodedURIComponent:function(b){return null==b?"":""==b?null:(b=b.replace(/ /g,"+"),f._decompress(b.length,32,function(c){return a(d,b.charAt(c))}))},compress:function(a){return f._compress(a,16,function(a){return b(a)})},_compress:function(a,b,c){if(null==a)return""
+var d,e,f,g={},h={},i="",j="",k="",l=2,m=3,n=2,o=[],p=0,q=0
+for(f=0;f<a.length;f+=1)if(i=a.charAt(f),Object.prototype.hasOwnProperty.call(g,i)||(g[i]=m++,h[i]=!0),j=k+i,Object.prototype.hasOwnProperty.call(g,j))k=j
+else{if(Object.prototype.hasOwnProperty.call(h,k)){if(k.charCodeAt(0)<256){for(d=0;n>d;d++)p<<=1,q==b-1?(q=0,o.push(c(p)),p=0):q++
+for(e=k.charCodeAt(0),d=0;8>d;d++)p=p<<1|1&e,q==b-1?(q=0,o.push(c(p)),p=0):q++,e>>=1}else{for(e=1,d=0;n>d;d++)p=p<<1|e,q==b-1?(q=0,o.push(c(p)),p=0):q++,e=0
+for(e=k.charCodeAt(0),d=0;16>d;d++)p=p<<1|1&e,q==b-1?(q=0,o.push(c(p)),p=0):q++,e>>=1}l--,0==l&&(l=Math.pow(2,n),n++),delete h[k]}else for(e=g[k],d=0;n>d;d++)p=p<<1|1&e,q==b-1?(q=0,o.push(c(p)),p=0):q++,e>>=1
+l--,0==l&&(l=Math.pow(2,n),n++),g[j]=m++,k=String(i)}if(""!==k){if(Object.prototype.hasOwnProperty.call(h,k)){if(k.charCodeAt(0)<256){for(d=0;n>d;d++)p<<=1,q==b-1?(q=0,o.push(c(p)),p=0):q++
+for(e=k.charCodeAt(0),d=0;8>d;d++)p=p<<1|1&e,q==b-1?(q=0,o.push(c(p)),p=0):q++,e>>=1}else{for(e=1,d=0;n>d;d++)p=p<<1|e,q==b-1?(q=0,o.push(c(p)),p=0):q++,e=0
+for(e=k.charCodeAt(0),d=0;16>d;d++)p=p<<1|1&e,q==b-1?(q=0,o.push(c(p)),p=0):q++,e>>=1}l--,0==l&&(l=Math.pow(2,n),n++),delete h[k]}else for(e=g[k],d=0;n>d;d++)p=p<<1|1&e,q==b-1?(q=0,o.push(c(p)),p=0):q++,e>>=1
+l--,0==l&&(l=Math.pow(2,n),n++)}for(e=2,d=0;n>d;d++)p=p<<1|1&e,q==b-1?(q=0,o.push(c(p)),p=0):q++,e>>=1
+for(;;){if(p<<=1,q==b-1){o.push(c(p))
+break}q++}return o.join("")},decompress:function(a){return null==a?"":""==a?null:f._decompress(a.length,32768,function(b){return a.charCodeAt(b)})},_decompress:function(a,c,d){var e,f,g,h,i,j,k,l,m=[],n=4,o=4,p=3,q="",r=[],s={val:d(0),position:c,index:1}
+for(f=0;3>f;f+=1)m[f]=f
+for(h=0,j=Math.pow(2,2),k=1;k!=j;)i=s.val&s.position,s.position>>=1,0==s.position&&(s.position=c,s.val=d(s.index++)),h|=(i>0?1:0)*k,k<<=1
+switch(e=h){case 0:for(h=0,j=Math.pow(2,8),k=1;k!=j;)i=s.val&s.position,s.position>>=1,0==s.position&&(s.position=c,s.val=d(s.index++)),h|=(i>0?1:0)*k,k<<=1
+l=b(h)
+break
+case 1:for(h=0,j=Math.pow(2,16),k=1;k!=j;)i=s.val&s.position,s.position>>=1,0==s.position&&(s.position=c,s.val=d(s.index++)),h|=(i>0?1:0)*k,k<<=1
+l=b(h)
+break
+case 2:return""}for(m[3]=l,g=l,r.push(l);;){if(s.index>a)return""
+for(h=0,j=Math.pow(2,p),k=1;k!=j;)i=s.val&s.position,s.position>>=1,0==s.position&&(s.position=c,s.val=d(s.index++)),h|=(i>0?1:0)*k,k<<=1
+switch(l=h){case 0:for(h=0,j=Math.pow(2,8),k=1;k!=j;)i=s.val&s.position,s.position>>=1,0==s.position&&(s.position=c,s.val=d(s.index++)),h|=(i>0?1:0)*k,k<<=1
+m[o++]=b(h),l=o-1,n--
+break
+case 1:for(h=0,j=Math.pow(2,16),k=1;k!=j;)i=s.val&s.position,s.position>>=1,0==s.position&&(s.position=c,s.val=d(s.index++)),h|=(i>0?1:0)*k,k<<=1
+m[o++]=b(h),l=o-1,n--
+break
+case 2:return r.join("")}if(0==n&&(n=Math.pow(2,p),p++),m[l])q=m[l]
+else{if(l!==o)return null
+q=g+g.charAt(0)}r.push(q),m[o++]=g+q.charAt(0),n--,g=q,0==n&&(n=Math.pow(2,p),p++)}}}
+return f}(),O.esri.Tiles.Base64String={compressToUTF16:function(a){var b,c,d,e=[],f=0
+for(a=this.compress(a),b=0;b<a.length;b++)switch(c=a.charCodeAt(b),f++){case 0:e.push(String.fromCharCode((c>>1)+32)),d=(1&c)<<14
+break
+case 1:e.push(String.fromCharCode(d+(c>>2)+32)),d=(3&c)<<13
+break
+case 2:e.push(String.fromCharCode(d+(c>>3)+32)),d=(7&c)<<12
+break
+case 3:e.push(String.fromCharCode(d+(c>>4)+32)),d=(15&c)<<11
+break
+case 4:e.push(String.fromCharCode(d+(c>>5)+32)),d=(31&c)<<10
+break
+case 5:e.push(String.fromCharCode(d+(c>>6)+32)),d=(63&c)<<9
+break
+case 6:e.push(String.fromCharCode(d+(c>>7)+32)),d=(127&c)<<8
+break
+case 7:e.push(String.fromCharCode(d+(c>>8)+32)),d=(255&c)<<7
+break
+case 8:e.push(String.fromCharCode(d+(c>>9)+32)),d=(511&c)<<6
+break
+case 9:e.push(String.fromCharCode(d+(c>>10)+32)),d=(1023&c)<<5
+break
+case 10:e.push(String.fromCharCode(d+(c>>11)+32)),d=(2047&c)<<4
+break
+case 11:e.push(String.fromCharCode(d+(c>>12)+32)),d=(4095&c)<<3
+break
+case 12:e.push(String.fromCharCode(d+(c>>13)+32)),d=(8191&c)<<2
+break
+case 13:e.push(String.fromCharCode(d+(c>>14)+32)),d=(16383&c)<<1
+break
+case 14:e.push(String.fromCharCode(d+(c>>15)+32,(32767&c)+32)),f=0}return e.push(String.fromCharCode(d+32)),e.join("")},decompressFromUTF16:function(a){for(var b,c,d=[],e=0,f=0;f<a.length;){switch(c=a.charCodeAt(f)-32,e++){case 0:b=c<<1
+break
+case 1:d.push(String.fromCharCode(b|c>>14)),b=(16383&c)<<2
+break
+case 2:d.push(String.fromCharCode(b|c>>13)),b=(8191&c)<<3
+break
+case 3:d.push(String.fromCharCode(b|c>>12)),b=(4095&c)<<4
+break
+case 4:d.push(String.fromCharCode(b|c>>11)),b=(2047&c)<<5
+break
+case 5:d.push(String.fromCharCode(b|c>>10)),b=(1023&c)<<6
+break
+case 6:d.push(String.fromCharCode(b|c>>9)),b=(511&c)<<7
+break
+case 7:d.push(String.fromCharCode(b|c>>8)),b=(255&c)<<8
+break
+case 8:d.push(String.fromCharCode(b|c>>7)),b=(127&c)<<9
+break
+case 9:d.push(String.fromCharCode(b|c>>6)),b=(63&c)<<10
+break
+case 10:d.push(String.fromCharCode(b|c>>5)),b=(31&c)<<11
+break
+case 11:d.push(String.fromCharCode(b|c>>4)),b=(15&c)<<12
+break
+case 12:d.push(String.fromCharCode(b|c>>3)),b=(7&c)<<13
+break
+case 13:d.push(String.fromCharCode(b|c>>2)),b=(3&c)<<14
+break
+case 14:d.push(String.fromCharCode(b|c>>1)),b=(1&c)<<15
+break
+case 15:d.push(String.fromCharCode(b|c)),e=0}f++}return this.decompress(d.join(""))},_keyStr:"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=",decompress:function(a){for(var b,c,d,e,f,g,h,i=[],j=1,k=a.charCodeAt(0)>>8;j<2*a.length&&(j<2*a.length-1||0===k);)j%2===0?(b=a.charCodeAt(j/2)>>8,c=255&a.charCodeAt(j/2),d=j/2+1<a.length?a.charCodeAt(j/2+1)>>8:NaN):(b=255&a.charCodeAt((j-1)/2),(j+1)/2<a.length?(c=a.charCodeAt((j+1)/2)>>8,d=255&a.charCodeAt((j+1)/2)):c=d=NaN),j+=3,e=b>>2,f=(3&b)<<4|c>>4,g=(15&c)<<2|d>>6,h=63&d,isNaN(c)||j==2*a.length+1&&k?g=h=64:(isNaN(d)||j==2*a.length&&k)&&(h=64),i.push(this._keyStr.charAt(e)),i.push(this._keyStr.charAt(f)),i.push(this._keyStr.charAt(g)),i.push(this._keyStr.charAt(h))
+return i.join("")},compress:function(a){var b,c,d,e,f,g,h,i,j=[],k=1,l=0,m=!1
+for(a=a.replace(/[^A-Za-z0-9\+\/\=]/g,"");l<a.length;)f=this._keyStr.indexOf(a.charAt(l++)),g=this._keyStr.indexOf(a.charAt(l++)),h=this._keyStr.indexOf(a.charAt(l++)),i=this._keyStr.indexOf(a.charAt(l++)),c=f<<2|g>>4,d=(15&g)<<4|h>>2,e=(3&h)<<6|i,k%2===0?(b=c<<8,m=!0,64!=h&&(j.push(String.fromCharCode(b|d)),m=!1),64!=i&&(b=e<<8,m=!0)):(j.push(String.fromCharCode(b|c)),m=!1,64!=h&&(b=d<<8,m=!0),64!=i&&(j.push(String.fromCharCode(b|e)),m=!1)),k+=3
+return m?(j.push(String.fromCharCode(b)),j=j.join(""),j=String.fromCharCode(256|j.charCodeAt(0))+j.substring(1)):j=j.join(""),j}},function(a){function b(){var a=-1,b=this
 b.append=function(c){var d,e=b.table
 for(d=0;d<c.length;d++)a=a>>>8^e[255&(a^c[d])]},b.get=function(){return~a}}function c(a,b,c){return a.slice?a.slice(b,b+c):a.webkitSlice?a.webkitSlice(b,b+c):a.mozSlice?a.mozSlice(b,b+c):a.msSlice?a.msSlice(b,b+c):void 0}function d(a,b){var c,d
 return c=new ArrayBuffer(a),d=new Uint8Array(c),b&&d.set(b,0),{buffer:c,array:d,view:new DataView(c)}}function e(){}function f(a){function b(b,c){var f=new Blob([a],{type:M})

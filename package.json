@@ -1,9 +1,9 @@
 {
   "name": "esri-offline-maps",
-  "version": "3.5.0",
+  "version": "3.6.0",
   "description": "Lightweight set of libraries for working offline with map tiles and editing with ArcGIS feature services",
   "author": "Andy Gup <agup@esri.com> (http://blog.andygup.net)",
-  "license": "Apache 2.0",
+  "license": "Apache-2.0",
   "main": "dist/offline-edit-min.js",
   "contributors": [
     "Javier Abadia",
@@ -26,8 +26,8 @@
   "homepage": "http://esri.github.io/offline-editor-js/demo/",
   "dependencies": {},
   "devDependencies": {
-    "grunt": "^0.4.5",
     "gh-release": "^2.0.0",
+    "grunt": "^0.4.5",
     "grunt-contrib-compress": "^0.13.0",
     "grunt-contrib-concat": "^0.5.1",
     "grunt-contrib-jshint": "^0.11.1",
