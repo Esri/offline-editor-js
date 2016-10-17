@@ -1,5 +1,14 @@
 # offline-editor-js - Changelog
 
+## Version 3.6.0 - October 17, 2016
+
+No breaking changes.
+
+**Enhancements**
+* Closes #487 - missing libraries in offline-tpk-src.js
+* Closes #488 - fix package.json SPDX license expression. Pretty much only affects the latest versions of grunt-cli.
+
+
 ## Version 3.5.0 - September 15, 2016
 
 Possible breaking changes. Changes to database storage pattern.
