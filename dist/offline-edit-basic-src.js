@@ -1,4 +1,4 @@
-/*! esri-offline-maps - v3.6.0 - 2016-10-17
+/*! esri-offline-maps - v3.7.0 - 2016-11-01
 *   Copyright (c) 2016 Environmental Systems Research Institute, Inc.
 *   Apache License*/
 // Configure offline/online detection
@@ -40,8 +40,9 @@ define([
                 _onlineStatus: "online",
                 _featureLayers: {},
                 _editStore: new O.esri.Edit.EditStorePOLS(),
-                _defaultXhrTimeout: 15000, // ms
+                _defaultXhrTimeout: 15000,      // ms
                 _autoOfflineDetect: true,
+                _esriFieldTypeOID: "",          // Determines the correct casing for objectid. Some feature layers use different casing
 
                 ONLINE: "online",				// all edits will directly go to the server
                 OFFLINE: "offline",             // edits will be enqueued
@@ -91,6 +92,14 @@ define([
                     // how esri.Graphics assign a unique ID to a graphic. If it is not, then this
                     // library will break and we'll have to re-architect how it manages UIDs.
                     layer.objectIdField = this.DB_UID;
+
+                    // NOTE: set the casing for the feature layers objectid.
+                    for(var i = 0; i < layer.fields.length; i++){
+                        if(layer.fields[i].type === "esriFieldTypeOID"){
+                            this._esriFieldTypeOID = layer.fields[i].name;
+                            break;
+                        }
+                    }
 
                     var url = null;
 
@@ -836,7 +845,29 @@ define([
                     this._makeEditRequest(layer, adds, updates, deletes,
                         function (addResults, updateResults, deleteResults) {
 
+                            // addResults present a special case for handling objectid
                             if(addResults.length > 0) {
+
+                                var objectid = "";
+
+                                if(addResults[0].hasOwnProperty("objectid")){
+                                    objectid = "objectid";
+                                }
+
+                                if(addResults[0].hasOwnProperty("objectId")){
+                                    objectid = "objectId";
+                                }
+
+                                if(addResults[0].hasOwnProperty("OBJECTID")){
+                                    objectid = "OBJECTID";
+                                }
+
+                                // ??? These are the most common objectid values. I may have missed some!
+
+                                // Some feature layers will return different casing such as: 'objectid', 'objectId' and 'OBJECTID'
+                                // Normalize these values to the feature type OID so that we don't break other aspects
+                                // of the JS API.
+                                adds[0].attributes[that._esriFieldTypeOID] = addResults[0][objectid];
                                 var graphic = new Graphic(adds[0].geometry,null,adds[0].attributes);
                                 layer.add(graphic);
                             }
@@ -978,11 +1009,12 @@ define([
                         if( req.status === 200 && req.responseText !== "")
                         {
                             try {
-                                var obj = JSON.parse(this.response);
+                                // var b = this.responseText.replace(/"/g, "'"); // jshint ignore:line
+                                var obj = JSON.parse(this.responseText);
                                 callback(obj.addResults, obj.updateResults, obj.deleteResults);
                             }
                             catch(err) {
-                                console.error("EDIT REQUEST REPONSE WAS NOT SUCCESSFUL:", req);
+                                console.error("FAILED TO PARSE EDIT REQUEST RESPONSE:", req);
                                 errback("Unable to parse xhr response", req);
                             }
                         }
