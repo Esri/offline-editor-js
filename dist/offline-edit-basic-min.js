@@ -1,8 +1,9 @@
 Offline.options={checks:{image:{url:function(){return"http://esri.github.io/offline-editor-js/tiny-image.png?_="+Math.floor(1e9*Math.random())}},active:"image"}},define(["dojo/Evented","dojo/_base/Deferred","dojo/promise/all","dojo/_base/declare","dojo/_base/array","dojo/dom-attr","dojo/dom-style","dojo/query","dojo/on","esri/config","esri/layers/GraphicsLayer","esri/layers/FeatureLayer","esri/graphic"],function(a,b,c,d,e,f,g,h,i,j,k,l,m){"use strict"
-return d("O.esri.Edit.OfflineEditBasic",[a],{_onlineStatus:"online",_featureLayers:{},_editStore:new O.esri.Edit.EditStorePOLS,_defaultXhrTimeout:15e3,_autoOfflineDetect:!0,ONLINE:"online",OFFLINE:"offline",RECONNECTING:"reconnecting",proxyPath:null,DB_NAME:"features_store",DB_OBJECTSTORE_NAME:"features",DB_UID:"objectid",events:{EDITS_SENT:"edits-sent",EDITS_ENQUEUED:"edits-enqueued",EDITS_ENQUEUED_ERROR:"edits-enqueued-error"},constructor:function(a){a&&a.hasOwnProperty("autoDetect")&&(this._autoOfflineDetect=a.autoDetect)},extend:function(a,d){var f=[],g=this
+return d("O.esri.Edit.OfflineEditBasic",[a],{_onlineStatus:"online",_featureLayers:{},_editStore:new O.esri.Edit.EditStorePOLS,_defaultXhrTimeout:15e3,_autoOfflineDetect:!0,_esriFieldTypeOID:"",ONLINE:"online",OFFLINE:"offline",RECONNECTING:"reconnecting",proxyPath:null,DB_NAME:"features_store",DB_OBJECTSTORE_NAME:"features",DB_UID:"objectid",events:{EDITS_SENT:"edits-sent",EDITS_ENQUEUED:"edits-enqueued",EDITS_ENQUEUED_ERROR:"edits-enqueued-error"},constructor:function(a){a&&a.hasOwnProperty("autoDetect")&&(this._autoOfflineDetect=a.autoDetect)},extend:function(a,d){var f=[],g=this
 a.offlineExtended=!0,!a.loaded||null===a._url,a.objectIdField=this.DB_UID
-var h=null
-a.url&&(h=a.url,this._featureLayers[a.url]=a),this._editStore._isDBInit||f.push(this._initializeDB(h)),a._applyEdits=a.applyEdits,a.applyEdits=function(d,e,f,h,i){var j=[]
+for(var h=0;h<a.fields.length;h++)if("esriFieldTypeOID"===a.fields[h].type){this._esriFieldTypeOID=a.fields[h].name
+break}var i=null
+a.url&&(i=a.url,this._featureLayers[a.url]=a),this._editStore._isDBInit||f.push(this._initializeDB(i)),a._applyEdits=a.applyEdits,a.applyEdits=function(d,e,f,h,i){var j=[]
 if(g.getOnlineStatus()===g.ONLINE){var k=a._applyEdits(d,e,f,function(){g.emit(g.events.EDITS_SENT,arguments),h&&h.apply(this,arguments)},i)
 return k}var l=new b,m={addResults:[],updateResults:[],deleteResults:[]},n={},o=d||[]
 return o.forEach(function(a){var c=new b,d=this._getNextTempId()
@@ -48,8 +49,10 @@ g.updateResults.length>0&&(g.updateResults[0].success?(h.layer=g.layer,h.id=g.up
 var l=c(i)
 l.then(function(a){e.length>0?b(!1,a):b(!0,a)},function(a){b(!1,a)})}else b(!0,{})},_updateDatabase:function(a){var c=new b,d={}
 return d.attributes={},d.attributes[this.DB_UID]=a.id,this._editStore["delete"](a.layer,d,function(a,b){a?c.resolve({success:!0,error:null}):c.reject({success:!1,error:b})}.bind(this)),c.promise},_internalApplyEditsAll:function(a,c,d,e,f,g){var h=this,i=new b
-return this._makeEditRequest(a,e,f,g,function(b,f,g){if(b.length>0){var j=new m(e[0].geometry,null,e[0].attributes)
-a.add(j)}h._cleanDatabase(a,d,b,f,g).then(function(e){i.resolve({id:c,layer:a.url,tempId:d,addResults:b,updateResults:f,deleteResults:g,databaseResults:e,databaseErrors:null,syncError:null})},function(e){i.resolve({id:c,layer:a.url,tempId:d,addResults:b,updateResults:f,deleteResults:g,databaseResults:null,databaseErrors:e,syncError:e})})},function(b){a.onEditsComplete=a.__onEditsComplete,delete a.__onEditsComplete,i.reject(b)}),i.promise},_cleanDatabase:function(a,c,d,e,f){var g=new b,h=null
+return this._makeEditRequest(a,e,f,g,function(b,f,g){if(b.length>0){var j=""
+b[0].hasOwnProperty("objectid")&&(j="objectid"),b[0].hasOwnProperty("objectId")&&(j="objectId"),b[0].hasOwnProperty("OBJECTID")&&(j="OBJECTID"),e[0].attributes[h._esriFieldTypeOID]=b[0][j]
+var k=new m(e[0].geometry,null,e[0].attributes)
+a.add(k)}h._cleanDatabase(a,d,b,f,g).then(function(e){i.resolve({id:c,layer:a.url,tempId:d,addResults:b,updateResults:f,deleteResults:g,databaseResults:e,databaseErrors:null,syncError:null})},function(e){i.resolve({id:c,layer:a.url,tempId:d,addResults:b,updateResults:f,deleteResults:g,databaseResults:null,databaseErrors:e,syncError:e})})},function(b){a.onEditsComplete=a.__onEditsComplete,delete a.__onEditsComplete,i.reject(b)}),i.promise},_cleanDatabase:function(a,c,d,e,f){var g=new b,h=null
 e.length>0&&e[0].success&&(h=e[0].objectId),f.length>0&&f[0].success&&(h=f[0].objectId),d.length>0&&d[0].success&&(h=c)
 var i={}
 return i.attributes={},i.attributes[this.DB_UID]=h,this._editStore["delete"](a.url,i,function(a,b){a?g.resolve({success:!0,error:null,id:h}):g.reject({success:!1,error:b,id:h})}),g.promise},_makeEditRequest:function(a,b,c,d,f,g){var h="f=json",i="",j="",k=""
@@ -57,7 +60,7 @@ if(b.length>0&&(e.forEach(b,function(a){a.hasOwnProperty("infoTemplate")&&delete
 k="&deletes="+l}var m=h+i+j+k
 a.hasOwnProperty("credential")&&a.credential&&a.credential.hasOwnProperty("token")&&a.credential.token&&(m=m+"&token="+a.credential.token)
 var n=this.proxyPath?this.proxyPath+"?"+a.url:a.url,o=new XMLHttpRequest
-o.open("POST",n+"/applyEdits",!0),o.setRequestHeader("Content-type","application/x-www-form-urlencoded"),o.onload=function(){if(200===o.status&&""!==o.responseText)try{var a=JSON.parse(this.response)
+o.open("POST",n+"/applyEdits",!0),o.setRequestHeader("Content-type","application/x-www-form-urlencoded"),o.onload=function(){if(200===o.status&&""!==o.responseText)try{var a=JSON.parse(this.responseText)
 f(a.addResults,a.updateResults,a.deleteResults)}catch(b){g("Unable to parse xhr response",o)}},o.onerror=function(a){g(a)},o.ontimeout=function(){g("xhr timeout error")},o.timeout=this._defaultXhrTimeout,o.send(m)},_parseResponsesArray:function(a,b){var c=0
 for(var d in a)a.hasOwnProperty(d)&&(a[d].addResults.forEach(function(a){a.success||c++}),a[d].updateResults.forEach(function(a){a.success||c++}),a[d].deleteResults.forEach(function(a){a.success||c++}))
 b(!(c>0))}})}),"undefined"!=typeof O?O.esri.Edit={}:(O={},O.esri={Edit:{}}),O.esri.Edit.EditStorePOLS=function(){"use strict"
