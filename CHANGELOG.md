@@ -1,5 +1,14 @@
 # offline-editor-js - Changelog
 
+## Version 3.7.0 - Nov 1, 2016
+
+No breaking changes.
+
+**Enhancements**
+* Closes #491 - better handling of OBJECTID when returning online
+* Closes #492 - it's working again, no clue why. No fix. Could be how JSON is being returned from AGOL.
+
+
 ## Version 3.6.0 - October 17, 2016
 
 No breaking changes.

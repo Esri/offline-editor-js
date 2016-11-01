@@ -1,4 +1,4 @@
-/*! esri-offline-maps - v3.6.0 - 2016-10-17
+/*! esri-offline-maps - v3.7.0 - 2016-11-01
 *   Copyright (c) 2016 Environmental Systems Research Institute, Inc.
 *   Apache License*/
 /**
@@ -815,7 +815,7 @@ O.esri.Tiles.TilesStore = function(){
      * @param url
      * @param callback
      */
-    this.retrieve = function(url,callback)
+    this.retrieve = function(/* String */ url,callback)
     {
         if(this._db !== null)
         {
