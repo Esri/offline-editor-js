@@ -10,7 +10,7 @@ While your application is in `OFFLINE` mode, you can:
 * view the attached files (see __limitations__ below)
 * when the app goes to `ONLINE` mode, all attachments are sent back to the server and removed from the local database.
 
-##H ow you do use it:
+## How you do use it:
 You can either use the ArcGIS FeatureLayer API _(esri.layers.FeatureLayer)_ directly or use the [AttachmentEditor](https://developers.arcgis.com/javascript/jsapi/attachmenteditor-amd.html) widget that supports feature attachment editing. Both approaches work well, and the code you write works the same either if you are on `ONLINE` or `OFFLINE` modes.
 
 The only differences in your code are:
