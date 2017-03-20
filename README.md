@@ -28,7 +28,7 @@ TPK files | **`offline-tpk-min.js`** Reads TPK files and displays and caches the
 
 `src` files are for software development-only. The`min` versions are minified and should be used in production. 
 
-#Workflows Supported
+# Workflows Supported
 The following workflow is currently supported for both both features and tiles:
 
 1) Load web application while online.
@@ -46,7 +46,7 @@ Full offline requires the use of an [application manifest](https://developer.moz
 __Attachment Support__: Attachments are supported with some limitations. See documentation [here](./doc/attachments.md)
 
 
-#API and How To Use Docs
+# API and How To Use Docs
 
 Go __[here](http://esri.github.io/offline-editor-js/demo/)__ to get links to the API docs and How to use docs.
 
@@ -58,20 +58,20 @@ Go __[here](https://github.com/Esri/offline-editor-js/wiki/FAQ)__ for answers to
 
 ![Architecture](demo/images/offline_arch.png)
 
-##Setup Instructions
+## Setup Instructions
 
 1. [Fork and clone the repo.](https://help.github.com/articles/fork-a-repo)
 2. After cloning from github, `cd` into the `offline-editor-js` folder
 3. Run `git submodule init` and `git submodule update`
 4. Try out the apps in the `/samples` folder. If they run, then everything is set up correctly.
 
-##Build Instructions
+## Build Instructions
 
 1. From the root directory run `npm install`
 2. Run `Grunt build`. If there are no errors, the minimized _(min)_ and source _(src)_ versions of the libraries will be output to `/dist`
 3. For production automation see the npm scripts listed in [package.json](https://github.com/Esri/offline-editor-js/blob/master/package.json).
 
-##Limitations
+## Limitations
 
 * Currently does not support related tables, domains or subtypes. The ArcGIS Runtime SDKs fully support these and more.
 * There are browser limitations and technical dependencies. The offline capabilities in this toolkit depend on certain JavaScript capabilities being present in the browser. Go [here](doc/dependencies.md) for a detailed breakdown.
@@ -83,7 +83,7 @@ Go __[here](https://github.com/Esri/offline-editor-js/wiki/FAQ)__ for answers to
 * Only the latest versions of Chrome, Firefox and Safari are supported.  
 * The most up to date information on this library's browser support can be found [here](http://esri.github.io/offline-editor-js/demo/index.html#support).
 
-##Dependencies
+## Dependencies
 
 * [ArcGIS API for JavaScript (v3.14+)](https://developers.arcgis.com/javascript/)
 * [Offline.js](http://github.hubspot.com/offline/docs/welcome/) - it allows detection of the online/offline condition and provides events to hook callbacks on when this condition changes
@@ -115,7 +115,7 @@ Anyone and everyone is welcome to contribute. Please see our [guidelines for con
 
 
 ## Licensing
-Copyright 2016 Esri
+Copyright 2017 Esri
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.

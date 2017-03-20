@@ -1,5 +1,11 @@
 # offline-editor-js - Changelog
 
+## March 20, 2016
+
+Documentation update only
+
+* Updated markdown pages to reflect minor changes in how github interprets markdown
+
 ## Version 3.7.0 - Nov 1, 2016
 
 No breaking changes.

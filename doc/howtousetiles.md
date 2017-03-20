@@ -1,7 +1,7 @@
 How to use the tiles library
 ============================
 
-##`tiles` library
+## `tiles` library
 
 The `tiles` library allows a developer to extend a tiled layer with offline support.
 
@@ -45,7 +45,7 @@ Approach #1 is for intermittent offline use cases and it uses the `offline-tiles
 ```
 **Step 3** This will enable new offline methods on the layer to prepare for offline mode while still online:
 
-####basemap.prepareForOffline(minLevel,maxLevel,extent,reportProgress)
+#### basemap.prepareForOffline(minLevel,maxLevel,extent,reportProgress)
 
 * Integer	minLevel
 * Integer	maxLevel
@@ -80,17 +80,17 @@ basemapLayer.prepareForOffline(minLevel, maxLevel, newExtent,
    lang.hitch(self,self.reportProgress));
 ```
 
-####basemap.goOnline()
+#### basemap.goOnline()
 This method puts the layer in online mode. When in online mode, the layer will behave as regular layers, fetching all tiles from the remote server. If there is no internet connectivity the tiles may appear thanks to the browsers cache, but no attempt will be made to look up tiles in the local database.
 
-####basemap.goOffline()
+#### basemap.goOffline()
 This method puts the layer in offline mode. When in offline mode, the layer will not fetch any tile from the remote server. It will look up the tiles in the IndexedDB database and display them in the layer. If the tile can't be found in the local database it will show up blank (even if there is actual connectivity). The pair of methods `goOffline()` and `goOnline()` allows the developer to manually control the behaviour of the layer. Used in conjunction with the offline dectection library, you can put the layer in the appropriate mode when the internet condition changes.
 
-####basemap.deleteAllTiles(callback)
+#### basemap.deleteAllTiles(callback)
 Deletes all tiles stored in the indexed db database.
 The callback is called to indicate success (true) or failure (false,err)
 
-####basemap.getOfflineUsage(callback)
+#### basemap.getOfflineUsage(callback)
 It calculates the number of tiles that are stored in the indexed db database and the space used by them. Because the library uses compression, the database size will be significantly smaller than the downloaded tiles size. The callback is called with an object containing the result of this calculation:
 
 ```js
@@ -99,7 +99,7 @@ It calculates the number of tiles that are stored in the indexed db database and
 		size: /* total size of tiles */	
 	}
 ```
-####basemap.getTilePolygons(callback)
+#### basemap.getTilePolygons(callback)
 It calculates the geographic boundary of each of the tiles stored in the indexed db. This method calls the callback once for each tile, passing an esri/geometry/Polygon that can be added to a GraphicsLayer. This method is useful to show graphically which tiles are stored in the local database, like this:
 
 ```js
@@ -115,7 +115,7 @@ It calculates the geographic boundary of each of the tiles stored in the indexed
 		}
 	}
 ```
-####basemap.getLevelEstimation(extent, level, tileSize)
+#### basemap.getLevelEstimation(extent, level, tileSize)
 Returns an object that contains the number of tiles that would need to be downloaded for the specified extent and zoom level, and the estimated byte size of such tiles. This method is useful to give the user an indication of the required time and space before launching the actual download operation:
 
 ```js
