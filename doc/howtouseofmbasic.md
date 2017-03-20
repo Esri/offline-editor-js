@@ -1,7 +1,7 @@
 How to use the basic edit library
 ====================================
 
-##`OfflineEditBasic` library
+## `OfflineEditBasic` library
 
 This library allows a developer to extend a feature layer with intermittent offline editing support. You can combine this functionality with offline tiles. For a complete list of features consult the [OfflineEditBasic API doc](offlineeditbasic.md).
 
@@ -80,7 +80,7 @@ NOTE: You can also monitor standard ArcGIS API for JavaScript layer events using
 
 **Step 4** Once a layer has been extended the offline library will enable it with new methods. Here are a few examples that include code snippets of how to take advantage of some of the library's methods. 
 
-####OfflineEditBasic.proxyPath
+#### OfflineEditBasic.proxyPath
 By default, the library assumes you are using a CORS-enabled Feature Service. All ArcGIS Online Feature Services are CORS-enabled. If you are hosting your own service and it is not CORS-enabled, then you will need to set this path. More information on downloading and using ArcGIS proxies can be found here: [https://developers.arcgis.com/en/javascript/jshelp/ags_proxy.html](https://developers.arcgis.com/en/javascript/jshelp/ags_proxy.html)
 
 Here's one example:
@@ -91,7 +91,7 @@ Here's one example:
 
 ```
 
-####OfflineEditBasic.goOffline()
+#### OfflineEditBasic.goOffline()
 Force the library to go offline. Once this condition is set, then any offline edits will be cached locally.
 
 ```js
@@ -102,7 +102,7 @@ Force the library to go offline. Once this condition is set, then any offline ed
 		}
 ```
 
-####OfflineEditBasic.goOnline()
+#### OfflineEditBasic.goOnline()
 Force the library to return to an online condition. If there are pending edits, the library will attempt to sync them.
 
 ```js
@@ -139,7 +139,7 @@ Typically you should only need to call this method once for each online/offline 
 
 If there was a failure and/or errors, it's a good idea to reevaluate the edits that remain in the database because some edits may have been synced and others may still be pending. Only then, and depending on the error message, should the app try to `goOnline()` again. 
 
-####OfflineEditBasic.getOnlineStatus()
+#### OfflineEditBasic.getOnlineStatus()
 Within your application you can manually check online status and then update your user interface. By using a switch/case statement you can check against three enums that indicate if the library thinks it is offline, online or in the process of reconnecting.
 
 ```js		
@@ -162,7 +162,7 @@ Within your application you can manually check online status and then update you
 		
 ```
 
-####OfflineEditBasic.pendingEditsCount(callback)
+#### OfflineEditBasic.pendingEditsCount(callback)
 You can check if there are any edits pending. 
 		
 ```js

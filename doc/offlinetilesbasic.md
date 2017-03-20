@@ -1,25 +1,24 @@
-API Doc for OfflineTilesBasic
-===============================
+# API Doc for OfflineTilesBasic
 
 There are two different libraries for taking tiles offline: `offline-tiles-basic-min.js` and `offline-tiles-advanced-min.js`. The basic library is for use with ArcGIS.com web maps and partial/intermittently offline use cases. You won't be able to restart or reload your app when using this library offline.
 
 If you have a requirement for restarting or reloading the app while offline then you should use the advanced library. The `offline-tiles-advanced-min.js` library lets you create a custom basemap layer that extends TiledMapServiceLayer. 
 
-##O.esri.Tiles.OfflineTilesBasic
+## O.esri.Tiles.OfflineTilesBasic
 The `offline-tiles-basic-min.js` library provides the following tools for working with with ArcGIS.com maps or tiled map services in partial-offline situations that don't require a browser restart or reload. 
 
-###Constructor
+### Constructor
 Constructor | Description
 --- | ---
 `O.esri.Tiles.OfflineTilesBasic()` | Creates an instance of the OfflineTilesBasic class. This library allows you to extend an ArcGISTiledMapServiceLayer with partial offline capability as well as manage the online/offline resynchronization process.
 
-###Properties
+### Properties
 Property  | Value | Description
 --- | --- | ---
 `layer.showBlankTiles`| `true` | By default the library will show a 256x256 grey PNG image that says "NO TILE". To override this behavior, especially if you are using multiple tile layers and you don't want the grey "NO TILE" image to interfere then set this property to `false`.
 `layer.offline.proxyPath`| `null` | The default is `null`. If you have a CORS-enabled service then use the default. Don't forget to check your proxy configuration to allow connections for all possible services that you might be using. More information on using proxies with ArcGIS can be found here: [https://developers.arcgis.com/javascript/jshelp/ags_proxy.html](https://developers.arcgis.com/javascript/jshelp/ags_proxy.html).
 
-###Methods
+### Methods
 Methods | Returns | Description
 --- | --- | ---
 `extend(layer, callback, ` `state, dbConfig)`|`callback(boolean, string)` |Overrides an ArcGISTiledMapServiceLayer. Callback is called after indexedDB store is initialized and informs the application whether it is indexedDB is supported or not. <br><br>The `state` property is a boolean for specifying if the application is intializing the layer online (true) or offline (false). It defaults to `true`. When you first load the map it is a best practice to set this property to `true`. <br><br>`dbConfig` is an optional object that can be used to customize the database name (`dbName`) and the object store (`objectStoreName`) name. Example: `{dbName: "TILES_TEST", objectStoreName: "TILES"}`. 
