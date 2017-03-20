@@ -4,7 +4,7 @@ Migrating from v1 to v2
 This doc is to provide pointers for migrating from offline-editor-js v1 to v2. Migration should be fairly straightforward as you are simply going to be changing library names and method namespaces. Check the CHANGELOG doc for specifics as well as any deprecations.
 
 
-##Importing the libraries
+## Importing the libraries
 
 In your main html application you can use generic script injection to import the offline-editor-js libraries into your project. Don't create any aliases for the offline-editor-js libraries within the function statement and add them to the end of the module array, but before domReady. As you can see in the example below, the only alias is for `Map`.
 
