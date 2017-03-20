@@ -1,7 +1,7 @@
 How to use the basic edit library
 ====================================
 
-##`OfflineEditBasic` library
+## `OfflineEditBasic` library
 
 This library allows a developer to extend a feature layer with intermittent offline editing support. You can combine this functionality with offline tiles. For a complete list of features consult the [OfflineEditBasic API doc](offlineeditbasic.md).
 
