@@ -1,7 +1,7 @@
-#Attachment Support
+# Attachment Support
 The __offline-edit-advanced-min.js__ has support for attachments in offline mode. See [attachments-editor.html](../samples/attachments-editor.html) sample.
 
-##What you can do:
+## What you can do:
 While your application is in `OFFLINE` mode, you can:
 
 * add attachments to any feature, either a feature that already exists in the server or a newly added feature.
@@ -10,7 +10,7 @@ While your application is in `OFFLINE` mode, you can:
 * view the attached files (see __limitations__ below)
 * when the app goes to `ONLINE` mode, all attachments are sent back to the server and removed from the local database.
 
-##How you do use it:
+##H ow you do use it:
 You can either use the ArcGIS FeatureLayer API _(esri.layers.FeatureLayer)_ directly or use the [AttachmentEditor](https://developers.arcgis.com/javascript/jsapi/attachmenteditor-amd.html) widget that supports feature attachment editing. Both approaches work well, and the code you write works the same either if you are on `ONLINE` or `OFFLINE` modes.
 
 The only differences in your code are:
@@ -36,7 +36,7 @@ users that have a requirement to run multiple databases:
             
             offlineEdit.initAttachments(function(success, error){ . . . });
 
-###Using the FeatureLayer API
+### Using the FeatureLayer API
 The FeatureLayer API for handling attachments consists primarily of four methods. In general you should let `OfflineEditAdvanced`
 handle interactions with attachments and it's not recommended to interact with the attachments database directly. 
 
@@ -47,21 +47,21 @@ handle interactions with attachments and it's not recommended to interact with t
 
 They work the same both in ONLINE and OFFLINE mode. In OFFLINE mode, attachments will be kept in the local database (indexeddb) and sent back to the server when you call `offlineEdit.goOnline()`
 
-##Getting database usage
+## Getting database usage
 Once a feature layer is extended you can find out how big the database and how many attachments are stored by using the following pattern:
 
 			layer.getAttachmentsUsage(function(usage, error) {
 				console.log("Size: " + usage.sizeBytes + ", attachmentCount: " + usage.attachmentCount);
 			});
 
-##Resetting the database
+## Resetting the database
 Under certain circumstances you may want to force the database to delete everything.
 
 			layer.resetAttachmentsDatabase(function(result, error) { 
 				console.log("Reset succes: " + result); // result is a boolean
 			});
 
-###Using the AttachmentEditor widget
+### Using the AttachmentEditor widget
 The [AttachmentEditor](https://developers.arcgis.com/javascript/jsapi/attachmenteditor-amd.html) is not very fancy, but it's easy to work with:
 
                 map.infoWindow.setContent("<div id='content' style='width:100%'></div>");
@@ -81,7 +81,7 @@ The [AttachmentEditor](https://developers.arcgis.com/javascript/jsapi/attachment
 The widget internally uses the FeatureLayer API, and it works well in OFFLINE mode.
 
 
-##Limitations
+## Limitations
 Attachment support in OFFLINE mode has some limitations:
 
 * While in OFFLINE mode, features in a featureLayer don't know whether they have any attachments on the server or any other information about attachments unless you specifically build out that functionality. Therefore `queryAttachmentInfos()` and `deleteAttachments()` won't take their respective attachments into account. Calling `queryAttachmentInfos()` will only return locally stored attachments and `deleteAttachments()` can also only remove local attachments.
