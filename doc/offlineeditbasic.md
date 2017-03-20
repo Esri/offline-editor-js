@@ -1,16 +1,15 @@
-API OfflineEditBasic
-==================================
+# API OfflineEditBasic
 
-##O.esri.Edit.OfflineEditBasic
+## O.esri.Edit.OfflineEditBasic
 The `offline-edit-basic-min.js` library provides the following tools for working with esri.layers.FeatureLayer objects while intermittently offline. 
 
 
-###Constructor
+### Constructor
 Constructor | Description
 --- | ---
 `O.esri.Edit.OfflineEditBasic()` | Creates an instance of the OfflineEditBasic class. This library allows you to extend FeatureLayer objects with offline editing capabilities and manage the online/offline resynchronization process.
 
-###Properties
+### Properties
 Property | Value | Description
 --- | --- | ---
 `DB_NAME` | "features_store" | Sets the database name. You can instantiate multiple databases within the same application by creating seperate instances of OfflineEditAdvanced.
@@ -18,7 +17,7 @@ Property | Value | Description
 `DB_UID` | "objectid" | IMPORTANT!** This tells the database what id to use as a unique identifier. This depends on how your feature service was created. ArcGIS Online services may use something different such as `GlobalID`.
 `proxyPath` | null | Default is `null`. If you are using a Feature Service that is not CORS-enabled then you will need to set this path.
 
-###ENUMs
+### ENUMs
 The manager can be in one of these three states (see `getOnlineStatus()` method):
 
 Property | Value | Description
@@ -27,7 +26,7 @@ Property | Value | Description
 `OFFLINE` | "offline" | Edits will be enqueued
 `RECONNECTING` | "reconnecting" | Sending stored edits to the server
 
-###Methods
+### Methods
 
 OfflineEditBasic provides the following functionality.
 
@@ -41,7 +40,7 @@ Methods | Returns | Description
 `getOnlineStatus()` | `ONLINE`, `OFFLINE` or `RECONNECTING`| Determines the current state of the manager. Please, note that this library doesn't detect actual browser offline/online condition. You need to use the `offline.min.js` library included in `vendor\offline` directory to detect connection status and connect events to goOffline() and goOnline() methods. See `military-offline.html` sample.
 
 
-###Events
+### Events
 Application code can subscribe to OfflineEditBasic events to be notified of different conditions. 
 
 ```js
@@ -61,7 +60,7 @@ Event | Value | Returns |  Description
 `events.EDITS_ENQUEUED_ERROR` | "edits-enqueued-error" | {msg:error} | An error occurred while trying to store the edit. In your app it is recommended to verify if the edit is in the database or not.
 
 
-###FeatureLayer 
+### FeatureLayer 
 
 A FeatureLayer that has been extended using OfflineEditBasic.extend() will gain access to the following additional functionality. Example usage:
 
