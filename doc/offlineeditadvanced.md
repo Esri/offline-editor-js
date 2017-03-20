@@ -1,16 +1,15 @@
-API OfflineEditAdvanced
-==================================
+# API OfflineEditAdvanced
 
-##O.esri.Edit.OfflineEditAdvanced
+## O.esri.Edit.OfflineEditAdvanced
 The `offline-edit-advanced-min.js` library provides the following tools for working with esri.layers.FeatureLayer objects while intermittently and fully offline. 
 
 
-###Constructor
+### Constructor
 Constructor | Description
 --- | ---
 `O.esri.Edit.OfflineEditAdvanced()` | Creates an instance of the OfflineEditAdvanced class. This library allows you to extend FeatureLayer objects with offline editing capabilities and manage the online/offline resynchronization process.
 
-###Properties
+### Properties
 Property | Value | Description
 --- | --- | ---
 `DB_NAME` | "features_store" | Sets the database name. You can instantiate multiple databases within the same application by creating seperate instances of OfflineEditAdvanced.
@@ -22,7 +21,7 @@ Property | Value | Description
 `attachmentsStore` | null | Default is `null`. If you are using attachments, this property gives you access to the associated database.
 `ENABLE_FEATURECOLLECTION` | `false` | Enabling this property will allow the library to create a snapshot of the feature layer and make it available via `getFeatureCollections()`. When you extend a layer and you want to use a custom `dataStore` then leave this property set to `false` so that you don't end up with two copies of the feature layer in the database.
 
-###ENUMs
+### ENUMs
 The manager can be in one of these three states (see `getOnlineStatus()` method):
 
 Property | Value | Description
@@ -31,7 +30,7 @@ Property | Value | Description
 `OFFLINE` | "offline" | Edits will be enqueued
 `RECONNECTING` | "reconnecting" | Sending stored edits to the server
 
-###Methods
+### Methods
 
 OfflineEditAdvanced provides the following functionality.
 
@@ -47,7 +46,7 @@ Methods | Returns | Description
 `getFeatureLayerJSONDataStore( callback )` | `callback( boolean, Object)` | (Added @ v2.7.1) Returns the feature layer's dataStore Object that was created using the `OfflineEditAdvanced()` constructor. Offers more control what is provided by `getFeatureCollections()`.
 
 
-###Events
+### Events
 Application code can subscribe to OfflineEditAdvanced events to be notified of different conditions. 
 
 ```js
@@ -70,7 +69,7 @@ Event | Value | Returns |  Description
 `events.ATTACHMENT_ENQUEUED` | "attachment-enqueued" | nothing | An attachment is in the queue to be sent to the server.
 `events.ATTACHMENTS_SENT` | "attachments-sent" | nothing | When any attachment is actually sent to the server.
 
-###FeatureLayer 
+### FeatureLayer 
 
 A FeatureLayer that has been extended using OfflineEditAdvancedoff.extend() will gain access to the following additional functionality. Example usage:
 

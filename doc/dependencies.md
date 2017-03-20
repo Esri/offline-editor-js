@@ -1,5 +1,4 @@
-Technical Dependencies
-======================
+# Technical Dependencies
 
 The offline-editor-js projects includes but is not limited to the following dependencies:
 
