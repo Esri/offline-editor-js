@@ -102,7 +102,7 @@ Too large of an application can cause a mobile browser to run slugglishly or cra
 * Safari - Developer Tools > Show Page Resources > Application Cache (click on the cookie crumbs at the top left of the console window). 
 
 
-###Configuring your web server
+### Configuring your web server
 Your web server must be able to serve up the MIME TYPE `TEXT/cache-manifest`. If this is missing there's a really good chance that the application cache file won't be served up to your app. 
 
 If you have your web server set up to serve no-cache headers, you should temporarily disable that feature. Some browsers will refuse to accept the application cache file if it is served via a no-cache header.
@@ -127,7 +127,7 @@ As for IE, this library doesn't currently support any versions.
 
 The application cache file can live anywhere in your web directory. It's common to see it to be placed in the root.
 
-###Support
+### Support
 Most modern browsers support application cache. For more detailed info refer to [caniuse.com](http://caniuse.com/#search=appcache).
 
 ### References
