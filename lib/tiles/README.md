@@ -1,4 +1,4 @@
-##FileSaver.js
+## FileSaver.js
 ==============
 
 The awesome FileSaver.js library by Eli Grey is licensed under the MIT/X11 license.
